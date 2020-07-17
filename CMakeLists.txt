@@ -26,15 +26,15 @@ find_package(SealLib REQUIRED)
 
 # Build HIT source code.
 # TODO: uncomment below when source code is imported. 
-# add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/hit/src)
+# add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Build HIT test code if enabled.
 option(BUILD_TESTING "Build the unit tests." ON)
 if (BUILD_TESTING)
     enable_testing()
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/hit/src)
+    # include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
     # Install test dependency - Google Test.
     find_package(GoogleTestLib REQUIRED)
     # TODO: uncomment below when test code is imported. 
-    # add_subdirectory(hit/tst)
+    # add_subdirectory(tests)
 endif ()
