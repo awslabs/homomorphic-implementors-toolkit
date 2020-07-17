@@ -1,0 +1,13 @@
+[submodule "googletest"]
+	path = external/googletest
+	url = https://github.com/google/googletest.git
+[submodule "SEAL"]
+	path = external/SEAL
+	url = https://github.com/microsoft/SEAL.git
+	ignore = all
+[submodule "external/SEAL"]
+	path = external/SEAL
+	url = https://github.com/microsoft/SEAL.git
+[submodule "external/googletest"]
+	path = external/googletest
+	url = https://github.com/google/googletest.git

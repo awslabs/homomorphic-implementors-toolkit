@@ -1,0 +1,7 @@
+build/*
+bin/*
+.cproject
+.project
+keys/*
+install/*
+**/__pycache__
