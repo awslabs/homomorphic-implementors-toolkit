@@ -7,12 +7,6 @@ HIT is a library for simplifying the development of homomorphic functions. It al
 This library is licensed under the Apache 2.0 License.
 
 ## Building
-UPDATE THESE
-Status:
-* Ubuntu 18.04 GCC 9 is
-  ![Build Status](TODO)
-* Ubuntu 19.10 Clang 9 is
-  ![Build Status](TODO)
 
 ### Ubuntu
 
