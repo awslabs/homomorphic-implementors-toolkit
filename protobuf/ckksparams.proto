@@ -1,0 +1,14 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto2";
+package protobuf.helib;
+
+message CKKSParams {
+	required int32 version = 1;
+	required int32 numSlots = 2;
+	required int32 logScale = 3;
+	repeated int64 modulusVec = 4;
+	required bytes pubkey = 5;
+	required bool standardParams = 6;
+}

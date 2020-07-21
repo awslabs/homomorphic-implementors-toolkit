@@ -1,0 +1,22 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto2";
+package protobuf.helib;
+
+message Ciphertext {
+	required int32 version = 1;
+	required int32 height = 2;
+	required int32 width = 3;
+	required int32 encoded_height = 4;
+	required int32 encoded_width = 5;
+	required int32 encoding = 6;
+	optional bytes sealct = 7;
+	required int32 heLevel = 8;
+	repeated double encoded_pt = 9;
+	required double scale = 10;
+}
+
+message CiphertextVector {
+	repeated Ciphertext cts = 1;
+}

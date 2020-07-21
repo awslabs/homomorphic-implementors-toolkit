@@ -1,0 +1,7 @@
+**/Dockerfile
+build/*
+bin/*
+ci/*
+keys/*
+.cproject
+.project

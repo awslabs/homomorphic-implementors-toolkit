@@ -1,5 +1,4 @@
 # Based on templates from https://github.com/github/gitignore.
-
 build/*
 bin/*
 .cproject
