@@ -10,7 +10,7 @@ message(STATUS "Downloading Boost in ${CMAKE_CURRENT_LIST_DIR}/src.")
 string(REPLACE "." "_" BOOST_SUFFIX ${PROJECT_VERSION})
 
 include(ExternalProject)
-# TODO: check if the download URL needs to be changed to github release.
+# Boost archived in GitHub does not include submodule libraries, which are needed by boost build.
 # https://github.com/boostorg/boost/archive/boost-1.73.0.zip
 ExternalProject_Add(EP_BOOST
     URL                  https://downloads.sourceforge.net/project/boost/boost/${PROJECT_VERSION}/boost_${BOOST_SUFFIX}.zip
