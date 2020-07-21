@@ -14,8 +14,8 @@ endif ()
 message(STATUS "Build type (CMAKE_BUILD_TYPE): ${CMAKE_BUILD_TYPE}")
 
 # Include customized cmake functions.
-include(cmake/set-common-flags.cmake)
-include(cmake/download-external-project.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/set-common-flags.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/download-external-project.cmake)
 
 # Find third party from CMake modules.
 set(HIT_THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
