@@ -32,9 +32,6 @@ find_package(SealLib REQUIRED)
 option(BUILD_TESTING "Build the unit tests." ON)
 if (BUILD_TESTING)
     enable_testing()
-    # include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
-    # Install test dependency - Google Test.
-    find_package(GoogleTestLib REQUIRED)
     # TODO: uncomment below when test code is imported. 
     # add_subdirectory(tests)
 endif ()
