@@ -4,7 +4,7 @@
 message(STATUS "Searching Protobuf.")
 find_package(Protobuf "3.0.0")
 if (Protobuf_FOUND)
-    message(STATUS "Protobuf is found.")
+    message(STATUS "Protobuf is found. Skip downloading source code.")
 else ()
     message(STATUS "Downloading and installing Protobuf since it is not found.")
     # Download source code.
