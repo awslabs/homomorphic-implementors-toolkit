@@ -52,7 +52,7 @@ target_include_directories(helib PUBLIC
 target_include_directories(helib PUBLIC ${CMAKE_SOURCE_DIR}/external ${CMAKE_CURRENT_BINARY_DIR}/..)
 
 # Link Microsoft SEAL and PPLR
-target_link_libraries(helib seal stdc++fs ${Boost_LIBRARIES} ${PROTOBUF_LIBRARY})
+target_link_libraries(helib seal stdc++fs ${Boost_LIBRARIES} ${Protobuf_LIBRARIES})
 
 install(
   FILES
