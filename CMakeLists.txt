@@ -25,8 +25,7 @@ find_package(ProtobufLib REQUIRED)
 find_package(SealLib REQUIRED)
 
 # Build HIT source code.
-# TODO: uncomment below when source code is imported. 
-# add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/helib)
 
 # Build HIT test code if enabled.
 option(BUILD_TESTING "Build the unit tests." ON)
