@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "CKKSInstance.h"
-#include "SEAL/native/examples/examples.h"
 #include "api/evaluator/homomorphic.h"
 #include "api/evaluator/depthfinder.h"
 #include "api/evaluator/plaintext.h"
@@ -11,6 +10,8 @@
 #include "api/evaluator/opcount.h"
 #include "common.h"
 #include <experimental/filesystem>
+#include <fstream>
+#include <sealutils.h>
 
 using namespace std;
 using namespace seal;
