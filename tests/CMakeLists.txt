@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 find_package(GoogleTestLib REQUIRED)
-include_directories(${PROJECT_SOURCE_DIR}/helib)
+include_directories(${PROJECT_SOURCE_DIR}/src)
 
 add_executable(testhit CKKSInstance.cpp)
 
