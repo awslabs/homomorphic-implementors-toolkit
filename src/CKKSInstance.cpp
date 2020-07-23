@@ -1,6 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <experimental/filesystem>
+#include <fstream>
+
 #include "CKKSInstance.h"
 #include "api/evaluator/homomorphic.h"
 #include "api/evaluator/depthfinder.h"
@@ -9,9 +12,7 @@
 #include "api/evaluator/debug.h"
 #include "api/evaluator/opcount.h"
 #include "common.h"
-#include <experimental/filesystem>
-#include <fstream>
-#include <sealutils.h>
+#include "sealutils.h"
 
 using namespace std;
 using namespace seal;
