@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../lib/${CMAKE_BUILD_TYPE})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ../lib/${CMAKE_BUILD_TYPE})
-set(HELIB_INCLUDES_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/helib)
+set(HIT_INCLUDES_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/hit)
 
 # https://crascit.com/2017/04/18/generated-sources-in-cmake-builds/
 add_custom_command(
@@ -21,8 +21,8 @@ add_custom_command(
     ${CMAKE_SOURCE_DIR}/protobuf/ckksparams.proto
 )
 
-add_library(helib STATIC "")
-target_sources(helib
+add_library(hit STATIC "")
+target_sources(hit
   PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/CKKSInstance.cpp
     ${CMAKE_CURRENT_LIST_DIR}/common.cpp
@@ -30,7 +30,7 @@ target_sources(helib
     ${CMAKE_CURRENT_BINARY_DIR}/../protobuf/ciphertext.pb.cc
     ${CMAKE_CURRENT_BINARY_DIR}/../protobuf/ckksparams.pb.cc
 )
-set_common_flags(helib)
+set_common_flags(hit)
 
 add_subdirectory(api)
 
@@ -44,15 +44,15 @@ set_source_files_properties(
   COMPILE_FLAGS "-w"
 )
 
-target_include_directories(helib PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/helib>
-    $<INSTALL_INTERFACE:${HELIB_INCLUDES_INSTALL_DIR}>
+target_include_directories(hit PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/hit>
+    $<INSTALL_INTERFACE:${HIT_INCLUDES_INSTALL_DIR}>
 )
 
-target_include_directories(helib PUBLIC ${CMAKE_SOURCE_DIR}/external ${CMAKE_CURRENT_BINARY_DIR}/..)
+target_include_directories(hit PUBLIC ${CMAKE_SOURCE_DIR}/external ${CMAKE_CURRENT_BINARY_DIR}/..)
 
 # Link Microsoft SEAL and PPLR
-target_link_libraries(helib seal stdc++fs ${Boost_LIBRARIES} ${Protobuf_LIBRARIES})
+target_link_libraries(hit seal stdc++fs ${Boost_LIBRARIES} ${Protobuf_LIBRARIES})
 
 install(
   FILES
@@ -62,11 +62,11 @@ install(
     ${CMAKE_CURRENT_BINARY_DIR}/../protobuf/ckksparams.pb.h
     ${CMAKE_CURRENT_BINARY_DIR}/../protobuf/ciphertext.pb.h
   DESTINATION
-    ${HELIB_INCLUDES_INSTALL_DIR}
+    ${HIT_INCLUDES_INSTALL_DIR}
 )
 
-# Associate helib to export HelibTargets
-install(TARGETS helib EXPORT HelibTargets
+# Associate hit to export HitTargets
+install(TARGETS hit EXPORT HitTargets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

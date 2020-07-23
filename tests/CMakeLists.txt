@@ -6,7 +6,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 
 add_executable(testhit CKKSInstance.cpp)
 
-target_link_libraries(testhit PUBLIC helib gtest gtest_main)
+target_link_libraries(testhit PUBLIC hit gtest gtest_main)
 set_common_flags(testhit)
 
 add_test(NAME testhit COMMAND testhit)

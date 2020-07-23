@@ -1,7 +1,7 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-target_sources(helib
+target_sources(hit
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/ciphertext.cpp
         ${CMAKE_CURRENT_LIST_DIR}/decryptor.cpp
@@ -16,7 +16,7 @@ install(
         ${CMAKE_CURRENT_LIST_DIR}/encryptor.h
         ${CMAKE_CURRENT_LIST_DIR}/evaluator.h
     DESTINATION
-        ${HELIB_INCLUDES_INSTALL_DIR}/api
+        ${HIT_INCLUDES_INSTALL_DIR}/api
 )
 
 add_subdirectory(evaluator)
