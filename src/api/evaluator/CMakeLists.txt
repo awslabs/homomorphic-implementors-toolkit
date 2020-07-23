@@ -1,7 +1,7 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-target_sources(helib
+target_sources(hit
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/debug.cpp
         ${CMAKE_CURRENT_LIST_DIR}/depthfinder.cpp
@@ -20,5 +20,5 @@ install(
         ${CMAKE_CURRENT_LIST_DIR}/plaintext.h
         ${CMAKE_CURRENT_LIST_DIR}/scaleestimator.h
     DESTINATION
-        ${HELIB_INCLUDES_INSTALL_DIR}/api/evaluator
+        ${HIT_INCLUDES_INSTALL_DIR}/api/evaluator
 )

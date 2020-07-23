@@ -1,8 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <experimental/filesystem>
+#include <fstream>
+
 #include "CKKSInstance.h"
-#include "SEAL/native/examples/examples.h"
 #include "api/evaluator/homomorphic.h"
 #include "api/evaluator/depthfinder.h"
 #include "api/evaluator/plaintext.h"
@@ -10,7 +12,7 @@
 #include "api/evaluator/debug.h"
 #include "api/evaluator/opcount.h"
 #include "common.h"
-#include <experimental/filesystem>
+#include "sealutils.h"
 
 using namespace std;
 using namespace seal;
@@ -66,8 +68,8 @@ CKKSInstance* CKKSInstance::loadNonEvalInstance(istream &paramsStream, istream &
   return new CKKSInstance(paramsStream, nullptr, nullptr, &secretKeyStream, verbose, NONEVALUATION);
 }
 
-protobuf::helib::CKKSParams CKKSInstance::saveCKKSParams() {
-  protobuf::helib::CKKSParams p;
+protobuf::hit::CKKSParams CKKSInstance::saveCKKSParams() {
+  protobuf::hit::CKKSParams p;
 
   p.set_version(0);
   auto context_data = context->key_context_data();
@@ -196,7 +198,7 @@ CKKSInstance::CKKSInstance(istream &paramsStream, istream *galoisKeyStream,
                            Mode m) {
 
   mode = m;
-  protobuf::helib::CKKSParams ckksParams;
+  protobuf::hit::CKKSParams ckksParams;
   ckksParams.ParseFromIstream(&paramsStream);
   logScale = ckksParams.logscale();
   int numSlots = ckksParams.numslots();
@@ -271,7 +273,7 @@ void CKKSInstance::save(ostream *paramsStream, ostream *galoisKeyStream,
     sk.save(*secretKeyStream);
   }
   if(paramsStream != nullptr) {
-    protobuf::helib::CKKSParams ckksParams = saveCKKSParams();
+    protobuf::hit::CKKSParams ckksParams = saveCKKSParams();
     ckksParams.SerializeToOstream(paramsStream);
   }
   if(galoisKeyStream != nullptr) {

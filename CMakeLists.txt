@@ -20,18 +20,17 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/download-external-project.cmake)
 # Find third party from CMake modules.
 set(HIT_THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
+
 find_package(BoostLib REQUIRED)
 find_package(ProtobufLib REQUIRED)
 find_package(SealLib REQUIRED)
 
 # Build HIT source code.
-# TODO: uncomment below when source code is imported. 
-# add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Build HIT test code if enabled.
 option(BUILD_TESTING "Build the unit tests." ON)
 if (BUILD_TESTING)
     enable_testing()
-    # TODO: uncomment below when test code is imported. 
-    # add_subdirectory(tests)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 endif ()
