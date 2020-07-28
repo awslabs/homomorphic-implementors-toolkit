@@ -20,9 +20,9 @@ const vector<double> VECTOR_1(SIZE, VALUE);
 
 TEST(DepthFinderTest, RotateVectorLeft) {
     CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
-    CKKSCiphertext ciphertext1;
+    CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
-    CKKSCiphertext ciphertext2 = ckksInstance->evaluator->rotate_vector_left(ciphertext1, STEPS);
+    ciphertext2 = ckksInstance->evaluator->rotate_vector_left(ciphertext1, STEPS);
     // Expect heLevel does not change.
     ASSERT_EQ(ciphertext2.heLevel, ciphertext1.heLevel);
     ASSERT_EQ(0, ckksInstance->getMultiplicativeDepth());
@@ -30,9 +30,9 @@ TEST(DepthFinderTest, RotateVectorLeft) {
 
 TEST(DepthFinderTest, RotateVectorRight) {
     CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
-    CKKSCiphertext ciphertext1;
+    CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
-    CKKSCiphertext ciphertext2 = ckksInstance->evaluator->rotate_vector_right(ciphertext1, STEPS);
+    ciphertext2 = ckksInstance->evaluator->rotate_vector_right(ciphertext1, STEPS);
     // Expect heLevel does not change.
     ASSERT_EQ(ciphertext2.heLevel, ciphertext1.heLevel);
     ASSERT_EQ(0, ckksInstance->getMultiplicativeDepth());
@@ -40,9 +40,9 @@ TEST(DepthFinderTest, RotateVectorRight) {
 
 TEST(DepthFinderTest, AddPlainScalar) {
     CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
-    CKKSCiphertext ciphertext1;
+    CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
-    CKKSCiphertext ciphertext2 = ckksInstance->evaluator->add_plain_scalar(ciphertext1, PLAIN_TEXT);
+    ciphertext2 = ckksInstance->evaluator->add_plain_scalar(ciphertext1, PLAIN_TEXT);
     // Expect heLevel does not change.
     ASSERT_EQ(ciphertext2.heLevel, ciphertext1.heLevel);
     ASSERT_EQ(0, ckksInstance->getMultiplicativeDepth());
@@ -50,10 +50,10 @@ TEST(DepthFinderTest, AddPlainScalar) {
 
 TEST(DepthFinderTest, Add) {
     CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
-    CKKSCiphertext ciphertext1, ciphertext2;
+    CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext2);
-    CKKSCiphertext ciphertext3 = ckksInstance->evaluator->add(ciphertext1, ciphertext2);
+    ciphertext3 = ckksInstance->evaluator->add(ciphertext1, ciphertext2);
     // Expect heLevel does not change.
     ASSERT_EQ(ciphertext3.heLevel, ciphertext1.heLevel);
     ASSERT_EQ(0, ckksInstance->getMultiplicativeDepth());
@@ -73,9 +73,9 @@ TEST(DepthFinderTest, AddCiphertextWithDiffHeLevel) {
 
 TEST(DepthFinderTest, MultiplyPlainScalar) {
     CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
-    CKKSCiphertext ciphertext1;
+    CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
-    CKKSCiphertext ciphertext2 = ckksInstance->evaluator->multiply_plain_scalar(ciphertext1, PLAIN_TEXT);
+    ciphertext2 = ckksInstance->evaluator->multiply_plain_scalar(ciphertext1, PLAIN_TEXT);
     // Expect heLevel does not change.
     ASSERT_EQ(ciphertext2.heLevel, ciphertext1.heLevel);
     ASSERT_EQ(0, ckksInstance->getMultiplicativeDepth());
@@ -83,9 +83,9 @@ TEST(DepthFinderTest, MultiplyPlainScalar) {
 
 TEST(DepthFinderTest, MultiplyPlainMattrix) {
     CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
-    CKKSCiphertext ciphertext1;
+    CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, 1, ciphertext1);
-    CKKSCiphertext ciphertext2 = ckksInstance->evaluator->multiply_plain_mat(ciphertext1, VECTOR_1);
+    ciphertext2 = ckksInstance->evaluator->multiply_plain_mat(ciphertext1, VECTOR_1);
     // Expect heLevel does not change.
     ASSERT_EQ(ciphertext2.heLevel, ciphertext1.heLevel);
     ASSERT_EQ(0, ckksInstance->getMultiplicativeDepth());
@@ -93,10 +93,10 @@ TEST(DepthFinderTest, MultiplyPlainMattrix) {
 
 TEST(DepthFinderTest, Multiply) {
     CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
-    CKKSCiphertext ciphertext1, ciphertext2;
+    CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext2);
-    CKKSCiphertext ciphertext3 = ckksInstance->evaluator->multiply(ciphertext1, ciphertext2);
+    ciphertext3 = ckksInstance->evaluator->multiply(ciphertext1, ciphertext2);
     // Expect heLevel does not change.
     ASSERT_EQ(ciphertext3.heLevel, ciphertext1.heLevel);
     ASSERT_EQ(0, ckksInstance->getMultiplicativeDepth());
@@ -116,9 +116,9 @@ TEST(DepthFinderTest, Multiply_InvalidCase) {
 
 TEST(DepthFinderTest, Square) {
     CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
-    CKKSCiphertext ciphertext1;
+    CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
-    CKKSCiphertext ciphertext2 = ckksInstance->evaluator->square(ciphertext1);
+    ciphertext2 = ckksInstance->evaluator->square(ciphertext1);
     // Expect heLevel does not change.
     ASSERT_EQ(ciphertext2.heLevel, ciphertext1.heLevel);
     ASSERT_EQ(0, ckksInstance->getMultiplicativeDepth());
@@ -166,10 +166,10 @@ TEST(DepthFinderTest, ModDownToMin) {
 
 TEST(DepthFinderTest, ModDownToLevel) {
     CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
-    CKKSCiphertext ciphertext1;
+    CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     int heLevel = ciphertext1.heLevel;
-    CKKSCiphertext ciphertext2 = ckksInstance->evaluator->modDownToLevel(ciphertext1, heLevel - 1);
+    ciphertext2 = ckksInstance->evaluator->modDownToLevel(ciphertext1, heLevel - 1);
     // Expect heLevel is changed.
     ASSERT_EQ(heLevel - 1, ciphertext2.heLevel);
     ASSERT_EQ(0, ckksInstance->getMultiplicativeDepth());
