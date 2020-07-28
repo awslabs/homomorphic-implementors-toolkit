@@ -4,7 +4,7 @@
 find_package(GoogleTestLib REQUIRED)
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
-list(APPEND HIT_TEST_FILES "CKKSInstance.cpp" "matrix.cpp")
+list(APPEND HIT_TEST_FILES "matrix.cpp")
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/api/evaluator)
 add_executable(hit-unit-test ${HIT_TEST_FILES})
 
