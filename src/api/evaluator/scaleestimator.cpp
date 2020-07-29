@@ -174,6 +174,11 @@ CKKSCiphertext ScaleEstimator::square_internal(const CKKSCiphertext &encrypted) 
 }
 
 void ScaleEstimator::modDownTo_internal(CKKSCiphertext &x, const CKKSCiphertext &target) {
+
+  if(x.heLevel == target.heLevel && x.scale != target.scale) {
+    throw invalid_argument("modDownTo: levels match, but scales do not.");
+  }
+
   // recursive call up the stack
   dfEval->modDownTo_internal(x, target);
   ptEval->modDownTo_internal(x, target);
@@ -186,6 +191,10 @@ void ScaleEstimator::modDownTo_internal(CKKSCiphertext &x, const CKKSCiphertext 
 }
 
 void ScaleEstimator::modDownToMin_internal(CKKSCiphertext &x, CKKSCiphertext &y) {
+  if(x.heLevel == y.heLevel && x.scale != y.scale) {
+    throw invalid_argument("modDownToMin: levels match, but scales do not.");
+  }
+
   if(x.heLevel > y.heLevel) {
     x.scale = y.scale;
   }
@@ -206,6 +215,10 @@ void ScaleEstimator::modDownToMin_internal(CKKSCiphertext &x, CKKSCiphertext &y)
 
 CKKSCiphertext ScaleEstimator::modDownToLevel_internal(const CKKSCiphertext &x, int level) {
   int lvlDiff = x.heLevel-level;
+
+  if(level < 0) {
+    throw invalid_argument("modDownToLevel: level must be >= 0.");
+  }
 
   // recursive call up the stack
   CKKSCiphertext dest_df = dfEval->modDownToLevel_internal(x, level);
