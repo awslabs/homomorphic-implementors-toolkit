@@ -134,6 +134,8 @@ public:
   // reuse this instance for another computation
   void reset();
 
+  CKKSDecryptor* getCKKSDecryptor() const;
+
 private:
   CKKSInstance(const CKKSInstance &) = delete;
   CKKSInstance& operator=(const CKKSInstance&) = delete;

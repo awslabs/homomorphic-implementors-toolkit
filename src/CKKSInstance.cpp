@@ -165,6 +165,10 @@ void CKKSInstance::reset() {
   encryptionCount = 0;
 }
 
+CKKSDecryptor* CKKSInstance::getCKKSDecryptor() const {
+    return decryptor;
+}
+
 uint64_t estimateKeySize(int numGaloisShift, int ptslots, int depth) {
   int coefficientSizeBytes = 8;
   // size of a single polynomial with one modulus
