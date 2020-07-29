@@ -86,3 +86,17 @@ inline std::ostream &operator<<(std::ostream &stream, seal::parms_id_type parms_
 
     return stream;
 }
+
+/*
+Helper function: Fetch the last prime given SEALContext and heLevel.
+*/
+inline std::uint64_t getLastPrime(std::shared_ptr<seal::SEALContext> context, const int heLevel) {
+  auto context_data = context->first_context_data();
+  while (context_data->chain_index() >= heLevel) {
+      if (context_data->chain_index() == heLevel) {
+          return context_data->parms().coeff_modulus().back().value();
+      }
+      context_data = context_data->next_context_data();
+  }
+  throw std::invalid_argument("Fail to find target level " + std::to_string(heLevel));
+}
