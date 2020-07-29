@@ -40,7 +40,7 @@ TEST(HomomorphicTest, RotateVectorLeft) {
     vector1[0] = newValue;
     ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
     CKKSCiphertext ciphertext2 = ckksInstance->evaluator->rotate_vector_left(ciphertext1, STEPS);
-    vector<double> vector2 = ckksInstance->getCKKSDecryptor()->decrypt(ciphertext2, VERBOSE);
+    vector<double> vector2 = ckksInstance->decrypt(ciphertext2, VERBOSE);
     vector<double> vector3(NUM_OF_SLOTS, VALUE);
     // Expect vector is rotated.
     vector3[NUM_OF_SLOTS - 1] = newValue;
@@ -65,7 +65,7 @@ TEST(HomomorphicTest, RotateVectorRight) {
     vector1[0] = newValue;
     ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
     CKKSCiphertext ciphertext2 = ckksInstance->evaluator->rotate_vector_right(ciphertext1, STEPS);
-    vector<double> vector2 = ckksInstance->getCKKSDecryptor()->decrypt(ciphertext2, VERBOSE);
+    vector<double> vector2 = ckksInstance->decrypt(ciphertext2, VERBOSE);
     vector<double> vector3(NUM_OF_SLOTS, VALUE);
     // Expect vector is rotated.
     vector3[1] = newValue;
@@ -88,7 +88,7 @@ TEST(HomomorphicTest, Add) {
     ckksInstance->encryptRowVec(VECTOR_1, WIDTH, ciphertext1);
     ckksInstance->encryptRowVec(VECTOR_1, WIDTH, ciphertext2);
     CKKSCiphertext ciphertext3 = ckksInstance->evaluator->add(ciphertext1, ciphertext2);
-    vector<double> vector2 = ckksInstance->getCKKSDecryptor()->decrypt(ciphertext3, VERBOSE);
+    vector<double> vector2 = ckksInstance->decrypt(ciphertext3, VERBOSE);
     vector<double> vector3(NUM_OF_SLOTS, VALUE + VALUE);
     // Check vector values.
     compare(vector3, vector2);
@@ -99,7 +99,7 @@ TEST(HomomorphicTest, AddPlainScalar) {
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, WIDTH, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->add_plain_scalar(ciphertext1, PLAIN_TEXT);
-    vector<double> vector2 = ckksInstance->getCKKSDecryptor()->decrypt(ciphertext2, VERBOSE);
+    vector<double> vector2 = ckksInstance->decrypt(ciphertext2, VERBOSE);
     vector<double> vector3(NUM_OF_SLOTS, VALUE + PLAIN_TEXT);
     // Check vector values.
     compare(vector3, vector2);
@@ -110,7 +110,7 @@ TEST(HomomorphicTest, MultiplyPlainScalar) {
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, WIDTH, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->multiply_plain_scalar(ciphertext1, PLAIN_TEXT);
-    vector<double> vector2 = ckksInstance->getCKKSDecryptor()->decrypt(ciphertext2, VERBOSE);
+    vector<double> vector2 = ckksInstance->decrypt(ciphertext2, VERBOSE);
     vector<double> vector3(NUM_OF_SLOTS, VALUE * PLAIN_TEXT);
     // Check vector values.
     compare(vector3, vector2);
@@ -121,7 +121,7 @@ TEST(HomomorphicTest, MultiplyPlainMattrix) {
     CKKSCiphertext ciphertext1;
     ckksInstance->encryptRowVec(VECTOR_1, 1, ciphertext1);
     CKKSCiphertext ciphertext2 = ckksInstance->evaluator->multiply_plain_mat(ciphertext1, VECTOR_1);
-    vector<double> vector2 = ckksInstance->getCKKSDecryptor()->decrypt(ciphertext2, VERBOSE);
+    vector<double> vector2 = ckksInstance->decrypt(ciphertext2, VERBOSE);
     vector<double> vector3(NUM_OF_SLOTS, VALUE * VALUE);
     // Check vector values.
     compare(vector3, vector2);
@@ -144,7 +144,7 @@ TEST(HomomorphicTest, Multiply) {
     ckksInstance->encryptRowVec(VECTOR_1, WIDTH, ciphertext1);
     ckksInstance->encryptRowVec(VECTOR_1, WIDTH, ciphertext2);
     CKKSCiphertext ciphertext3 = ckksInstance->evaluator->multiply(ciphertext1, ciphertext2);
-    vector<double> vector2 = ckksInstance->getCKKSDecryptor()->decrypt(ciphertext3, VERBOSE);
+    vector<double> vector2 = ckksInstance->decrypt(ciphertext3, VERBOSE);
     vector<double> vector3(NUM_OF_SLOTS, VALUE * VALUE);
     // Check vector values.
     compare(vector3, vector2);
@@ -173,7 +173,7 @@ TEST(HomomorphicTest, Square) {
     CKKSCiphertext ciphertext1;
     ckksInstance->encryptRowVec(VECTOR_1, WIDTH, ciphertext1);
     CKKSCiphertext ciphertext2 = ckksInstance->evaluator->square(ciphertext1);
-    vector<double> vector2 = ckksInstance->getCKKSDecryptor()->decrypt(ciphertext2, VERBOSE);
+    vector<double> vector2 = ckksInstance->decrypt(ciphertext2, VERBOSE);
     vector<double> vector3(NUM_OF_SLOTS, VALUE * VALUE);
     // Check vector values.
     compare(vector3, vector2);
