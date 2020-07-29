@@ -178,12 +178,21 @@ void ScaleEstimator::modDownTo_internal(CKKSCiphertext &x, const CKKSCiphertext 
   dfEval->modDownTo_internal(x, target);
   ptEval->modDownTo_internal(x, target);
 
+  x.scale = target.scale;
+
   // recursive call updated heLevel, so we need to update maxLogScale
   updateMaxLogScale(x);
   VERBOSE(print_stats(x));
 }
 
 void ScaleEstimator::modDownToMin_internal(CKKSCiphertext &x, CKKSCiphertext &y) {
+  if(x.heLevel > y.heLevel) {
+    x.scale = y.scale;
+  }
+  else {
+    y.scale = x.scale;
+  }
+
   // recursive call up the stack
   dfEval->modDownToMin_internal(x, y);
   ptEval->modDownToMin_internal(x, y);
@@ -196,14 +205,26 @@ void ScaleEstimator::modDownToMin_internal(CKKSCiphertext &x, CKKSCiphertext &y)
 }
 
 CKKSCiphertext ScaleEstimator::modDownToLevel_internal(const CKKSCiphertext &x, int level) {
+  int lvlDiff = x.heLevel-level;
+
   // recursive call up the stack
   CKKSCiphertext dest_df = dfEval->modDownToLevel_internal(x, level);
   CKKSCiphertext dest_pt = ptEval->modDownToLevel_internal(x, level);
   CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
 
+  // reset heLevel for dest
+  dest.heLevel += lvlDiff;
+  while(dest.heLevel > level) {
+    auto context_data = getContextData(dest);
+    uint64_t p = context_data->parms().coeff_modulus().back().value();
+    dest.heLevel--;
+    dest.scale = (dest.scale*dest.scale)/p;
+  }
+  // dest's level is now reset to level
+
   // recursive call updated heLevel, so we need to update maxLogScale
-  updateMaxLogScale(x);
-  VERBOSE(print_stats(x));
+  updateMaxLogScale(dest);
+  VERBOSE(print_stats(dest));
   return dest;
 }
 
