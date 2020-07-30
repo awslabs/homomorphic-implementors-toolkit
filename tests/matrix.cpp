@@ -18,26 +18,6 @@ Matrix createMatrix(const int height, const int width, const int value=1) {
     return matrix1;
 }
 
-TEST(MatrixTest, RowVecToMatrix) {
-    int size1 = 3, size2 = 4, value = 1;
-    vector<double> vector1(size1, value);
-    Matrix matrix1 = rowVecToMatrix(vector1, size2);
-    ASSERT_EQ(matrix1.size1(), size1);
-    ASSERT_EQ(matrix1.size2(), size2);
-    vector<double> vector2(size1 * size2, value);
-    ASSERT_TRUE(matrix1.data() == vector2);
-}
-
-TEST(MatrixTest, ColVecToMatrix) {
-    int size1 = 3, size2 = 4, value = 1;
-    vector<double> vector1(size1, value);
-    Matrix matrix1 = colVecToMatrix(vector1, size2);
-    ASSERT_EQ(matrix1.size1(), size2);
-    ASSERT_EQ(matrix1.size2(), size1);
-    vector<double> vector2(size1 * size2, value);
-    ASSERT_TRUE(matrix1.data() == vector2);
-}
-
 TEST(MatrixTest, MatrixRowConcat_EmptyMatrix) {
     ASSERT_THROW({
         vector<Matrix> matrix_vec;
