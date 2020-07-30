@@ -25,6 +25,12 @@ find_package(BoostLib REQUIRED)
 find_package(ProtobufLib REQUIRED)
 find_package(SealLib REQUIRED)
 
+# Enable tooling.
+option(CMake_RUN_CLANG_TIDY "Run clang-tidy with the compiler." ON)
+if (CMake_RUN_CLANG_TIDY)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/enable-clang-tidy.cmake)
+endif ()
+
 # Build HIT source code.
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
