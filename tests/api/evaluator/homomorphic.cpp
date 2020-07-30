@@ -15,6 +15,7 @@ using namespace std;
 // Test variables.
 const bool VERBOSE = false;
 const int NUM_OF_SLOTS = 4096;
+const int HEIGHT = 1;
 const int WIDTH = 1;
 const int ZERO_MULTI_DEPTH = 0;
 const int ONE_MULTI_DEPTH = 1;
@@ -89,8 +90,7 @@ TEST(HomomorphicTest, RotateVectorRight_InvalidCase) {
         ), invalid_argument);
 }
 
-// TODO: add more tests to cover invalid and corner cases from evaluator.cpp.
-TEST(HomomorphicTest, Add) {
+TEST(HomomorphicTest, Add_TwoVector) {
     int range = createRandomPositiveInt();
     CKKSInstance *ckksInstance = CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
@@ -106,6 +106,20 @@ TEST(HomomorphicTest, Add) {
     double diff = diff2Norm(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
+}
+
+TEST(HomomorphicTest, Add_InvalidCase) {
+    int range = createRandomPositiveInt();
+    CKKSInstance *ckksInstance = CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+    CKKSCiphertext ciphertext1, ciphertext2;
+    vector<double> vector1 = randomVector(NUM_OF_SLOTS, range);
+    vector<double> vector2 = randomVector(NUM_OF_SLOTS, range);
+    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encryptColVec(vector2, HEIGHT, ciphertext2);
+    ASSERT_THROW((
+        // Expect invalid_argument is thrown because dimensions of the two ciphertexts do not match.
+        ckksInstance->evaluator->add(ciphertext1, ciphertext2)
+        ), invalid_argument);
 }
 
 TEST(HomomorphicTest, AddPlainScalar) {
