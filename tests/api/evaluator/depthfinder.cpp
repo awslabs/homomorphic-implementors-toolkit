@@ -152,15 +152,16 @@ TEST(DepthFinderTest, ModDownTo_InvalidCase) {
 
 TEST(DepthFinderTest, ModDownToMin) {
     CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
-    CKKSCiphertext ciphertext1, ciphertext2;
+    CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext2);
-    ciphertext2.heLevel = ciphertext2.heLevel + 1;
-    int heLevel = ciphertext1.heLevel;
-    ASSERT_LE(heLevel, ciphertext2.heLevel);
-    ckksInstance->evaluator->modDownToMin(ciphertext1, ciphertext2);
-    // Expect heLevel is changed to min.
-    ASSERT_EQ(heLevel, ciphertext2.heLevel);
+    ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext3);
+    ciphertext3.heLevel = ciphertext3.heLevel - 1;
+    ckksInstance->evaluator->modDownToMin(ciphertext1, ciphertext3);
+    ckksInstance->evaluator->modDownToMin(ciphertext3, ciphertext2);
+    // Expect heLevel is changed.
+    ASSERT_EQ(ciphertext3.heLevel, ciphertext2.heLevel);
+    ASSERT_EQ(ciphertext3.heLevel, ciphertext1.heLevel);
     ASSERT_EQ(0, ckksInstance->getMultiplicativeDepth());
 }
 
