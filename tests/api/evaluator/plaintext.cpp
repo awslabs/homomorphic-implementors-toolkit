@@ -113,18 +113,17 @@ TEST(PlainTextTest, MultiplyPlainScalar) {
     int range = createRandomPositiveInt();
     double plaintext = (double)createRandomPositiveInt();
     CKKSInstance *ckksInstance = CKKSInstance::getNewPlaintextInstance(NUM_OF_SLOTS, VERBOSE);
-    CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
+    CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, range);
     vector<double> vector2(NUM_OF_SLOTS, plaintext);
     ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
-    ckksInstance->encryptRowVec(vector2, WIDTH, ciphertext2);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), multiplies<>());
-    ciphertext3 = ckksInstance->evaluator->multiply_plain_scalar(ciphertext1, plaintext);
+    ciphertext2 = ckksInstance->evaluator->multiply_plain_scalar(ciphertext1, plaintext);
     // Check MaxLogPlainVal.
     ASSERT_EQ(log2(lInfNorm(vector3)), ckksInstance->getExactMaxLogPlainVal());
     // Check Diff2Norm.
-    vector<double> vector4 = ciphertext3.encoded_pt.data();
+    vector<double> vector4 = ciphertext2.encoded_pt.data();
     double diff = diff2Norm(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
