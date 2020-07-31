@@ -467,19 +467,19 @@ void CKKSInstance::setMaxVal(const vector<double> &plain) {
   }
 }
 
-void CKKSInstance::encryptMatrix(const Matrix mat, CKKSCiphertext &destination, int lvl) {
-  encryptor->encryptMatrix(mat, pow(2.0, logScale), destination, lvl);
+void CKKSInstance::encryptMatrix(const Matrix mat, CKKSCiphertext &destination, int level) {
+  encryptor->encryptMatrix(mat, pow(2.0, logScale), destination, level);
   setMaxVal(mat.data());
   encryptionCount++;
 }
 
-void CKKSInstance::encryptColVec(const vector<double> &plain, int matHeight, CKKSCiphertext &destination, int lvl) {
-  encryptor->encryptColVec(plain, matHeight, pow(2.0, logScale), destination, lvl);
+void CKKSInstance::encryptColVec(const vector<double> &plain, int matHeight, CKKSCiphertext &destination, int level) {
+  encryptor->encryptColVec(plain, matHeight, pow(2.0, logScale), destination, level);
   setMaxVal(plain);
   encryptionCount++;
 }
-void CKKSInstance::encryptRowVec(const vector<double> &plain, int matWidth, CKKSCiphertext &destination, int lvl) {
-  encryptor->encryptRowVec(plain, matWidth, pow(2.0, logScale), destination, lvl);
+void CKKSInstance::encryptRowVec(const vector<double> &plain, int matWidth, CKKSCiphertext &destination, int level) {
+  encryptor->encryptRowVec(plain, matWidth, pow(2.0, logScale), destination, level);
   setMaxVal(plain);
   encryptionCount++;
 }

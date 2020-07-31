@@ -99,10 +99,10 @@ CKKSCiphertext ScaleEstimator::rotate_vector_left_internal(const CKKSCiphertext 
   return dest;
 }
 
-CKKSCiphertext ScaleEstimator::add_plain_scalar_internal(const CKKSCiphertext &encrypted, double coeff) {
+CKKSCiphertext ScaleEstimator::add_plain_scalar_internal(const CKKSCiphertext &encrypted, double plain) {
   // recursive call up the stack
-  CKKSCiphertext dest_df = dfEval->add_plain_scalar_internal(encrypted, coeff);
-  CKKSCiphertext dest_pt = ptEval->add_plain_scalar_internal(encrypted, coeff);
+  CKKSCiphertext dest_df = dfEval->add_plain_scalar_internal(encrypted, plain);
+  CKKSCiphertext dest_pt = ptEval->add_plain_scalar_internal(encrypted, plain);
   CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
 
   updateMaxLogScale(dest);
@@ -121,10 +121,10 @@ CKKSCiphertext ScaleEstimator::add_internal(const CKKSCiphertext &encrypted1, co
   return dest;
 }
 
-CKKSCiphertext ScaleEstimator::multiply_plain_scalar_internal(const CKKSCiphertext &encrypted, double coeff) {
+CKKSCiphertext ScaleEstimator::multiply_plain_scalar_internal(const CKKSCiphertext &encrypted, double plain) {
   // recursive call up the stack
-  CKKSCiphertext dest_df = dfEval->multiply_plain_scalar_internal(encrypted, coeff);
-  CKKSCiphertext dest_pt = ptEval->multiply_plain_scalar_internal(encrypted, coeff);
+  CKKSCiphertext dest_df = dfEval->multiply_plain_scalar_internal(encrypted, plain);
+  CKKSCiphertext dest_pt = ptEval->multiply_plain_scalar_internal(encrypted, plain);
   CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
 
   dest.scale *= dest.scale;
@@ -162,10 +162,10 @@ CKKSCiphertext ScaleEstimator::multiply_internal(const CKKSCiphertext &encrypted
   return dest;
 }
 
-CKKSCiphertext ScaleEstimator::square_internal(const CKKSCiphertext &encrypted) {
+CKKSCiphertext ScaleEstimator::square_internal(const CKKSCiphertext &ciphertext) {
   // recursive call up the stack
-  CKKSCiphertext dest_df = dfEval->square_internal(encrypted);
-  CKKSCiphertext dest_pt = ptEval->square_internal(encrypted);
+  CKKSCiphertext dest_df = dfEval->square_internal(ciphertext);
+  CKKSCiphertext dest_pt = ptEval->square_internal(ciphertext);
   CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
 
   dest.scale *= encrypted.scale;

@@ -17,7 +17,7 @@ CKKSEncryptor::CKKSEncryptor(const shared_ptr<SEALContext> context, CKKSEncoder 
   mode = debug ? ENC_DEBUG : ENC_NORMAL;
 }
 
-void CKKSEncryptor::encryptMatrix(const Matrix mat, double scale, CKKSCiphertext &dest, int lvl) {
+void CKKSEncryptor::encryptMatrix(const Matrix mat, double scale, CKKSCiphertext &destination, int lvl) {
   // in ENC_META, CKKSInstance sets numSlots to 4096 and doesn't actually attempt to calcuate the correct value.
   // We have to ignore that case here. Otherwise, matrix size should exactly equal the number of slots.
   if(mode != ENC_META && mat.size1()*mat.size2() != numSlots) {
@@ -26,11 +26,11 @@ void CKKSEncryptor::encryptMatrix(const Matrix mat, double scale, CKKSCiphertext
     throw invalid_argument("You can only encode matrices which exactly fit in the ciphertext: Expected " + to_string(numSlots) + ", got " + to_string(mat.size1()*mat.size2()));
   }
 
-  dest.height = mat.size1();
-  dest.width = mat.size2();
-  dest.encoded_height = mat.size1();
-  dest.encoded_width = mat.size2();
-  dest.encoding = MATRIX;
+  destination.height = mat.size1();
+  destination.width = mat.size2();
+  destination.encoded_height = mat.size1();
+  destination.encoded_width = mat.size2();
+  destination.encoding = MATRIX;
 
   if(lvl == -1) {
     lvl = context->first_context_data()->chain_index();
@@ -46,19 +46,19 @@ void CKKSEncryptor::encryptMatrix(const Matrix mat, double scale, CKKSCiphertext
   // only set heLevel and scale if we aren't in Homomorphic mode
   if(mode != ENC_NORMAL) {
     // only for the DepthFinder evaluator
-    dest.heLevel = lvl;
-    dest.scale = scale;
+    destination.heLevel = lvl;
+    destination.scale = scale;
   }
   // Only set the plaintext in Plaintext or Debug modes
   if(mode == ENC_PLAIN || mode == ENC_DEBUG) {
-    dest.encoded_pt = Vector(mat.data().size());
-    dest.encoded_pt.data() = mat.data();
+    destination.encoded_pt = Vector(mat.data().size());
+    destination.encoded_pt.data() = mat.data();
   }
   // Only set the ciphertext in Normal or Debug modes
   if(mode == ENC_NORMAL || mode == ENC_DEBUG) {
     Plaintext temp;
     encoder->encode(mat.data(), context_data->parms_id(), scale, temp);
-    encryptor->encrypt(temp, dest.sealct);
+    encryptor->encrypt(temp, destination.sealct);
   }
 }
 

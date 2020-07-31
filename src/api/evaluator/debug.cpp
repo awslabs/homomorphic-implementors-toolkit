@@ -150,11 +150,11 @@ CKKSCiphertext DebugEval::rotate_vector_left_internal(const CKKSCiphertext &encr
   return dest;
 }
 
-CKKSCiphertext DebugEval::add_plain_scalar_internal(const CKKSCiphertext &encrypted, double coeff) {
+CKKSCiphertext DebugEval::add_plain_scalar_internal(const CKKSCiphertext &encrypted, double plain) {
   // recursive calls
   checkScale(encrypted);
-  CKKSCiphertext dest_he = heEval->add_plain_scalar_internal(encrypted, coeff);
-  CKKSCiphertext dest_se = seEval->add_plain_scalar_internal(encrypted, coeff);
+  CKKSCiphertext dest_he = heEval->add_plain_scalar_internal(encrypted, plain);
+  CKKSCiphertext dest_se = seEval->add_plain_scalar_internal(encrypted, plain);
   CKKSCiphertext dest = merge_cts(dest_he, dest_se);
 
   print_stats(dest);
@@ -175,11 +175,11 @@ CKKSCiphertext DebugEval::add_internal(const CKKSCiphertext &encrypted1, const C
   return dest;
 }
 
-CKKSCiphertext DebugEval::multiply_plain_scalar_internal(const CKKSCiphertext &encrypted, double coeff) {
+CKKSCiphertext DebugEval::multiply_plain_scalar_internal(const CKKSCiphertext &encrypted, double plain) {
   // recursive calls
   checkScale(encrypted);
-  CKKSCiphertext dest_he = heEval->multiply_plain_scalar_internal(encrypted, coeff);
-  CKKSCiphertext dest_se = seEval->multiply_plain_scalar_internal(encrypted, coeff);
+  CKKSCiphertext dest_he = heEval->multiply_plain_scalar_internal(encrypted, plain);
+  CKKSCiphertext dest_se = seEval->multiply_plain_scalar_internal(encrypted, plain);
   CKKSCiphertext dest = merge_cts(dest_he, dest_se);
 
   print_stats(dest);
@@ -212,11 +212,11 @@ CKKSCiphertext DebugEval::multiply_internal(const CKKSCiphertext &encrypted1, co
   return dest;
 }
 
-CKKSCiphertext DebugEval::square_internal(const CKKSCiphertext &encrypted) {
+CKKSCiphertext DebugEval::square_internal(const CKKSCiphertext &ciphertext) {
   // recursive calls
-  checkScale(encrypted);
-  CKKSCiphertext dest_he = heEval->square_internal(encrypted);
-  CKKSCiphertext dest_se = seEval->square_internal(encrypted);
+  checkScale(ciphertext);
+  CKKSCiphertext dest_he = heEval->square_internal(ciphertext);
+  CKKSCiphertext dest_se = seEval->square_internal(ciphertext);
   CKKSCiphertext dest = merge_cts(dest_he, dest_se);
 
   print_stats(dest);

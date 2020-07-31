@@ -53,9 +53,9 @@ CKKSCiphertext CKKSEvaluator::rotate_vector_left(const CKKSCiphertext &encrypted
   return temp;
 }
 
-CKKSCiphertext CKKSEvaluator::add_plain_scalar(const CKKSCiphertext &encrypted, double coeff) {
-  VERBOSE(cout << "Add scalar " << coeff << " to ciphertext" << endl);
-  CKKSCiphertext temp = add_plain_scalar_internal(encrypted, coeff);
+CKKSCiphertext CKKSEvaluator::add_plain_scalar(const CKKSCiphertext &encrypted, double plain) {
+  VERBOSE(cout << "Add scalar " << plain << " to ciphertext" << endl);
+  CKKSCiphertext temp = add_plain_scalar_internal(encrypted, plain);
   return temp;
 }
 
@@ -106,9 +106,9 @@ CKKSCiphertext CKKSEvaluator::add(const CKKSCiphertext &encrypted1, const CKKSCi
   return temp;
 }
 
-CKKSCiphertext CKKSEvaluator::multiply_plain_scalar(const CKKSCiphertext &encrypted, double coeff) {
-  VERBOSE(cout << "Multiply ciphertext by scalar " << coeff << endl);
-  CKKSCiphertext temp = multiply_plain_scalar_internal(encrypted, coeff);
+CKKSCiphertext CKKSEvaluator::multiply_plain_scalar(const CKKSCiphertext &encrypted, double plain) {
+  VERBOSE(cout << "Multiply ciphertext by scalar " << plain << endl);
+  CKKSCiphertext temp = multiply_plain_scalar_internal(encrypted, plain);
   return temp;
 }
 
@@ -167,9 +167,9 @@ CKKSCiphertext CKKSEvaluator::multiply(const CKKSCiphertext &encrypted1, const C
   return temp;
 }
 
-CKKSCiphertext CKKSEvaluator::square(const CKKSCiphertext &encrypted) {
+CKKSCiphertext CKKSEvaluator::square(const CKKSCiphertext &ciphertext) {
   VERBOSE(cout << "Square ciphertext" << endl);
-  CKKSCiphertext temp = square_internal(encrypted);
+  CKKSCiphertext temp = square_internal(ciphertext);
   return temp;
 }
 

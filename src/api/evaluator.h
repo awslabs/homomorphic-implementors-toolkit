@@ -79,7 +79,7 @@ public:
   /* Multiply the first input by itself, and store the result in the second
    * parameter.
    */
-  CKKSCiphertext square(const CKKSCiphertext &x);
+  CKKSCiphertext square(const CKKSCiphertext &ciphertext);
 
   /* Reduce the HE level of `x` to the level of the `target.
    */

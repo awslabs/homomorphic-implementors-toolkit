@@ -6,7 +6,7 @@
 #include "seal/seal.h"
 #include "seal/context.h"
 #include "../matrix.h"
-#include "protobuf/ciphertext.pb.h"
+#include "protobuf/ciphertext.pb.h" // NOLINT
 
 /* This is a wrapper around the SEAL `Ciphertext` type.
  * It tracks the plaintext dimension, since in PPLR,

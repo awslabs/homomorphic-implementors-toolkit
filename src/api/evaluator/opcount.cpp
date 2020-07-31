@@ -55,14 +55,14 @@ CKKSCiphertext OpCount::add_internal(const CKKSCiphertext &encrypted1, const CKK
   return encrypted1;
 }
 
-CKKSCiphertext OpCount::add_plain_scalar_internal(const CKKSCiphertext &encrypted, double coeff) {
-  dfEval->add_plain_scalar_internal(encrypted, coeff);
+CKKSCiphertext OpCount::add_plain_scalar_internal(const CKKSCiphertext &encrypted, double plain) {
+  dfEval->add_plain_scalar_internal(encrypted, plain);
   additions++;
   return encrypted;
 }
 
-CKKSCiphertext OpCount::multiply_plain_scalar_internal(const CKKSCiphertext &encrypted, double coeff) {
-  dfEval->multiply_plain_scalar_internal(encrypted, coeff);
+CKKSCiphertext OpCount::multiply_plain_scalar_internal(const CKKSCiphertext &encrypted, double plain) {
+  dfEval->multiply_plain_scalar_internal(encrypted, plain);
   multiplies++;
   return encrypted;
 }
@@ -79,10 +79,10 @@ CKKSCiphertext OpCount::multiply_internal(const CKKSCiphertext &encrypted1, cons
   return encrypted1;
 }
 
-CKKSCiphertext OpCount::square_internal(const CKKSCiphertext &encrypted) {
-  dfEval->square_internal(encrypted);
+CKKSCiphertext OpCount::square_internal(const CKKSCiphertext &ciphertext) {
+  dfEval->square_internal(ciphertext);
   multiplies++;
-  return encrypted;
+  return ciphertext;
 }
 
 void OpCount::modDownTo_internal(CKKSCiphertext &x, const CKKSCiphertext &target) {

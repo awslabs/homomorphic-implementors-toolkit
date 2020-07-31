@@ -81,10 +81,10 @@ void DepthFinder::modDownTo_internal(CKKSCiphertext &x, const CKKSCiphertext &ta
   VERBOSE(print_stats(x));
 }
 
-void DepthFinder::modDownToMin_internal(CKKSCiphertext &x, CKKSCiphertext &y) {
-  int minLevel = min(x.heLevel, y.heLevel);
+void DepthFinder::modDownToMin_internal(CKKSCiphertext &x, CKKSCiphertext &target) {
+  int minLevel = min(x.heLevel, target.heLevel);
   x.heLevel = minLevel;
-  y.heLevel = minLevel;
+  target.heLevel = minLevel;
   // doesn't matter which input I print stats for since we only
   // print the level, and both have the same level at this point.
   VERBOSE(print_stats(x));

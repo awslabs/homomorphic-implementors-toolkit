@@ -47,7 +47,7 @@ protected:
 
   virtual CKKSCiphertext rotate_vector_left_internal(const CKKSCiphertext &encrypted, int steps) override;
 
-  virtual CKKSCiphertext add_plain_scalar_internal(const CKKSCiphertext &encrypted, double coeff) override;
+  virtual CKKSCiphertext add_plain_scalar_internal(const CKKSCiphertext &encrypted, double plain) override;
 
   virtual CKKSCiphertext add_internal(const CKKSCiphertext &encrypted1, const CKKSCiphertext &encrypted2) override;
 
@@ -57,7 +57,7 @@ protected:
 
   virtual CKKSCiphertext multiply_internal(const CKKSCiphertext &encrypted1, const CKKSCiphertext &encrypted2) override;
 
-  virtual CKKSCiphertext square_internal(const CKKSCiphertext &x) override;
+  virtual CKKSCiphertext square_internal(const CKKSCiphertext &ciphertext) override;
 
   virtual void modDownTo_internal(CKKSCiphertext &x, const CKKSCiphertext &target) override;
 

@@ -8,7 +8,7 @@
 #include "api/encryptor.h"
 #include "api/evaluator.h"
 #include "api/decryptor.h"
-#include "protobuf/ckksparams.pb.h"
+#include "protobuf/ckksparams.pb.h" // NOLINT
 
 /* Wraps SEAL boilerplate into a single object that
  * holds keys, encoders, encryptors, decryptors,

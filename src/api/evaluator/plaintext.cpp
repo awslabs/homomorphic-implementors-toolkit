@@ -105,18 +105,18 @@ CKKSCiphertext PlaintextEval::add_internal(const CKKSCiphertext &encrypted1, con
   return dest;
 }
 
-CKKSCiphertext PlaintextEval::add_plain_scalar_internal(const CKKSCiphertext &encrypted, double coeff) {
+CKKSCiphertext PlaintextEval::add_plain_scalar_internal(const CKKSCiphertext &encrypted, double plain) {
   CKKSCiphertext dest = encrypted;
-  Vector coeffVec(encrypted.encoded_pt.size(), coeff);
+  Vector coeffVec(encrypted.encoded_pt.size(), plain);
   dest.encoded_pt = encrypted.encoded_pt+coeffVec;
   updateMaxLogPlainVal(dest);
   VERBOSE(print_stats(dest));
   return dest;
 }
 
-CKKSCiphertext PlaintextEval::multiply_plain_scalar_internal(const CKKSCiphertext &encrypted, double coeff) {
+CKKSCiphertext PlaintextEval::multiply_plain_scalar_internal(const CKKSCiphertext &encrypted, double plain) {
   CKKSCiphertext dest = encrypted;
-  dest.encoded_pt = coeff * encrypted.encoded_pt;
+  dest.encoded_pt = plain * encrypted.encoded_pt;
   updateMaxLogPlainVal(dest);
   VERBOSE(print_stats(dest));
   return dest;
@@ -154,10 +154,10 @@ CKKSCiphertext PlaintextEval::multiply_internal(const CKKSCiphertext &encrypted1
   return dest;
 }
 
-CKKSCiphertext PlaintextEval::square_internal(const CKKSCiphertext &encrypted) {
-  CKKSCiphertext dest = encrypted;
-  for(int i = 0; i < encrypted.encoded_pt.size(); i++) {
-    dest.encoded_pt[i] = encrypted.encoded_pt[i]*encrypted.encoded_pt[i];
+CKKSCiphertext PlaintextEval::square_internal(const CKKSCiphertext &ciphertext) {
+  CKKSCiphertext dest = ciphertext;
+  for(int i = 0; i < ciphertext.encoded_pt.size(); i++) {
+    dest.encoded_pt[i] = ciphertext.encoded_pt[i]*ciphertext.encoded_pt[i];
   }
   updateMaxLogPlainVal(dest);
   VERBOSE(print_stats(dest));

@@ -35,11 +35,11 @@ CKKSCiphertext HomomorphicEval::rotate_vector_left_internal(const CKKSCiphertext
   return dest;
 }
 
-CKKSCiphertext HomomorphicEval::add_plain_scalar_internal(const CKKSCiphertext &encrypted, double coeff) {
+CKKSCiphertext HomomorphicEval::add_plain_scalar_internal(const CKKSCiphertext &encrypted, double plain) {
   CKKSCiphertext dest = encrypted;
-  Plaintext encoded_coeff;
-  encoder.encode(coeff, encrypted.sealct.parms_id(), encrypted.sealct.scale(), encoded_coeff);
-  evaluator.add_plain(encrypted.sealct, encoded_coeff, dest.sealct);
+  Plaintext encoded_plain;
+  encoder.encode(plain, encrypted.sealct.parms_id(), encrypted.sealct.scale(), encoded_plain);
+  evaluator.add_plain(encrypted.sealct, encoded_plain, dest.sealct);
   return dest;
 }
 
@@ -56,12 +56,12 @@ CKKSCiphertext HomomorphicEval::add_internal(const CKKSCiphertext &encrypted1, c
 }
 
 /* WARNING: Multiplying by 0 results in non-constant time behavior! Only multiply by 0 if the scalar is truly public. */
-CKKSCiphertext HomomorphicEval::multiply_plain_scalar_internal(const CKKSCiphertext &encrypted, double coeff) {
+CKKSCiphertext HomomorphicEval::multiply_plain_scalar_internal(const CKKSCiphertext &encrypted, double plain) {
   CKKSCiphertext dest = encrypted;
-  if(coeff != 0.0) {
-    Plaintext encoded_coeff;
-    encoder.encode(coeff, encrypted.sealct.parms_id(), encrypted.sealct.scale(), encoded_coeff);
-    evaluator.multiply_plain(encrypted.sealct, encoded_coeff, dest.sealct);
+  if(plain != 0.0) {
+    Plaintext encoded_plain;
+    encoder.encode(plain, encrypted.sealct.parms_id(), encrypted.sealct.scale(), encoded_plain);
+    evaluator.multiply_plain(encrypted.sealct, encoded_plain, dest.sealct);
   }
   else {
     encryptor.encrypt_zero(encrypted.sealct.parms_id(), dest.sealct);
@@ -94,9 +94,9 @@ CKKSCiphertext HomomorphicEval::multiply_internal(const CKKSCiphertext &encrypte
   return dest;
 }
 
-CKKSCiphertext HomomorphicEval::square_internal(const CKKSCiphertext &encrypted) {
-  CKKSCiphertext dest = encrypted;
-  evaluator.square(encrypted.sealct, dest.sealct);
+CKKSCiphertext HomomorphicEval::square_internal(const CKKSCiphertext &ciphertext) {
+  CKKSCiphertext dest = ciphertext;
+  evaluator.square(ciphertext.sealct, dest.sealct);
   return dest;
 }
 
