@@ -16,27 +16,35 @@ message(STATUS "Build type (CMAKE_BUILD_TYPE): ${CMAKE_BUILD_TYPE}")
 # Include customized cmake functions.
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/set-common-flags.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/download-external-project.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/hit-clang-format.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/enable-clang-tidy.cmake)
 
 # Find third party from CMake modules.
 set(HIT_THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
+set(HIT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(HIT_TESTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 find_package(BoostLib REQUIRED)
 find_package(ProtobufLib REQUIRED)
 find_package(SealLib REQUIRED)
 
 # Enable tooling.
-option(CMake_RUN_CLANG_TIDY "Run clang-tidy with the compiler." ON)
+option(FORMAT_HIT_CODE "Run clang-format with the compiler." OFF)
+if (FORMAT_HIT_CODE)
+    hit_code_format()
+endif ()
+option(CMake_RUN_CLANG_TIDY "Run clang-tidy with the compiler." OFF)
 if (CMake_RUN_CLANG_TIDY)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/enable-clang-tidy.cmake)
+    enable_clang_tidy()
 endif ()
 
 # Build HIT source code.
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
+add_subdirectory(${HIT_SOURCE_DIR})
 
 # Build HIT test code if enabled.
 option(BUILD_TESTING "Build the unit tests." ON)
 if (BUILD_TESTING)
     enable_testing()
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
+    add_subdirectory(${HIT_TESTS_DIR})
 endif ()
