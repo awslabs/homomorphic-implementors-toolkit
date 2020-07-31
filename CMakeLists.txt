@@ -30,6 +30,7 @@ find_package(ProtobufLib REQUIRED)
 find_package(SealLib REQUIRED)
 
 # Enable tooling.
+# clang-tidy and clang-format are used to provide some warnings for developer reference during development.
 option(FORMAT_HIT_CODE "Run clang-format with the compiler." OFF)
 if (FORMAT_HIT_CODE)
     hit_code_format()

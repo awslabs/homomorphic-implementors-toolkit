@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 function(enable_clang_tidy)
+    # clang-tidy is not used to fail built but only provide some warnings during development.
+    # This is because third-party warnings are hard to be excluded. See https://reviews.llvm.org/D26418
     # Define CMAKE_CXX_CLANG_TIDY for code analysis.
     # Reference:
     # 1. https://gitlab.kitware.com/cmake/cmake/-/issues/18926
@@ -14,6 +16,6 @@ function(enable_clang_tidy)
     else ()
         # `-checks` argument is not specified in below clang-tidy command.
         # In this case, clang-tidy gets the checks by searching a .clang-tidy file.
-        set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND};-header-filter='${CMAKE_SOURCE_DIR}/src/*';-warnings-as-errors=*" PARENT_SCOPE)
+        set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}" PARENT_SCOPE)
     endif ()
 endfunction()
