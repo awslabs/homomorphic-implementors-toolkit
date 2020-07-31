@@ -168,7 +168,7 @@ CKKSCiphertext ScaleEstimator::square_internal(const CKKSCiphertext &ciphertext)
   CKKSCiphertext dest_pt = ptEval->square_internal(ciphertext);
   CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
 
-  dest.scale *= encrypted.scale;
+  dest.scale *= ciphertext.scale;
   updateMaxLogScale(dest);
   VERBOSE(print_stats(dest));
   return dest;
