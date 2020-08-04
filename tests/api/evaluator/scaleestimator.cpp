@@ -19,6 +19,7 @@ const int WIDTH = 1;
 const int NUM_OF_SLOTS = 4096;
 const int ZERO_MULTI_DEPTH = 0;
 const int ONE_MULTI_DEPTH = 1;
+const int TWO_MULTI_DEPTH = 2;
 const double PLAINTEXT_LOG_MAX = 59;
 const double VALUE = 4;
 const double PLAIN_TEXT = 2;
@@ -136,6 +137,19 @@ TEST(ScaleEstimatorTest, ModDownToLevel) {
     ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext2.heLevel);
     // Check scale.
     ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2)/prime, ciphertext2.scale);
+}
+
+// TODO: investigate why previous impl can still pass this test.
+TEST(ScaleEstimatorTest, ModDownToLevel_MultiDepthIsTwo) {
+    CKKSInstance *ckksInstance = CKKSInstance::getNewScaleEstimatorInstance(NUM_OF_SLOTS, TWO_MULTI_DEPTH, VERBOSE);
+    CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
+    ckksInstance->encryptRowVec(VECTOR_1, WIDTH, ciphertext1, TWO_MULTI_DEPTH);
+    ckksInstance->encryptRowVec(VECTOR_1, WIDTH, ciphertext3, ZERO_MULTI_DEPTH);
+    ciphertext2 = ckksInstance->evaluator->modDownToLevel(ciphertext1, ZERO_MULTI_DEPTH);
+    // Expect heLevel is decreased.
+    ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext2.heLevel);
+    // Check scale.
+    ASSERT_EQ(ciphertext3.scale, ciphertext2.scale);
 }
 
 TEST(ScaleEstimatorTest, ModDownTo) {

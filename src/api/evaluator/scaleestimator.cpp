@@ -3,6 +3,7 @@
 
 #include "scaleestimator.h"
 #include "../../common.h"
+#include "../../sealutils.h"
 #include <iomanip>
 
 using namespace std;
