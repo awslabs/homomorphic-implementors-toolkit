@@ -242,7 +242,7 @@ TEST(HomomorphicTest, ModDownToLevel_InvalidCase) {
     ckksInstance->encryptRowVec(VECTOR_1, WIDTH, ciphertext1);
     ASSERT_THROW((
         // Expect invalid_argument is thrown when the level is higher.
-        ckksInstance->evaluator->modDownToLevel(ciphertext1, ONE_MULTI_DEPTH + 1)
+        ckksInstance->evaluator->modDownToLevel(ciphertext1, ONE_MULTI_DEPTH)
         ), invalid_argument);
 }
 
