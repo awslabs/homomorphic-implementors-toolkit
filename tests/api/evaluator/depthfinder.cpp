@@ -145,7 +145,7 @@ TEST(DepthFinderTest, ModDownTo_InvalidCase) {
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext2);
     ciphertext2.heLevel = ciphertext1.heLevel + 1;
     ASSERT_THROW((
-        // Expect invalid_argument is thrown because heLevel of the two ciphertexts is different.
+        // Expect invalid_argument is thrown because the heLevel of second argument is larger.
         ckksInstance->evaluator->modDownTo(ciphertext1, ciphertext2)
         ), invalid_argument);
 }
