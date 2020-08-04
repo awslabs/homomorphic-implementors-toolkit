@@ -26,8 +26,6 @@ TEST(PlainTextTest, RotateVectorLeft) {
     CKKSInstance *ckksInstance = CKKSInstance::getNewPlaintextInstance(NUM_OF_SLOTS, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, range);
-    int special_value = range + 1;
-    vector1[0] = special_value;
     vector<double> vector2;
     vector2.reserve(NUM_OF_SLOTS);
     for (int i = 1; i < NUM_OF_SLOTS; i++) {
