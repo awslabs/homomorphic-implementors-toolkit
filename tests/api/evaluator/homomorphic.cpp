@@ -23,7 +23,6 @@ const int ONE_MULTI_DEPTH = 1;
 const int LOG_SCALE = 30;
 const double PLAIN_TEXT = 2;
 const double VALUE1 = 4;
-const double INI_PLAIN_MAX_LOG = -100;
 const double INVALID_NORM = -1;
 const int STEPS = 1;
 const vector<double> VECTOR_1(NUM_OF_SLOTS, VALUE1);
