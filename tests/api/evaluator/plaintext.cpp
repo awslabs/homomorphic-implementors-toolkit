@@ -18,7 +18,6 @@ const bool VERBOSE = false;
 const int RANGE = 16;
 const int NUM_OF_SLOTS = 4096;
 const int WIDTH = 1;
-const double INI_PLAIN_MAX_LOG = -100;
 const double INVALID_NORM = -1;
 const int STEPS = 1;
 
@@ -35,7 +34,7 @@ TEST(PlainTextTest, RotateVectorLeft) {
     ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->rotate_vector_left(ciphertext1, STEPS);
     // Check MaxLogPlainVal.
-    ASSERT_EQ(INI_PLAIN_MAX_LOG, ckksInstance->getExactMaxLogPlainVal());
+    ASSERT_EQ(log2(lInfNorm(vector2)), ckksInstance->getExactMaxLogPlainVal());
     // Check Diff2Norm.
     vector<double> vector3 = ciphertext2.encoded_pt.data();
     double diff = diff2Norm(vector2, vector3);
@@ -56,7 +55,7 @@ TEST(PlainTextTest, RotateVectorRight) {
     ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->rotate_vector_right(ciphertext1, STEPS);
     // Check MaxLogPlainVal.
-    ASSERT_EQ(INI_PLAIN_MAX_LOG, ckksInstance->getExactMaxLogPlainVal());
+    ASSERT_EQ(log2(lInfNorm(vector2)), ckksInstance->getExactMaxLogPlainVal());
     // Check Diff2Norm.
     vector<double> vector3 = ciphertext2.encoded_pt.data();
     double diff = diff2Norm(vector2, vector3);
