@@ -228,8 +228,7 @@ CKKSCiphertext ScaleEstimator::modDownToLevel_internal(const CKKSCiphertext &x, 
   // reset heLevel for dest
   dest.heLevel += lvlDiff;
   while(dest.heLevel > level) {
-    auto context_data = getContextData(dest);
-    uint64_t p = context_data->parms().coeff_modulus().back().value();
+    uint64_t p = getLastPrime(context, dest.heLevel);
     dest.heLevel--;
     dest.scale = (dest.scale*dest.scale)/p;
   }
