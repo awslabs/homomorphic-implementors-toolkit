@@ -54,7 +54,7 @@ TEST(PlainTextTest, RotateVectorRight) {
     vector1[NUM_OF_SLOTS - 1] = special_value;
     vector<double> vector2;
     vector2.reserve(NUM_OF_SLOTS);
-    vector2.push_back(special_value);
+    vector2.push_back(vector1[NUM_OF_SLOTS - 1]);
     for (int i = 0; i < NUM_OF_SLOTS - 1; i++) {
         vector2.push_back(vector1[i]);
     }
