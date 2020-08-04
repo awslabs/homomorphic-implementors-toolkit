@@ -37,7 +37,7 @@ TEST(HomomorphicTest, RotateVectorLeft) {
     for (int i = 1; i < NUM_OF_SLOTS; i++) {
         vector2.push_back(vector1[i]);
     }
-    vector2.push_back(special_value);
+    vector2.push_back(vector1[0]);
     ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->rotate_vector_left(ciphertext1, STEPS);
     vector<double> vector3 = ckksInstance->decrypt(ciphertext2, VERBOSE);
