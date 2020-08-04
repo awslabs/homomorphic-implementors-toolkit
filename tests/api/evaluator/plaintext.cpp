@@ -15,6 +15,7 @@ using namespace std;
 
 // Test variables.
 const bool VERBOSE = false;
+const int RANGE = 16;
 const int NUM_OF_SLOTS = 4096;
 const int WIDTH = 1;
 const double INI_PLAIN_MAX_LOG = -100;
@@ -22,10 +23,9 @@ const double INVALID_NORM = -1;
 const int STEPS = 1;
 
 TEST(PlainTextTest, RotateVectorLeft) {
-    int range = createRandomPositiveInt();
     CKKSInstance *ckksInstance = CKKSInstance::getNewPlaintextInstance(NUM_OF_SLOTS, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
-    vector<double> vector1 = randomVector(NUM_OF_SLOTS, range);
+    vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2;
     vector2.reserve(NUM_OF_SLOTS);
     for (int i = 1; i < NUM_OF_SLOTS; i++) {
@@ -44,10 +44,9 @@ TEST(PlainTextTest, RotateVectorLeft) {
 }
 
 TEST(PlainTextTest, RotateVectorRight) {
-    int range = createRandomPositiveInt();
     CKKSInstance *ckksInstance = CKKSInstance::getNewPlaintextInstance(NUM_OF_SLOTS, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
-    vector<double> vector1 = randomVector(NUM_OF_SLOTS, range);
+    vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2;
     vector2.reserve(NUM_OF_SLOTS);
     vector2.push_back(vector1[NUM_OF_SLOTS - 1]);
@@ -66,11 +65,10 @@ TEST(PlainTextTest, RotateVectorRight) {
 }
 
 TEST(PlainTextTest, Add) {
-    int range = createRandomPositiveInt();
     CKKSInstance *ckksInstance = CKKSInstance::getNewPlaintextInstance(NUM_OF_SLOTS, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
-    vector<double> vector1 = randomVector(NUM_OF_SLOTS, range);
-    vector<double> vector2 = randomVector(NUM_OF_SLOTS, range);
+    vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
+    vector<double> vector2 = randomVector(NUM_OF_SLOTS, RANGE);
     ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
     ckksInstance->encryptRowVec(vector2, WIDTH, ciphertext2);
     vector<double> vector3(NUM_OF_SLOTS);
@@ -86,11 +84,10 @@ TEST(PlainTextTest, Add) {
 }
 
 TEST(PlainTextTest, AddPlainScalar) {
-    int range = createRandomPositiveInt();
     double plaintext = (double)createRandomPositiveInt();
     CKKSInstance *ckksInstance = CKKSInstance::getNewPlaintextInstance(NUM_OF_SLOTS, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
-    vector<double> vector1 = randomVector(NUM_OF_SLOTS, range);
+    vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2(NUM_OF_SLOTS, plaintext);
     ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
     vector<double> vector3(NUM_OF_SLOTS);
@@ -106,11 +103,10 @@ TEST(PlainTextTest, AddPlainScalar) {
 }
 
 TEST(PlainTextTest, MultiplyPlainScalar) {
-    int range = createRandomPositiveInt();
     double plaintext = (double)createRandomPositiveInt();
     CKKSInstance *ckksInstance = CKKSInstance::getNewPlaintextInstance(NUM_OF_SLOTS, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
-    vector<double> vector1 = randomVector(NUM_OF_SLOTS, range);
+    vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2(NUM_OF_SLOTS, plaintext);
     ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
     vector<double> vector3(NUM_OF_SLOTS);
@@ -126,11 +122,10 @@ TEST(PlainTextTest, MultiplyPlainScalar) {
 }
 
 TEST(PlainTextTest, MultiplyPlainMattrix) {
-    int range = createRandomPositiveInt();
     CKKSInstance *ckksInstance = CKKSInstance::getNewPlaintextInstance(NUM_OF_SLOTS, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
-    vector<double> vector1 = randomVector(NUM_OF_SLOTS, range);
-    vector<double> vector2 = randomVector(NUM_OF_SLOTS, range);
+    vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
+    vector<double> vector2 = randomVector(NUM_OF_SLOTS, RANGE);
     ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), multiplies<>());
@@ -145,11 +140,10 @@ TEST(PlainTextTest, MultiplyPlainMattrix) {
 }
 
 TEST(PlainTextTest, Multiply) {
-    int range = createRandomPositiveInt();
     CKKSInstance *ckksInstance = CKKSInstance::getNewPlaintextInstance(NUM_OF_SLOTS, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
-    vector<double> vector1 = randomVector(NUM_OF_SLOTS, range);
-    vector<double> vector2 = randomVector(NUM_OF_SLOTS, range);
+    vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
+    vector<double> vector2 = randomVector(NUM_OF_SLOTS, RANGE);
     ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
     ckksInstance->encryptRowVec(vector2, WIDTH, ciphertext2);
     vector<double> vector3(NUM_OF_SLOTS);
@@ -165,10 +159,9 @@ TEST(PlainTextTest, Multiply) {
 }
 
 TEST(PlainTextTest, Square) {
-    int range = createRandomPositiveInt();
     CKKSInstance *ckksInstance = CKKSInstance::getNewPlaintextInstance(NUM_OF_SLOTS, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
-    vector<double> vector1 = randomVector(NUM_OF_SLOTS, range);
+    vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
     vector<double> vector2(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector1.begin(), vector2.begin(), multiplies<>());
