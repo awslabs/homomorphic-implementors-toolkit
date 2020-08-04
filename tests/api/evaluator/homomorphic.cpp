@@ -237,7 +237,7 @@ TEST(HomomorphicTest, ModDownToLevel) {
 }
 
 TEST(HomomorphicTest, ModDownToLevel_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1;
     ckksInstance->encryptRowVec(VECTOR_1, WIDTH, ciphertext1);
     ASSERT_THROW((
