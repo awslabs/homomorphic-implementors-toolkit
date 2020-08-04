@@ -54,7 +54,6 @@ TEST(HomomorphicTest, RotateVectorLeft_InvalidCase) {
         // Expect invalid_argument is thrown because the rotate step should not be negative.
         ckksInstance->evaluator->rotate_vector_left(ciphertext1, -1)
         ), invalid_argument);
-
 }
 
 TEST(HomomorphicTest, RotateVectorRight) {
