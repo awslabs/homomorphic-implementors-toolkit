@@ -26,7 +26,10 @@ public:
   // this is useful for putting an upper bound on the scale parameter
   double getExactMaxLogPlainVal() const;
 
-  void updateMaxLogPlainVal(const CKKSCiphertext &c);
+  // primarily used to indicate the maximum value for each *input* to the function.
+  // For functions which are a no-op, this function is the only way the evaluator
+  // can learn the maximum plaintext values.
+  void updatePlaintextMaxVal(double x);
 
 protected:
   virtual CKKSCiphertext rotate_vector_right_internal(const CKKSCiphertext &encrypted, int steps) override;
@@ -60,6 +63,7 @@ protected:
 
 private:
   void print_stats(const CKKSCiphertext &c);
+  void updateMaxLogPlainVal(const CKKSCiphertext &c);
   double ptMaxLog;
 
   friend class ScaleEstimator;

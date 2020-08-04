@@ -444,20 +444,26 @@ int CKKSInstance::genModulusVec(int numPrimes, vector<int> &modulusVector) {
 }
 
 void CKKSInstance::setMaxVal(const vector<double> &plain) {
-  if(mode == SCALE || mode == DEBUG) {
-    double maxVal = 0;
-    for(int i = 0; i < plain.size(); i++) {
-      maxVal = max(maxVal, abs(plain[i]));
-    }
+  double maxVal = lInfNorm(plain);
 
-    if(mode == SCALE) {
+  switch(mode) {
+    case SCALE: {
       ScaleEstimator *e = dynamic_cast<ScaleEstimator*>(evaluator);
       e->updatePlaintextMaxVal(maxVal);
+      break;
     }
-    else {
+    case DEBUG: {
       DebugEval *e = dynamic_cast<DebugEval*>(evaluator);
       e->updatePlaintextMaxVal(maxVal);
+      break;
     }
+    case PLAINTEXT: {
+      PlaintextEval *e = dynamic_cast<PlaintextEval*>(evaluator);
+      e->updatePlaintextMaxVal(maxVal);
+      break;
+    }
+    default:
+      break;
   }
 }
 

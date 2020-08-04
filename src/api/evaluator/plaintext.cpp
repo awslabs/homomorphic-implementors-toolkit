@@ -48,6 +48,11 @@ void PlaintextEval::updateMaxLogPlainVal(const CKKSCiphertext &c) {
   ptMaxLog = max(ptMaxLog, log2(exactPlaintextMaxVal));
 }
 
+void PlaintextEval::updatePlaintextMaxVal(double x) {
+  // takes the actual max value, we need to set the log of it
+  ptMaxLog = max(ptMaxLog, log2(x));
+}
+
 CKKSCiphertext PlaintextEval::rotate_vector_right_internal(const CKKSCiphertext &encrypted, int steps) {
   CKKSCiphertext dest = encrypted;
   vector<double> rot_temp;
