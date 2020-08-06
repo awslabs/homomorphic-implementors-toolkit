@@ -1,0 +1,15 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+FROM 465824340922.dkr.ecr.us-west-2.amazonaws.com/hit-codebuild:ubuntu-18.04_base as ci-base
+
+SHELL ["/bin/bash", "-c"]
+
+RUN set -ex && \
+    add-apt-repository ppa:ubuntu-toolchain-r/test && \
+    apt-get update && \
+    apt-get -y --no-install-recommends install gcc-9 g++-9 && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90 --slave /usr/bin/g++ g++ /usr/bin/g++-9 --slave /usr/bin/gcov gcov /usr/bin/gcov-9
+
+ENV CC=gcc-9
+ENV CXX=g++-9

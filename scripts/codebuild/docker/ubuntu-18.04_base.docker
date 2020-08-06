@@ -1,0 +1,33 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+FROM ubuntu:18.04
+
+SHELL ["/bin/bash", "-c"]
+
+ENV CMAKE_VERSION=3.16.3
+
+RUN set -ex && \
+    apt-get update && \
+    apt-get -y --no-install-recommends upgrade && \
+    apt-get -y --no-install-recommends install \
+    software-properties-common \
+    zlib1g-dev \
+    ninja-build \
+    protobuf-compiler \
+    libprotobuf-dev \
+    libboost-all-dev \
+    libcurl4-openssl-dev \
+    libmsgsl-dev \
+    libssl-dev \
+    curl \
+    ca-certificates && \
+    cd /tmp && \
+    curl -LO https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz && \
+    tar xzf cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz -C /usr --strip-components 1 && \
+    cmake --version && \
+    apt-get autoremove --purge -y && \
+    apt-get clean && \
+    apt-get autoclean && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /tmp/*
