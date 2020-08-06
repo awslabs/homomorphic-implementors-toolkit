@@ -3,6 +3,7 @@
 
 #include "scaleestimator.h"
 #include "../../common.h"
+#include "../../sealutils.h"
 #include <iomanip>
 
 using namespace std;
@@ -174,9 +175,16 @@ CKKSCiphertext ScaleEstimator::square_internal(const CKKSCiphertext &encrypted) 
 }
 
 void ScaleEstimator::modDownTo_internal(CKKSCiphertext &x, const CKKSCiphertext &target) {
+
+  if(x.heLevel == target.heLevel && x.scale != target.scale) {
+    throw invalid_argument("modDownTo: levels match, but scales do not.");
+  }
+
   // recursive call up the stack
   dfEval->modDownTo_internal(x, target);
   ptEval->modDownTo_internal(x, target);
+
+  x.scale = target.scale;
 
   // recursive call updated heLevel, so we need to update maxLogScale
   updateMaxLogScale(x);
@@ -184,6 +192,17 @@ void ScaleEstimator::modDownTo_internal(CKKSCiphertext &x, const CKKSCiphertext 
 }
 
 void ScaleEstimator::modDownToMin_internal(CKKSCiphertext &x, CKKSCiphertext &y) {
+  if(x.heLevel == y.heLevel && x.scale != y.scale) {
+    throw invalid_argument("modDownToMin: levels match, but scales do not.");
+  }
+
+  if(x.heLevel > y.heLevel) {
+    x.scale = y.scale;
+  }
+  else {
+    y.scale = x.scale;
+  }
+
   // recursive call up the stack
   dfEval->modDownToMin_internal(x, y);
   ptEval->modDownToMin_internal(x, y);
@@ -196,14 +215,29 @@ void ScaleEstimator::modDownToMin_internal(CKKSCiphertext &x, CKKSCiphertext &y)
 }
 
 CKKSCiphertext ScaleEstimator::modDownToLevel_internal(const CKKSCiphertext &x, int level) {
+  int lvlDiff = x.heLevel-level;
+
+  if(level < 0) {
+    throw invalid_argument("modDownToLevel: level must be >= 0.");
+  }
+
   // recursive call up the stack
   CKKSCiphertext dest_df = dfEval->modDownToLevel_internal(x, level);
   CKKSCiphertext dest_pt = ptEval->modDownToLevel_internal(x, level);
   CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
 
+  // reset heLevel for dest
+  dest.heLevel += lvlDiff;
+  while(dest.heLevel > level) {
+    uint64_t p = getLastPrime(context, dest.heLevel);
+    dest.heLevel--;
+    dest.scale = (dest.scale*dest.scale)/p;
+  }
+  // dest's level is now reset to level
+
   // recursive call updated heLevel, so we need to update maxLogScale
-  updateMaxLogScale(x);
-  VERBOSE(print_stats(x));
+  updateMaxLogScale(dest);
+  VERBOSE(print_stats(dest));
   return dest;
 }
 

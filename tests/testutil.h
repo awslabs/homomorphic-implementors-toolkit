@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <iostream>
-#include "gtest/gtest.h"
-#include "CKKSInstance.h"
 
 using namespace std;
 
-TEST(CKKSInstanceTest, SampleOneTest) {
-    cout << "CKKSInstanceTest." << endl;
+inline uint32_t createRandomPositiveInt(const int mod = 100) {
+    srand(time(nullptr));
+    return rand() % mod + 1;
 }
