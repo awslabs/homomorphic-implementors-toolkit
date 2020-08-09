@@ -1,7 +1,7 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-function(hit_code_format)
+function(enable_hit_code_format)
     # clang-format is used to format code during development but not to fail build.
     # Only version starting from 10.0.0 has option can turn warnings to errors.
     find_program(CLANG_FORMAT_COMMAND NAMES clang-format)

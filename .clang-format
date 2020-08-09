@@ -1,3 +1,6 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 BasedOnStyle: Google
 ColumnLimit: 120
 Cpp11BracedListStyle: true

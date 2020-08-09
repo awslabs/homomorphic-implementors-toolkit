@@ -16,7 +16,7 @@ message(STATUS "Build type (CMAKE_BUILD_TYPE): ${CMAKE_BUILD_TYPE}")
 # Include customized cmake functions.
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/set-common-flags.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/download-external-project.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/hit-clang-format.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/enable-hit-code-format.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/enable-clang-tidy.cmake)
 
 # Find third party from CMake modules.
@@ -31,9 +31,9 @@ find_package(SealLib REQUIRED)
 
 # Enable tooling.
 # clang-tidy and clang-format are used to provide some warnings for developer reference during development.
-option(FORMAT_HIT_CODE "Run clang-format with the compiler." OFF)
-if (FORMAT_HIT_CODE)
-    hit_code_format()
+option(CMake_RUN_HIT_CODE_FORMAT "Run clang-format in place." OFF)
+if (CMake_RUN_HIT_CODE_FORMAT)
+    enable_hit_code_format()
 endif ()
 option(CMake_RUN_CLANG_TIDY "Run clang-tidy with the compiler." OFF)
 if (CMake_RUN_CLANG_TIDY)
