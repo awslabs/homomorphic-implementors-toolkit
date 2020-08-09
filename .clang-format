@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 BasedOnStyle: Google
+
+# General
 ColumnLimit: 120
 Cpp11BracedListStyle: true
 IndentWidth: 4
@@ -11,3 +13,8 @@ SpaceBeforeAssignmentOperators: true
 Standard: Cpp11
 UseTab: Never
 AllowShortFunctionsOnASingleLine: false
+
+# Pointer definition.
+# For consistency, use pointer alignment "int& foo" for this project.
+DerivePointerAlignment: false
+PointerAlignment: Left
