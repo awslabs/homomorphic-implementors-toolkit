@@ -22,7 +22,7 @@ Checks: >
   -readability-magic-numbers,
   -readability-named-parameter,
   -readability-redundant-declaration
-HeaderFilterRegex: "(hit/).*\\.h$"
+HeaderFilterRegex: "(hit/api/|hit/CKKSInstance|hit/common|hit/matrix|hit/sealutils).*\\.h$"
 CheckOptions:
   - key: bugprone-argument-comment.StrictMode
     value: 1
