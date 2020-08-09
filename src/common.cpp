@@ -250,8 +250,8 @@ void securityWarningBox(const string &str, WARN_LEVEL level) {
 
 double lInfNorm(const vector<double> &x) {
   double xmax = 0;
-  for(int i = 0; i < x.size(); i++) {
-    xmax = max(xmax,abs(x[i]));
+  for(double i : x) {
+    xmax = max(xmax,abs(i));
   }
   return xmax;
 }
@@ -294,16 +294,16 @@ Matrix ctDecryptedToMatrix(CKKSInstance &inst, CKKSCiphertext &x) {
 Matrix ctPlaintextToMatrix(vector<CKKSCiphertext> &xs) {
   vector<Matrix> mats;
 
-  for(int i = 0; i < xs.size(); i++) {
-    mats.push_back(ctPlaintextToMatrix(xs[i]));
+  for(auto & x : xs) {
+    mats.push_back(ctPlaintextToMatrix(x));
   }
   return matrixRowConcat(mats);
 }
 
 Vector ctPlaintextToVector(std::vector<CKKSCiphertext> &xs) {
   vector<double> stdvec;
-  for(int i = 0; i < xs.size(); i++) {
-    vector<double> v = xs[i].getPlaintext();
+  for(auto & x : xs) {
+    vector<double> v = x.getPlaintext();
     stdvec.insert(stdvec.end(), v.begin(), v.end());
   }
   return fromStdVector(stdvec);
@@ -313,8 +313,8 @@ Vector ctPlaintextToVector(std::vector<CKKSCiphertext> &xs) {
 Matrix ctDecryptedToMatrix(CKKSInstance &inst, vector<CKKSCiphertext> &xs) {
   vector<Matrix> mats;
 
-  for(int i = 0; i < xs.size(); i++) {
-    mats.push_back(ctDecryptedToMatrix(inst, xs[i]));
+  for(auto & x : xs) {
+    mats.push_back(ctDecryptedToMatrix(inst, x));
   }
 
   return matrixRowConcat(mats);
@@ -322,8 +322,8 @@ Matrix ctDecryptedToMatrix(CKKSInstance &inst, vector<CKKSCiphertext> &xs) {
 
 Vector ctDecryptedToVector(CKKSInstance &inst, std::vector<CKKSCiphertext> &xs) {
   vector<double> stdvec;
-  for(int i = 0; i < xs.size(); i++) {
-    vector<double> v = inst.decrypt(xs[i]);
+  for(const auto & x : xs) {
+    vector<double> v = inst.decrypt(x);
     stdvec.insert(stdvec.end(), v.begin(), v.end());
   }
   return fromStdVector(stdvec);

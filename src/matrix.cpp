@@ -9,9 +9,9 @@ using namespace std;
 Matrix rowVecToMatrix(const vector<double> &x, int width) {
   vector<double> y;
   y.reserve(width*x.size());
-  for(int i = 0; i < x.size(); i++) {
+  for(double value : x) {
     for(int j = 0; j < width; j++) {
-      y.push_back(x[i]);
+      y.push_back(value);
     }
   }
   Matrix temp(x.size(), width);
@@ -24,8 +24,8 @@ Matrix colVecToMatrix(const vector<double> &x, int height) {
   vector<double> y;
   y.reserve(height*x.size());
   for(int i = 0; i < height; i++) {
-    for(int j = 0; j < x.size(); j++) {
-      y.push_back(x[j]);
+    for(double v : x) {
+      y.push_back(v);
     }
   }
   Matrix temp(height, x.size());
@@ -49,10 +49,10 @@ Matrix matrixRowConcat(const vector<Matrix> xs) {
 
   vector<double> cmatdata;
   for(int row = 0; row < h; row++) {
-    for(int i = 0; i < xs.size(); i++) {
-      int w = xs[i].size2();
+    for(const auto & x : xs) {
+      int w = x.size2();
       for(int col = 0; col < w; col++) {
-        cmatdata.push_back(xs[i].data()[row*w+col]);
+        cmatdata.push_back(x.data()[row*w+col]);
       }
     }
   }

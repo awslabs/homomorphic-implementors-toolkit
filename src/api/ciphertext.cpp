@@ -85,8 +85,8 @@ void CKKSCiphertext::save(protobuf::hit::Ciphertext *c) const {
     sealct.save(sealctBuf);
     c->set_sealct(sealctBuf.str());
 
-    for(int i = 0; i < encoded_pt.size(); i++) {
-      c->add_encoded_pt(encoded_pt[i]);
+    for(double i : encoded_pt) {
+      c->add_encoded_pt(i);
     }
   }
 }
