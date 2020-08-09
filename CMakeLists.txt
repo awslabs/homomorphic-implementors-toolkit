@@ -22,7 +22,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/enable-clang-tidy.cmake)
 # Find third party from CMake modules.
 set(HIT_THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
-set(HIT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(HIT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/hit)
 set(HIT_TESTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 find_package(BoostLib REQUIRED)

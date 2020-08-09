@@ -7,7 +7,7 @@
 set(CMAKE_CXX_CLANG_TIDY "")
 
 find_package(GoogleTestLib REQUIRED)
-include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/hit)
 
 list(APPEND HIT_TEST_FILES "matrix.cpp")
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/api/evaluator)
