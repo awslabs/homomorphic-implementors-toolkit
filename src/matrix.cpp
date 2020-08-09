@@ -34,7 +34,7 @@ Matrix colVecToMatrix(const vector<double> &x, int height) {
 }
 
 Matrix matrixRowConcat(const vector<Matrix> xs) {
-  if(xs.size() == 0) {
+  if(xs.empty()) {
     throw invalid_argument("matrixRowConcat: xs cannot be empty");
   }
   int h = xs[0].size1();
