@@ -9,7 +9,7 @@
 #include <chrono>
 #include "CKKSInstance.h"
 
-typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<long int, std::ratio<1, 1000000000> > > timepoint;
+typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<long int, std::ratio<1, 1000000000> > > timepoint; // NOLINT(modernize-use-using)
 
 
 enum TimeScale {TS_MS,TS_SEC,TS_MIN,TS_DYNAMIC};
@@ -31,7 +31,7 @@ void printElapsedTime(timepoint start);
 // less than this many bits
 #define PLAINTEXT_LOG_MAX 59
 
-typedef boost::variate_generator<boost::mt19937&, boost::uniform_int<> > RndGen;
+typedef boost::variate_generator<boost::mt19937&, boost::uniform_int<> > RndGen; // NOLINT(modernize-use-using)
 
 std::vector<double> decodePlaintext(const std::vector<double> x, CTEncoding enc,
                                     int height, int width, int encoded_height, int encoded_width);
