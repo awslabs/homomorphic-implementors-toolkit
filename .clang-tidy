@@ -1,8 +1,28 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-Checks: '-*,bugprone-*,clang-analyzer-*,cppcoreguidelines-*,-cppcoreguidelines-macro-usage,-cppcoreguidelines-pro-type-reinterpret-cast,-cppcoreguidelines-pro-type-union-access,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-type-vararg,google-build-using-namespace,google-explicit-constructor,google-global-names-in-headers,google-readability-casting,google-runtime-int,google-runtime-operator,hicpp-*,-hicpp-vararg,misc-*,modernize-*,performance-*,readability-*,-readability-named-parameter'
-HeaderFilterRegex: '.*'
+Checks: >
+  -*,
+  bugprone-*,
+  google-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -google-readability-braces-around-statements,
+  -google-readability-namespace-comments,
+  -google-runtime-references,
+  -misc-non-private-member-variables-in-classes,
+  -modernize-return-braced-init-list,
+  -modernize-use-trailing-return-type,
+  -modernize-avoid-c-arrays,
+  -performance-move-const-arg,
+  -readability-braces-around-statements,
+  -readability-magic-numbers,
+  -readability-named-parameter,
+  -readability-redundant-declaration
+HeaderFilterRegex: "(src/api/).*\\.h$"
 CheckOptions:
   - key: bugprone-argument-comment.StrictMode
     value: 1
