@@ -22,7 +22,7 @@ public:
    * All of these parameters contain only public information. The GaloisKeys
    * and RelinKeys are part of the CKKS scheme's "evaluation keys".
    */
-  HomomorphicEval(const std::shared_ptr<seal::SEALContext> c, seal::CKKSEncoder &encoder, seal::Encryptor &encryptor,
+  HomomorphicEval(const std::shared_ptr<seal::SEALContext> &c, seal::CKKSEncoder &encoder, seal::Encryptor &encryptor,
                   const seal::GaloisKeys &gkeys, const seal::RelinKeys &relin_keys, bool verbose=false);
 
   /* For documentation on the API, see ../evaluator.h */

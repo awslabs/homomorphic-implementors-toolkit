@@ -7,7 +7,7 @@
 using namespace std;
 using namespace seal;
 
-CKKSDecryptor::CKKSDecryptor(const shared_ptr<SEALContext> context, CKKSEncoder *enc, const SecretKey &secret_key):
+CKKSDecryptor::CKKSDecryptor(const shared_ptr<SEALContext> &context, CKKSEncoder *enc, const SecretKey &secret_key):
   encoder(enc), context(context) {
   decryptor = new Decryptor(context, secret_key);
 }

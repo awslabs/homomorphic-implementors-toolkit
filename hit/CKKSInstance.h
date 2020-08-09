@@ -94,7 +94,7 @@ public:
 
   ~CKKSInstance();
 
-  void encryptMatrix(const Matrix, CKKSCiphertext &destination, int level = -1);
+  void encryptMatrix(const Matrix&, CKKSCiphertext &destination, int level = -1);
 
   /* Encrypt a C++ vector representing a linear algebra column vector.
    * We first encode the vector as a matrix
@@ -146,7 +146,7 @@ private:
 
   // generate all keys
   CKKSInstance(int numSlots, int multDepth, int logScale, bool verbose,
-               bool useSEALParams, bool debug, std::vector<int> galois_steps);
+               bool useSEALParams, bool debug, std::vector<int> &galois_steps);
 
   // loading an instance from streams
   CKKSInstance(std::istream &paramsStream, std::istream *galoisKeyStream,
@@ -180,4 +180,4 @@ uint64_t estimateKeySize(int numGaloisShift, int ptslots, int depth);
 // `mode` can be `NORMAL`, `DEBUG`, or `NONEVALUATION`. `NORMAL` results in a standard homomorphic evaluator, while `DEBUG` loads a debug evaluator.
 // `NONEVALUATION` is useful for cliend-side computation which don't need to perform any evaluation. A `NONEVALUATION` instance can
 // *ONLY* be used for encryption and decryption.
-CKKSInstance* tryLoadInstance(int numSlots, int multDepth, int logScale, Mode mode, std::vector<int> galois_steps=std::vector<int>());
+CKKSInstance* tryLoadInstance(int numSlots, int multDepth, int logScale, Mode mode, const std::vector<int> &galois_steps=std::vector<int>());

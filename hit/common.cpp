@@ -58,7 +58,7 @@ void printElapsedTime(timepoint start) {
   cout << elapsedTimeToStr(start,end) << endl;
 }
 
-vector<double> decodePlaintext(const vector<double> x, CTEncoding enc,
+vector<double> decodePlaintext(const vector<double> &x, CTEncoding enc,
                                int height, int width, int encoded_height, int encoded_width) {
   vector<double> dest;
 

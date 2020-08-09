@@ -33,7 +33,7 @@ void printElapsedTime(timepoint start);
 
 typedef boost::variate_generator<boost::mt19937&, boost::uniform_int<> > RndGen; // NOLINT(modernize-use-using)
 
-std::vector<double> decodePlaintext(const std::vector<double> x, CTEncoding enc,
+std::vector<double> decodePlaintext(const std::vector<double> &x, CTEncoding enc,
                                     int height, int width, int encoded_height, int encoded_width);
 
 // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.

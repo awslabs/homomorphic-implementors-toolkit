@@ -12,7 +12,7 @@ Helper function: Prints the parameters in a SEALContext.
 
 Copied from SEAL ./native/examples/examples.h
 */
-inline void print_parameters(std::shared_ptr<seal::SEALContext> context)
+inline void print_parameters(const std::shared_ptr<seal::SEALContext> &context)
 {
     // Verify parameters
     if (!context)
@@ -90,7 +90,7 @@ inline std::ostream &operator<<(std::ostream &stream, seal::parms_id_type parms_
 /*
 Helper function: Fetch the last prime given SEALContext and heLevel.
 */
-inline std::uint64_t getLastPrime(std::shared_ptr<seal::SEALContext> context, const int heLevel) {
+inline std::uint64_t getLastPrime(const std::shared_ptr<seal::SEALContext> &context, const int heLevel) {
   auto context_data = context->first_context_data();
   while (context_data->chain_index() >= heLevel) {
       if (context_data->chain_index() == heLevel) {

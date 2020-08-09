@@ -7,17 +7,17 @@
 using namespace std;
 using namespace seal;
 
-CKKSEncryptor::CKKSEncryptor(const shared_ptr<SEALContext> context, int numSlots, bool includePlaintext):
+CKKSEncryptor::CKKSEncryptor(const shared_ptr<SEALContext> &context, int numSlots, bool includePlaintext):
     encoder(nullptr), encryptor(nullptr), context(context), numSlots(numSlots) {
   mode = includePlaintext ? ENC_PLAIN : ENC_META;
 }
 
-CKKSEncryptor::CKKSEncryptor(const shared_ptr<SEALContext> context, CKKSEncoder *enc, Encryptor *encryptor, bool debug):
+CKKSEncryptor::CKKSEncryptor(const shared_ptr<SEALContext> &context, CKKSEncoder *enc, Encryptor *encryptor, bool debug):
     encoder(enc), encryptor(encryptor), context(context), numSlots(encoder->slot_count()) {
   mode = debug ? ENC_DEBUG : ENC_NORMAL;
 }
 
-void CKKSEncryptor::encryptMatrix(const Matrix mat, double scale, CKKSCiphertext &destination, int lvl) {
+void CKKSEncryptor::encryptMatrix(const Matrix &mat, double scale, CKKSCiphertext &destination, int lvl) {
   // in ENC_META, CKKSInstance sets numSlots to 4096 and doesn't actually attempt to calcuate the correct value.
   // We have to ignore that case here. Otherwise, matrix size should exactly equal the number of slots.
   if(mode != ENC_META && mat.size1()*mat.size2() != numSlots) {

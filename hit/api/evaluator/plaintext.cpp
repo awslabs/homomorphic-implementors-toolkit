@@ -11,7 +11,7 @@ using namespace seal;
 // This is an approximation of -infity, since infNorm(x) >= 0 = 2^-infinity
 double initialPtMaxLog = -100;
 
-PlaintextEval::PlaintextEval(const shared_ptr<SEALContext> c, bool verbose):
+PlaintextEval::PlaintextEval(const shared_ptr<SEALContext> &c, bool verbose):
   CKKSEvaluator(c, verbose), ptMaxLog(initialPtMaxLog) { }
 
 PlaintextEval::~PlaintextEval() = default;

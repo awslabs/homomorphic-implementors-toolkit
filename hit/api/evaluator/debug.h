@@ -19,7 +19,7 @@
 class DebugEval: public CKKSEvaluator
 {
 public:
-  DebugEval(const std::shared_ptr<seal::SEALContext> c, seal::CKKSEncoder &enc, seal::Encryptor &encryptor,
+  DebugEval(const std::shared_ptr<seal::SEALContext> &c, seal::CKKSEncoder &enc, seal::Encryptor &encryptor,
             const seal::GaloisKeys &gkeys, const seal::RelinKeys &relin_keys,
             double scale, CKKSDecryptor &d, bool verbose);
 

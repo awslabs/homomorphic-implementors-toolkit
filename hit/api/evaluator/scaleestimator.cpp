@@ -9,7 +9,7 @@
 using namespace std;
 using namespace seal;
 
-ScaleEstimator::ScaleEstimator(const shared_ptr<SEALContext> c, int poly_deg, double baseScale, bool verbose):
+ScaleEstimator::ScaleEstimator(const shared_ptr<SEALContext> &c, int poly_deg, double baseScale, bool verbose):
   CKKSEvaluator(c, verbose), baseScale(baseScale), poly_deg(poly_deg) {
   ptEval = new PlaintextEval(c,verbose);
   dfEval = new DepthFinder(c,verbose);

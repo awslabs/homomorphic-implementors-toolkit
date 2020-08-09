@@ -12,7 +12,7 @@
 class PlaintextEval: public CKKSEvaluator
 {
 public:
-  PlaintextEval(const std::shared_ptr<seal::SEALContext> c, bool verbose);
+  PlaintextEval(const std::shared_ptr<seal::SEALContext> &c, bool verbose);
 
   /* For documentation on the API, see ../evaluator.h */
   ~PlaintextEval() override;

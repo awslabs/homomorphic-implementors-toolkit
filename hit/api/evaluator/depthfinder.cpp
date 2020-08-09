@@ -6,7 +6,7 @@
 using namespace std;
 using namespace seal;
 
-DepthFinder::DepthFinder(const shared_ptr<SEALContext> c, bool verbose): CKKSEvaluator(c, verbose), multiplicativeDepth(0) { }
+DepthFinder::DepthFinder(const shared_ptr<SEALContext> &c, bool verbose): CKKSEvaluator(c, verbose), multiplicativeDepth(0) { }
 
 DepthFinder::~DepthFinder() = default;
 

@@ -287,7 +287,7 @@ void CKKSInstance::save(ostream *paramsStream, ostream *galoisKeyStream,
 }
 
 CKKSInstance::CKKSInstance(int numSlots, int multDepth, int logScale, bool verbose,
-                           bool useSEALParams, bool debug, vector<int> galois_steps) {
+                           bool useSEALParams, bool debug, vector<int> &galois_steps) {
   sharedParamInit(numSlots, multDepth, logScale, useSEALParams, true);
 
   int numGaloisKeys = galois_steps.size();
@@ -467,7 +467,7 @@ void CKKSInstance::setMaxVal(const vector<double> &plain) {
   }
 }
 
-void CKKSInstance::encryptMatrix(const Matrix mat, CKKSCiphertext &destination, int level) {
+void CKKSInstance::encryptMatrix(const Matrix &mat, CKKSCiphertext &destination, int level) {
   encryptor->encryptMatrix(mat, pow(2.0, logScale), destination, level);
   setMaxVal(mat.data());
   encryptionCount++;
@@ -547,7 +547,7 @@ void CKKSInstance::printOpCount() const {
   throw invalid_argument("CKKSInstance: You cannot call printOpCount unless using the OpCount evaluator!");
 }
 
-CKKSInstance* tryLoadInstance(int numSlots, int multDepth, int logScale, Mode mode, vector<int> galois_steps) {
+CKKSInstance* tryLoadInstance(int numSlots, int multDepth, int logScale, Mode mode, const vector<int> &galois_steps) {
   string keydir = "keys";
 
   string paramID = to_string(2*numSlots)+"-"+to_string(multDepth + 2)+"-"+to_string(logScale);

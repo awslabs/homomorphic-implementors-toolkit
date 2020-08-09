@@ -18,7 +18,7 @@
 
 class CKKSDecryptor {
 public:
-  CKKSDecryptor(const std::shared_ptr<seal::SEALContext> context, seal::CKKSEncoder *enc, const seal::SecretKey &secret_key);
+  CKKSDecryptor(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder *enc, const seal::SecretKey &secret_key);
 
   ~CKKSDecryptor();
 

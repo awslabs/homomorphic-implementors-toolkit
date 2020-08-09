@@ -26,7 +26,7 @@ Matrix colVecToMatrix(const std::vector<double> &x, int height);
  * return a single matrix [ A_0 | A_1 | ... | A_n ] that concatenates
  * the matrices horizontally.
  */
-Matrix matrixRowConcat(const std::vector<Matrix> xs);
+Matrix matrixRowConcat(const std::vector<Matrix> &xs);
 
 Matrix hadamard_prod(const Matrix &a, const Matrix &b);
 

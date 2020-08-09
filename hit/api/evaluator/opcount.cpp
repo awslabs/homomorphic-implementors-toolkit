@@ -7,7 +7,7 @@
 using namespace std;
 using namespace seal;
 
-OpCount::OpCount(const shared_ptr<SEALContext> c, bool verbose): CKKSEvaluator(c, verbose) {
+OpCount::OpCount(const shared_ptr<SEALContext> &c, bool verbose): CKKSEvaluator(c, verbose) {
   dfEval = new DepthFinder(c,verbose);
 }
 

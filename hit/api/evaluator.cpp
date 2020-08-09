@@ -11,7 +11,7 @@
 using namespace std;
 using namespace seal;
 
-CKKSEvaluator::CKKSEvaluator(const std::shared_ptr<seal::SEALContext> context, bool verbose): context(context), verbose(verbose) { }
+CKKSEvaluator::CKKSEvaluator(const std::shared_ptr<seal::SEALContext> &context, bool verbose): context(context), verbose(verbose) { }
 
 CKKSEvaluator::~CKKSEvaluator() = default;
 

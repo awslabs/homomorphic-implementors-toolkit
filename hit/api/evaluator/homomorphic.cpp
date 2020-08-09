@@ -11,7 +11,7 @@
 using namespace std;
 using namespace seal;
 
-HomomorphicEval::HomomorphicEval(const shared_ptr<SEALContext> c, CKKSEncoder &encoder, Encryptor &encryptor,
+HomomorphicEval::HomomorphicEval(const shared_ptr<SEALContext> &c, CKKSEncoder &encoder, Encryptor &encryptor,
                                  const GaloisKeys &gkeys, const RelinKeys &rkeys, bool verbose):
   /* This evaluator never prints anything, so CKKSEvaluator can be non-verbose */
   CKKSEvaluator(c, verbose), evaluator(c), encoder(encoder), encryptor(encryptor),

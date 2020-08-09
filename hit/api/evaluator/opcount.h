@@ -13,7 +13,7 @@
 class OpCount: public CKKSEvaluator
 {
 public:
-  OpCount(const std::shared_ptr<seal::SEALContext> c, bool verbose);
+  OpCount(const std::shared_ptr<seal::SEALContext> &c, bool verbose);
 
   /* For documentation on the API, see ../evaluator.h */
   ~OpCount() override;

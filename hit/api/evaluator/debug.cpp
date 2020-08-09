@@ -9,7 +9,7 @@
 using namespace std;
 using namespace seal;
 
-DebugEval::DebugEval(const shared_ptr<SEALContext> c, CKKSEncoder &encoder, Encryptor &encryptor,
+DebugEval::DebugEval(const shared_ptr<SEALContext> &c, CKKSEncoder &encoder, Encryptor &encryptor,
                      const GaloisKeys &gkeys, const RelinKeys &rkeys,
                      double scale, CKKSDecryptor &d, bool verbose):
   CKKSEvaluator(c, verbose), decryptor(d), initScale(scale) {
