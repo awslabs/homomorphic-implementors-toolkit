@@ -1,13 +1,14 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-FROM ubuntu-18.04:gcc-9x as ci-base
+FROM ubuntu-18.04:base as ci-base
 
 SHELL ["/bin/bash", "-c"]
 
 RUN set -ex && \
-    apt-get -y --no-install-recommends install clang-10 && \
+	apt-get update && \
+    apt-get -y --no-install-recommends install clang clang-10 && \
     update-alternatives --install /usr/bin/clang clang /usr/bin/clang-10 90 --slave /usr/bin/clang++ clang++ /usr/bin/clang-cpp-10
 
-ENV CC=clang-10
-ENV CXX=clang-cpp-10
+ENV CC=clang
+ENV CXX=clang++
