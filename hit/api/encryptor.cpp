@@ -2,15 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "encryptor.h"
+
+#include <utility>
 #include "../common.h"
 
-CKKSEncryptor::CKKSEncryptor(const std::shared_ptr<seal::SEALContext> &context, int numSlots, bool includePlaintext):
-    encoder(nullptr), encryptor(nullptr), context(context), numSlots(numSlots) {
+CKKSEncryptor::CKKSEncryptor(std::shared_ptr<seal::SEALContext> context, int numSlots, bool includePlaintext):
+    encoder(nullptr), encryptor(nullptr), context(std::move(context)), numSlots(numSlots) {
   mode = includePlaintext ? ENC_PLAIN : ENC_META;
 }
 
-CKKSEncryptor::CKKSEncryptor(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder *enc, seal::Encryptor *encryptor, bool debug):
-    encoder(enc), encryptor(encryptor), context(context), numSlots(encoder->slot_count()) {
+CKKSEncryptor::CKKSEncryptor(std::shared_ptr<seal::SEALContext> context, seal::CKKSEncoder *enc, seal::Encryptor *encryptor, bool debug):
+    encoder(enc), encryptor(encryptor), context(std::move(context)), numSlots(encoder->slot_count()) {
   mode = debug ? ENC_DEBUG : ENC_NORMAL;
 }
 

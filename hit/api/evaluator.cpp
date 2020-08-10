@@ -6,9 +6,11 @@
  */
 
 #include "evaluator.h"
+
+#include <utility>
 #include "../common.h"
 
-CKKSEvaluator::CKKSEvaluator(const std::shared_ptr<seal::SEALContext> &context, bool verbose): context(context), verbose(verbose) { }
+CKKSEvaluator::CKKSEvaluator(std::shared_ptr<seal::SEALContext> context, bool verbose): context(std::move(context)), verbose(verbose) { }
 
 CKKSEvaluator::~CKKSEvaluator() = default;
 

@@ -133,7 +133,7 @@ protected:
   virtual void relinearize_inplace_internal(CKKSCiphertext &encrypted) = 0;
   virtual void reset_internal() = 0;
 
-  CKKSEvaluator(const std::shared_ptr<seal::SEALContext> &context, bool verbose);
+  CKKSEvaluator(std::shared_ptr<seal::SEALContext> context, bool verbose);
 
   ContextDataPtr getContextData(const CKKSCiphertext &c);
 
