@@ -54,7 +54,7 @@ int CKKSCiphertext::getLevel(const std::shared_ptr<seal::SEALContext> &context) 
 }
 
 std::vector<double> CKKSCiphertext::getPlaintext() const {
-  if(encoded_pt.size() == 0) {
+  if(encoded_pt.empty()) {
     throw std::invalid_argument("This ciphertext does not contain the raw plaintext. Use a different evaluator/encryptor in order to track the plaintext computation.");
   }
 
