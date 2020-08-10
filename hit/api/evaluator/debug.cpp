@@ -10,10 +10,10 @@ using namespace std;
 using namespace seal;
 
 DebugEval::DebugEval(const shared_ptr<SEALContext> &c, CKKSEncoder &encoder, Encryptor &encryptor,
-                     const GaloisKeys &gkeys, const RelinKeys &rkeys,
+                     const GaloisKeys &gkeys, const RelinKeys &relin_keys,
                      double scale, CKKSDecryptor &d, bool verbose):
   CKKSEvaluator(c, verbose), decryptor(d), initScale(scale) {
-  heEval = new HomomorphicEval(c, encoder, encryptor, gkeys, rkeys, verbose);
+  heEval = new HomomorphicEval(c, encoder, encryptor, gkeys, relin_keys, verbose);
   seEval = new ScaleEstimator(c, 2*encoder.slot_count(), scale, verbose);
 }
 
@@ -120,9 +120,9 @@ void DebugEval::print_stats(const CKKSCiphertext &c) {
   VERBOSE(cout << endl);
 }
 
-CKKSCiphertext DebugEval::merge_cts(const CKKSCiphertext &ct_he, const CKKSCiphertext &ct_se) const {
-  CKKSCiphertext t = ct_he;
-  t.copyMetadataFrom(ct_se);
+CKKSCiphertext DebugEval::merge_cts(const CKKSCiphertext &c1, const CKKSCiphertext &c2) const {
+  CKKSCiphertext t = c1;
+  t.copyMetadataFrom(c2);
   return t;
 }
 

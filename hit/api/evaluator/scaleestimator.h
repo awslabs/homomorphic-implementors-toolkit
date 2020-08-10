@@ -61,7 +61,7 @@ protected:
 
   void modDownTo_internal(CKKSCiphertext &x, const CKKSCiphertext &target) override;
 
-  void modDownToMin_internal(CKKSCiphertext &x, CKKSCiphertext &target) override;
+  void modDownToMin_internal(CKKSCiphertext &x, CKKSCiphertext &y) override;
 
   CKKSCiphertext modDownToLevel_internal(const CKKSCiphertext &x, int level) override;
 

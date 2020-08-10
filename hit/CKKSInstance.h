@@ -155,7 +155,7 @@ private:
 
   int genModulusVec(int levels, std::vector<int> &modulusVector);
   void setMaxVal(const std::vector<double> &plain);
-  void sharedParamInit(int numSlots, int multDepth, int logScale, bool useSEALParams, bool verbose);
+  void sharedParamInit(int numSlots, int multDepth, int logScaleIn, bool useSEALParams, bool verbose);
   protobuf::hit::CKKSParams saveCKKSParams();
 
   seal::Encryptor *sealEncryptor;
