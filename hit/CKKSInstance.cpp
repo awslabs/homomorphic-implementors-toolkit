@@ -291,7 +291,7 @@ CKKSInstance::CKKSInstance(int numSlots, int multDepth, int logScale, bool verbo
 
   int numGaloisKeys = galois_steps.size();
   std::cout << "Generating keys for " << numSlots << " slots and depth " << multDepth <<
-          ", including " << (numGaloisKeys ? std::to_string(numGaloisKeys) : "all") << " Galois keys." << std::endl;
+          ", including " << (numGaloisKeys != 0 ? std::to_string(numGaloisKeys) : "all") << " Galois keys." << std::endl;
 
   double keysSizeBytes = estimateKeySize(galois_steps.size(), numSlots, multDepth);
   std::cout << "Estimated size is " << std::setprecision(3);
