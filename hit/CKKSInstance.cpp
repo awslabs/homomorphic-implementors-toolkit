@@ -201,8 +201,9 @@ CKKSInstance::CKKSInstance(std::istream &paramsStream, std::istream *galoisKeySt
   logScale = ckksParams.logscale();
   int numSlots = ckksParams.numslots();
   int poly_modulus_degree = numSlots*2;
-  std::vector<seal::Modulus> modulusVector;
   int numPrimes = ckksParams.modulusvec_size();
+  std::vector<seal::Modulus> modulusVector;
+  modulusVector.reserve(numPrimes);
   for(int i = 0; i < numPrimes; i++) {
     modulusVector.push_back(seal::Modulus(ckksParams.modulusvec(i)));
   }

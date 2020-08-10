@@ -291,7 +291,7 @@ Matrix ctDecryptedToMatrix(CKKSInstance &inst, CKKSCiphertext &x) {
 // Extract the debug plaintext from each ciphertext and concatenate the results side-by-side.
 Matrix ctPlaintextToMatrix(std::vector<CKKSCiphertext> &xs) {
   std::vector<Matrix> mats;
-
+  mats.reserve(xs.size());
   for(auto & x : xs) {
     mats.push_back(ctPlaintextToMatrix(x));
   }
@@ -310,7 +310,7 @@ Vector ctPlaintextToVector(std::vector<CKKSCiphertext> &xs) {
 // Decrypt each ciphertext and concatenate the results side-by-side.
 Matrix ctDecryptedToMatrix(CKKSInstance &inst, std::vector<CKKSCiphertext> &xs) {
   std::vector<Matrix> mats;
-
+  mats.reserve(xs.size());
   for(auto & x : xs) {
     mats.push_back(ctDecryptedToMatrix(inst, x));
   }
