@@ -3,11 +3,9 @@
 
 #include "matrix.h"
 
-using namespace std;
-
 // create a matrix where each column is the input vector
-Matrix rowVecToMatrix(const vector<double> &x, int width) {
-  vector<double> y;
+Matrix rowVecToMatrix(const std::vector<double> &x, int width) {
+  std::vector<double> y;
   y.reserve(width*x.size());
   for(double value : x) {
     for(int j = 0; j < width; j++) {
@@ -19,9 +17,9 @@ Matrix rowVecToMatrix(const vector<double> &x, int width) {
   return temp;
 }
 
-// create a matrix where each row is the input vector
-Matrix colVecToMatrix(const vector<double> &x, int height) {
-  vector<double> y;
+// create a matrix where each row is the input std::vector
+Matrix colVecToMatrix(const std::vector<double> &x, int height) {
+  std::vector<double> y;
   y.reserve(height*x.size());
   for(int i = 0; i < height; i++) {
     for(double v : x) {
@@ -33,9 +31,9 @@ Matrix colVecToMatrix(const vector<double> &x, int height) {
   return temp;
 }
 
-Matrix matrixRowConcat(const vector<Matrix> &xs) {
+Matrix matrixRowConcat(const std::vector<Matrix> &xs) {
   if(xs.empty()) {
-    throw invalid_argument("matrixRowConcat: xs cannot be empty");
+    throw std::invalid_argument("matrixRowConcat: xs cannot be empty");
   }
   int h = xs[0].size1();
 
@@ -43,11 +41,11 @@ Matrix matrixRowConcat(const vector<Matrix> &xs) {
   for(int i = 1; i < xs.size(); i++) {
     totalWidth += xs[i].size2();
     if(xs[i].size1() != h) {
-      throw invalid_argument("matrixRowConcat: all xs must have the same height");
+      throw std::invalid_argument("matrixRowConcat: all xs must have the same height");
     }
   }
 
-  vector<double> cmatdata;
+  std::vector<double> cmatdata;
   for(int row = 0; row < h; row++) {
     for(const auto & x : xs) {
       int w = x.size2();
@@ -63,16 +61,16 @@ Matrix matrixRowConcat(const vector<Matrix> &xs) {
 
 Matrix hadamard_prod(const Matrix &a, const Matrix &b) {
   if(a.size1() != b.size1()) {
-    throw invalid_argument("hadamard_prod: height mismatch");
+    throw std::invalid_argument("hadamard_prod: height mismatch");
   }
   if(a.size2() != b.size2()) {
-    throw invalid_argument("hadamard_prod: width mismatch");
+    throw std::invalid_argument("hadamard_prod: width mismatch");
   }
   if(a.data().size() != b.data().size()) {
-    throw invalid_argument("hadamard_prod: data size mismatch");
+    throw std::invalid_argument("hadamard_prod: data size mismatch");
   }
 
-  vector<double> result;
+  std::vector<double> result;
 
   for(int i = 0; i < a.data().size(); i++) {
     result.push_back(a.data()[i] * b.data()[i]);
@@ -82,7 +80,7 @@ Matrix hadamard_prod(const Matrix &a, const Matrix &b) {
   return temp;
 }
 
-Vector fromStdVector(const vector<double> &v) {
+Vector fromStdVector(const std::vector<double> &v) {
   Vector temp(v.size());
   temp.data() = v;
   return temp;

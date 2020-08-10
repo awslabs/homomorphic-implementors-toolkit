@@ -6,10 +6,7 @@
 #include "../../sealutils.h"
 #include <iomanip>
 
-using namespace std;
-using namespace seal;
-
-ScaleEstimator::ScaleEstimator(const shared_ptr<SEALContext> &c, int poly_deg, double baseScale, bool verbose):
+ScaleEstimator::ScaleEstimator(const std::shared_ptr<seal::SEALContext> &c, int poly_deg, double baseScale, bool verbose):
   CKKSEvaluator(c, verbose), baseScale(baseScale), poly_deg(poly_deg) {
   ptEval = new PlaintextEval(c,verbose);
   dfEval = new DepthFinder(c,verbose);
@@ -44,10 +41,10 @@ void ScaleEstimator::print_stats(const CKKSCiphertext &c) {
   for(const auto &prime : context_data->parms().coeff_modulus()) {
     logModulus += log2(prime.value());
   }
-  cout << "    + Plaintext logmax: " << log2(exactPlaintextMaxVal) <<
-          " bits (scaled: " << log2(c.scale)+log2(exactPlaintextMaxVal) << " bits)" << endl;
-  cout << "    + Total modulus size: " << setprecision(4) << logModulus << " bits" << endl;
-  cout << "    + Theoretical max log scale: " << getEstimatedMaxLogScale() << " bits" << endl;
+  std::cout << "    + Plaintext logmax: " << log2(exactPlaintextMaxVal) <<
+          " bits (scaled: " << log2(c.scale)+log2(exactPlaintextMaxVal) << " bits)" << std::endl;
+  std::cout << "    + Total modulus size: " << std::setprecision(4) << logModulus << " bits" << std::endl;
+  std::cout << "    + Theoretical max log scale: " << getEstimatedMaxLogScale() << " bits" << std::endl;
 }
 
 // At all times, we need c.scale*lInfNorm(c.getPlaintext()) <~ q/4
@@ -60,17 +57,17 @@ void ScaleEstimator::updateMaxLogScale(const CKKSCiphertext &c) {
   // update the estimatedMaxLogScale
   int scaleExp = round(log2(c.scale)/log2(baseScale));
   if(scaleExp != 1 && scaleExp != 2) {
-    stringstream buffer;
+    std::stringstream buffer;
     buffer << "INTERNAL ERROR: scaleExp is not 1 or 2: got " << scaleExp << "\t" << log2(c.scale) << "\t" << log2(baseScale);
-    throw invalid_argument(buffer.str());
+    throw std::invalid_argument(buffer.str());
   }
   if (scaleExp > c.heLevel) {
-    estimatedMaxLogScale = min(estimatedMaxLogScale, (PLAINTEXT_LOG_MAX-log2(lInfNorm(c.getPlaintext())))/(scaleExp-c.heLevel));
+    estimatedMaxLogScale = std::min(estimatedMaxLogScale, (PLAINTEXT_LOG_MAX-log2(lInfNorm(c.getPlaintext())))/(scaleExp-c.heLevel));
   }
   else if(scaleExp == c.heLevel && log2(lInfNorm(c.getPlaintext())) > PLAINTEXT_LOG_MAX) {
-    stringstream buffer;
+    std::stringstream buffer;
     buffer << "Plaintext exceeded " << PLAINTEXT_LOG_MAX << " bits, which exceeds SEAL's capacity. Overflow is imminent.";
-    throw invalid_argument(buffer.str());
+    throw std::invalid_argument(buffer.str());
   }
   // else: scaleExp < c.heLevel.
   // In this case, the constraint becomes estimatedMaxLogScale > (something less than 0).
@@ -133,7 +130,7 @@ CKKSCiphertext ScaleEstimator::multiply_plain_scalar_internal(const CKKSCipherte
   return dest;
 }
 
-CKKSCiphertext ScaleEstimator::multiply_plain_mat_internal(const CKKSCiphertext &encrypted, const vector<double> &plain) {
+CKKSCiphertext ScaleEstimator::multiply_plain_mat_internal(const CKKSCiphertext &encrypted, const std::vector<double> &plain) {
   // recursive call up the stack
   CKKSCiphertext dest_df = dfEval->multiply_plain_mat_internal(encrypted, plain);
   CKKSCiphertext dest_pt = ptEval->multiply_plain_mat_internal(encrypted, plain);
@@ -141,7 +138,7 @@ CKKSCiphertext ScaleEstimator::multiply_plain_mat_internal(const CKKSCiphertext 
 
   double plain_max = 0;
   for(int i = 0; i < encrypted.height*encrypted.width; i++) {
-    plain_max = max(plain_max, abs(plain[i]));
+    plain_max = std::max(plain_max, abs(plain[i]));
   }
   dest.scale = encrypted.scale * encrypted.scale;
   updateMaxLogScale(dest);
@@ -177,7 +174,7 @@ CKKSCiphertext ScaleEstimator::square_internal(const CKKSCiphertext &ciphertext)
 void ScaleEstimator::modDownTo_internal(CKKSCiphertext &x, const CKKSCiphertext &target) {
 
   if(x.heLevel == target.heLevel && x.scale != target.scale) {
-    throw invalid_argument("modDownTo: levels match, but scales do not.");
+    throw std::invalid_argument("modDownTo: levels match, but scales do not.");
   }
 
   // recursive call up the stack
@@ -193,7 +190,7 @@ void ScaleEstimator::modDownTo_internal(CKKSCiphertext &x, const CKKSCiphertext 
 
 void ScaleEstimator::modDownToMin_internal(CKKSCiphertext &x, CKKSCiphertext &y) {
   if(x.heLevel == y.heLevel && x.scale != y.scale) {
-    throw invalid_argument("modDownToMin: levels match, but scales do not.");
+    throw std::invalid_argument("modDownToMin: levels match, but scales do not.");
   }
 
   if(x.heLevel > y.heLevel) {
@@ -218,7 +215,7 @@ CKKSCiphertext ScaleEstimator::modDownToLevel_internal(const CKKSCiphertext &x, 
   int lvlDiff = x.heLevel-level;
 
   if(level < 0) {
-    throw invalid_argument("modDownToLevel: level must be >= 0.");
+    throw std::invalid_argument("modDownToLevel: level must be >= 0.");
   }
 
   // recursive call up the stack
@@ -267,7 +264,7 @@ void ScaleEstimator::updatePlaintextMaxVal(double x) {
   // and if the scale is ~2^60, encoding will (rightly) fail
   int topHELevel = context->first_context_data()->chain_index();
   if (topHELevel == 0) {
-    estimatedMaxLogScale = min(estimatedMaxLogScale, (PLAINTEXT_LOG_MAX-log2(x)));
+    estimatedMaxLogScale = std::min(estimatedMaxLogScale, (PLAINTEXT_LOG_MAX-log2(x)));
   }
 }
 
@@ -290,9 +287,9 @@ double ScaleEstimator::getEstimatedMaxLogScale() const {
   int topHELevel = context->first_context_data()->chain_index();
 
   if(topHELevel > 0) {
-    return min((double)PLAINTEXT_LOG_MAX, min(estimatedMaxLogScale, (maxModBits-120)/(double)topHELevel));
+    return std::min((double)PLAINTEXT_LOG_MAX, std::min(estimatedMaxLogScale, (maxModBits-120)/(double)topHELevel));
   }
   else {
-    return min((double)PLAINTEXT_LOG_MAX,estimatedMaxLogScale);
+    return std::min((double)PLAINTEXT_LOG_MAX,estimatedMaxLogScale);
   }
 }

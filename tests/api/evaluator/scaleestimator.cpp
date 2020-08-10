@@ -10,8 +10,6 @@
 #include "sealutils.h"
 #include "api/ciphertext.h"
 
-using namespace std;
-
 // Test variables.
 const bool VERBOSE = false;
 const int DEFAULT_LOG_SCALE = 30;
@@ -24,7 +22,7 @@ const double PLAINTEXT_LOG_MAX = 59;
 const double VALUE = 4;
 const double PLAIN_TEXT = 2;
 const int STEPS = 1;
-const vector<double> VECTOR_1(NUM_OF_SLOTS, VALUE);
+const std::vector<double> VECTOR_1(NUM_OF_SLOTS, VALUE);
 
 TEST(ScaleEstimatorTest, RotateVectorLeft) {
     CKKSInstance *ckksInstance = CKKSInstance::getNewScaleEstimatorInstance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, VERBOSE);

@@ -4,15 +4,12 @@
 #include "encryptor.h"
 #include "../common.h"
 
-using namespace std;
-using namespace seal;
-
-CKKSEncryptor::CKKSEncryptor(const shared_ptr<SEALContext> &context, int numSlots, bool includePlaintext):
+CKKSEncryptor::CKKSEncryptor(const std::shared_ptr<seal::SEALContext> &context, int numSlots, bool includePlaintext):
     encoder(nullptr), encryptor(nullptr), context(context), numSlots(numSlots) {
   mode = includePlaintext ? ENC_PLAIN : ENC_META;
 }
 
-CKKSEncryptor::CKKSEncryptor(const shared_ptr<SEALContext> &context, CKKSEncoder *enc, Encryptor *encryptor, bool debug):
+CKKSEncryptor::CKKSEncryptor(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder *enc, seal::Encryptor *encryptor, bool debug):
     encoder(enc), encryptor(encryptor), context(context), numSlots(encoder->slot_count()) {
   mode = debug ? ENC_DEBUG : ENC_NORMAL;
 }
@@ -23,7 +20,7 @@ void CKKSEncryptor::encryptMatrix(const Matrix &mat, double scale, CKKSCiphertex
   if(mode != ENC_META && mat.size1()*mat.size2() != numSlots) {
     // bad things can happen if you don't plan for your matrix to be smaller than the ciphertext
     // This forces the caller to ensure that the matrix has the correct size or is at least appropriately padded
-    throw invalid_argument("You can only encode matrices which exactly fit in the ciphertext: Expected " + to_string(numSlots) + ", got " + to_string(mat.size1()*mat.size2()));
+    throw std::invalid_argument("You can only encode matrices which exactly fit in the ciphertext: Expected " + std::to_string(numSlots) + ", got " + std::to_string(mat.size1()*mat.size2()));
   }
 
   destination.height = mat.size1();
@@ -56,13 +53,13 @@ void CKKSEncryptor::encryptMatrix(const Matrix &mat, double scale, CKKSCiphertex
   }
   // Only set the ciphertext in Normal or Debug modes
   if(mode == ENC_NORMAL || mode == ENC_DEBUG) {
-    Plaintext temp;
+    seal::Plaintext temp;
     encoder->encode(mat.data(), context_data->parms_id(), scale, temp);
     encryptor->encrypt(temp, destination.sealct);
   }
 }
 
-void CKKSEncryptor::encryptColVec(const vector<double> &plain, int matHeight, double scale, CKKSCiphertext &destination, int lvl) {
+void CKKSEncryptor::encryptColVec(const std::vector<double> &plain, int matHeight, double scale, CKKSCiphertext &destination, int lvl) {
   Matrix encodedVec = colVecToMatrix(plain, matHeight);
   encryptMatrix(encodedVec, scale, destination, lvl);
   destination.encoding = COL_VEC;
@@ -70,7 +67,7 @@ void CKKSEncryptor::encryptColVec(const vector<double> &plain, int matHeight, do
   destination.width = 1;
 }
 
-void CKKSEncryptor::encryptRowVec(const vector<double> &plain, int matWidth, double scale, CKKSCiphertext &destination, int lvl) {
+void CKKSEncryptor::encryptRowVec(const std::vector<double> &plain, int matWidth, double scale, CKKSCiphertext &destination, int lvl) {
   Matrix encodedVec = rowVecToMatrix(plain, matWidth);
   encryptMatrix(encodedVec, scale, destination, lvl);
   destination.encoding = ROW_VEC;

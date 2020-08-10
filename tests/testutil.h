@@ -3,8 +3,6 @@
 
 #include <iostream>
 
-using namespace std;
-
 inline uint32_t createRandomPositiveInt(const int mod = 100) {
     srand(time(nullptr));
     return rand() % mod + 1;

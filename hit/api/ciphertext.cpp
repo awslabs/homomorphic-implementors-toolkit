@@ -4,9 +4,6 @@
 #include "ciphertext.h"
 #include "../common.h"
 
-using namespace std;
-using namespace seal;
-
 // these values will be properly initilized by the implicit
 // copy constructor or during encryption.
 CKKSCiphertext::CKKSCiphertext():
@@ -26,10 +23,10 @@ void CKKSCiphertext::copyMetadataFrom(const CKKSCiphertext &src) {
   scale = src.scale;
 }
 
-CKKSCiphertext::CKKSCiphertext(shared_ptr<SEALContext> &context,
+CKKSCiphertext::CKKSCiphertext(std::shared_ptr<seal::SEALContext> &context,
   const protobuf::hit::Ciphertext &c) {
   if(c.version() != 0) {
-    throw invalid_argument("CKKSCiphertext serialization: Expected version 0");
+    throw std::invalid_argument("CKKSCiphertext serialization: Expected version 0");
   }
 
   height = c.height();
@@ -47,18 +44,18 @@ CKKSCiphertext::CKKSCiphertext(shared_ptr<SEALContext> &context,
       encoded_pt[i] = c.encoded_pt(i);
     }
 
-    istringstream ctstream(c.sealct());
+    std::istringstream ctstream(c.sealct());
     sealct.load(context, ctstream);
   }
 }
 
-int CKKSCiphertext::getLevel(const shared_ptr<SEALContext> &context) const {
+int CKKSCiphertext::getLevel(const std::shared_ptr<seal::SEALContext> &context) const {
   return context->get_context_data(sealct.parms_id())->chain_index();
 }
 
-vector<double> CKKSCiphertext::getPlaintext() const {
+std::vector<double> CKKSCiphertext::getPlaintext() const {
   if(encoded_pt.size() == 0) {
-    throw invalid_argument("This ciphertext does not contain the raw plaintext. Use a different evaluator/encryptor in order to track the plaintext computation.");
+    throw std::invalid_argument("This ciphertext does not contain the raw plaintext. Use a different evaluator/encryptor in order to track the plaintext computation.");
   }
 
   return decodePlaintext(encoded_pt.data(), encoding, height, width, encoded_height, encoded_width);
@@ -81,7 +78,7 @@ void CKKSCiphertext::save(protobuf::hit::Ciphertext *c) const {
   c->set_helevel(heLevel);
 
   if(encoding != UNINITIALIZED) {
-    ostringstream sealctBuf;
+    std::ostringstream sealctBuf;
     sealct.save(sealctBuf);
     c->set_sealct(sealctBuf.str());
 

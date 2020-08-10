@@ -5,13 +5,10 @@
 #include "../../common.h"
 #include <iomanip>
 
-using namespace std;
-using namespace seal;
-
 // This is an approximation of -infity, since infNorm(x) >= 0 = 2^-infinity
 double initialPtMaxLog = -100;
 
-PlaintextEval::PlaintextEval(const shared_ptr<SEALContext> &c, bool verbose):
+PlaintextEval::PlaintextEval(const std::shared_ptr<seal::SEALContext> &c, bool verbose):
   CKKSEvaluator(c, verbose), ptMaxLog(initialPtMaxLog) { }
 
 PlaintextEval::~PlaintextEval() = default;
@@ -23,44 +20,44 @@ void PlaintextEval::reset_internal() {
 // print some debug info
 void PlaintextEval::print_stats(const CKKSCiphertext &c) {
   // extract just the elements we care about from the real plaintext
-  vector<double> exactPlaintext = c.getPlaintext();
+  std::vector<double> exactPlaintext = c.getPlaintext();
   double exactPlaintextMaxVal = lInfNorm(exactPlaintext);
-  cout << "    + Plaintext dimension: " << c.height << "x" << c.width << endl;
-  cout << "    + Scale: " << setprecision(4) << log2(c.scale) << " bits" << endl;
-  cout << "    + Exact plaintext logmax: " << log2(exactPlaintextMaxVal) << " bits (scaled: " <<
-          log2(c.scale)+log2(exactPlaintextMaxVal) << " bits)" << endl;
+  std::cout << "    + Plaintext dimension: " << c.height << "x" << c.width << std::endl;
+  std::cout << "    + Scale: " << std::setprecision(4) << log2(c.scale) << " bits" << std::endl;
+  std::cout << "    + Exact plaintext logmax: " << log2(exactPlaintextMaxVal) << " bits (scaled: " <<
+          log2(c.scale)+log2(exactPlaintextMaxVal) << " bits)" << std::endl;
 
   int maxPrintSize = 8;
-  cout << "    + Exact plaintext: < ";
-  for(int j = 0; j < min(maxPrintSize, (int)exactPlaintext.size()); j++) {
-    cout << setprecision(8) << exactPlaintext[j] << ", ";
+  std::cout << "    + Exact plaintext: < ";
+  for(int j = 0; j < std::min(maxPrintSize, (int)exactPlaintext.size()); j++) {
+    std::cout << std::setprecision(8) << exactPlaintext[j] << ", ";
   }
   if (exactPlaintext.size() > maxPrintSize) {
-    cout << "... ";
+    std::cout << "... ";
   }
-  cout << ">" << endl;
+  std::cout << ">" << std::endl;
 }
 
 void PlaintextEval::updateMaxLogPlainVal(const CKKSCiphertext &c) {
   double exactPlaintextMaxVal = lInfNorm(c.getPlaintext());
-  //cout << "Updating ptMaxVal: " << log2(exactPlaintextMaxVal) << endl;
+  //std::cout << "Updating ptMaxVal: " << log2(exactPlaintextMaxVal) << std::endl;
 
-  ptMaxLog = max(ptMaxLog, log2(exactPlaintextMaxVal));
+  ptMaxLog = std::max(ptMaxLog, log2(exactPlaintextMaxVal));
 }
 
 void PlaintextEval::updatePlaintextMaxVal(double x) {
   // takes the actual max value, we need to set the log of it
-  ptMaxLog = max(ptMaxLog, log2(x));
+  ptMaxLog = std::max(ptMaxLog, log2(x));
 }
 
 CKKSCiphertext PlaintextEval::rotate_vector_right_internal(const CKKSCiphertext &encrypted, int steps) {
   CKKSCiphertext dest = encrypted;
-  vector<double> rot_temp;
-  // reserve a full-size vector
+  std::vector<double> rot_temp;
+  // reserve a full-size std::vector
   int pt_size = encrypted.encoded_pt.size();
   rot_temp.reserve(pt_size);
 
-  // the `for` loop adds elements to the back of the vector
+  // the `for` loop adds elements to the back of the std::vector
   // we start by adding elements from the end of `encrypted.encoded_pt`
   for(int i = pt_size-steps; i < pt_size; i++) {
     rot_temp.push_back(encrypted.encoded_pt[i]);
@@ -78,8 +75,8 @@ CKKSCiphertext PlaintextEval::rotate_vector_right_internal(const CKKSCiphertext 
 
 CKKSCiphertext PlaintextEval::rotate_vector_left_internal(const CKKSCiphertext &encrypted, int steps) {
   CKKSCiphertext dest = encrypted;
-  vector<double> rot_temp;
-  // reserve a full-size vector
+  std::vector<double> rot_temp;
+  // reserve a full-size std::vector
   int pt_size = encrypted.encoded_pt.size();
   rot_temp.reserve(pt_size);
   // start filling from the offset
@@ -122,15 +119,15 @@ CKKSCiphertext PlaintextEval::multiply_plain_scalar_internal(const CKKSCiphertex
   return dest;
 }
 
-CKKSCiphertext PlaintextEval::multiply_plain_mat_internal(const CKKSCiphertext &encrypted, const vector<double> &plain) {
+CKKSCiphertext PlaintextEval::multiply_plain_mat_internal(const CKKSCiphertext &encrypted, const std::vector<double> &plain) {
   CKKSCiphertext dest = encrypted;
-  Plaintext temp;
-  vector<double> temp_dec = plain;
+  seal::Plaintext temp;
+  std::vector<double> temp_dec = plain;
 
   if(plain.size() != encrypted.encoded_pt.size()) {
-    stringstream buffer;
+    std::stringstream buffer;
     buffer << "plaintext.multiply_plain_mat_internal: public input has the wrong size: " << plain.size() << " != " << encrypted.encoded_pt.size();
-    throw invalid_argument(buffer.str());
+    throw std::invalid_argument(buffer.str());
   }
 
   for(int i = 0; i < encrypted.encoded_pt.size(); i++) {
@@ -143,7 +140,7 @@ CKKSCiphertext PlaintextEval::multiply_plain_mat_internal(const CKKSCiphertext &
 
 CKKSCiphertext PlaintextEval::multiply_internal(const CKKSCiphertext &encrypted1, const CKKSCiphertext &encrypted2) {
   if(encrypted1.encoded_pt.size() != encrypted2.encoded_pt.size()) {
-    throw invalid_argument("INTERNAL ERROR: Plaintext size mismatch");
+    throw std::invalid_argument("INTERNAL ERROR: Plaintext size mismatch");
   }
   CKKSCiphertext dest = encrypted1;
   for(int i = 0; i < encrypted1.encoded_pt.size(); i++) {

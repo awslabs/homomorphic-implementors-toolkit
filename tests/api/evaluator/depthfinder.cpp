@@ -8,15 +8,13 @@
 #include "CKKSInstance.h"
 #include "api/ciphertext.h"
 
-using namespace std;
-
 // Test variables.
 const bool VERBOSE = false;
 const int SIZE = 4096;
 const double VALUE = 1;
 const double PLAIN_TEXT = 1;
 const int STEPS = 1;
-const vector<double> VECTOR_1(SIZE, VALUE);
+const std::vector<double> VECTOR_1(SIZE, VALUE);
 
 TEST(DepthFinderTest, RotateVectorLeft) {
     CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
@@ -68,7 +66,7 @@ TEST(DepthFinderTest, AddCiphertextWithDiffHeLevel) {
     ASSERT_THROW((
         // Expect invalid_argument is thrown because heLevel of the two ciphertexts is different.
         ckksInstance->evaluator->add(ciphertext1, ciphertext2)
-        ), invalid_argument);
+        ), std::invalid_argument);
 }
 
 TEST(DepthFinderTest, MultiplyPlainScalar) {
@@ -111,7 +109,7 @@ TEST(DepthFinderTest, Multiply_InvalidCase) {
     ASSERT_THROW((
         // Expect invalid_argument is thrown because heLevel of the two ciphertexts is different.
         ckksInstance->evaluator->multiply(ciphertext1, ciphertext2)
-        ), invalid_argument);
+        ), std::invalid_argument);
 }
 
 TEST(DepthFinderTest, Square) {
@@ -147,7 +145,7 @@ TEST(DepthFinderTest, ModDownTo_InvalidCase) {
     ASSERT_THROW((
         // Expect invalid_argument is thrown because the heLevel of second argument is larger.
         ckksInstance->evaluator->modDownTo(ciphertext1, ciphertext2)
-        ), invalid_argument);
+        ), std::invalid_argument);
 }
 
 TEST(DepthFinderTest, ModDownToMin) {
@@ -184,7 +182,7 @@ TEST(DepthFinderTest, ModDownToLevel_InvalidCase) {
     ASSERT_THROW((
         // Expect invalid_argument is thrown when cipherText is mod to higher level.
         ckksInstance->evaluator->modDownToLevel(ciphertext1, heLevel + 1)
-        ), invalid_argument);
+        ), std::invalid_argument);
 }
 
 TEST(DepthFinderTest, RescaleToNextInPlace) {

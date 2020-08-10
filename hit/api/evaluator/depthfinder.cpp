@@ -3,10 +3,7 @@
 
 #include "depthfinder.h"
 
-using namespace std;
-using namespace seal;
-
-DepthFinder::DepthFinder(const shared_ptr<SEALContext> &c, bool verbose): CKKSEvaluator(c, verbose), multiplicativeDepth(0) { }
+DepthFinder::DepthFinder(const std::shared_ptr<seal::SEALContext> &c, bool verbose): CKKSEvaluator(c, verbose), multiplicativeDepth(0) { }
 
 DepthFinder::~DepthFinder() = default;
 
@@ -16,7 +13,7 @@ void DepthFinder::reset_internal() {
 
 // print some debug info
 void DepthFinder::print_stats(const CKKSCiphertext &c) {
-  cout << "    + Level: " << c.heLevel << endl;
+  std::cout << "    + Level: " << c.heLevel << std::endl;
 }
 
 CKKSCiphertext DepthFinder::rotate_vector_right_internal(const CKKSCiphertext &encrypted, int) {
@@ -37,9 +34,9 @@ CKKSCiphertext DepthFinder::add_plain_scalar_internal(const CKKSCiphertext &encr
 CKKSCiphertext DepthFinder::add_internal(const CKKSCiphertext &encrypted1, const CKKSCiphertext &encrypted2) {
   // check that ciphertexts are at the same level to avoid an obscure SEAL error
   if(encrypted1.heLevel != encrypted2.heLevel) {
-    stringstream buffer;
+    std::stringstream buffer;
     buffer << "PPLR: Error in DepthFinder::add: input levels do not match: " << encrypted1.heLevel << " != " << encrypted2.heLevel;
-    throw invalid_argument(buffer.str());
+    throw std::invalid_argument(buffer.str());
   }
   VERBOSE(print_stats(encrypted1));
   return encrypted1;
@@ -58,9 +55,9 @@ CKKSCiphertext DepthFinder::multiply_plain_mat_internal(const CKKSCiphertext &en
 CKKSCiphertext DepthFinder::multiply_internal(const CKKSCiphertext &encrypted1, const CKKSCiphertext &encrypted2) {
   // check that ciphertexts are at the same level to avoid an obscure SEAL error
   if(encrypted1.heLevel != encrypted2.heLevel) {
-    stringstream buffer;
+    std::stringstream buffer;
     buffer <<"PPLR: Error in DepthFinder::multiply: input levels do not match: " << encrypted1.heLevel << " != " << encrypted2.heLevel;
-    throw invalid_argument(buffer.str());
+    throw std::invalid_argument(buffer.str());
   }
   VERBOSE(print_stats(encrypted1));
   return encrypted1;
@@ -76,13 +73,13 @@ void DepthFinder::modDownTo_internal(CKKSCiphertext &x, const CKKSCiphertext &ta
     x.heLevel = target.heLevel;
   }
   else {
-    throw invalid_argument("x level is below target level");
+    throw std::invalid_argument("x level is below target level");
   }
   VERBOSE(print_stats(x));
 }
 
 void DepthFinder::modDownToMin_internal(CKKSCiphertext &x, CKKSCiphertext &target) {
-  int minLevel = min(x.heLevel, target.heLevel);
+  int minLevel = std::min(x.heLevel, target.heLevel);
   x.heLevel = minLevel;
   target.heLevel = minLevel;
   // doesn't matter which input I print stats for since we only
@@ -96,7 +93,7 @@ CKKSCiphertext DepthFinder::modDownToLevel_internal(const CKKSCiphertext &x, int
     y.heLevel = level;
   }
   else {
-    throw invalid_argument("x level is below target level");
+    throw std::invalid_argument("x level is below target level");
   }
   VERBOSE(print_stats(y));
   return y;
@@ -105,7 +102,7 @@ CKKSCiphertext DepthFinder::modDownToLevel_internal(const CKKSCiphertext &x, int
 void DepthFinder::rescale_to_next_inplace_internal(CKKSCiphertext &encrypted) {
   int topHELevel = context->first_context_data()->chain_index();
   encrypted.heLevel--;
-  multiplicativeDepth = max(multiplicativeDepth, topHELevel-encrypted.heLevel);
+  multiplicativeDepth = std::max(multiplicativeDepth, topHELevel-encrypted.heLevel);
   VERBOSE(print_stats(encrypted));
 }
 
@@ -114,5 +111,3 @@ void DepthFinder::relinearize_inplace_internal(CKKSCiphertext &) {}
 int DepthFinder::getMultiplicativeDepth() const {
   return multiplicativeDepth;
 }
-
-
