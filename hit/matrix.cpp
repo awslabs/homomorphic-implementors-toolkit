@@ -71,7 +71,7 @@ Matrix hadamard_prod(const Matrix &a, const Matrix &b) {
   }
 
   std::vector<double> result;
-
+  result.reserve(a.data().size());
   for(int i = 0; i < a.data().size(); i++) {
     result.push_back(a.data()[i] * b.data()[i]);
   }
