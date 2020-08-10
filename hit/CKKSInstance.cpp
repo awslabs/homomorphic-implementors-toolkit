@@ -486,9 +486,7 @@ std::vector<double> CKKSInstance::decrypt(const CKKSCiphertext &encrypted, bool 
   if(mode == NORMAL || mode == DEBUG || mode == NONEVALUATION) {
     return decryptor->decrypt(encrypted, verbose);
   }
-  else {
-    throw std::invalid_argument("CKKSInstance: You cannot call decrypt unless using the Homomorphic or Debug evaluators!");
-  }
+  throw std::invalid_argument("CKKSInstance: You cannot call decrypt unless using the Homomorphic or Debug evaluators!");
 }
 
 int CKKSInstance::plaintextDim() const {

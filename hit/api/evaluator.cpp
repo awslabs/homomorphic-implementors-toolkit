@@ -25,11 +25,9 @@ bool CKKSEvaluator::is_valid_args(const CKKSCiphertext &ct1, const CKKSCiphertex
             (ct1.height == ct2.height) &&
             (ct1.width  == ct2.width ));
   }
-  else {
-    return ((ct1.encoded_height == ct2.encoded_height) &&
+  return ((ct1.encoded_height == ct2.encoded_height) &&
             (ct1.encoded_width  == ct2.encoded_width ) &&
             (ct1.width == ct2.height));
-  }
 }
 
 CKKSCiphertext CKKSEvaluator::rotate_vector_right(const CKKSCiphertext &encrypted, int steps) {

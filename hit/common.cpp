@@ -133,7 +133,7 @@ bool isPow2(int x) {
   if (x < 1) {
     return false;
   }
-  else if (x == 1) {
+  else if (x == 1) { // NOLINT(readability-else-after-return)
     return true;
   }
   // x > 1 and not 0 mod 2 => not a power of 2
@@ -147,7 +147,7 @@ bool isPow2(int x) {
 
 int polyDegreeToMaxModBits(int poly_modulus_degree) {
   if(poly_modulus_degree == 1024)       { return 27;  }
-  else if(poly_modulus_degree == 2048)  { return 54;  }
+  else if(poly_modulus_degree == 2048)  { return 54;  } // NOLINT(readability-else-after-return)
   else if(poly_modulus_degree == 4096)  { return 109; }
   else if(poly_modulus_degree == 8192)  { return 218; }
   else if(poly_modulus_degree == 16384) { return 438; }
@@ -186,7 +186,7 @@ int modulusToPolyDegree(int modBits) {
   //     | 32768               | 881                          |
   //     +---------------------+------------------------------+
   if(modBits <= 27)       { return 1024; }
-  else if(modBits <= 54)  { return 2048; }
+  else if(modBits <= 54)  { return 2048; } // NOLINT(readability-else-after-return)
   else if(modBits <= 109) { return 4096; }
   else if(modBits <= 218) { return 8192; }
   else if(modBits <= 438) { return 16384; }
