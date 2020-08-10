@@ -30,7 +30,7 @@ void DebugEval::checkScale(const CKKSCiphertext &x) const {
   auto context_data = context->first_context_data();
   double expectedScale = initScale;
   while (context_data->chain_index() > x.heLevel) {
-    expectedScale = (expectedScale*expectedScale) / (double)context_data->parms().coeff_modulus().back().value();
+    expectedScale = (expectedScale*expectedScale) / static_cast<double>(context_data->parms().coeff_modulus().back().value());
     context_data = context_data->next_context_data();
   }
   if(x.sealct.scale() != expectedScale && x.sealct.scale() != expectedScale*expectedScale) {
@@ -57,7 +57,7 @@ void DebugEval::print_stats(const CKKSCiphertext &c) {
 
   int maxPrintSize = 8;
   VERBOSE(std::cout << "    + Homom Result:   < ");
-  for(int i = 0; i < std::min(maxPrintSize, (int)homomPlaintext.size()); i++) {
+  for(int i = 0; i < std::min(maxPrintSize, static_cast<int>(homomPlaintext.size())); i++) {
     VERBOSE(std::cout << std::setprecision(8) << homomPlaintext[i] << ", ");
   }
   if (homomPlaintext.size() > maxPrintSize) {
@@ -72,7 +72,7 @@ void DebugEval::print_stats(const CKKSCiphertext &c) {
 
     maxPrintSize = 32;
     std::cout << "    + DEBUG Expected result: <";
-    for(int i = 0; i < std::min(maxPrintSize,(int)exactPlaintext.size()); i++) {
+    for(int i = 0; i < std::min(maxPrintSize, static_cast<int>(exactPlaintext.size())); i++) {
       std::cout << std::setprecision(8) << exactPlaintext[i];
       if(i < exactPlaintext.size()-1) {
         std::cout << ", ";
@@ -84,7 +84,7 @@ void DebugEval::print_stats(const CKKSCiphertext &c) {
     std::cout << ">" << std::endl;
 
     std::cout << "    + DEBUG Actual result:   <";
-    for(int i = 0; i < std::min(maxPrintSize,(int)homomPlaintext.size()); i++) {
+    for(int i = 0; i < std::min(maxPrintSize, static_cast<int>(homomPlaintext.size())); i++) {
       std::cout << std::setprecision(8) << homomPlaintext[i];
       if(i < exactPlaintext.size()-1) {
         std::cout << ", ";

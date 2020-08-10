@@ -286,10 +286,9 @@ double ScaleEstimator::getEstimatedMaxLogScale() const {
   int maxModBits = polyDegreeToMaxModBits(poly_deg);
   int topHELevel = context->first_context_data()->chain_index();
 
+  double estimated_log_scale = std::min(static_cast<double>(PLAINTEXT_LOG_MAX),estimatedMaxLogScale);
   if(topHELevel > 0) {
-    return std::min((double)PLAINTEXT_LOG_MAX, std::min(estimatedMaxLogScale, (maxModBits-120)/(double)topHELevel));
+    return std::min(estimated_log_scale, (maxModBits-120)/static_cast<double>(topHELevel));
   }
-  else {
-    return std::min((double)PLAINTEXT_LOG_MAX,estimatedMaxLogScale);
-  }
+  return estimated_log_scale;
 }

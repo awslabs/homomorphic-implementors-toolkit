@@ -9,7 +9,7 @@ uint64_t elapsedTimeMs(timepoint start, timepoint end) {
 }
 
 std::string elapsedTimeToStr(timepoint start, timepoint end, TimeScale ts) {
-  auto elapsedMs = (double)elapsedTimeMs(start, end);
+  auto elapsedMs = static_cast<double>(elapsedTimeMs(start, end));
   std::stringstream buffer;
   double msPerSec = 1000;
   double msPerMin = 60 * msPerSec;
@@ -261,7 +261,7 @@ std::vector<double> randomVector(int dim, double maxNorm) {
 
   for(int i = 0; i < dim; i++) {
     // generate a random double between -maxNorm and maxNorm
-    double a = -maxNorm + (((double)random())/((double)RAND_MAX))*(2*maxNorm);
+    double a = -maxNorm + ((static_cast<double>(random()))/(static_cast<double>(RAND_MAX)))*(2*maxNorm);
     x.push_back(a);
   }
   return x;

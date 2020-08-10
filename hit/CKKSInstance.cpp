@@ -436,7 +436,7 @@ int CKKSInstance::genModulusVec(int levels, std::vector<int> &modulusVector) {
     modulusVector.push_back(logScale);
   }
   // The special modulus has to be as large as the largest prime in the chain.
-  modulusVector.push_back(std::max(60, (int)logScale));
+  modulusVector.push_back(std::max(60, static_cast<int>(logScale)));
 
   return modBits;
 }

@@ -29,7 +29,7 @@ void PlaintextEval::print_stats(const CKKSCiphertext &c) {
 
   int maxPrintSize = 8;
   std::cout << "    + Exact plaintext: < ";
-  for(int j = 0; j < std::min(maxPrintSize, (int)exactPlaintext.size()); j++) {
+  for(int j = 0; j < std::min(maxPrintSize, static_cast<int>(exactPlaintext.size())); j++) {
     std::cout << std::setprecision(8) << exactPlaintext[j] << ", ";
   }
   if (exactPlaintext.size() > maxPrintSize) {

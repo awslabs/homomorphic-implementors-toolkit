@@ -36,7 +36,7 @@ void CKKSEncryptor::encryptMatrix(const Matrix &mat, double scale, CKKSCiphertex
   auto context_data = context->first_context_data();
   while (context_data->chain_index() > lvl) {
     // order of operations is very important: floating point arithmetic is not associative
-    scale = (scale*scale) / (double)context_data->parms().coeff_modulus().back().value();
+    scale = (scale*scale) / static_cast<double>(context_data->parms().coeff_modulus().back().value());
     context_data = context_data->next_context_data();
   }
 
