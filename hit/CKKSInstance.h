@@ -101,7 +101,7 @@ public:
    * where each row is `plain`; see pplr.cpp for details.
    * This requires the target matrix height as a parameter.
    */
-  void encryptColVec(const std::vector<double> &plain, const int matHeight,
+  void encryptColVec(const std::vector<double> &plain, int matHeight,
                      CKKSCiphertext &destination, int level = -1);
 
   /* Encrypt a C++ vector representing a linear algebra row vector.
@@ -109,7 +109,7 @@ public:
    * where each column is `plain`; see pplr.cpp for details.
    * This requires the target matrix width as a parameter.
    */
-  void encryptRowVec(const std::vector<double> &plain, const int matWidth,
+  void encryptRowVec(const std::vector<double> &plain, int matWidth,
                      CKKSCiphertext &destination, int level = -1);
 
   // verbose flag enables a warning if you decrypt when the ciphertext is not at level 0
