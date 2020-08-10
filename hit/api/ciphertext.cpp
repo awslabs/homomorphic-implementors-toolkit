@@ -7,7 +7,7 @@
 // these values will be properly initilized by the implicit
 // copy constructor or during encryption.
 CKKSCiphertext::CKKSCiphertext():
-  sealct(), height(0), width(0), encoded_height(0), encoded_width(0),
+  height(0), width(0), encoded_height(0), encoded_width(0),
   encoding(UNINITIALIZED), heLevel(0), scale(0) { }
 
 
