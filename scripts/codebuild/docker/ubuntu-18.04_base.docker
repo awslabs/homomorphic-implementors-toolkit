@@ -20,6 +20,8 @@ RUN set -ex && \
     libcurl4-openssl-dev \
     libmsgsl-dev \
     libssl-dev \
+    git \
+    libboost-all-dev \
     curl \
     ca-certificates && \
     cd /tmp && \
