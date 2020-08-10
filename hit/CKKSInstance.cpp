@@ -205,7 +205,8 @@ CKKSInstance::CKKSInstance(std::istream &paramsStream, std::istream *galoisKeySt
   std::vector<seal::Modulus> modulusVector;
   modulusVector.reserve(numPrimes);
   for(int i = 0; i < numPrimes; i++) {
-    modulusVector.push_back(seal::Modulus(ckksParams.modulusvec(i)));
+    auto val = seal::Modulus(ckksParams.modulusvec(i));
+    modulusVector.push_back(val);
   }
 
   params = new seal::EncryptionParameters(seal::scheme_type::CKKS);
