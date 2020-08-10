@@ -134,12 +134,12 @@ public:
   // reuse this instance for another computation
   void reset();
 
-private:
   CKKSInstance(const CKKSInstance &) = delete;
   CKKSInstance& operator=(const CKKSInstance&) = delete;
   CKKSInstance(CKKSInstance&&) = delete;
   CKKSInstance& operator=(CKKSInstance&&) = delete;
 
+private:
   // instances without keys
   CKKSInstance(Mode m, int numSlots, int multDepth, int logScale,
                bool verbose, bool useSEALParams);
