@@ -65,7 +65,7 @@ vector<double> CKKSCiphertext::getPlaintext() const {
 }
 
 protobuf::hit::Ciphertext* CKKSCiphertext::save() const {
-  protobuf::hit::Ciphertext *c = new protobuf::hit::Ciphertext();
+  auto *c = new protobuf::hit::Ciphertext();
   save(c);
   return c;
 }

@@ -11,7 +11,7 @@ uint64_t elapsedTimeMs(timepoint start, timepoint end) {
 }
 
 string elapsedTimeToStr(timepoint start, timepoint end, TimeScale ts) {
-  double elapsedMs = (double)elapsedTimeMs(start, end);
+  auto elapsedMs = (double)elapsedTimeMs(start, end);
   stringstream buffer;
   double msPerSec = 1000;
   double msPerMin = 60 * msPerSec;

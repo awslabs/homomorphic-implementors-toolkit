@@ -448,17 +448,17 @@ void CKKSInstance::setMaxVal(const vector<double> &plain) {
 
   switch(mode) {
     case SCALE: {
-      ScaleEstimator *e = dynamic_cast<ScaleEstimator*>(evaluator);
+      auto *e = dynamic_cast<ScaleEstimator*>(evaluator);
       e->updatePlaintextMaxVal(maxVal);
       break;
     }
     case DEBUG: {
-      DebugEval *e = dynamic_cast<DebugEval*>(evaluator);
+      auto *e = dynamic_cast<DebugEval*>(evaluator);
       e->updatePlaintextMaxVal(maxVal);
       break;
     }
     case PLAINTEXT: {
-      PlaintextEval *e = dynamic_cast<PlaintextEval*>(evaluator);
+      auto *e = dynamic_cast<PlaintextEval*>(evaluator);
       e->updatePlaintextMaxVal(maxVal);
       break;
     }
@@ -499,11 +499,11 @@ int CKKSInstance::plaintextDim() const {
 
 double CKKSInstance::getEstimatedMaxLogScale() const {
   if(mode == SCALE) {
-    ScaleEstimator *e = dynamic_cast<ScaleEstimator*>(evaluator);
+    auto *e = dynamic_cast<ScaleEstimator*>(evaluator);
     return e->getEstimatedMaxLogScale();
   }
   if(mode == DEBUG) {
-    DebugEval *e = dynamic_cast<DebugEval*>(evaluator);
+    auto *e = dynamic_cast<DebugEval*>(evaluator);
     return e->getEstimatedMaxLogScale();
   }
   throw invalid_argument("CKKSInstance: You cannot call getEstimatedMaxLogScale unless using the ScaleEstimator or DebugEval evaluator!");
@@ -511,15 +511,15 @@ double CKKSInstance::getEstimatedMaxLogScale() const {
 
 double CKKSInstance::getExactMaxLogPlainVal() const {
   if(mode == SCALE) {
-    ScaleEstimator *e = dynamic_cast<ScaleEstimator*>(evaluator);
+    auto *e = dynamic_cast<ScaleEstimator*>(evaluator);
     return e->getExactMaxLogPlainVal();
   }
   if(mode == PLAINTEXT) {
-    PlaintextEval *e = dynamic_cast<PlaintextEval*>(evaluator);
+    auto *e = dynamic_cast<PlaintextEval*>(evaluator);
     return e->getExactMaxLogPlainVal();
   }
   if(mode == DEBUG) {
-    DebugEval *e = dynamic_cast<DebugEval*>(evaluator);
+    auto *e = dynamic_cast<DebugEval*>(evaluator);
     return e->getExactMaxLogPlainVal();
   }
   throw invalid_argument("CKKSInstance: You cannot call getEstimatedMaxLogScale unless using the ScaleEstimator or DebugEval evaluator!");
@@ -527,11 +527,11 @@ double CKKSInstance::getExactMaxLogPlainVal() const {
 
 int CKKSInstance::getMultiplicativeDepth() const {
   if(mode == DEPTH) {
-    DepthFinder *e = dynamic_cast<DepthFinder*>(evaluator);
+    auto *e = dynamic_cast<DepthFinder*>(evaluator);
     return e->getMultiplicativeDepth();
   }
   if(mode == OPCOUNT) {
-    OpCount *e = dynamic_cast<OpCount*>(evaluator);
+    auto *e = dynamic_cast<OpCount*>(evaluator);
     return e->getMultiplicativeDepth();
   }
   throw invalid_argument("CKKSInstance: You cannot call getMultiplicativeDepth unless using the DepthFinder evaluator!");
@@ -539,7 +539,7 @@ int CKKSInstance::getMultiplicativeDepth() const {
 
 void CKKSInstance::printOpCount() const {
   if(mode == OPCOUNT) {
-    OpCount *e = dynamic_cast<OpCount*>(evaluator);
+    auto *e = dynamic_cast<OpCount*>(evaluator);
     cout  << endl << "Encryptions: " << encryptionCount;
     e->printOpCount();
     return;
