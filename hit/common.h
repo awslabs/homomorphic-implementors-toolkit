@@ -9,7 +9,7 @@
 #include <chrono>
 #include "CKKSInstance.h"
 
-typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<long int, std::ratio<1, 1000000000> > > timepoint; // NOLINT(modernize-use-using)
+typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<int64_t, std::ratio<1, 1000000000> > > timepoint; // NOLINT(modernize-use-using)
 
 
 enum TimeScale {TS_MS,TS_SEC,TS_MIN,TS_DYNAMIC};
