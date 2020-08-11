@@ -46,7 +46,7 @@ struct CKKSCiphertext {
   // A default constructor is useful since we often write, e.g, `Ciphertext &a;`
   CKKSCiphertext();
 
-  CKKSCiphertext(std::shared_ptr<seal::SEALContext> &context, const protobuf::hit::Ciphertext &c);
+  CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context, const protobuf::hit::Ciphertext &proto_ct);
 
   // Copy all members except the ciphertext itself
   void copyMetadataFrom(const CKKSCiphertext &src);
@@ -61,5 +61,5 @@ struct CKKSCiphertext {
   std::vector<double> getPlaintext() const;
 
   protobuf::hit::Ciphertext* save() const;
-  void save(protobuf::hit::Ciphertext *c) const;
+  void save(protobuf::hit::Ciphertext *proto_ct) const;
 };

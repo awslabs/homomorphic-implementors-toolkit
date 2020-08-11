@@ -23,28 +23,28 @@ void CKKSCiphertext::copyMetadataFrom(const CKKSCiphertext &src) {
   scale = src.scale;
 }
 
-CKKSCiphertext::CKKSCiphertext(std::shared_ptr<seal::SEALContext> &context,
-  const protobuf::hit::Ciphertext &c) {
-  if(c.version() != 0) {
+CKKSCiphertext::CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context,
+  const protobuf::hit::Ciphertext &proto_ct) {
+  if(proto_ct.version() != 0) {
     throw std::invalid_argument("CKKSCiphertext serialization: Expected version 0");
   }
 
-  height = c.height();
-  width = c.width();
-  encoded_height = c.encoded_height();
-  encoded_width = c.encoded_width();
-  encoding = static_cast<CTEncoding>(c.encoding());
-  scale = c.scale();
-  heLevel = c.helevel();
+  height = proto_ct.height();
+  width = proto_ct.width();
+  encoded_height = proto_ct.encoded_height();
+  encoded_width = proto_ct.encoded_width();
+  encoding = static_cast<CTEncoding>(proto_ct.encoding());
+  scale = proto_ct.scale();
+  heLevel = proto_ct.helevel();
 
   if(encoding != UNINITIALIZED) {
-    int encoded_pt_size = c.encoded_pt_size();
+    int encoded_pt_size = proto_ct.encoded_pt_size();
     encoded_pt = Vector(encoded_pt_size);
     for(int i = 0; i < encoded_pt_size; i++) {
-      encoded_pt[i] = c.encoded_pt(i);
+      encoded_pt[i] = proto_ct.encoded_pt(i);
     }
 
-    std::istringstream ctstream(c.sealct());
+    std::istringstream ctstream(proto_ct.sealct());
     sealct.load(context, ctstream);
   }
 }
@@ -62,28 +62,28 @@ std::vector<double> CKKSCiphertext::getPlaintext() const {
 }
 
 protobuf::hit::Ciphertext* CKKSCiphertext::save() const {
-  auto *c = new protobuf::hit::Ciphertext();
-  save(c);
-  return c;
+  auto *proto_ct = new protobuf::hit::Ciphertext();
+  save(proto_ct);
+  return proto_ct;
 }
 
-void CKKSCiphertext::save(protobuf::hit::Ciphertext *c) const {
-  c->set_version(0);
-  c->set_height(height);
-  c->set_encoded_height(encoded_height);
-  c->set_width(width);
-  c->set_encoded_width(encoded_width);
-  c->set_encoding(encoding);
-  c->set_scale(scale);
-  c->set_helevel(heLevel);
+void CKKSCiphertext::save(protobuf::hit::Ciphertext *proto_ct) const {
+  proto_ct->set_version(0);
+  proto_ct->set_height(height);
+  proto_ct->set_encoded_height(encoded_height);
+  proto_ct->set_width(width);
+  proto_ct->set_encoded_width(encoded_width);
+  proto_ct->set_encoding(encoding);
+  proto_ct->set_scale(scale);
+  proto_ct->set_helevel(heLevel);
 
   if(encoding != UNINITIALIZED) {
     std::ostringstream sealctBuf;
     sealct.save(sealctBuf);
-    c->set_sealct(sealctBuf.str());
+    proto_ct->set_sealct(sealctBuf.str());
 
     for(double i : encoded_pt) {
-      c->add_encoded_pt(i);
+      proto_ct->add_encoded_pt(i);
     }
   }
 }
