@@ -292,7 +292,7 @@ Matrix ctDecryptedToMatrix(CKKSInstance &inst, const CKKSCiphertext &ct) {
 Matrix ctPlaintextToMatrix(const std::vector<CKKSCiphertext> &cts) {
   std::vector<Matrix> mats;
   mats.reserve(cts.size());
-  for(auto & ct : cts) {
+  for(const auto &ct : cts) {
     mats.push_back(ctPlaintextToMatrix(ct));
   }
   return matrixRowConcat(mats);
@@ -300,7 +300,7 @@ Matrix ctPlaintextToMatrix(const std::vector<CKKSCiphertext> &cts) {
 
 Vector ctPlaintextToVector(const std::vector<CKKSCiphertext> &cts) {
   std::vector<double> stdvec;
-  for(auto & ct : cts) {
+  for(const auto &ct : cts) {
     std::vector<double> v = ct.getPlaintext();
     stdvec.insert(stdvec.end(), v.begin(), v.end());
   }
@@ -311,7 +311,7 @@ Vector ctPlaintextToVector(const std::vector<CKKSCiphertext> &cts) {
 Matrix ctDecryptedToMatrix(CKKSInstance &inst, const std::vector<CKKSCiphertext> &cts) {
   std::vector<Matrix> mats;
   mats.reserve(cts.size());
-  for(auto & ct : cts) {
+  for(const auto &ct : cts) {
     mats.push_back(ctDecryptedToMatrix(inst, ct));
   }
 
@@ -320,7 +320,7 @@ Matrix ctDecryptedToMatrix(CKKSInstance &inst, const std::vector<CKKSCiphertext>
 
 Vector ctDecryptedToVector(CKKSInstance &inst, const std::vector<CKKSCiphertext> &cts) {
   std::vector<double> stdvec;
-  for(const auto & ct : cts) {
+  for(const auto &ct : cts) {
     std::vector<double> v = inst.decrypt(ct);
     stdvec.insert(stdvec.end(), v.begin(), v.end());
   }
