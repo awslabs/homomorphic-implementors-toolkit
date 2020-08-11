@@ -153,7 +153,7 @@ private:
                std::istream *relinKeyStream, std::istream *secretKeyStream,
                bool verbose, Mode m);
 
-  int genModulusVec(int levels, std::vector<int> &modulusVector);
+  int genModulusVec(int levels, std::vector<int> &modulusVector) const;
   void setMaxVal(const std::vector<double> &plain);
   void sharedParamInit(int numSlots, int multDepth, int logScaleIn, bool useSEALParams, bool verbose);
   protobuf::hit::CKKSParams saveCKKSParams();

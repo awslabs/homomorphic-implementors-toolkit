@@ -426,7 +426,7 @@ CKKSInstance::~CKKSInstance() {
   delete params;
 }
 
-int CKKSInstance::genModulusVec(int levels, std::vector<int> &modulusVector) {
+int CKKSInstance::genModulusVec(int levels, std::vector<int> &modulusVector) const {
 
   // covers the initial and final 60-bit modulus
   int modBits = 120;
