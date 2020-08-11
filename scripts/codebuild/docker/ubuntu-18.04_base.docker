@@ -21,7 +21,6 @@ RUN set -ex && \
     libmsgsl-dev \
     libssl-dev \
     git \
-    libboost-all-dev \
     curl \
     ca-certificates && \
     cd /tmp && \
