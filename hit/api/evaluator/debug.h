@@ -85,6 +85,7 @@ private:
   CKKSDecryptor &decryptor;
   void checkScale(const CKKSCiphertext &ct) const;
   double initScale;
+
+  CKKSCiphertext merge_cts(const CKKSCiphertext &ct_he, const CKKSCiphertext &ct_se) const; // NOLINT(readability-convert-member-functions-to-static)
 };
 
-CKKSCiphertext merge_cts(const CKKSCiphertext &ct_he, const CKKSCiphertext &ct_se);

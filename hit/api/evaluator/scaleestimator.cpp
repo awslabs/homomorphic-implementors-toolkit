@@ -74,7 +74,7 @@ void ScaleEstimator::updateMaxLogScale(const CKKSCiphertext &c) {
   // this is bogus, so nothing to do.
 }
 
-CKKSCiphertext merge_cts(const CKKSCiphertext &ct_df, const CKKSCiphertext &ct_pt) {
+CKKSCiphertext ScaleEstimator::merge_cts(const CKKSCiphertext &ct_df, const CKKSCiphertext &ct_pt) const {
   CKKSCiphertext t = ct_pt;
   t.he_level = ct_df.he_level;
   return t;

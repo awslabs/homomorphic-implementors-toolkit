@@ -82,7 +82,7 @@ private:
   const double baseScale;
   int poly_deg;
 
+  CKKSCiphertext merge_cts(const CKKSCiphertext &ct_df, const CKKSCiphertext &ct_pt) const; // NOLINT(readability-convert-member-functions-to-static)
+
   friend class DebugEval;
 };
-
-CKKSCiphertext merge_cts(const CKKSCiphertext &ct_df, const CKKSCiphertext &ct_pt);
