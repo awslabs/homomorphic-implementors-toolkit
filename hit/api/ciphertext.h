@@ -25,7 +25,7 @@
 enum CTEncoding { MATRIX, COL_VEC, ROW_VEC, COL_MAT, ROW_MAT, UNINITIALIZED };
 
 struct CKKSCiphertext {
-  seal::Ciphertext sealct;
+  seal::Ciphertext seal_ct;
   int height; // NOLINT(modernize-use-default-member-init)
   int width; // NOLINT(modernize-use-default-member-init)
   int encoded_height; // NOLINT(modernize-use-default-member-init)
@@ -35,7 +35,7 @@ struct CKKSCiphertext {
   // the next three items are for used by some evaluators to track additional metadata
 
   // heLevel is used by the depthFinder
-  int heLevel; // NOLINT(modernize-use-default-member-init)
+  int he_level; // NOLINT(modernize-use-default-member-init)
 
   // `plain` is used by the Plaintext evaluator
   Vector encoded_pt;

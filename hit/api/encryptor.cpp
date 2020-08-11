@@ -6,13 +6,13 @@
 #include <utility>
 #include "../common.h"
 
-CKKSEncryptor::CKKSEncryptor(std::shared_ptr<seal::SEALContext> context, int numSlots, bool includePlaintext):
+CKKSEncryptor::CKKSEncryptor(const std::shared_ptr<seal::SEALContext> &context, int numSlots, bool includePlaintext):
     encoder(nullptr), encryptor(nullptr), context(std::move(context)), numSlots(numSlots) {
   mode = includePlaintext ? ENC_PLAIN : ENC_META;
 }
 
-CKKSEncryptor::CKKSEncryptor(std::shared_ptr<seal::SEALContext> context, seal::CKKSEncoder *enc, seal::Encryptor *encryptor, bool debug):
-    encoder(enc), encryptor(encryptor), context(std::move(context)), numSlots(encoder->slot_count()) {
+CKKSEncryptor::CKKSEncryptor(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder *encoder, seal::Encryptor *encryptor, bool debug):
+    encoder(encoder), encryptor(encryptor), context(std::move(context)), numSlots(encoder->slot_count()) {
   mode = debug ? ENC_DEBUG : ENC_NORMAL;
 }
 
@@ -42,10 +42,10 @@ void CKKSEncryptor::encryptMatrix(const Matrix &mat, double scale, CKKSCiphertex
     context_data = context_data->next_context_data();
   }
 
-  // only set heLevel and scale if we aren't in Homomorphic mode
+  // only set he_level and scale if we aren't in Homomorphic mode
   if(mode != ENC_NORMAL) {
     // only for the DepthFinder evaluator
-    destination.heLevel = lvl;
+    destination.he_level = lvl;
     destination.scale = scale;
   }
   // Only set the plaintext in Plaintext or Debug modes
@@ -57,7 +57,7 @@ void CKKSEncryptor::encryptMatrix(const Matrix &mat, double scale, CKKSCiphertex
   if(mode == ENC_NORMAL || mode == ENC_DEBUG) {
     seal::Plaintext temp;
     encoder->encode(mat.data(), context_data->parms_id(), scale, temp);
-    encryptor->encrypt(temp, destination.sealct);
+    encryptor->encrypt(temp, destination.seal_ct);
   }
 }
 

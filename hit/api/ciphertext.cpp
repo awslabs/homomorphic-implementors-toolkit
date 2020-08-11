@@ -8,7 +8,7 @@
 // copy constructor or during encryption.
 CKKSCiphertext::CKKSCiphertext():
   height(0), width(0), encoded_height(0), encoded_width(0),
-  encoding(UNINITIALIZED), heLevel(0), scale(0) { }
+  encoding(UNINITIALIZED), he_level(0), scale(0) { }
 
 
 void CKKSCiphertext::copyMetadataFrom(const CKKSCiphertext &src) {
@@ -18,7 +18,7 @@ void CKKSCiphertext::copyMetadataFrom(const CKKSCiphertext &src) {
   encoded_width = src.encoded_width;
   encoded_height = src.encoded_height;
   encoding = src.encoding;
-  heLevel = src.heLevel;
+  he_level = src.he_level;
   encoded_pt = src.encoded_pt;
   scale = src.scale;
 }
@@ -35,7 +35,7 @@ CKKSCiphertext::CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context
   encoded_width = proto_ct.encoded_width();
   encoding = static_cast<CTEncoding>(proto_ct.encoding());
   scale = proto_ct.scale();
-  heLevel = proto_ct.helevel();
+  he_level = proto_ct.helevel();
 
   if(encoding != UNINITIALIZED) {
     int encoded_pt_size = proto_ct.encoded_pt_size();
@@ -45,12 +45,12 @@ CKKSCiphertext::CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context
     }
 
     std::istringstream ctstream(proto_ct.sealct());
-    sealct.load(context, ctstream);
+    seal_ct.load(context, ctstream);
   }
 }
 
 int CKKSCiphertext::getLevel(const std::shared_ptr<seal::SEALContext> &context) const {
-  return context->get_context_data(sealct.parms_id())->chain_index();
+  return context->get_context_data(seal_ct.parms_id())->chain_index();
 }
 
 std::vector<double> CKKSCiphertext::getPlaintext() const {
@@ -75,11 +75,11 @@ void CKKSCiphertext::save(protobuf::hit::Ciphertext *proto_ct) const {
   proto_ct->set_encoded_width(encoded_width);
   proto_ct->set_encoding(encoding);
   proto_ct->set_scale(scale);
-  proto_ct->set_helevel(heLevel);
+  proto_ct->set_helevel(he_level);
 
   if(encoding != UNINITIALIZED) {
     std::ostringstream sealctBuf;
-    sealct.save(sealctBuf);
+    seal_ct.save(sealctBuf);
     proto_ct->set_sealct(sealctBuf.str());
 
     for(double i : encoded_pt) {

@@ -4,8 +4,8 @@
 #include "decryptor.h"
 #include "../common.h"
 
-CKKSDecryptor::CKKSDecryptor(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder *enc, const seal::SecretKey &secret_key):
-  encoder(enc), context(context) {
+CKKSDecryptor::CKKSDecryptor(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder *encoder, const seal::SecretKey &secret_key):
+  encoder(encoder), context(context) {
   decryptor = new seal::Decryptor(context, secret_key);
 }
 
@@ -21,7 +21,7 @@ std::vector<double> CKKSDecryptor::decrypt(const CKKSCiphertext &encrypted, bool
     std::cout << "WARNING: Decrypting a ciphertext that is not at level 0! Consider starting with a smaller modulus to improve performance!" << std::endl;
   }
 
-  decryptor->decrypt(encrypted.sealct, temp);
+  decryptor->decrypt(encrypted.seal_ct, temp);
 
   std::vector<double> temp_vec;
   encoder->decode(temp, temp_vec);

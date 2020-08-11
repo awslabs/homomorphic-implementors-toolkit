@@ -24,10 +24,10 @@ public:
   // constructor for Meta and Plaintext mode
   // Ciphertexts include basic metadata like dimensions.
   // If `includePlaintext`, then ciphertexts additionally include padded plaintext.
-  CKKSEncryptor(std::shared_ptr<seal::SEALContext> context, int numSlots, bool includePlaintext);
+  CKKSEncryptor(const std::shared_ptr<seal::SEALContext> &context, int numSlots, bool includePlaintext);
 
   // constructor for Homomorphic and Debug modes
-  CKKSEncryptor(std::shared_ptr<seal::SEALContext> context, seal::CKKSEncoder *enc,
+  CKKSEncryptor(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder *encoder,
                 seal::Encryptor *encryptor, bool debug=false);
 
   void encryptMatrix(const Matrix&, double scale, CKKSCiphertext &destination, int lvl = -1);

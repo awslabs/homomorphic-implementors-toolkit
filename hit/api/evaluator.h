@@ -31,7 +31,7 @@ public:
   */
   virtual ~CKKSEvaluator();
 
-  CKKSEvaluator(const CKKSEvaluator &) = delete;
+  CKKSEvaluator(const CKKSEvaluator&) = delete;
   CKKSEvaluator& operator=(const CKKSEvaluator&) = delete;
   CKKSEvaluator(CKKSEvaluator&&) = delete;
   CKKSEvaluator& operator=(CKKSEvaluator&&) = delete;
@@ -41,63 +41,63 @@ public:
 
   /* Rotate a plaintext vector cyclically to the right.
    */
-  CKKSCiphertext rotate_vector_right(const CKKSCiphertext &encrypted, int steps);
+  CKKSCiphertext rotate_vector_right(const CKKSCiphertext &ct, int steps);
 
   /* Rotate a plaintext vector cyclically to the left.
    */
-  CKKSCiphertext rotate_vector_left(const CKKSCiphertext &encrypted, int steps);
+  CKKSCiphertext rotate_vector_left(const CKKSCiphertext &ct, int steps);
 
   /* Add a scalar to (each slot of) the ciphertext, and place the result in `dest`.
    * The plaintext is encoded with the same scale as the ciphertext.
    */
-  CKKSCiphertext add_plain_scalar(const CKKSCiphertext &encrypted, double plain);
+  CKKSCiphertext add_plain_scalar(const CKKSCiphertext &ct, double scalar);
 
   /* Add two ciphertexts (inducing component-wise addition on plaintexts)
    * and store the result in the first parameter.
    */
-  CKKSCiphertext add(const CKKSCiphertext &encrypted1, const CKKSCiphertext &encrypted2);
+  CKKSCiphertext add(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
 
   /* Multiply the ciphertext by the plaintext, and store the result in `dest`.
    * The plaintext is encoded using the same scale as the ciphertext.
    *
    * WARNING: Multiplying by 0 results in non-constant time behavior! Only multiply by 0 if the scalar is truly public.
    */
-  CKKSCiphertext multiply_plain_scalar(const CKKSCiphertext &encrypted, double plain);
+  CKKSCiphertext multiply_plain_scalar(const CKKSCiphertext &ct, double scalar);
 
   /* Multiply the ciphertext by the plaintext. This API is different than the corresponding SEAL API:
    * it takes a C++ vector whose size is the same as the size of the plaintext encrypted by the ciphertext,
    * and is interpreted as a matrix (i.e., no linear algebra encoding is performed).
    * The plaintext is encoded using the same scale as the ciphertext.
    */
-  CKKSCiphertext multiply_plain_mat(const CKKSCiphertext &encrypted, const std::vector<double> &plain);
+  CKKSCiphertext multiply_plain_mat(const CKKSCiphertext &ct, const std::vector<double> &plain);
 
   /* Multiply two ciphertexts (inducing component-wise multiplication on
    * plaintexts) and store the result in the first parameter.
    */
-  CKKSCiphertext multiply(const CKKSCiphertext &encrypted1, const CKKSCiphertext &encrypted2);
+  CKKSCiphertext multiply(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
 
   /* Multiply the first input by itself, and store the result in the second
    * parameter.
    */
-  CKKSCiphertext square(const CKKSCiphertext &ciphertext);
+  CKKSCiphertext square(const CKKSCiphertext &ct);
 
   /* Reduce the HE level of `x` to the level of the `target.
    */
-  void modDownTo(CKKSCiphertext &x, const CKKSCiphertext &target);
+  void modDownTo(CKKSCiphertext &ct, const CKKSCiphertext &target);
 
   /* Reduce the HE level of both inputs to the lower of the two levels.
    */
-  void modDownToMin(CKKSCiphertext &x, CKKSCiphertext &y);
+  void modDownToMin(CKKSCiphertext &ct1, CKKSCiphertext &ct2);
 
   /* Reduce the HE level of `x` to level `level`, which has
    * level+1 moduli. `level` must be >= 0.
    */
-  CKKSCiphertext modDownToLevel(const CKKSCiphertext &x, int level);
+  CKKSCiphertext modDownToLevel(const CKKSCiphertext &ct, int level);
 
   /* Remove a prime from the modulus (i.e. go down one level) and scale
    * down the plaintext by that prime.
    */
-  void rescale_to_next_inplace(CKKSCiphertext &encrypted);
+  void rescale_to_next_inplace(CKKSCiphertext &ct);
 
   /* Ciphertexts in BGV-style encryption schemes, like CKKS, are polynomials
    * in the (unknown) secret. A fresh ciphertext is a linear polynomial
@@ -110,7 +110,7 @@ public:
    * (`relin_keys`) to convert this quadratic ciphertext back into a linear
    * ciphertext that encrypts the same plaintext.
    */
-  void relinearize_inplace(CKKSCiphertext &encrypted);
+  void relinearize_inplace(CKKSCiphertext &ct);
 
   // parallel evaluation strategy for this evaluator
   // most evaluators require serial execution since they aren't thread safe
@@ -118,24 +118,24 @@ public:
   std::launch evalPolicy = std::launch::deferred;
 
 protected:
-  virtual CKKSCiphertext rotate_vector_right_internal(const CKKSCiphertext &encrypted, int steps) = 0;
-  virtual CKKSCiphertext rotate_vector_left_internal(const CKKSCiphertext &encrypted, int steps) = 0;
-  virtual CKKSCiphertext add_plain_scalar_internal(const CKKSCiphertext &encrypted, double plain) = 0;
-  virtual CKKSCiphertext add_internal(const CKKSCiphertext &encrypted1, const CKKSCiphertext &encrypted2) = 0;
-  virtual CKKSCiphertext multiply_plain_scalar_internal(const CKKSCiphertext &encrypted, double plain) = 0;
-  virtual CKKSCiphertext multiply_plain_mat_internal(const CKKSCiphertext &encrypted, const std::vector<double> &plain) = 0;
-  virtual CKKSCiphertext multiply_internal(const CKKSCiphertext &encrypted1, const CKKSCiphertext &encrypted2) = 0;
-  virtual CKKSCiphertext square_internal(const CKKSCiphertext &x) = 0;
-  virtual void modDownTo_internal(CKKSCiphertext &x, const CKKSCiphertext &target) = 0;
-  virtual void modDownToMin_internal(CKKSCiphertext &x, CKKSCiphertext &target) = 0;
-  virtual CKKSCiphertext modDownToLevel_internal(const CKKSCiphertext &x, int level) = 0;
-  virtual void rescale_to_next_inplace_internal(CKKSCiphertext &encrypted) = 0;
-  virtual void relinearize_inplace_internal(CKKSCiphertext &encrypted) = 0;
+  virtual CKKSCiphertext rotate_vector_right_internal(const CKKSCiphertext &ct, int steps) = 0;
+  virtual CKKSCiphertext rotate_vector_left_internal(const CKKSCiphertext &ct, int steps) = 0;
+  virtual CKKSCiphertext add_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) = 0;
+  virtual CKKSCiphertext add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) = 0;
+  virtual CKKSCiphertext multiply_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) = 0;
+  virtual CKKSCiphertext multiply_plain_mat_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) = 0;
+  virtual CKKSCiphertext multiply_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) = 0;
+  virtual CKKSCiphertext square_internal(const CKKSCiphertext &ct) = 0;
+  virtual void modDownTo_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) = 0;
+  virtual void modDownToMin_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) = 0;
+  virtual CKKSCiphertext modDownToLevel_internal(const CKKSCiphertext &ct, int level) = 0;
+  virtual void rescale_to_next_inplace_internal(CKKSCiphertext &ct) = 0;
+  virtual void relinearize_inplace_internal(CKKSCiphertext &ct) = 0;
   virtual void reset_internal() = 0;
 
   CKKSEvaluator(std::shared_ptr<seal::SEALContext> context, bool verbose);
 
-  ContextDataPtr getContextData(const CKKSCiphertext &c);
+  ContextDataPtr getContextData(const CKKSCiphertext &ct);
 
   const std::shared_ptr<seal::SEALContext> context;
 

@@ -36,7 +36,7 @@ CKKSInstance* CKKSInstance::getNewPlaintextInstance(int numSlots, bool verbose, 
 CKKSInstance* CKKSInstance::getNewScaleEstimatorInstance(int numSlots, int multDepth, bool verbose, bool useSEALParams) {
   return new CKKSInstance(SCALE, numSlots, multDepth, defaultScaleBits, verbose, useSEALParams);
 }
-CKKSInstance* CKKSInstance::getNewHomomorphicInstance(int numSlots, int multDepth, int logScale, bool verbose, bool useSEALParams, std::vector<int> galois_steps) {
+CKKSInstance* CKKSInstance::getNewHomomorphicInstance(int numSlots, int multDepth, int logScale, bool verbose, bool useSEALParams, const std::vector<int> &galois_steps) {
   return new CKKSInstance(numSlots, multDepth, logScale, verbose,
                           useSEALParams, false, galois_steps);
 }
@@ -46,7 +46,7 @@ CKKSInstance* CKKSInstance::loadHomomorphicInstance(
     bool verbose) {
   return new CKKSInstance(paramsStream, &galoisKeyStream, &relinKeyStream, &secretKeyStream, verbose, NORMAL);
 }
-CKKSInstance* CKKSInstance::getNewDebugInstance(int numSlots, int multDepth, int logScale, bool verbose, bool useSEALParams, std::vector<int> galois_steps) {
+CKKSInstance* CKKSInstance::getNewDebugInstance(int numSlots, int multDepth, int logScale, bool verbose, bool useSEALParams, const std::vector<int> &galois_steps) {
   securityWarningBox("CREATING AN INSECURE DEBUG EVALUATOR. DO NOT USE IN PRODUCTION.");
   return new CKKSInstance(numSlots, multDepth, logScale, verbose,
                           useSEALParams, true, galois_steps);
@@ -287,7 +287,7 @@ void CKKSInstance::save(std::ostream *paramsStream, std::ostream *galoisKeyStrea
 }
 
 CKKSInstance::CKKSInstance(int numSlots, int multDepth, int logScale, bool verbose,
-                           bool useSEALParams, bool debug, std::vector<int> &galois_steps) {
+                           bool useSEALParams, bool debug, const std::vector<int> &galois_steps) {
   sharedParamInit(numSlots, multDepth, logScale, useSEALParams, true);
 
   int numGaloisKeys = galois_steps.size();

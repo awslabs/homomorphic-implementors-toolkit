@@ -56,29 +56,29 @@ void printElapsedTime(timepoint start) {
   std::cout << elapsedTimeToStr(start,end) << std::endl;
 }
 
-std::vector<double> decodePlaintext(const std::vector<double> &x, CTEncoding enc,
+std::vector<double> decodePlaintext(const std::vector<double> &encoded_pt, CTEncoding encoding,
                                int height, int width, int encoded_height, int encoded_width) {
   std::vector<double> dest;
 
-  if(enc == COL_VEC && (width != 1 || height != encoded_width)) {
+  if(encoding == COL_VEC && (width != 1 || height != encoded_width)) {
     std::stringstream buffer;
     buffer << "Invalid column vector encoding: real size= " << height << "x" << width << "; encoded size= " << encoded_height << "x" << encoded_width;
     throw std::invalid_argument(buffer.str());
   }
-  if(enc == ROW_VEC && (height != 1 || width != encoded_height)) {
+  if(encoding == ROW_VEC && (height != 1 || width != encoded_height)) {
     std::stringstream buffer;
     buffer << "Invalid row vector encoding: real size= " << height << "x" << width << "; encoded size= " << encoded_height << "x" << encoded_width;
     throw std::invalid_argument(buffer.str());
   }
 
-  if(enc == MATRIX || enc == ROW_MAT || enc == COL_MAT || enc == COL_VEC) {
+  if(encoding == MATRIX || encoding == ROW_MAT || encoding == COL_MAT || encoding == COL_VEC) {
     int size = height*width;
-    dest = std::vector<double>(x.begin(),x.begin()+size);
+    dest = std::vector<double>(encoded_pt.begin(), encoded_pt.begin()+size);
   }
   else { // encoding is a row vector, which becomes the columns of the matrix
     for(int i = 0; i < width; i++) {
       // puts the left column into the destination, which corresponds to the encoded row vector
-      dest.push_back(x[i*encoded_width]);
+      dest.push_back(encoded_pt[i*encoded_width]);
     }
   }
   return dest;
@@ -279,49 +279,49 @@ uintmax_t streamSize(std::iostream &s) {
 
 // Extract the side-by-side plaintext from the ciphertext. Note that there is no decryption happening!
 // This returns the "debug" plaintext.
-Matrix ctPlaintextToMatrix(CKKSCiphertext &x) {
-  return Matrix(x.height, x.width, x.getPlaintext());
+Matrix ctPlaintextToMatrix(const CKKSCiphertext &ct) {
+  return Matrix(ct.height, ct.width, ct.getPlaintext());
 }
 
 // Extract the encrypted plaintext from the ciphertext. This actually decrypts and returns the output.
-Matrix ctDecryptedToMatrix(CKKSInstance &inst, CKKSCiphertext &x) {
-  return Matrix(x.height, x.width, inst.decrypt(x));
+Matrix ctDecryptedToMatrix(CKKSInstance &inst, const CKKSCiphertext &ct) {
+  return Matrix(ct.height, ct.width, inst.decrypt(ct));
 }
 
 // Extract the debug plaintext from each ciphertext and concatenate the results side-by-side.
-Matrix ctPlaintextToMatrix(std::vector<CKKSCiphertext> &xs) {
+Matrix ctPlaintextToMatrix(const std::vector<CKKSCiphertext> &cts) {
   std::vector<Matrix> mats;
-  mats.reserve(xs.size());
-  for(auto & x : xs) {
-    mats.push_back(ctPlaintextToMatrix(x));
+  mats.reserve(cts.size());
+  for(auto & ct : cts) {
+    mats.push_back(ctPlaintextToMatrix(ct));
   }
   return matrixRowConcat(mats);
 }
 
-Vector ctPlaintextToVector(std::vector<CKKSCiphertext> &xs) {
+Vector ctPlaintextToVector(const std::vector<CKKSCiphertext> &cts) {
   std::vector<double> stdvec;
-  for(auto & x : xs) {
-    std::vector<double> v = x.getPlaintext();
+  for(auto & ct : cts) {
+    std::vector<double> v = ct.getPlaintext();
     stdvec.insert(stdvec.end(), v.begin(), v.end());
   }
   return fromStdVector(stdvec);
 }
 
 // Decrypt each ciphertext and concatenate the results side-by-side.
-Matrix ctDecryptedToMatrix(CKKSInstance &inst, std::vector<CKKSCiphertext> &xs) {
+Matrix ctDecryptedToMatrix(CKKSInstance &inst, const std::vector<CKKSCiphertext> &cts) {
   std::vector<Matrix> mats;
-  mats.reserve(xs.size());
-  for(auto & x : xs) {
-    mats.push_back(ctDecryptedToMatrix(inst, x));
+  mats.reserve(cts.size());
+  for(auto & ct : cts) {
+    mats.push_back(ctDecryptedToMatrix(inst, ct));
   }
 
   return matrixRowConcat(mats);
 }
 
-Vector ctDecryptedToVector(CKKSInstance &inst, std::vector<CKKSCiphertext> &xs) {
+Vector ctDecryptedToVector(CKKSInstance &inst, const std::vector<CKKSCiphertext> &cts) {
   std::vector<double> stdvec;
-  for(const auto & x : xs) {
-    std::vector<double> v = inst.decrypt(x);
+  for(const auto & ct : cts) {
+    std::vector<double> v = inst.decrypt(ct);
     stdvec.insert(stdvec.end(), v.begin(), v.end());
   }
   return fromStdVector(stdvec);
