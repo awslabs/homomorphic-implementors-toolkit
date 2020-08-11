@@ -55,7 +55,7 @@ void ScaleEstimator::print_stats(const CKKSCiphertext &c) {
 
 void ScaleEstimator::updateMaxLogScale(const CKKSCiphertext &c) {
   // update the estimatedMaxLogScale
-  int scaleExp = round(log2(c.scale)/log2(baseScale));
+  int scaleExp = static_cast<int>(round(log2(c.scale)/log2(baseScale)));
   if(scaleExp != 1 && scaleExp != 2) {
     std::stringstream buffer;
     buffer << "INTERNAL ERROR: scaleExp is not 1 or 2: got " << scaleExp << "\t" << log2(c.scale) << "\t" << log2(baseScale);

@@ -11,7 +11,7 @@ DebugEval::DebugEval(const std::shared_ptr<seal::SEALContext> &context, seal::CK
                      double scale, CKKSDecryptor &decryptor, bool verbose):
   CKKSEvaluator(context, verbose), decryptor(decryptor), initScale(scale) {
   heEval = new HomomorphicEval(context, encoder, encryptor, galois_keys, relin_keys, verbose);
-  seEval = new ScaleEstimator(context, 2*encoder.slot_count(), scale, verbose);
+  seEval = new ScaleEstimator(context, static_cast<int>(2*encoder.slot_count()), scale, verbose);
 }
 
 DebugEval::~DebugEval() {
