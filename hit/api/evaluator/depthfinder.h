@@ -62,8 +62,9 @@ protected:
 
 private:
   int multiplicativeDepth;
-  void print_stats(const CKKSCiphertext &ct);
 
   friend class ScaleEstimator;
   friend class OpCount;
 };
+
+void print_stats(const CKKSCiphertext &ct);

@@ -18,7 +18,7 @@ void CKKSEvaluator::reset() {
   reset_internal();
 }
 
-bool CKKSEvaluator::is_valid_args(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) const {
+bool is_valid_args(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
   if((ct1.encoding == ct2.encoding) ||
      (ct1.encoding == ROW_MAT && ct2.encoding == MATRIX) ||
      (ct1.encoding == MATRIX && ct2.encoding == COL_MAT)) {

@@ -62,9 +62,10 @@ protected:
   void reset_internal() override;
 
 private:
-  void print_stats(const CKKSCiphertext &ct);
   void updateMaxLogPlainVal(const CKKSCiphertext &ct);
   double ptMaxLog;
 
   friend class ScaleEstimator;
 };
+
+void print_stats(const CKKSCiphertext &ct);

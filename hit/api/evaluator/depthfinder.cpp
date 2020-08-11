@@ -12,7 +12,7 @@ void DepthFinder::reset_internal() {
 }
 
 // print some debug info
-void DepthFinder::print_stats(const CKKSCiphertext &ct) {
+void print_stats(const CKKSCiphertext &ct) {
   std::cout << "    + Level: " << ct.he_level << std::endl;
 }
 

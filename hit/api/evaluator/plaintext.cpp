@@ -18,7 +18,7 @@ void PlaintextEval::reset_internal() {
 }
 
 // print some debug info
-void PlaintextEval::print_stats(const CKKSCiphertext &ct) {
+void print_stats(const CKKSCiphertext &ct) {
   // extract just the elements we care about from the real plaintext
   std::vector<double> exactPlaintext = ct.getPlaintext();
   double exactPlaintextMaxVal = lInfNorm(exactPlaintext);

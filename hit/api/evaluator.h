@@ -140,8 +140,7 @@ protected:
   const std::shared_ptr<seal::SEALContext> context;
 
   bool verbose;
-
-private:
-  // ensure that metadata for two arguments matches
-  bool is_valid_args(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) const;
 };
+
+// ensure that metadata for two arguments matches
+bool is_valid_args(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2);

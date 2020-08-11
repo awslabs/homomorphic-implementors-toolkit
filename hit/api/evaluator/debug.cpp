@@ -117,7 +117,7 @@ void DebugEval::print_stats(const CKKSCiphertext &c) {
   VERBOSE(std::cout << std::endl);
 }
 
-CKKSCiphertext DebugEval::merge_cts(const CKKSCiphertext &ct_he, const CKKSCiphertext &ct_se) const {
+CKKSCiphertext merge_cts(const CKKSCiphertext &ct_he, const CKKSCiphertext &ct_se) {
   CKKSCiphertext t = ct_he;
   t.copyMetadataFrom(ct_se);
   return t;
