@@ -44,7 +44,7 @@ protected:
 
   CKKSCiphertext multiply_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
 
-  CKKSCiphertext square_internal(const CKKSCiphertext &ciphertext) override;
+  CKKSCiphertext square_internal(const CKKSCiphertext &ct) override;
 
   void modDownTo_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) override;
 

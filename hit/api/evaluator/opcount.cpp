@@ -52,14 +52,14 @@ CKKSCiphertext OpCount::add_internal(const CKKSCiphertext &ct1, const CKKSCipher
   return ct1;
 }
 
-CKKSCiphertext OpCount::add_plain_scalar_internal(const CKKSCiphertext &ct, double plain) {
-  dfEval->add_plain_scalar_internal(ct, plain);
+CKKSCiphertext OpCount::add_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) {
+  dfEval->add_plain_scalar_internal(ct, scalar);
   additions++;
   return ct;
 }
 
-CKKSCiphertext OpCount::multiply_plain_scalar_internal(const CKKSCiphertext &ct, double plain) {
-  dfEval->multiply_plain_scalar_internal(ct, plain);
+CKKSCiphertext OpCount::multiply_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) {
+  dfEval->multiply_plain_scalar_internal(ct, scalar);
   multiplies++;
   return ct;
 }

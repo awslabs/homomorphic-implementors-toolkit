@@ -10,6 +10,7 @@ Checks: >
   performance-*,
   portability-*,
   readability-*,
+  -modernize-use-nodiscard,
   -google-readability-braces-around-statements,
   -google-readability-namespace-comments,
   -google-runtime-references,

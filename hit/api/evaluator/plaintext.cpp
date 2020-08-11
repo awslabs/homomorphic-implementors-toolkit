@@ -94,9 +94,9 @@ CKKSCiphertext PlaintextEval::rotate_vector_left_internal(const CKKSCiphertext &
   return dest;
 }
 
-CKKSCiphertext PlaintextEval::add_internal(const CKKSCiphertext &encrypted1, const CKKSCiphertext &encrypted2) {
-  CKKSCiphertext dest = encrypted1;
-  dest.encoded_pt = encrypted1.encoded_pt + encrypted2.encoded_pt;
+CKKSCiphertext PlaintextEval::add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
+  CKKSCiphertext dest = ct1;
+  dest.encoded_pt = ct1.encoded_pt + ct2.encoded_pt;
   updateMaxLogPlainVal(dest);
   VERBOSE(print_stats(dest));
   return dest;

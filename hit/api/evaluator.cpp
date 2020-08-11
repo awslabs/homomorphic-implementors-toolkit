@@ -164,9 +164,9 @@ CKKSCiphertext CKKSEvaluator::multiply(const CKKSCiphertext &ct1, const CKKSCiph
   return temp;
 }
 
-CKKSCiphertext CKKSEvaluator::square(const CKKSCiphertext &ciphertext) {
+CKKSCiphertext CKKSEvaluator::square(const CKKSCiphertext &ct) {
   VERBOSE(std::cout << "Square ciphertext" << std::endl);
-  CKKSCiphertext temp = square_internal(ciphertext);
+  CKKSCiphertext temp = square_internal(ct);
   return temp;
 }
 
