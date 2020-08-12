@@ -4,7 +4,10 @@
 #include "opcount.h"
 #include <iomanip>
 
-OpCount::OpCount(const std::shared_ptr<seal::SEALContext> &context, bool verbose): CKKSEvaluator(context, verbose) {
+using namespace std;
+using namespace seal;
+
+OpCount::OpCount(const shared_ptr<SEALContext> &context, bool verbose): CKKSEvaluator(context, verbose) {
   dfEval = new DepthFinder(context, verbose);
 }
 
@@ -23,11 +26,11 @@ void OpCount::reset_internal() {
 }
 
 void OpCount::printOpCount() const {
-  std::cout  << std::endl << "Multiplications: " << multiplies << std::endl;
-  std::cout << "ModDownMuls: " << modDownMuls << std::endl;
-  std::cout << "Additions: " << additions << std::endl;
-  std::cout << "Rotations: " << rotations << std::endl;
-  std::cout << "ModDownTos: " << modDowns << std::endl << std::endl;
+  cout  << endl << "Multiplications: " << multiplies << endl;
+  cout << "ModDownMuls: " << modDownMuls << endl;
+  cout << "Additions: " << additions << endl;
+  cout << "Rotations: " << rotations << endl;
+  cout << "ModDownTos: " << modDowns << endl << endl;
 }
 
 int OpCount::getMultiplicativeDepth() const {
@@ -64,7 +67,7 @@ CKKSCiphertext OpCount::multiply_plain_scalar_internal(const CKKSCiphertext &ct,
   return ct;
 }
 
-CKKSCiphertext OpCount::multiply_plain_mat_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) {
+CKKSCiphertext OpCount::multiply_plain_mat_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
   dfEval->multiply_plain_mat_internal(ct, plain);
   multiplies++;
   return ct;
