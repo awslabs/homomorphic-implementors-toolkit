@@ -88,15 +88,15 @@ void DepthFinder::modDownToMin_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2
 }
 
 CKKSCiphertext DepthFinder::modDownToLevel_internal(const CKKSCiphertext &ct, int level) {
-  CKKSCiphertext y = ct;
+  CKKSCiphertext ct_out = ct;
   if(ct.he_level >= level) {
-    y.he_level = level;
+    ct_out.he_level = level;
   }
   else {
     throw std::invalid_argument("x level is below target level");
   }
-  VERBOSE(print_stats(y));
-  return y;
+  VERBOSE(print_stats(ct_out));
+  return ct_out;
 }
 
 void DepthFinder::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {

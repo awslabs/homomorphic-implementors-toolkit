@@ -30,8 +30,7 @@ add_library(hit_proto
     ${CMAKE_CURRENT_BINARY_DIR}/../protobuf/ckksparams.pb.h
     ${CMAKE_CURRENT_BINARY_DIR}/../protobuf/ckksparams.pb.cc)
 
-# disable all warnings for auto-generated files
-# disable clang-tidy for auto-generated files
+# disable all compiler and clang-tidy warnings for auto-generated files
 set_source_files_properties(
   ${CMAKE_CURRENT_BINARY_DIR}/../protobuf/ciphertext.pb.h
   ${CMAKE_CURRENT_BINARY_DIR}/../protobuf/ciphertext.pb.cc
