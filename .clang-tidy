@@ -24,7 +24,7 @@ Checks: >
   -readability-magic-numbers,
   -readability-named-parameter,
   -readability-redundant-declaration
-HeaderFilterRegex: "(hit/api/|hit/CKKSInstance|hit/common|hit/matrix|hit/sealutils).*\\.h$"
+HeaderFilterRegex: "(src/api/|src/CKKSInstance|src/common|src/matrix|src/sealutils).*\\.h$"
 CheckOptions:
   - key: bugprone-argument-comment.StrictMode
     value: 1

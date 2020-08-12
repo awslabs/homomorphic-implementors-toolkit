@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../lib/${CMAKE_BUILD_TYPE})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ../lib/${CMAKE_BUILD_TYPE})
-set(HIT_INCLUDES_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/hit)
+set(HIT_INCLUDES_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/src)
 
 # https://crascit.com/2017/04/18/generated-sources-in-cmake-builds/
 add_custom_command(
@@ -58,7 +58,7 @@ set_common_flags(hit)
 add_subdirectory(api)
 
 target_include_directories(hit PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/hit>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
     $<INSTALL_INTERFACE:${HIT_INCLUDES_INSTALL_DIR}>
 )
 
