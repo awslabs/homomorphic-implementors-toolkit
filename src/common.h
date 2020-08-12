@@ -5,7 +5,6 @@
 
 #include "seal/seal.h"
 #include "api/ciphertext.h"
-#include "boost/random.hpp"
 #include <chrono>
 #include "CKKSInstance.h"
 
@@ -31,9 +30,7 @@ void printElapsedTime(timepoint start);
 // less than this many bits
 #define PLAINTEXT_LOG_MAX 59
 
-typedef boost::variate_generator<boost::mt19937&, boost::uniform_int<> > RndGen; // NOLINT(modernize-use-using)
-
-std::vector<double> decodePlaintext(const std::vector<double> &x, CTEncoding enc,
+std::vector<double> decodePlaintext(const std::vector<double> &encoded_pt, CTEncoding encoding,
                                     int height, int width, int encoded_height, int encoded_width);
 
 // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
@@ -62,10 +59,10 @@ uintmax_t streamSize(std::iostream &s);
 
 std::string bytesToStr(uintmax_t sizeBytes);
 
-Matrix ctPlaintextToMatrix(CKKSCiphertext &x);
-Matrix ctDecryptedToMatrix(CKKSInstance &inst, CKKSCiphertext &x);
+Matrix ctPlaintextToMatrix(const CKKSCiphertext &ct);
+Matrix ctDecryptedToMatrix(CKKSInstance &inst, const CKKSCiphertext &ct);
 
-Matrix ctPlaintextToMatrix(std::vector<CKKSCiphertext> &xs);
-Vector ctPlaintextToVector(std::vector<CKKSCiphertext> &xs);
-Matrix ctDecryptedToMatrix(CKKSInstance &inst, std::vector<CKKSCiphertext> &xs);
-Vector ctDecryptedToVector(CKKSInstance &inst, std::vector<CKKSCiphertext> &xs);
+Matrix ctPlaintextToMatrix(const std::vector<CKKSCiphertext> &cts);
+Vector ctPlaintextToVector(const std::vector<CKKSCiphertext> &cts);
+Matrix ctDecryptedToMatrix(CKKSInstance &inst, const std::vector<CKKSCiphertext> &cts);
+Vector ctDecryptedToVector(CKKSInstance &inst, const std::vector<CKKSCiphertext> &cts);

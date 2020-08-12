@@ -2,39 +2,41 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "common.h"
-#include <iomanip> // std::setprecision
+#include <iomanip> // setprecision
+
+using namespace std;
 
 uint64_t elapsedTimeMs(timepoint start, timepoint end) {
-  return std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+  return chrono::duration_cast<chrono::milliseconds>(end-start).count();
 }
 
-std::string elapsedTimeToStr(timepoint start, timepoint end, TimeScale ts) {
+string elapsedTimeToStr(timepoint start, timepoint end, TimeScale ts) {
   auto elapsedMs = static_cast<double>(elapsedTimeMs(start, end));
-  std::stringstream buffer;
+  stringstream buffer;
   double msPerSec = 1000;
   double msPerMin = 60 * msPerSec;
   double msPerHour = 60 * msPerMin;
   if(ts == TS_MS || (ts == TS_DYNAMIC && elapsedMs < msPerSec)) {
-    buffer << std::setprecision(3) << elapsedMs << " ms";
+    buffer << setprecision(3) << elapsedMs << " ms";
   }
   else if(ts == TS_SEC || (ts == TS_DYNAMIC && elapsedMs < msPerMin)) {
-    buffer << std::setprecision(3) << elapsedMs/msPerSec << " seconds";
+    buffer << setprecision(3) << elapsedMs/msPerSec << " seconds";
   }
   else if(ts == TS_MIN || (ts == TS_DYNAMIC && elapsedMs < msPerHour)) {
-    buffer << std::setprecision(3) << elapsedMs/msPerMin << " minutes";
+    buffer << setprecision(3) << elapsedMs/msPerMin << " minutes";
   }
   else {
-    buffer << std::setprecision(3) << elapsedMs/msPerHour << " hours";
+    buffer << setprecision(3) << elapsedMs/msPerHour << " hours";
   }
   return buffer.str();
 }
 
-std::string bytesToStr(uintmax_t sizeBytes) {
+string bytesToStr(uintmax_t sizeBytes) {
   double unitMultiplier = 1000;
   double bytesPerKB = unitMultiplier;
   double bytesPerMB = bytesPerKB * unitMultiplier;
   double bytesPerGB = bytesPerMB * unitMultiplier;
-  std::stringstream buffer;
+  stringstream buffer;
 
   if(sizeBytes < bytesPerKB) {
     buffer << sizeBytes << " bytes";
@@ -52,45 +54,45 @@ std::string bytesToStr(uintmax_t sizeBytes) {
 }
 
 void printElapsedTime(timepoint start) {
-  timepoint end = std::chrono::steady_clock::now();
-  std::cout << elapsedTimeToStr(start,end) << std::endl;
+  timepoint end = chrono::steady_clock::now();
+  cout << elapsedTimeToStr(start,end) << endl;
 }
 
-std::vector<double> decodePlaintext(const std::vector<double> &x, CTEncoding enc,
+vector<double> decodePlaintext(const vector<double> &encoded_pt, CTEncoding encoding,
                                int height, int width, int encoded_height, int encoded_width) {
-  std::vector<double> dest;
+  vector<double> dest;
 
-  if(enc == COL_VEC && (width != 1 || height != encoded_width)) {
-    std::stringstream buffer;
+  if(encoding == COL_VEC && (width != 1 || height != encoded_width)) {
+    stringstream buffer;
     buffer << "Invalid column vector encoding: real size= " << height << "x" << width << "; encoded size= " << encoded_height << "x" << encoded_width;
-    throw std::invalid_argument(buffer.str());
+    throw invalid_argument(buffer.str());
   }
-  if(enc == ROW_VEC && (height != 1 || width != encoded_height)) {
-    std::stringstream buffer;
+  if(encoding == ROW_VEC && (height != 1 || width != encoded_height)) {
+    stringstream buffer;
     buffer << "Invalid row vector encoding: real size= " << height << "x" << width << "; encoded size= " << encoded_height << "x" << encoded_width;
-    throw std::invalid_argument(buffer.str());
+    throw invalid_argument(buffer.str());
   }
 
-  if(enc == MATRIX || enc == ROW_MAT || enc == COL_MAT || enc == COL_VEC) {
+  if(encoding == MATRIX || encoding == ROW_MAT || encoding == COL_MAT || encoding == COL_VEC) {
     int size = height*width;
-    dest = std::vector<double>(x.begin(),x.begin()+size);
+    dest = vector<double>(encoded_pt.begin(), encoded_pt.begin()+size);
   }
   else { // encoding is a row vector, which becomes the columns of the matrix
     for(int i = 0; i < width; i++) {
       // puts the left column into the destination, which corresponds to the encoded row vector
-      dest.push_back(x[i*encoded_width]);
+      dest.push_back(encoded_pt[i*encoded_width]);
     }
   }
   return dest;
 }
 
 // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
-double diff2Norm(const std::vector<double> &expected, const std::vector<double> &actual) {
+double diff2Norm(const vector<double> &expected, const vector<double> &actual) {
   int len = expected.size();
   if(len != actual.size()) {
-    std::stringstream buffer;
+    stringstream buffer;
     buffer << "diff2Norm inputs do not have the same size: " << len << " != " << actual.size();
-    throw std::invalid_argument(buffer.str());
+    throw invalid_argument(buffer.str());
   }
 
   Vector expectedVec = fromStdVector(expected);
@@ -120,10 +122,10 @@ double diff2Norm(const std::vector<double> &expected, const std::vector<double> 
   }
 
   if(expectedL2Norm <= maxAllowedL2Norm) {
-    std::cout << "WEIRD NORM SITUATION: " << expectedL2Norm << "\t" << actualL2Norm << std::endl;
+    cout << "WEIRD NORM SITUATION: " << expectedL2Norm << "\t" << actualL2Norm << endl;
   }
   if(diffL2Norm > MAX_NORM) {
-    std::cout << "LogL2Norm: " << std::setprecision(8) << log2(expectedL2Norm) << std::endl;
+    cout << "LogL2Norm: " << setprecision(8) << log2(expectedL2Norm) << endl;
   }
   return diffL2Norm;
 }
@@ -161,9 +163,9 @@ int polyDegreeToMaxModBits(int poly_modulus_degree) {
   // else if(poly_modulus_degree == 131072) { return 3524; }
   // else if(poly_modulus_degree == 262144) { return 7050; }
   else {
-    std::stringstream buffer;
+    stringstream buffer;
     buffer << "poly_modulus_degree=" << poly_modulus_degree << " not supported";
-    throw std::invalid_argument(buffer.str());
+    throw invalid_argument(buffer.str());
   }
 }
 
@@ -197,66 +199,66 @@ int modulusToPolyDegree(int modBits) {
   // else if(modBits <= 3524) { return 131072; }
   // else if(modBits <= 7050) { return 262144; }
   else {
-    std::stringstream buffer;
+    stringstream buffer;
     buffer << "This computation is too big to handle right now: cannot determine a valid ring size for a " <<
               modBits << "-bit modulus";
-    throw std::invalid_argument(buffer.str());
+    throw invalid_argument(buffer.str());
   }
 }
 
-void securityWarningBox(const std::string &str, WARN_LEVEL level) {
+void securityWarningBox(const string &str, WARN_LEVEL level) {
   int strlen = str.size();
   // set color to red (SEVERE) or yellow (WARN)
   if(level == SEVERE) {
-    std::cout << std::endl << "\033[1;31m";
+    cout << endl << "\033[1;31m";
   }
   else {
-    std::cout << std::endl << "\033[1;33m";
+    cout << endl << "\033[1;33m";
   }
 
   // print the top of the box
   for(int i = 0; i < strlen+4; i++) {
-    std::cout << "*";
+    cout << "*";
   }
-  std::cout << std::endl;
+  cout << endl;
 
   // print a "blank" line for the second row
-  std::cout << "*";
+  cout << "*";
   for(int i = 0; i < strlen+2; i++) {
-    std::cout << " ";
+    cout << " ";
   }
-  std::cout << "*" << std::endl;
+  cout << "*" << endl;
 
-  // print the std::string itself
-  std::cout << "* " << str << " *" << std::endl;
+  // print the string itself
+  cout << "* " << str << " *" << endl;
 
   // print a "blank" line for the second-to-last row
-  std::cout << "*";
+  cout << "*";
   for(int i = 0; i < strlen+2; i++) {
-    std::cout << " ";
+    cout << " ";
   }
-  std::cout << "*" << std::endl;
+  cout << "*" << endl;
 
   // print the bottom row of the box
   for(int i = 0; i < strlen+4; i++) {
-    std::cout << "*";
+    cout << "*";
   }
 
   // reset the color
-  std::cout << "\033[0m" << std::endl << std::endl;
+  cout << "\033[0m" << endl << endl;
 }
 
-double lInfNorm(const std::vector<double> &x) {
+double lInfNorm(const vector<double> &x) {
   double xmax = 0;
   for(double i : x) {
-    xmax = std::max(xmax,abs(i));
+    xmax = max(xmax,abs(i));
   }
   return xmax;
 }
 
 // generate a random vector of the given dimension, where each value is in the range [-maxNorm, maxNorm].
-std::vector<double> randomVector(int dim, double maxNorm) {
-  std::vector<double> x;
+vector<double> randomVector(int dim, double maxNorm) {
+  vector<double> x;
   x.reserve(dim);
 
   for(int i = 0; i < dim; i++) {
@@ -267,9 +269,9 @@ std::vector<double> randomVector(int dim, double maxNorm) {
   return x;
 }
 
-uintmax_t streamSize(std::iostream &s) {
-  std::streampos originalPos = s.tellp();
-  s.seekp(0, std::ios::end);
+uintmax_t streamSize(iostream &s) {
+  streampos originalPos = s.tellp();
+  s.seekp(0, ios::end);
   uintmax_t size = s.tellp();
   s.seekp(originalPos);
   return size;
@@ -279,49 +281,49 @@ uintmax_t streamSize(std::iostream &s) {
 
 // Extract the side-by-side plaintext from the ciphertext. Note that there is no decryption happening!
 // This returns the "debug" plaintext.
-Matrix ctPlaintextToMatrix(CKKSCiphertext &x) {
-  return Matrix(x.height, x.width, x.getPlaintext());
+Matrix ctPlaintextToMatrix(const CKKSCiphertext &ct) {
+  return Matrix(ct.height, ct.width, ct.getPlaintext());
 }
 
 // Extract the encrypted plaintext from the ciphertext. This actually decrypts and returns the output.
-Matrix ctDecryptedToMatrix(CKKSInstance &inst, CKKSCiphertext &x) {
-  return Matrix(x.height, x.width, inst.decrypt(x));
+Matrix ctDecryptedToMatrix(CKKSInstance &inst, const CKKSCiphertext &ct) {
+  return Matrix(ct.height, ct.width, inst.decrypt(ct));
 }
 
 // Extract the debug plaintext from each ciphertext and concatenate the results side-by-side.
-Matrix ctPlaintextToMatrix(std::vector<CKKSCiphertext> &xs) {
-  std::vector<Matrix> mats;
-  mats.reserve(xs.size());
-  for(auto & x : xs) {
-    mats.push_back(ctPlaintextToMatrix(x));
+Matrix ctPlaintextToMatrix(const vector<CKKSCiphertext> &cts) {
+  vector<Matrix> mats;
+  mats.reserve(cts.size());
+  for(const auto &ct : cts) {
+    mats.push_back(ctPlaintextToMatrix(ct));
   }
   return matrixRowConcat(mats);
 }
 
-Vector ctPlaintextToVector(std::vector<CKKSCiphertext> &xs) {
-  std::vector<double> stdvec;
-  for(auto & x : xs) {
-    std::vector<double> v = x.getPlaintext();
+Vector ctPlaintextToVector(const vector<CKKSCiphertext> &cts) {
+  vector<double> stdvec;
+  for(const auto &ct : cts) {
+    vector<double> v = ct.getPlaintext();
     stdvec.insert(stdvec.end(), v.begin(), v.end());
   }
   return fromStdVector(stdvec);
 }
 
 // Decrypt each ciphertext and concatenate the results side-by-side.
-Matrix ctDecryptedToMatrix(CKKSInstance &inst, std::vector<CKKSCiphertext> &xs) {
-  std::vector<Matrix> mats;
-  mats.reserve(xs.size());
-  for(auto & x : xs) {
-    mats.push_back(ctDecryptedToMatrix(inst, x));
+Matrix ctDecryptedToMatrix(CKKSInstance &inst, const vector<CKKSCiphertext> &cts) {
+  vector<Matrix> mats;
+  mats.reserve(cts.size());
+  for(const auto &ct : cts) {
+    mats.push_back(ctDecryptedToMatrix(inst, ct));
   }
 
   return matrixRowConcat(mats);
 }
 
-Vector ctDecryptedToVector(CKKSInstance &inst, std::vector<CKKSCiphertext> &xs) {
-  std::vector<double> stdvec;
-  for(const auto & x : xs) {
-    std::vector<double> v = inst.decrypt(x);
+Vector ctDecryptedToVector(CKKSInstance &inst, const vector<CKKSCiphertext> &cts) {
+  vector<double> stdvec;
+  for(const auto &ct : cts) {
+    vector<double> v = inst.decrypt(ct);
     stdvec.insert(stdvec.end(), v.begin(), v.end());
   }
   return fromStdVector(stdvec);

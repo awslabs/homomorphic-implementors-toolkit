@@ -10,6 +10,9 @@ Checks: >
   performance-*,
   portability-*,
   readability-*,
+  -google-build-using-namespace,
+  -modernize-use-nodiscard,
+  -bugprone-branch-clone,
   -google-readability-braces-around-statements,
   -google-readability-namespace-comments,
   -google-runtime-references,
@@ -22,7 +25,7 @@ Checks: >
   -readability-magic-numbers,
   -readability-named-parameter,
   -readability-redundant-declaration
-HeaderFilterRegex: "(hit/api/|hit/CKKSInstance|hit/common|hit/matrix|hit/sealutils).*\\.h$"
+HeaderFilterRegex: "(src/api/|src/CKKSInstance|src/common|src/matrix|src/sealutils).*\\.h$"
 CheckOptions:
   - key: bugprone-argument-comment.StrictMode
     value: 1

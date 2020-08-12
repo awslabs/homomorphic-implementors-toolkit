@@ -18,11 +18,11 @@
 
 class CKKSDecryptor {
 public:
-  CKKSDecryptor(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder *enc, const seal::SecretKey &secret_key);
+  CKKSDecryptor(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder *encoder, const seal::SecretKey &secret_key);
 
   ~CKKSDecryptor();
 
-  CKKSDecryptor(const CKKSDecryptor &) = delete;
+  CKKSDecryptor(const CKKSDecryptor&) = delete;
   CKKSDecryptor& operator=(const CKKSDecryptor&) = delete;
   CKKSDecryptor(CKKSDecryptor&&) = delete;
   CKKSDecryptor& operator=(CKKSDecryptor&&) = delete;

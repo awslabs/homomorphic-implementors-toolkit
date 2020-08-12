@@ -25,7 +25,7 @@
 enum CTEncoding { MATRIX, COL_VEC, ROW_VEC, COL_MAT, ROW_MAT, UNINITIALIZED };
 
 struct CKKSCiphertext {
-  seal::Ciphertext sealct;
+  seal::Ciphertext seal_ct;
   int height; // NOLINT(modernize-use-default-member-init)
   int width; // NOLINT(modernize-use-default-member-init)
   int encoded_height; // NOLINT(modernize-use-default-member-init)
@@ -35,7 +35,7 @@ struct CKKSCiphertext {
   // the next three items are for used by some evaluators to track additional metadata
 
   // heLevel is used by the depthFinder
-  int heLevel; // NOLINT(modernize-use-default-member-init)
+  int he_level; // NOLINT(modernize-use-default-member-init)
 
   // `plain` is used by the Plaintext evaluator
   Vector encoded_pt;
@@ -46,7 +46,7 @@ struct CKKSCiphertext {
   // A default constructor is useful since we often write, e.g, `Ciphertext &a;`
   CKKSCiphertext();
 
-  CKKSCiphertext(std::shared_ptr<seal::SEALContext> &context, const protobuf::hit::Ciphertext &c);
+  CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context, const protobuf::hit::Ciphertext &proto_ct);
 
   // Copy all members except the ciphertext itself
   void copyMetadataFrom(const CKKSCiphertext &src);
@@ -61,5 +61,5 @@ struct CKKSCiphertext {
   std::vector<double> getPlaintext() const;
 
   protobuf::hit::Ciphertext* save() const;
-  void save(protobuf::hit::Ciphertext *c) const;
+  void save(protobuf::hit::Ciphertext *proto_ct) const;
 };

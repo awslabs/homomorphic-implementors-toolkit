@@ -22,44 +22,44 @@ public:
    * All of these parameters contain only public information. The GaloisKeys
    * and RelinKeys are part of the CKKS scheme's "evaluation keys".
    */
-  HomomorphicEval(const std::shared_ptr<seal::SEALContext> &c, seal::CKKSEncoder &encoder, seal::Encryptor &encryptor,
-                  const seal::GaloisKeys &gkeys, const seal::RelinKeys &relin_keys, bool verbose=false);
+  HomomorphicEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder, seal::Encryptor &encryptor,
+                  const seal::GaloisKeys &galois_keys, const seal::RelinKeys &relin_keys, bool verbose=false);
 
   /* For documentation on the API, see ../evaluator.h */
   ~HomomorphicEval() override;
 
-  HomomorphicEval(const HomomorphicEval &) = delete;
+  HomomorphicEval(const HomomorphicEval&) = delete;
   HomomorphicEval& operator=(const HomomorphicEval&) = delete;
   HomomorphicEval(HomomorphicEval&&) = delete;
   HomomorphicEval& operator=(HomomorphicEval&&) = delete;
 
 protected:
-  CKKSCiphertext rotate_vector_right_internal(const CKKSCiphertext &encrypted, int steps) override;
+  CKKSCiphertext rotate_vector_right_internal(const CKKSCiphertext &ct, int steps) override;
 
-  CKKSCiphertext rotate_vector_left_internal(const CKKSCiphertext &encrypted, int steps) override;
+  CKKSCiphertext rotate_vector_left_internal(const CKKSCiphertext &ct, int steps) override;
 
-  CKKSCiphertext add_plain_scalar_internal(const CKKSCiphertext &encrypted, double plain) override;
+  CKKSCiphertext add_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) override;
 
-  CKKSCiphertext add_internal(const CKKSCiphertext &encrypted1, const CKKSCiphertext &encrypted2) override;
+  CKKSCiphertext add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
 
   /* WARNING: Multiplying by 0 results in non-constant time behavior! Only multiply by 0 if the scalar is truly public. */
-  CKKSCiphertext multiply_plain_scalar_internal(const CKKSCiphertext &encrypted, double plain) override;
+  CKKSCiphertext multiply_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) override;
 
-  CKKSCiphertext multiply_plain_mat_internal(const CKKSCiphertext &encrypted, const std::vector<double> &plain) override;
+  CKKSCiphertext multiply_plain_mat_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) override;
 
-  CKKSCiphertext multiply_internal(const CKKSCiphertext &encrypted1, const CKKSCiphertext &encrypted2) override;
+  CKKSCiphertext multiply_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
 
-  CKKSCiphertext square_internal(const CKKSCiphertext &ciphertext) override;
+  CKKSCiphertext square_internal(const CKKSCiphertext &ct) override;
 
-  void modDownTo_internal(CKKSCiphertext &x, const CKKSCiphertext &target) override;
+  void modDownTo_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) override;
 
-  void modDownToMin_internal(CKKSCiphertext &x, CKKSCiphertext &y) override;
+  void modDownToMin_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) override;
 
-  CKKSCiphertext modDownToLevel_internal(const CKKSCiphertext &x, int level) override;
+  CKKSCiphertext modDownToLevel_internal(const CKKSCiphertext &ct, int level) override;
 
-  void rescale_to_next_inplace_internal(CKKSCiphertext &encrypted) override;
+  void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
 
-  void relinearize_inplace_internal(CKKSCiphertext &encrypted) override;
+  void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
   // reuse this evaluator for another computation
   void reset_internal() override;

@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../lib/${CMAKE_BUILD_TYPE})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ../lib/${CMAKE_BUILD_TYPE})
-set(HIT_INCLUDES_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/hit)
+set(HIT_INCLUDES_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/src)
 
 # https://crascit.com/2017/04/18/generated-sources-in-cmake-builds/
 add_custom_command(
@@ -21,31 +21,43 @@ add_custom_command(
     ${CMAKE_SOURCE_DIR}/protobuf/ckksparams.proto
 )
 
-add_library(hit STATIC "")
-target_sources(hit
-  PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}/CKKSInstance.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/common.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/matrix.cpp
+# https://stackoverflow.com/a/49591908/925978
+# avoid running clang-tidy on generated files
+add_library(hit_proto
+  OBJECT
+    ${CMAKE_CURRENT_BINARY_DIR}/../protobuf/ciphertext.pb.h
     ${CMAKE_CURRENT_BINARY_DIR}/../protobuf/ciphertext.pb.cc
-    ${CMAKE_CURRENT_BINARY_DIR}/../protobuf/ckksparams.pb.cc
-)
-set_common_flags(hit)
+    ${CMAKE_CURRENT_BINARY_DIR}/../protobuf/ckksparams.pb.h
+    ${CMAKE_CURRENT_BINARY_DIR}/../protobuf/ckksparams.pb.cc)
 
-add_subdirectory(api)
-
-# disable all warnings for auto-generated files
+# disable all compiler and clang-tidy warnings for auto-generated files
 set_source_files_properties(
   ${CMAKE_CURRENT_BINARY_DIR}/../protobuf/ciphertext.pb.h
   ${CMAKE_CURRENT_BINARY_DIR}/../protobuf/ciphertext.pb.cc
   ${CMAKE_CURRENT_BINARY_DIR}/../protobuf/ckksparams.pb.h
   ${CMAKE_CURRENT_BINARY_DIR}/../protobuf/ckksparams.pb.cc
   PROPERTIES
-  COMPILE_FLAGS "-w"
+    COMPILE_FLAGS "-w"
 )
 
+set_target_properties(hit_proto
+  PROPERTIES
+    CXX_CLANG_TIDY "")
+
+add_library(hit STATIC "")
+target_sources(hit
+  PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/CKKSInstance.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/common.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/matrix.cpp
+    $<TARGET_OBJECTS:hit_proto>
+)
+set_common_flags(hit)
+
+add_subdirectory(api)
+
 target_include_directories(hit PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/hit>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
     $<INSTALL_INTERFACE:${HIT_INCLUDES_INSTALL_DIR}>
 )
 
