@@ -4,6 +4,9 @@
 #include "ciphertext.h"
 #include "../common.h"
 
+using namespace std;
+using namespace seal;
+
 // these values will be properly initilized by the implicit
 // copy constructor or during encryption.
 CKKSCiphertext::CKKSCiphertext():
@@ -23,10 +26,10 @@ void CKKSCiphertext::copyMetadataFrom(const CKKSCiphertext &src) {
   scale = src.scale;
 }
 
-CKKSCiphertext::CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context,
+CKKSCiphertext::CKKSCiphertext(const shared_ptr<SEALContext> &context,
   const protobuf::hit::Ciphertext &proto_ct) {
   if(proto_ct.version() != 0) {
-    throw std::invalid_argument("CKKSCiphertext serialization: Expected version 0");
+    throw invalid_argument("CKKSCiphertext serialization: Expected version 0");
   }
 
   height = proto_ct.height();
@@ -44,18 +47,18 @@ CKKSCiphertext::CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context
       encoded_pt[i] = proto_ct.encoded_pt(i);
     }
 
-    std::istringstream ctstream(proto_ct.sealct());
+    istringstream ctstream(proto_ct.sealct());
     seal_ct.load(context, ctstream);
   }
 }
 
-int CKKSCiphertext::getLevel(const std::shared_ptr<seal::SEALContext> &context) const {
+int CKKSCiphertext::getLevel(const shared_ptr<SEALContext> &context) const {
   return context->get_context_data(seal_ct.parms_id())->chain_index();
 }
 
-std::vector<double> CKKSCiphertext::getPlaintext() const {
+vector<double> CKKSCiphertext::getPlaintext() const {
   if(encoded_pt.empty()) {
-    throw std::invalid_argument("This ciphertext does not contain the raw plaintext. Use a different evaluator/encryptor in order to track the plaintext computation.");
+    throw invalid_argument("This ciphertext does not contain the raw plaintext. Use a different evaluator/encryptor in order to track the plaintext computation.");
   }
 
   return decodePlaintext(encoded_pt.data(), encoding, height, width, encoded_height, encoded_width);
@@ -78,7 +81,7 @@ void CKKSCiphertext::save(protobuf::hit::Ciphertext *proto_ct) const {
   proto_ct->set_helevel(he_level);
 
   if(encoding != UNINITIALIZED) {
-    std::ostringstream sealctBuf;
+    ostringstream sealctBuf;
     seal_ct.save(sealctBuf);
     proto_ct->set_sealct(sealctBuf.str());
 

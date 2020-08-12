@@ -6,10 +6,14 @@
 #include "../../sealutils.h"
 #include <iomanip>
 
-ScaleEstimator::ScaleEstimator(const std::shared_ptr<seal::SEALContext> &context, int poly_deg, double baseScale, bool verbose):
+using namespace std;
+using namespace seal;
+
+ScaleEstimator::ScaleEstimator(const shared_ptr<SEALContext> &context, int poly_deg, double baseScale, bool verbose):
   CKKSEvaluator(context, verbose), baseScale(baseScale), poly_deg(poly_deg) {
   ptEval = new PlaintextEval(context,verbose);
   dfEval = new DepthFinder(context,verbose);
+
   // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
   estimatedMaxLogScale = PLAINTEXT_LOG_MAX-60;
   auto context_data = context->first_context_data();
@@ -41,10 +45,10 @@ void ScaleEstimator::print_stats(const CKKSCiphertext &c) {
   for(const auto &prime : context_data->parms().coeff_modulus()) {
     logModulus += log2(prime.value());
   }
-  std::cout << "    + Plaintext logmax: " << log2(exactPlaintextMaxVal) <<
-          " bits (scaled: " << log2(c.scale)+log2(exactPlaintextMaxVal) << " bits)" << std::endl;
-  std::cout << "    + Total modulus size: " << std::setprecision(4) << logModulus << " bits" << std::endl;
-  std::cout << "    + Theoretical max log scale: " << getEstimatedMaxLogScale() << " bits" << std::endl;
+  cout << "    + Plaintext logmax: " << log2(exactPlaintextMaxVal) <<
+          " bits (scaled: " << log2(c.scale)+log2(exactPlaintextMaxVal) << " bits)" << endl;
+  cout << "    + Total modulus size: " << setprecision(4) << logModulus << " bits" << endl;
+  cout << "    + Theoretical max log scale: " << getEstimatedMaxLogScale() << " bits" << endl;
 }
 
 // At all times, we need c.scale*lInfNorm(c.getPlaintext()) <~ q/4
@@ -57,17 +61,17 @@ void ScaleEstimator::updateMaxLogScale(const CKKSCiphertext &c) {
   // update the estimatedMaxLogScale
   int scaleExp = static_cast<int>(round(log2(c.scale)/log2(baseScale)));
   if(scaleExp != 1 && scaleExp != 2) {
-    std::stringstream buffer;
+    stringstream buffer;
     buffer << "INTERNAL ERROR: scaleExp is not 1 or 2: got " << scaleExp << "\t" << log2(c.scale) << "\t" << log2(baseScale);
-    throw std::invalid_argument(buffer.str());
+    throw invalid_argument(buffer.str());
   }
   if (scaleExp > c.he_level) {
-    estimatedMaxLogScale = std::min(estimatedMaxLogScale, (PLAINTEXT_LOG_MAX-log2(lInfNorm(c.getPlaintext())))/(scaleExp-c.he_level));
+    estimatedMaxLogScale = min(estimatedMaxLogScale, (PLAINTEXT_LOG_MAX-log2(lInfNorm(c.getPlaintext())))/(scaleExp-c.he_level));
   }
   else if(scaleExp == c.he_level && log2(lInfNorm(c.getPlaintext())) > PLAINTEXT_LOG_MAX) {
-    std::stringstream buffer;
+    stringstream buffer;
     buffer << "Plaintext exceeded " << PLAINTEXT_LOG_MAX << " bits, which exceeds SEAL's capacity. Overflow is imminent.";
-    throw std::invalid_argument(buffer.str());
+    throw invalid_argument(buffer.str());
   }
   // else: scaleExp < c.he_level.
   // In this case, the constraint becomes estimatedMaxLogScale > (something less than 0).
@@ -130,7 +134,7 @@ CKKSCiphertext ScaleEstimator::multiply_plain_scalar_internal(const CKKSCipherte
   return dest;
 }
 
-CKKSCiphertext ScaleEstimator::multiply_plain_mat_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) {
+CKKSCiphertext ScaleEstimator::multiply_plain_mat_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
   // recursive call up the stack
   CKKSCiphertext dest_df = dfEval->multiply_plain_mat_internal(ct, plain);
   CKKSCiphertext dest_pt = ptEval->multiply_plain_mat_internal(ct, plain);
@@ -138,7 +142,7 @@ CKKSCiphertext ScaleEstimator::multiply_plain_mat_internal(const CKKSCiphertext 
 
   double plain_max = 0;
   for(int i = 0; i < ct.height*ct.width; i++) {
-    plain_max = std::max(plain_max, abs(plain[i]));
+    plain_max = max(plain_max, abs(plain[i]));
   }
   dest.scale = ct.scale * ct.scale;
   updateMaxLogScale(dest);
@@ -174,7 +178,7 @@ CKKSCiphertext ScaleEstimator::square_internal(const CKKSCiphertext &ct) {
 void ScaleEstimator::modDownTo_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
 
   if(ct.he_level == target.he_level && ct.scale != target.scale) {
-    throw std::invalid_argument("modDownTo: levels match, but scales do not.");
+    throw invalid_argument("modDownTo: levels match, but scales do not.");
   }
 
   // recursive call up the stack
@@ -190,7 +194,7 @@ void ScaleEstimator::modDownTo_internal(CKKSCiphertext &ct, const CKKSCiphertext
 
 void ScaleEstimator::modDownToMin_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
   if(ct1.he_level == ct2.he_level && ct1.scale != ct2.scale) {
-    throw std::invalid_argument("modDownToMin: levels match, but scales do not.");
+    throw invalid_argument("modDownToMin: levels match, but scales do not.");
   }
 
   if(ct1.he_level > ct2.he_level) {
@@ -215,7 +219,7 @@ CKKSCiphertext ScaleEstimator::modDownToLevel_internal(const CKKSCiphertext &ct,
   int lvlDiff = ct.he_level-level;
 
   if(level < 0) {
-    throw std::invalid_argument("modDownToLevel: level must be >= 0.");
+    throw invalid_argument("modDownToLevel: level must be >= 0.");
   }
 
   // recursive call up the stack
@@ -264,7 +268,7 @@ void ScaleEstimator::updatePlaintextMaxVal(double x) {
   // and if the scale is ~2^60, encoding will (rightly) fail
   int topHELevel = context->first_context_data()->chain_index();
   if (topHELevel == 0) {
-    estimatedMaxLogScale = std::min(estimatedMaxLogScale, (PLAINTEXT_LOG_MAX-log2(x)));
+    estimatedMaxLogScale = min(estimatedMaxLogScale, (PLAINTEXT_LOG_MAX-log2(x)));
   }
 }
 
@@ -286,9 +290,9 @@ double ScaleEstimator::getEstimatedMaxLogScale() const {
   int maxModBits = polyDegreeToMaxModBits(poly_deg);
   int topHELevel = context->first_context_data()->chain_index();
 
-  double estimated_log_scale = std::min(static_cast<double>(PLAINTEXT_LOG_MAX),estimatedMaxLogScale);
+  double estimated_log_scale = min(static_cast<double>(PLAINTEXT_LOG_MAX), estimatedMaxLogScale);
   if(topHELevel > 0) {
-    return std::min(estimated_log_scale, (maxModBits-120)/static_cast<double>(topHELevel));
+    return min(estimated_log_scale, (maxModBits-120)/static_cast<double>(topHELevel));
   }
   return estimated_log_scale;
 }

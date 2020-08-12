@@ -10,6 +10,7 @@ Checks: >
   performance-*,
   portability-*,
   readability-*,
+  -google-build-using-namespace,
   -modernize-use-nodiscard,
   -bugprone-branch-clone,
   -google-readability-braces-around-statements,

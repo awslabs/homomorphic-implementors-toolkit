@@ -6,8 +6,11 @@
 #include "../../common.h"
 #include <iomanip>
 
-DebugEval::DebugEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder, seal::Encryptor &encryptor,
-                     const seal::GaloisKeys &galois_keys, const seal::RelinKeys &relin_keys,
+using namespace std;
+using namespace seal;
+
+DebugEval::DebugEval(const shared_ptr<SEALContext> &context, CKKSEncoder &encoder, Encryptor &encryptor,
+                     const GaloisKeys &galois_keys, const RelinKeys &relin_keys,
                      double scale, CKKSDecryptor &decryptor, bool verbose):
   CKKSEvaluator(context, verbose), decryptor(decryptor), initScale(scale) {
   heEval = new HomomorphicEval(context, encoder, encryptor, galois_keys, relin_keys, verbose);
@@ -34,7 +37,7 @@ void DebugEval::checkScale(const CKKSCiphertext &ct) const {
     context_data = context_data->next_context_data();
   }
   if(ct.seal_ct.scale() != expectedScale && ct.seal_ct.scale() != expectedScale*expectedScale) {
-    throw std::invalid_argument("CHECK_SCALE: Expected " + std::to_string(expectedScale) + "^{1,2}, got " + std::to_string(ct.seal_ct.scale()));
+    throw invalid_argument("CHECK_SCALE: Expected " + to_string(expectedScale) + "^{1,2}, got " + to_string(ct.seal_ct.scale()));
   }
 }
 
@@ -43,78 +46,78 @@ void DebugEval::print_stats(const CKKSCiphertext &c) const {
   double norm = 0;
 
   // decrypt to compute the approximate plaintext
-  std::vector<double> homomPlaintext = decryptor.decrypt(c, false);
-  std::vector<double> exactPlaintext = c.getPlaintext();
+  vector<double> homomPlaintext = decryptor.decrypt(c, false);
+  vector<double> exactPlaintext = c.getPlaintext();
 
   norm = diff2Norm(exactPlaintext, homomPlaintext);
   if(abs(log2(c.scale)-log2(c.seal_ct.scale())) > 0.1) {
-    std::stringstream buffer;
+    stringstream buffer;
     buffer << "INTERNAL ERROR: SCALE COMPUTATION IS INCORRECT: " << log2(c.scale) << " != " << c.seal_ct.scale();
-    throw std::invalid_argument(buffer.str());
+    throw invalid_argument(buffer.str());
   }
 
-  VERBOSE(std::cout << std::setprecision(8) << "    + Approximation norm: " << norm << std::endl);
+  VERBOSE(cout << setprecision(8) << "    + Approximation norm: " << norm << endl);
 
   int maxPrintSize = 8;
-  VERBOSE(std::cout << "    + Homom Result:   < ");
-  for(int i = 0; i < std::min(maxPrintSize, static_cast<int>(homomPlaintext.size())); i++) {
-    VERBOSE(std::cout << std::setprecision(8) << homomPlaintext[i] << ", ");
+  VERBOSE(cout << "    + Homom Result:   < ");
+  for(int i = 0; i < min(maxPrintSize, static_cast<int>(homomPlaintext.size())); i++) {
+    VERBOSE(cout << setprecision(8) << homomPlaintext[i] << ", ");
   }
   if (homomPlaintext.size() > maxPrintSize) {
-    VERBOSE(std::cout << "... ");
+    VERBOSE(cout << "... ");
   }
-  VERBOSE(std::cout << ">" << std::endl);
+  VERBOSE(cout << ">" << endl);
 
   if(norm > MAX_NORM) {
-    std::stringstream buffer;
+    stringstream buffer;
     buffer << "DebugEvaluator: plaintext and ciphertext divergence: " <<
               norm << " > " << MAX_NORM << ". Scale is " << log2(seEval->baseScale) << ".";
 
     maxPrintSize = 32;
-    std::cout << "    + DEBUG Expected result: <";
-    for(int i = 0; i < std::min(maxPrintSize, static_cast<int>(exactPlaintext.size())); i++) {
-      std::cout << std::setprecision(8) << exactPlaintext[i];
+    cout << "    + DEBUG Expected result: <";
+    for(int i = 0; i < min(maxPrintSize, static_cast<int>(exactPlaintext.size())); i++) {
+      cout << setprecision(8) << exactPlaintext[i];
       if(i < exactPlaintext.size()-1) {
-        std::cout << ", ";
+        cout << ", ";
       }
     }
     if (exactPlaintext.size() > maxPrintSize) {
-      std::cout << "..., ";
+      cout << "..., ";
     }
-    std::cout << ">" << std::endl;
+    cout << ">" << endl;
 
-    std::cout << "    + DEBUG Actual result:   <";
-    for(int i = 0; i < std::min(maxPrintSize, static_cast<int>(homomPlaintext.size())); i++) {
-      std::cout << std::setprecision(8) << homomPlaintext[i];
+    cout << "    + DEBUG Actual result:   <";
+    for(int i = 0; i < min(maxPrintSize, static_cast<int>(homomPlaintext.size())); i++) {
+      cout << setprecision(8) << homomPlaintext[i];
       if(i < exactPlaintext.size()-1) {
-        std::cout << ", ";
+        cout << ", ";
       }
     }
     if (homomPlaintext.size() > maxPrintSize) {
-      std::cout << "..., ";
+      cout << "..., ";
     }
-    std::cout << ">" << std::endl;
+    cout << ">" << endl;
 
-    seal::Plaintext encoded_plain;
+    Plaintext encoded_plain;
     heEval->encoder.encode(c.encoded_pt.data(), seEval->baseScale, encoded_plain);
 
-    std::vector<double> decoded_plain;
+    vector<double> decoded_plain;
     heEval->encoder.decode(encoded_plain, decoded_plain);
 
     // the exactPlaintext and homomPlaintext should have the same length.
     // decoded_plain is full-dimensional, however. This may not match
     // the dimension of exactPlaintext if the plaintext in question is a
-    // std::vector, so we need to truncate the decoded value.
-    std::vector<double> truncated_decoded_plain(decoded_plain.begin(),decoded_plain.begin()+exactPlaintext.size());
+    // vector, so we need to truncate the decoded value.
+    vector<double> truncated_decoded_plain(decoded_plain.begin(),decoded_plain.begin()+exactPlaintext.size());
     double norm2 = diff2Norm(exactPlaintext, truncated_decoded_plain);
     double norm3 = diff2Norm(truncated_decoded_plain, homomPlaintext);
 
-    std::cout << "Encoding norm: " << norm2 << std::endl;
-    std::cout << "Encryption norm: " << norm3 << std::endl;
+    cout << "Encoding norm: " << norm2 << endl;
+    cout << "Encryption norm: " << norm3 << endl;
 
-    throw std::invalid_argument(buffer.str());
+    throw invalid_argument(buffer.str());
   }
-  VERBOSE(std::cout << std::endl);
+  VERBOSE(cout << endl);
 }
 
 CKKSCiphertext DebugEval::merge_cts(const CKKSCiphertext &ct_he, const CKKSCiphertext &ct_se) const { // NOLINT(readability-convert-member-functions-to-static)
@@ -184,7 +187,7 @@ CKKSCiphertext DebugEval::multiply_plain_scalar_internal(const CKKSCiphertext &c
   return dest;
 }
 
-CKKSCiphertext DebugEval::multiply_plain_mat_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) {
+CKKSCiphertext DebugEval::multiply_plain_mat_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
   // recursive calls
   checkScale(ct);
   CKKSCiphertext dest_he = heEval->multiply_plain_mat_internal(ct, plain);
@@ -264,11 +267,11 @@ void DebugEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
   seEval->rescale_to_next_inplace_internal(ct);
 
   // for some reason, the default is to print doubles with no decimal places.
-  // To get decimal places, add `<< fixed << std::setprecision(2)` before printing the log.
+  // To get decimal places, add `<< fixed << setprecision(2)` before printing the log.
   // Note that you'll need a lot of decimal places because these values are very close
   // to an integer.
-  VERBOSE(std::cout << "    + Scaled plaintext down by the ~" <<
-          prime_bit_len << "-bit prime " << std::hex << p << std::dec << std::endl);
+  VERBOSE(cout << "    + Scaled plaintext down by the ~" <<
+          prime_bit_len << "-bit prime " << hex << p << dec << endl);
 
   print_stats(ct);
   checkScale(ct);
