@@ -9,8 +9,8 @@
 
 namespace ublas = boost::numeric::ublas;
 
-typedef ublas::matrix<double,ublas::row_major,std::vector<double>> Matrix;
-typedef ublas::vector<double,std::vector<double>> Vector;
+typedef ublas::matrix<double,ublas::row_major,std::vector<double>> Matrix; // NOLINT(modernize-use-using)
+typedef ublas::vector<double,std::vector<double>> Vector; // NOLINT(modernize-use-using)
 
 /* Encode a C++ vector representing a linear algebra row vector as
  * a matrix of width `width`, where each column is the input.
@@ -26,7 +26,7 @@ Matrix colVecToMatrix(const std::vector<double> &x, int height);
  * return a single matrix [ A_0 | A_1 | ... | A_n ] that concatenates
  * the matrices horizontally.
  */
-Matrix matrixRowConcat(const std::vector<Matrix> xs);
+Matrix matrixRowConcat(const std::vector<Matrix> &xs);
 
 Matrix hadamard_prod(const Matrix &a, const Matrix &b);
 

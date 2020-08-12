@@ -11,7 +11,7 @@ uint64_t elapsedTimeMs(timepoint start, timepoint end) {
 }
 
 string elapsedTimeToStr(timepoint start, timepoint end, TimeScale ts) {
-  double elapsedMs = (double)elapsedTimeMs(start, end);
+  auto elapsedMs = static_cast<double>(elapsedTimeMs(start, end));
   stringstream buffer;
   double msPerSec = 1000;
   double msPerMin = 60 * msPerSec;
@@ -58,29 +58,29 @@ void printElapsedTime(timepoint start) {
   cout << elapsedTimeToStr(start,end) << endl;
 }
 
-vector<double> decodePlaintext(const vector<double> x, CTEncoding enc,
+vector<double> decodePlaintext(const vector<double> &encoded_pt, CTEncoding encoding,
                                int height, int width, int encoded_height, int encoded_width) {
   vector<double> dest;
 
-  if(enc == COL_VEC && (width != 1 || height != encoded_width)) {
+  if(encoding == COL_VEC && (width != 1 || height != encoded_width)) {
     stringstream buffer;
     buffer << "Invalid column vector encoding: real size= " << height << "x" << width << "; encoded size= " << encoded_height << "x" << encoded_width;
     throw invalid_argument(buffer.str());
   }
-  if(enc == ROW_VEC && (height != 1 || width != encoded_height)) {
+  if(encoding == ROW_VEC && (height != 1 || width != encoded_height)) {
     stringstream buffer;
     buffer << "Invalid row vector encoding: real size= " << height << "x" << width << "; encoded size= " << encoded_height << "x" << encoded_width;
     throw invalid_argument(buffer.str());
   }
 
-  if(enc == MATRIX || enc == ROW_MAT || enc == COL_MAT || enc == COL_VEC) {
+  if(encoding == MATRIX || encoding == ROW_MAT || encoding == COL_MAT || encoding == COL_VEC) {
     int size = height*width;
-    dest = vector<double>(x.begin(),x.begin()+size);
+    dest = vector<double>(encoded_pt.begin(), encoded_pt.begin()+size);
   }
   else { // encoding is a row vector, which becomes the columns of the matrix
     for(int i = 0; i < width; i++) {
       // puts the left column into the destination, which corresponds to the encoded row vector
-      dest.push_back(x[i*encoded_width]);
+      dest.push_back(encoded_pt[i*encoded_width]);
     }
   }
   return dest;
@@ -135,7 +135,7 @@ bool isPow2(int x) {
   if (x < 1) {
     return false;
   }
-  else if (x == 1) {
+  else if (x == 1) { // NOLINT(readability-else-after-return)
     return true;
   }
   // x > 1 and not 0 mod 2 => not a power of 2
@@ -149,7 +149,7 @@ bool isPow2(int x) {
 
 int polyDegreeToMaxModBits(int poly_modulus_degree) {
   if(poly_modulus_degree == 1024)       { return 27;  }
-  else if(poly_modulus_degree == 2048)  { return 54;  }
+  else if(poly_modulus_degree == 2048)  { return 54;  } // NOLINT(readability-else-after-return)
   else if(poly_modulus_degree == 4096)  { return 109; }
   else if(poly_modulus_degree == 8192)  { return 218; }
   else if(poly_modulus_degree == 16384) { return 438; }
@@ -188,7 +188,7 @@ int modulusToPolyDegree(int modBits) {
   //     | 32768               | 881                          |
   //     +---------------------+------------------------------+
   if(modBits <= 27)       { return 1024; }
-  else if(modBits <= 54)  { return 2048; }
+  else if(modBits <= 54)  { return 2048; } // NOLINT(readability-else-after-return)
   else if(modBits <= 109) { return 4096; }
   else if(modBits <= 218) { return 8192; }
   else if(modBits <= 438) { return 16384; }
@@ -250,8 +250,8 @@ void securityWarningBox(const string &str, WARN_LEVEL level) {
 
 double lInfNorm(const vector<double> &x) {
   double xmax = 0;
-  for(int i = 0; i < x.size(); i++) {
-    xmax = max(xmax,abs(x[i]));
+  for(double i : x) {
+    xmax = max(xmax,abs(i));
   }
   return xmax;
 }
@@ -263,7 +263,7 @@ vector<double> randomVector(int dim, double maxNorm) {
 
   for(int i = 0; i < dim; i++) {
     // generate a random double between -maxNorm and maxNorm
-    double a = -maxNorm + (((double)random())/((double)RAND_MAX))*(2*maxNorm);
+    double a = -maxNorm + ((static_cast<double>(random()))/(static_cast<double>(RAND_MAX)))*(2*maxNorm);
     x.push_back(a);
   }
   return x;
@@ -281,49 +281,49 @@ uintmax_t streamSize(iostream &s) {
 
 // Extract the side-by-side plaintext from the ciphertext. Note that there is no decryption happening!
 // This returns the "debug" plaintext.
-Matrix ctPlaintextToMatrix(CKKSCiphertext &x) {
-  return Matrix(x.height, x.width, x.getPlaintext());
+Matrix ctPlaintextToMatrix(const CKKSCiphertext &ct) {
+  return Matrix(ct.height, ct.width, ct.getPlaintext());
 }
 
 // Extract the encrypted plaintext from the ciphertext. This actually decrypts and returns the output.
-Matrix ctDecryptedToMatrix(CKKSInstance &inst, CKKSCiphertext &x) {
-  return Matrix(x.height, x.width, inst.decrypt(x));
+Matrix ctDecryptedToMatrix(CKKSInstance &inst, const CKKSCiphertext &ct) {
+  return Matrix(ct.height, ct.width, inst.decrypt(ct));
 }
 
 // Extract the debug plaintext from each ciphertext and concatenate the results side-by-side.
-Matrix ctPlaintextToMatrix(vector<CKKSCiphertext> &xs) {
+Matrix ctPlaintextToMatrix(const vector<CKKSCiphertext> &cts) {
   vector<Matrix> mats;
-
-  for(int i = 0; i < xs.size(); i++) {
-    mats.push_back(ctPlaintextToMatrix(xs[i]));
+  mats.reserve(cts.size());
+  for(const auto &ct : cts) {
+    mats.push_back(ctPlaintextToMatrix(ct));
   }
   return matrixRowConcat(mats);
 }
 
-Vector ctPlaintextToVector(std::vector<CKKSCiphertext> &xs) {
+Vector ctPlaintextToVector(const vector<CKKSCiphertext> &cts) {
   vector<double> stdvec;
-  for(int i = 0; i < xs.size(); i++) {
-    vector<double> v = xs[i].getPlaintext();
+  for(const auto &ct : cts) {
+    vector<double> v = ct.getPlaintext();
     stdvec.insert(stdvec.end(), v.begin(), v.end());
   }
   return fromStdVector(stdvec);
 }
 
 // Decrypt each ciphertext and concatenate the results side-by-side.
-Matrix ctDecryptedToMatrix(CKKSInstance &inst, vector<CKKSCiphertext> &xs) {
+Matrix ctDecryptedToMatrix(CKKSInstance &inst, const vector<CKKSCiphertext> &cts) {
   vector<Matrix> mats;
-
-  for(int i = 0; i < xs.size(); i++) {
-    mats.push_back(ctDecryptedToMatrix(inst, xs[i]));
+  mats.reserve(cts.size());
+  for(const auto &ct : cts) {
+    mats.push_back(ctDecryptedToMatrix(inst, ct));
   }
 
   return matrixRowConcat(mats);
 }
 
-Vector ctDecryptedToVector(CKKSInstance &inst, std::vector<CKKSCiphertext> &xs) {
+Vector ctDecryptedToVector(CKKSInstance &inst, const vector<CKKSCiphertext> &cts) {
   vector<double> stdvec;
-  for(int i = 0; i < xs.size(); i++) {
-    vector<double> v = inst.decrypt(xs[i]);
+  for(const auto &ct : cts) {
+    vector<double> v = inst.decrypt(ct);
     stdvec.insert(stdvec.end(), v.begin(), v.end());
   }
   return fromStdVector(stdvec);

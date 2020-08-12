@@ -6,7 +6,7 @@
 #include "seal/seal.h"
 #include "seal/context.h"
 #include "../matrix.h"
-#include "protobuf/ciphertext.pb.h"
+#include "protobuf/ciphertext.pb.h" // NOLINT
 
 /* This is a wrapper around the SEAL `Ciphertext` type.
  * It tracks the plaintext dimension, since in PPLR,
@@ -25,28 +25,28 @@
 enum CTEncoding { MATRIX, COL_VEC, ROW_VEC, COL_MAT, ROW_MAT, UNINITIALIZED };
 
 struct CKKSCiphertext {
-  seal::Ciphertext sealct;
-  int height;
-  int width;
-  int encoded_height;
-  int encoded_width;
-  CTEncoding encoding;
+  seal::Ciphertext seal_ct;
+  int height; // NOLINT(modernize-use-default-member-init)
+  int width; // NOLINT(modernize-use-default-member-init)
+  int encoded_height; // NOLINT(modernize-use-default-member-init)
+  int encoded_width; // NOLINT(modernize-use-default-member-init)
+  CTEncoding encoding; // NOLINT(modernize-use-default-member-init)
 
   // the next three items are for used by some evaluators to track additional metadata
 
   // heLevel is used by the depthFinder
-  int heLevel;
+  int he_level; // NOLINT(modernize-use-default-member-init)
 
   // `plain` is used by the Plaintext evaluator
   Vector encoded_pt;
 
   // `scale` is used by the ScaleEstimator evaluator
-  double scale;
+  double scale; // NOLINT(modernize-use-default-member-init)
 
   // A default constructor is useful since we often write, e.g, `Ciphertext &a;`
   CKKSCiphertext();
 
-  CKKSCiphertext(std::shared_ptr<seal::SEALContext> &context, const protobuf::hit::Ciphertext &c);
+  CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context, const protobuf::hit::Ciphertext &proto_ct);
 
   // Copy all members except the ciphertext itself
   void copyMetadataFrom(const CKKSCiphertext &src);
@@ -61,5 +61,5 @@ struct CKKSCiphertext {
   std::vector<double> getPlaintext() const;
 
   protobuf::hit::Ciphertext* save() const;
-  void save(protobuf::hit::Ciphertext *c) const;
+  void save(protobuf::hit::Ciphertext *proto_ct) const;
 };

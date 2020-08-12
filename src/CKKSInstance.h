@@ -8,7 +8,7 @@
 #include "api/encryptor.h"
 #include "api/evaluator.h"
 #include "api/decryptor.h"
-#include "protobuf/ckksparams.pb.h"
+#include "protobuf/ckksparams.pb.h" // NOLINT
 
 /* Wraps SEAL boilerplate into a single object that
  * holds keys, encoders, encryptors, decryptors,
@@ -58,7 +58,7 @@ public:
    */
   static CKKSInstance* getNewHomomorphicInstance(
     int numSlots, int multDepth, int logScale, bool verbose=false,
-    bool useSEALParams=true, std::vector<int> galois_steps=std::vector<int>());
+    bool useSEALParams=true, const std::vector<int> &galois_steps=std::vector<int>());
 
   static CKKSInstance* loadHomomorphicInstance(
     std::istream &paramsStream, std::istream &galoisKeyStream,
@@ -74,7 +74,7 @@ public:
    */
   static CKKSInstance* getNewDebugInstance(
     int numSlots, int multDepth, int logScale, bool verbose=false,
-    bool useSEALParams=true, std::vector<int> galois_steps=std::vector<int>());
+    bool useSEALParams=true, const std::vector<int> &galois_steps=std::vector<int>());
 
   /* Create a new debug instance from the provided parameters and keys */
   static CKKSInstance* loadDebugInstance(
@@ -94,14 +94,14 @@ public:
 
   ~CKKSInstance();
 
-  void encryptMatrix(const Matrix, CKKSCiphertext &destination, int level = -1);
+  void encryptMatrix(const Matrix& mat, CKKSCiphertext &destination, int level = -1);
 
   /* Encrypt a C++ vector representing a linear algebra column vector.
    * We first encode the vector as a matrix
    * where each row is `plain`; see pplr.cpp for details.
    * This requires the target matrix height as a parameter.
    */
-  void encryptColVec(const std::vector<double> &plain, const int matHeight,
+  void encryptColVec(const std::vector<double> &plain, int matHeight,
                      CKKSCiphertext &destination, int level = -1);
 
   /* Encrypt a C++ vector representing a linear algebra row vector.
@@ -109,7 +109,7 @@ public:
    * where each column is `plain`; see pplr.cpp for details.
    * This requires the target matrix width as a parameter.
    */
-  void encryptRowVec(const std::vector<double> &plain, const int matWidth,
+  void encryptRowVec(const std::vector<double> &plain, int matWidth,
                      CKKSCiphertext &destination, int level = -1);
 
   // verbose flag enables a warning if you decrypt when the ciphertext is not at level 0
@@ -134,28 +134,28 @@ public:
   // reuse this instance for another computation
   void reset();
 
-private:
-  CKKSInstance(const CKKSInstance &) = delete;
+  CKKSInstance(const CKKSInstance&) = delete;
   CKKSInstance& operator=(const CKKSInstance&) = delete;
   CKKSInstance(CKKSInstance&&) = delete;
   CKKSInstance& operator=(CKKSInstance&&) = delete;
 
+private:
   // instances without keys
   CKKSInstance(Mode m, int numSlots, int multDepth, int logScale,
                bool verbose, bool useSEALParams);
 
   // generate all keys
   CKKSInstance(int numSlots, int multDepth, int logScale, bool verbose,
-               bool useSEALParams, bool debug, std::vector<int> galois_steps);
+               bool useSEALParams, bool debug, const std::vector<int> &galois_steps);
 
   // loading an instance from streams
   CKKSInstance(std::istream &paramsStream, std::istream *galoisKeyStream,
                std::istream *relinKeyStream, std::istream *secretKeyStream,
                bool verbose, Mode m);
 
-  int genModulusVec(int levels, std::vector<int> &modulusVector);
+  int genModulusVec(int numPrimes, std::vector<int> &modulusVector) const;
   void setMaxVal(const std::vector<double> &plain);
-  void sharedParamInit(int numSlots, int multDepth, int logScale, bool useSEALParams, bool verbose);
+  void sharedParamInit(int numSlots, int multDepth, int logScaleIn, bool useSEALParams, bool verbose);
   protobuf::hit::CKKSParams saveCKKSParams();
 
   seal::Encryptor *sealEncryptor;
@@ -180,4 +180,4 @@ uint64_t estimateKeySize(int numGaloisShift, int ptslots, int depth);
 // `mode` can be `NORMAL`, `DEBUG`, or `NONEVALUATION`. `NORMAL` results in a standard homomorphic evaluator, while `DEBUG` loads a debug evaluator.
 // `NONEVALUATION` is useful for cliend-side computation which don't need to perform any evaluation. A `NONEVALUATION` instance can
 // *ONLY* be used for encryption and decryption.
-CKKSInstance* tryLoadInstance(int numSlots, int multDepth, int logScale, Mode mode, std::vector<int> galois_steps=std::vector<int>());
+CKKSInstance* tryLoadInstance(int numSlots, int multDepth, int logScale, Mode mode, const std::vector<int> &galois_steps=std::vector<int>());

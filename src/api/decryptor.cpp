@@ -7,8 +7,8 @@
 using namespace std;
 using namespace seal;
 
-CKKSDecryptor::CKKSDecryptor(const shared_ptr<SEALContext> context, CKKSEncoder *enc, const SecretKey &secret_key):
-  encoder(enc), context(context) {
+CKKSDecryptor::CKKSDecryptor(const shared_ptr<SEALContext> &context, CKKSEncoder *encoder, const SecretKey &secret_key):
+  encoder(encoder), context(context) {
   decryptor = new Decryptor(context, secret_key);
 }
 
@@ -24,7 +24,7 @@ vector<double> CKKSDecryptor::decrypt(const CKKSCiphertext &encrypted, bool verb
     cout << "WARNING: Decrypting a ciphertext that is not at level 0! Consider starting with a smaller modulus to improve performance!" << endl;
   }
 
-  decryptor->decrypt(encrypted.sealct, temp);
+  decryptor->decrypt(encrypted.seal_ct, temp);
 
   vector<double> temp_vec;
   encoder->decode(temp, temp_vec);

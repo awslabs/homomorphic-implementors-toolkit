@@ -1,0 +1,36 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+Checks: >
+  -*,
+  bugprone-*,
+  google-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -google-build-using-namespace,
+  -modernize-use-nodiscard,
+  -bugprone-branch-clone,
+  -google-readability-braces-around-statements,
+  -google-readability-namespace-comments,
+  -google-runtime-references,
+  -misc-non-private-member-variables-in-classes,
+  -modernize-return-braced-init-list,
+  -modernize-use-trailing-return-type,
+  -modernize-avoid-c-arrays,
+  -performance-move-const-arg,
+  -readability-braces-around-statements,
+  -readability-magic-numbers,
+  -readability-named-parameter,
+  -readability-redundant-declaration
+HeaderFilterRegex: "(src/api/|src/CKKSInstance|src/common|src/matrix|src/sealutils).*\\.h$"
+CheckOptions:
+  - key: bugprone-argument-comment.StrictMode
+    value: 1
+  - key: bugprone-exception-escape.FunctionsThatShouldNotThrow
+    value: WinMain,SDL_main
+  - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value: 1
+FormatStyle: 'file'
