@@ -80,12 +80,12 @@ private:
   HomomorphicEval *heEval;
   ScaleEstimator *seEval;
 
-  void print_stats(const CKKSCiphertext &ct);
+  void print_stats(const CKKSCiphertext &ct) const;
 
   CKKSDecryptor &decryptor;
   void checkScale(const CKKSCiphertext &ct) const;
   double initScale;
 
-  CKKSCiphertext merge_cts(const CKKSCiphertext &ct_he, const CKKSCiphertext &ct_se) const; // NOLINT(readability-convert-member-functions-to-static)
+  CKKSCiphertext merge_cts(const CKKSCiphertext &ct_he, const CKKSCiphertext &ct_se) const;
 };
 

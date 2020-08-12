@@ -47,7 +47,7 @@ Matrix matrixRowConcat(const std::vector<Matrix> &xs) {
 
   std::vector<double> cmatdata;
   for(int row = 0; row < h; row++) {
-    for(const auto & x : xs) {
+    for(const auto &x : xs) {
       int w = x.size2();
       for(int col = 0; col < w; col++) {
         cmatdata.push_back(x.data()[row*w+col]);

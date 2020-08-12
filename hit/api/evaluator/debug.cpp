@@ -39,7 +39,7 @@ void DebugEval::checkScale(const CKKSCiphertext &ct) const {
 }
 
 // print some debug info
-void DebugEval::print_stats(const CKKSCiphertext &c) {
+void DebugEval::print_stats(const CKKSCiphertext &c) const {
   double norm = 0;
 
   // decrypt to compute the approximate plaintext
@@ -117,7 +117,7 @@ void DebugEval::print_stats(const CKKSCiphertext &c) {
   VERBOSE(std::cout << std::endl);
 }
 
-DebugEval::CKKSCiphertext merge_cts(const CKKSCiphertext &ct_he, const CKKSCiphertext &ct_se) const {
+CKKSCiphertext DebugEval::merge_cts(const CKKSCiphertext &ct_he, const CKKSCiphertext &ct_se) const { // NOLINT(readability-convert-member-functions-to-static)
   CKKSCiphertext t = ct_he;
   t.copyMetadataFrom(ct_se);
   return t;
