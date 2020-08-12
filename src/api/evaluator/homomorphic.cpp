@@ -8,12 +8,15 @@
 #include "homomorphic.h"
 #include <future>
 
-HomomorphicEval::HomomorphicEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder, seal::Encryptor &encryptor,
-                                 const seal::GaloisKeys &galois_keys, const seal::RelinKeys &relin_keys, bool verbose):
+using namespace std;
+using namespace seal;
+
+HomomorphicEval::HomomorphicEval(const shared_ptr<SEALContext> &context, CKKSEncoder &encoder, Encryptor &encryptor,
+                                 const GaloisKeys &galois_keys, const RelinKeys &relin_keys, bool verbose):
   /* This evaluator never prints anything, so CKKSEvaluator can be non-verbose */
   CKKSEvaluator(context, verbose), evaluator(context), encoder(encoder), encryptor(encryptor),
   galois_keys(galois_keys), relin_keys(relin_keys) {
-    evalPolicy = std::launch::async;
+    evalPolicy = launch::async;
 }
 
 HomomorphicEval::~HomomorphicEval() = default;
@@ -34,7 +37,7 @@ CKKSCiphertext HomomorphicEval::rotate_vector_left_internal(const CKKSCiphertext
 
 CKKSCiphertext HomomorphicEval::add_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) {
   CKKSCiphertext dest = ct;
-  seal::Plaintext encoded_plain;
+  Plaintext encoded_plain;
   encoder.encode(scalar, ct.seal_ct.parms_id(), ct.seal_ct.scale(), encoded_plain);
   evaluator.add_plain(ct.seal_ct, encoded_plain, dest.seal_ct);
   return dest;
@@ -43,9 +46,9 @@ CKKSCiphertext HomomorphicEval::add_plain_scalar_internal(const CKKSCiphertext &
 CKKSCiphertext HomomorphicEval::add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
   // check that ciphertexts are at the same level to avoid an obscure SEAL error
   if(ct1.getLevel(context) != ct2.getLevel(context)) {
-    std::stringstream buffer;
+    stringstream buffer;
     buffer << "PPLR: Error in HomomorphicEval::add: input levels do not match: " << ct1.getLevel(context) << " != " << ct2.getLevel(context);
-    throw std::invalid_argument(buffer.str());
+    throw invalid_argument(buffer.str());
   }
   CKKSCiphertext dest = ct1;
   evaluator.add_inplace(dest.seal_ct, ct2.seal_ct);
@@ -56,7 +59,7 @@ CKKSCiphertext HomomorphicEval::add_internal(const CKKSCiphertext &ct1, const CK
 CKKSCiphertext HomomorphicEval::multiply_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) {
   CKKSCiphertext dest = ct;
   if(scalar != 0.0) {
-    seal::Plaintext encoded_plain;
+    Plaintext encoded_plain;
     encoder.encode(scalar, ct.seal_ct.parms_id(), ct.seal_ct.scale(), encoded_plain);
     evaluator.multiply_plain(ct.seal_ct, encoded_plain, dest.seal_ct);
   }
@@ -68,12 +71,12 @@ CKKSCiphertext HomomorphicEval::multiply_plain_scalar_internal(const CKKSCiphert
   return dest;
 }
 
-CKKSCiphertext HomomorphicEval::multiply_plain_mat_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) {
+CKKSCiphertext HomomorphicEval::multiply_plain_mat_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
   if (plain.size() != ct.width*ct.height) {
-    throw std::invalid_argument("PPLR: Error in HomomorphicEval::multiply_plain: plaintext size does not match ciphertext size");
+    throw invalid_argument("PPLR: Error in HomomorphicEval::multiply_plain: plaintext size does not match ciphertext size");
   }
   CKKSCiphertext dest = ct;
-  seal::Plaintext temp;
+  Plaintext temp;
   encoder.encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
   evaluator.multiply_plain_inplace(dest.seal_ct, temp);
   return dest;
@@ -82,9 +85,9 @@ CKKSCiphertext HomomorphicEval::multiply_plain_mat_internal(const CKKSCiphertext
 CKKSCiphertext HomomorphicEval::multiply_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
   // check that ciphertexts are at the same level to avoid an obscure SEAL error
   if(ct1.getLevel(context) != ct2.getLevel(context)) {
-    std::stringstream buffer;
+    stringstream buffer;
     buffer << "PPLR: Error in HomomorphicEval::multiply: input levels do not match: " << ct1.getLevel(context) << " != " << ct2.getLevel(context);
-    throw std::invalid_argument(buffer.str());
+    throw invalid_argument(buffer.str());
   }
   CKKSCiphertext dest = ct1;
   evaluator.multiply_inplace(dest.seal_ct, ct2.seal_ct);
@@ -99,10 +102,10 @@ CKKSCiphertext HomomorphicEval::square_internal(const CKKSCiphertext &ct) {
 
 void HomomorphicEval::modDownTo_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
   if(ct.getLevel(context) < target.getLevel(context)) {
-    std::stringstream buffer;
+    stringstream buffer;
     buffer << "PPLR: Error in modDownTo: input is at a lower level than target. Input level: "
            << ct.getLevel(context) << ", target level: " << target.getLevel(context);
-    throw std::invalid_argument(buffer.str());
+    throw invalid_argument(buffer.str());
   }
   while(ct.getLevel(context) > target.getLevel(context)) {
     ct = multiply_plain_scalar(ct, 1);
@@ -121,10 +124,10 @@ void HomomorphicEval::modDownToMin_internal(CKKSCiphertext &ct1, CKKSCiphertext 
 
 CKKSCiphertext HomomorphicEval::modDownToLevel_internal(const CKKSCiphertext &ct, int level) {
   if(ct.getLevel(context) < level) {
-    std::stringstream buffer;
+    stringstream buffer;
     buffer << "PPLR: Error in modDownTo: input is at a lower level than target. Input level: "
            << ct.getLevel(context) << ", target level: " << level;
-    throw std::invalid_argument(buffer.str());
+    throw invalid_argument(buffer.str());
   }
   CKKSCiphertext y = ct;
   while(y.getLevel(context) > level) {
