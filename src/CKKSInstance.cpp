@@ -112,7 +112,7 @@ CKKSInstance::CKKSInstance(Mode m, int numSlots, int multDepth, int logScale, bo
 }
 
 void CKKSInstance::sharedParamInit(int numSlots, int multDepth, int logScaleIn, bool useSEALParams, bool verbose) {
-  this->logScale = logScaleIn;
+  logScale = logScaleIn;
   if(!isPow2(numSlots) || numSlots < 4096) {
     std::stringstream buffer;
     buffer << "Invalid parameters: numSlots must be a power of 2, and at least 4096. Got " << numSlots;
