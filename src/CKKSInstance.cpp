@@ -428,14 +428,14 @@ CKKSInstance::~CKKSInstance() {
   delete params;
 }
 
-int CKKSInstance::genModulusVec(int levels, vector<int> &modulusVector) const {
+int CKKSInstance::genModulusVec(int numPrimes, vector<int> &modulusVector) const {
 
   // covers the initial and final 60-bit modulus
   int modBits = 120;
   // the SEAL examples recommend the last modulus be 60 bits; it's unclear why,
   // and also unclear how closely that choice is related to logScale (they use 40 in their examples)
   modulusVector.push_back(60);
-  for(int i = 2; i < levels; i++) {
+  for(int i = 2; i < numPrimes; i++) {
     modBits += logScale;
     modulusVector.push_back(logScale);
   }
