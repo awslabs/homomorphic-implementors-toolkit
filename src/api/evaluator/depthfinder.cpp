@@ -24,17 +24,12 @@ namespace hit {
         cout << "    + Level: " << ct.he_level << endl;
     }
 
-    CKKSCiphertext DepthFinder::rotate_vector_right_internal(const CKKSCiphertext &ct, int) {
+    CKKSCiphertext DepthFinder::rotate_right_internal(const CKKSCiphertext &ct, int) {
         VERBOSE(print_stats(ct));
         return ct;
     }
 
-    CKKSCiphertext DepthFinder::rotate_vector_left_internal(const CKKSCiphertext &ct, int) {
-        VERBOSE(print_stats(ct));
-        return ct;
-    }
-
-    CKKSCiphertext DepthFinder::add_plain_scalar_internal(const CKKSCiphertext &ct, double) {
+    CKKSCiphertext DepthFinder::rotate_left_internal(const CKKSCiphertext &ct, int) {
         VERBOSE(print_stats(ct));
         return ct;
     }
@@ -51,12 +46,34 @@ namespace hit {
         return ct1;
     }
 
-    CKKSCiphertext DepthFinder::multiply_plain_scalar_internal(const CKKSCiphertext &ct, double) {
+    CKKSCiphertext DepthFinder::add_plain_internal(const CKKSCiphertext &ct, double) {
         VERBOSE(print_stats(ct));
         return ct;
     }
 
-    CKKSCiphertext DepthFinder::multiply_plain_mat_internal(const CKKSCiphertext &ct, const vector<double> &) {
+    CKKSCiphertext DepthFinder::add_plain_internal(const CKKSCiphertext &ct, const vector<double> &) {
+        VERBOSE(print_stats(ct));
+        return ct;
+    }
+
+    CKKSCiphertext DepthFinder::sub_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
+        // check that ciphertexts are at the same level to avoid an obscure SEAL error
+        if (ct1.he_level != ct2.he_level) {
+            stringstream buffer;
+            buffer << "PPLR: Error in DepthFinder::sub: input levels do not match: " << ct1.he_level
+                   << " != " << ct2.he_level;
+            throw invalid_argument(buffer.str());
+        }
+        VERBOSE(print_stats(ct1));
+        return ct1;
+    }
+
+    CKKSCiphertext DepthFinder::sub_plain_internal(const CKKSCiphertext &ct, double) {
+        VERBOSE(print_stats(ct));
+        return ct;
+    }
+
+    CKKSCiphertext DepthFinder::sub_plain_internal(const CKKSCiphertext &ct, const vector<double> &) {
         VERBOSE(print_stats(ct));
         return ct;
     }
@@ -73,21 +90,33 @@ namespace hit {
         return ct1;
     }
 
+    CKKSCiphertext DepthFinder::multiply_plain_internal(const CKKSCiphertext &ct, double) {
+        VERBOSE(print_stats(ct));
+        return ct;
+    }
+
+    CKKSCiphertext DepthFinder::multiply_plain_internal(const CKKSCiphertext &ct, const vector<double> &) {
+        VERBOSE(print_stats(ct));
+        return ct;
+    }
+
     CKKSCiphertext DepthFinder::square_internal(const CKKSCiphertext &ct) {
         VERBOSE(print_stats(ct));
         return ct;
     }
 
-    void DepthFinder::modDownTo_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
-        if (ct.he_level >= target.he_level) {
-            ct.he_level = target.he_level;
+    CKKSCiphertext DepthFinder::mod_down_to_internal(const CKKSCiphertext &ct, const CKKSCiphertext &target) {
+        CKKSCiphertext dest = ct;
+        if (dest.he_level >= target.he_level) {
+            dest.he_level = target.he_level;
         } else {
             throw invalid_argument("ct level is below target level");
         }
-        VERBOSE(print_stats(ct));
+        VERBOSE(print_stats(dest));
+        return dest;
     }
 
-    void DepthFinder::modDownToMin_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
+    void DepthFinder::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
         int minLevel = min(ct1.he_level, ct2.he_level);
         ct1.he_level = minLevel;
         ct2.he_level = minLevel;
@@ -96,7 +125,7 @@ namespace hit {
         VERBOSE(print_stats(ct1));
     }
 
-    CKKSCiphertext DepthFinder::modDownToLevel_internal(const CKKSCiphertext &ct, int level) {
+    CKKSCiphertext DepthFinder::mod_down_to_level_internal(const CKKSCiphertext &ct, int level) {
         CKKSCiphertext ct_out = ct;
         if (ct.he_level >= level) {
             ct_out.he_level = level;
@@ -107,11 +136,13 @@ namespace hit {
         return ct_out;
     }
 
-    void DepthFinder::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
+    CKKSCiphertext DepthFinder::rescale_to_next_internal(const CKKSCiphertext &ct) {
+        CKKSCiphertext dest = ct;
         int topHELevel = context->first_context_data()->chain_index();
-        ct.he_level--;
-        multiplicativeDepth = max(multiplicativeDepth, topHELevel - ct.he_level);
-        VERBOSE(print_stats(ct));
+        dest.he_level--;
+        multiplicativeDepth = max(multiplicativeDepth, topHELevel - dest.he_level);
+        VERBOSE(print_stats(dest));
+        return dest;
     }
 
     void DepthFinder::relinearize_inplace_internal(CKKSCiphertext &) {

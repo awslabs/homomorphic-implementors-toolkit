@@ -32,29 +32,37 @@ namespace hit {
         int getMultiplicativeDepth() const;
 
        protected:
-        CKKSCiphertext rotate_vector_right_internal(const CKKSCiphertext &ct, int steps) override;
+        CKKSCiphertext rotate_right_internal(const CKKSCiphertext &ct, int steps) override;
 
-        CKKSCiphertext rotate_vector_left_internal(const CKKSCiphertext &ct, int steps) override;
-
-        CKKSCiphertext add_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) override;
+        CKKSCiphertext rotate_left_internal(const CKKSCiphertext &ct, int steps) override;
 
         CKKSCiphertext add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
 
-        CKKSCiphertext multiply_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) override;
+        CKKSCiphertext add_plain_internal(const CKKSCiphertext &ct, double scalar) override;
 
-        CKKSCiphertext multiply_plain_mat_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) override;
+        CKKSCiphertext add_plain_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) override;
+
+        CKKSCiphertext sub_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
+
+        CKKSCiphertext sub_plain_internal(const CKKSCiphertext &ct, double scalar) override;
+
+        CKKSCiphertext sub_plain_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) override;
 
         CKKSCiphertext multiply_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
 
+        CKKSCiphertext multiply_plain_internal(const CKKSCiphertext &ct, double scalar) override;
+
+        CKKSCiphertext multiply_plain_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) override;
+
         CKKSCiphertext square_internal(const CKKSCiphertext &ct) override;
 
-        void modDownTo_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) override;
+        CKKSCiphertext mod_down_to_internal(const CKKSCiphertext &ct, const CKKSCiphertext &target) override;
 
-        void modDownToMin_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) override;
+        void mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) override;
 
-        CKKSCiphertext modDownToLevel_internal(const CKKSCiphertext &ct, int level) override;
+        CKKSCiphertext mod_down_to_level_internal(const CKKSCiphertext &ct, int level) override;
 
-        void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
+        CKKSCiphertext rescale_to_next_internal(const CKKSCiphertext &ct) override;
 
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
