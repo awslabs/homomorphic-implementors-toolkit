@@ -11,7 +11,7 @@ using namespace seal;
 // This is an approximation of -infity, since infNorm(x) >= 0 = 2^-infinity
 double initialPtMaxLog = -100;
 
-PlaintextEval::PlaintextEval(const shared_ptr<SEALContext>& context, bool verbose)
+PlaintextEval::PlaintextEval(const shared_ptr<SEALContext> &context, bool verbose)
     : CKKSEvaluator(context, verbose), ptMaxLog(initialPtMaxLog) {
 }
 
@@ -23,7 +23,7 @@ void PlaintextEval::reset_internal() {
 
 // print some debug info
 void PlaintextEval::print_stats(
-    const CKKSCiphertext& ct) const {  // NOLINT(readability-convert-member-functions-to-static)
+    const CKKSCiphertext &ct) const {  // NOLINT(readability-convert-member-functions-to-static)
     // extract just the elements we care about from the real plaintext
     vector<double> exactPlaintext = ct.getPlaintext();
     double exactPlaintextMaxVal = lInfNorm(exactPlaintext);
@@ -43,7 +43,7 @@ void PlaintextEval::print_stats(
     cout << ">" << endl;
 }
 
-void PlaintextEval::updateMaxLogPlainVal(const CKKSCiphertext& ct) {
+void PlaintextEval::updateMaxLogPlainVal(const CKKSCiphertext &ct) {
     double exactPlaintextMaxVal = lInfNorm(ct.getPlaintext());
 
     ptMaxLog = max(ptMaxLog, log2(exactPlaintextMaxVal));
@@ -54,7 +54,7 @@ void PlaintextEval::updatePlaintextMaxVal(double x) {
     ptMaxLog = max(ptMaxLog, log2(x));
 }
 
-CKKSCiphertext PlaintextEval::rotate_vector_right_internal(const CKKSCiphertext& ct, int steps) {
+CKKSCiphertext PlaintextEval::rotate_vector_right_internal(const CKKSCiphertext &ct, int steps) {
     CKKSCiphertext dest = ct;
     vector<double> rot_temp;
     // reserve a full-size vector
@@ -77,7 +77,7 @@ CKKSCiphertext PlaintextEval::rotate_vector_right_internal(const CKKSCiphertext&
     return dest;
 }
 
-CKKSCiphertext PlaintextEval::rotate_vector_left_internal(const CKKSCiphertext& ct, int steps) {
+CKKSCiphertext PlaintextEval::rotate_vector_left_internal(const CKKSCiphertext &ct, int steps) {
     CKKSCiphertext dest = ct;
     vector<double> rot_temp;
     // reserve a full-size vector
@@ -98,7 +98,7 @@ CKKSCiphertext PlaintextEval::rotate_vector_left_internal(const CKKSCiphertext& 
     return dest;
 }
 
-CKKSCiphertext PlaintextEval::add_internal(const CKKSCiphertext& ct1, const CKKSCiphertext& ct2) {
+CKKSCiphertext PlaintextEval::add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
     CKKSCiphertext dest = ct1;
     dest.encoded_pt = ct1.encoded_pt + ct2.encoded_pt;
     updateMaxLogPlainVal(dest);
@@ -106,7 +106,7 @@ CKKSCiphertext PlaintextEval::add_internal(const CKKSCiphertext& ct1, const CKKS
     return dest;
 }
 
-CKKSCiphertext PlaintextEval::add_plain_scalar_internal(const CKKSCiphertext& ct, double scalar) {
+CKKSCiphertext PlaintextEval::add_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) {
     CKKSCiphertext dest = ct;
     Vector coeffVec(ct.encoded_pt.size(), scalar);
     dest.encoded_pt = ct.encoded_pt + coeffVec;
@@ -115,7 +115,7 @@ CKKSCiphertext PlaintextEval::add_plain_scalar_internal(const CKKSCiphertext& ct
     return dest;
 }
 
-CKKSCiphertext PlaintextEval::multiply_plain_scalar_internal(const CKKSCiphertext& ct, double scalar) {
+CKKSCiphertext PlaintextEval::multiply_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) {
     CKKSCiphertext dest = ct;
     dest.encoded_pt = scalar * ct.encoded_pt;
     updateMaxLogPlainVal(dest);
@@ -123,7 +123,7 @@ CKKSCiphertext PlaintextEval::multiply_plain_scalar_internal(const CKKSCiphertex
     return dest;
 }
 
-CKKSCiphertext PlaintextEval::multiply_plain_mat_internal(const CKKSCiphertext& ct, const vector<double>& plain) {
+CKKSCiphertext PlaintextEval::multiply_plain_mat_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
     CKKSCiphertext dest = ct;
     Plaintext temp;
     vector<double> temp_dec = plain;
@@ -143,7 +143,7 @@ CKKSCiphertext PlaintextEval::multiply_plain_mat_internal(const CKKSCiphertext& 
     return dest;
 }
 
-CKKSCiphertext PlaintextEval::multiply_internal(const CKKSCiphertext& ct1, const CKKSCiphertext& ct2) {
+CKKSCiphertext PlaintextEval::multiply_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
     if (ct1.encoded_pt.size() != ct2.encoded_pt.size()) {
         throw invalid_argument("INTERNAL ERROR: Plaintext size mismatch");
     }
@@ -156,7 +156,7 @@ CKKSCiphertext PlaintextEval::multiply_internal(const CKKSCiphertext& ct1, const
     return dest;
 }
 
-CKKSCiphertext PlaintextEval::square_internal(const CKKSCiphertext& ct) {
+CKKSCiphertext PlaintextEval::square_internal(const CKKSCiphertext &ct) {
     CKKSCiphertext dest = ct;
     for (int i = 0; i < ct.encoded_pt.size(); i++) {
         dest.encoded_pt[i] = ct.encoded_pt[i] * ct.encoded_pt[i];
@@ -166,29 +166,29 @@ CKKSCiphertext PlaintextEval::square_internal(const CKKSCiphertext& ct) {
     return dest;
 }
 
-void PlaintextEval::modDownTo_internal(CKKSCiphertext& ct, const CKKSCiphertext&) {
+void PlaintextEval::modDownTo_internal(CKKSCiphertext &ct, const CKKSCiphertext &) {
     // does not change ptMaxLog
     VERBOSE(print_stats(ct));
 }
 
-void PlaintextEval::modDownToMin_internal(CKKSCiphertext& ct1, CKKSCiphertext& ct2) {
+void PlaintextEval::modDownToMin_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
     // does not change ptMaxLog
     VERBOSE(print_stats(ct1));
     VERBOSE(print_stats(ct2));
 }
 
-CKKSCiphertext PlaintextEval::modDownToLevel_internal(const CKKSCiphertext& ct, int) {
+CKKSCiphertext PlaintextEval::modDownToLevel_internal(const CKKSCiphertext &ct, int) {
     // does not change ptMaxLog
     VERBOSE(print_stats(ct));
     return ct;
 }
 
-void PlaintextEval::rescale_to_next_inplace_internal(CKKSCiphertext& ct) {
+void PlaintextEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
     // does not change ptMaxLog
     VERBOSE(print_stats(ct));
 }
 
-void PlaintextEval::relinearize_inplace_internal(CKKSCiphertext& ct) {
+void PlaintextEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
     // does not change ptMaxLog
     VERBOSE(print_stats(ct));
 }

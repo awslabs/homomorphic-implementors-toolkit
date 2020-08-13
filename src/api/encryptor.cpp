@@ -9,18 +9,18 @@
 using namespace std;
 using namespace seal;
 
-CKKSEncryptor::CKKSEncryptor(const shared_ptr<SEALContext>& context, int numSlots, bool includePlaintext)
+CKKSEncryptor::CKKSEncryptor(const shared_ptr<SEALContext> &context, int numSlots, bool includePlaintext)
     : encoder(nullptr), encryptor(nullptr), context(move(context)), numSlots(numSlots) {
     mode = includePlaintext ? ENC_PLAIN : ENC_META;
 }
 
-CKKSEncryptor::CKKSEncryptor(const shared_ptr<SEALContext>& context, CKKSEncoder* encoder, Encryptor* encryptor,
+CKKSEncryptor::CKKSEncryptor(const shared_ptr<SEALContext> &context, CKKSEncoder *encoder, Encryptor *encryptor,
                              bool debug)
     : encoder(encoder), encryptor(encryptor), context(move(context)), numSlots(encoder->slot_count()) {
     mode = debug ? ENC_DEBUG : ENC_NORMAL;
 }
 
-void CKKSEncryptor::encryptMatrix(const Matrix& mat, double scale, CKKSCiphertext& destination, int lvl) {
+void CKKSEncryptor::encryptMatrix(const Matrix &mat, double scale, CKKSCiphertext &destination, int lvl) {
     // in ENC_META, CKKSInstance sets numSlots to 4096 and doesn't actually attempt to calcuate the correct value.
     // We have to ignore that case here. Otherwise, matrix size should exactly equal the number of slots.
     if (mode != ENC_META && mat.size1() * mat.size2() != numSlots) {
@@ -66,7 +66,7 @@ void CKKSEncryptor::encryptMatrix(const Matrix& mat, double scale, CKKSCiphertex
     }
 }
 
-void CKKSEncryptor::encryptColVec(const vector<double>& plain, int matHeight, double scale, CKKSCiphertext& destination,
+void CKKSEncryptor::encryptColVec(const vector<double> &plain, int matHeight, double scale, CKKSCiphertext &destination,
                                   int lvl) {
     Matrix encodedVec = colVecToMatrix(plain, matHeight);
     encryptMatrix(encodedVec, scale, destination, lvl);
@@ -75,7 +75,7 @@ void CKKSEncryptor::encryptColVec(const vector<double>& plain, int matHeight, do
     destination.width = 1;
 }
 
-void CKKSEncryptor::encryptRowVec(const vector<double>& plain, int matWidth, double scale, CKKSCiphertext& destination,
+void CKKSEncryptor::encryptRowVec(const vector<double> &plain, int matWidth, double scale, CKKSCiphertext &destination,
                                   int lvl) {
     Matrix encodedVec = rowVecToMatrix(plain, matWidth);
     encryptMatrix(encodedVec, scale, destination, lvl);

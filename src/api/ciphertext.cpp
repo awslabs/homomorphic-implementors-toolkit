@@ -13,7 +13,7 @@ CKKSCiphertext::CKKSCiphertext()
     : height(0), width(0), encoded_height(0), encoded_width(0), encoding(UNINITIALIZED), he_level(0), scale(0) {
 }
 
-void CKKSCiphertext::copyMetadataFrom(const CKKSCiphertext& src) {
+void CKKSCiphertext::copyMetadataFrom(const CKKSCiphertext &src) {
     // copy all non-debug values
     width = src.width;
     height = src.height;
@@ -25,7 +25,7 @@ void CKKSCiphertext::copyMetadataFrom(const CKKSCiphertext& src) {
     scale = src.scale;
 }
 
-CKKSCiphertext::CKKSCiphertext(const shared_ptr<SEALContext>& context, const protobuf::hit::Ciphertext& proto_ct) {
+CKKSCiphertext::CKKSCiphertext(const shared_ptr<SEALContext> &context, const protobuf::hit::Ciphertext &proto_ct) {
     if (proto_ct.version() != 0) {
         throw invalid_argument("CKKSCiphertext serialization: Expected version 0");
     }
@@ -50,7 +50,7 @@ CKKSCiphertext::CKKSCiphertext(const shared_ptr<SEALContext>& context, const pro
     }
 }
 
-int CKKSCiphertext::getLevel(const shared_ptr<SEALContext>& context) const {
+int CKKSCiphertext::getLevel(const shared_ptr<SEALContext> &context) const {
     return context->get_context_data(seal_ct.parms_id())->chain_index();
 }
 
@@ -64,13 +64,13 @@ vector<double> CKKSCiphertext::getPlaintext() const {
     return decodePlaintext(encoded_pt.data(), encoding, height, width, encoded_height, encoded_width);
 }
 
-protobuf::hit::Ciphertext* CKKSCiphertext::save() const {
-    auto* proto_ct = new protobuf::hit::Ciphertext();
+protobuf::hit::Ciphertext *CKKSCiphertext::save() const {
+    auto *proto_ct = new protobuf::hit::Ciphertext();
     save(proto_ct);
     return proto_ct;
 }
 
-void CKKSCiphertext::save(protobuf::hit::Ciphertext* proto_ct) const {
+void CKKSCiphertext::save(protobuf::hit::Ciphertext *proto_ct) const {
     proto_ct->set_version(0);
     proto_ct->set_height(height);
     proto_ct->set_encoded_height(encoded_height);

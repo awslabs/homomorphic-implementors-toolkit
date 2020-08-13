@@ -46,20 +46,20 @@ struct CKKSCiphertext {
     // A default constructor is useful since we often write, e.g, `Ciphertext &a;`
     CKKSCiphertext();
 
-    CKKSCiphertext(const std::shared_ptr<seal::SEALContext>& context, const protobuf::hit::Ciphertext& proto_ct);
+    CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context, const protobuf::hit::Ciphertext &proto_ct);
 
     // Copy all members except the ciphertext itself
-    void copyMetadataFrom(const CKKSCiphertext& src);
+    void copyMetadataFrom(const CKKSCiphertext &src);
 
     // Return the SEAL `chain_index` of this ciphertext.
     // This essentially refers to how many primes are in the modulus.
     // A ciphertext starts with many primes (corresponding to the highest chain_index/level)
     // but we remove primes to scale down the noise. A single prime (the lowest level) corresponds
     // to level 0.
-    int getLevel(const std::shared_ptr<seal::SEALContext>& context) const;
+    int getLevel(const std::shared_ptr<seal::SEALContext> &context) const;
 
     std::vector<double> getPlaintext() const;
 
-    protobuf::hit::Ciphertext* save() const;
-    void save(protobuf::hit::Ciphertext* proto_ct) const;
+    protobuf::hit::Ciphertext *save() const;
+    void save(protobuf::hit::Ciphertext *proto_ct) const;
 };

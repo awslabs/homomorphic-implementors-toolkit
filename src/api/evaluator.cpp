@@ -22,7 +22,7 @@ void CKKSEvaluator::reset() {
     reset_internal();
 }
 
-bool is_valid_args(const CKKSCiphertext& ct1, const CKKSCiphertext& ct2) {
+bool is_valid_args(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
     if ((ct1.encoding == ct2.encoding) || (ct1.encoding == ROW_MAT && ct2.encoding == MATRIX) ||
         (ct1.encoding == MATRIX && ct2.encoding == COL_MAT)) {
         return ((ct1.encoded_height == ct2.encoded_height) && (ct1.encoded_width == ct2.encoded_width) &&
@@ -32,7 +32,7 @@ bool is_valid_args(const CKKSCiphertext& ct1, const CKKSCiphertext& ct2) {
             (ct1.width == ct2.height));
 }
 
-CKKSCiphertext CKKSEvaluator::rotate_vector_right(const CKKSCiphertext& ct, int steps) {
+CKKSCiphertext CKKSEvaluator::rotate_vector_right(const CKKSCiphertext &ct, int steps) {
     if (steps < 0) {
         throw invalid_argument("ERROR: rotate_vector_right must have a positive number of steps.");
     }
@@ -41,7 +41,7 @@ CKKSCiphertext CKKSEvaluator::rotate_vector_right(const CKKSCiphertext& ct, int 
     return temp;
 }
 
-CKKSCiphertext CKKSEvaluator::rotate_vector_left(const CKKSCiphertext& ct, int steps) {
+CKKSCiphertext CKKSEvaluator::rotate_vector_left(const CKKSCiphertext &ct, int steps) {
     if (steps < 0) {
         throw invalid_argument("ERROR: rotate_vector_left must have a positive number of steps.");
     }
@@ -50,13 +50,13 @@ CKKSCiphertext CKKSEvaluator::rotate_vector_left(const CKKSCiphertext& ct, int s
     return temp;
 }
 
-CKKSCiphertext CKKSEvaluator::add_plain_scalar(const CKKSCiphertext& ct, double scalar) {
+CKKSCiphertext CKKSEvaluator::add_plain_scalar(const CKKSCiphertext &ct, double scalar) {
     VERBOSE(cout << "Add scalar " << scalar << " to ciphertext" << endl);
     CKKSCiphertext temp = add_plain_scalar_internal(ct, scalar);
     return temp;
 }
 
-CKKSCiphertext CKKSEvaluator::add(const CKKSCiphertext& ct1, const CKKSCiphertext& ct2) {
+CKKSCiphertext CKKSEvaluator::add(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
     // it's a lot easier to validate combinations of args if they are in a canonical order. These two
     // statements put row vectors in the first arg, and col vectors in the second arg, which mirrors how
     // this would look on paper.
@@ -104,13 +104,13 @@ CKKSCiphertext CKKSEvaluator::add(const CKKSCiphertext& ct1, const CKKSCiphertex
     return temp;
 }
 
-CKKSCiphertext CKKSEvaluator::multiply_plain_scalar(const CKKSCiphertext& ct, double scalar) {
+CKKSCiphertext CKKSEvaluator::multiply_plain_scalar(const CKKSCiphertext &ct, double scalar) {
     VERBOSE(cout << "Multiply ciphertext by scalar " << scalar << endl);
     CKKSCiphertext temp = multiply_plain_scalar_internal(ct, scalar);
     return temp;
 }
 
-CKKSCiphertext CKKSEvaluator::multiply_plain_mat(const CKKSCiphertext& ct, const vector<double>& plain) {
+CKKSCiphertext CKKSEvaluator::multiply_plain_mat(const CKKSCiphertext &ct, const vector<double> &plain) {
     VERBOSE(cout << "Multiply by non-scalar plaintext" << endl);
     if (ct.encoded_width * ct.encoded_height != plain.size()) {
         throw invalid_argument("CKKSEvaluator::multiply_plain_mat: encoded size does not match plaintext input");
@@ -119,7 +119,7 @@ CKKSCiphertext CKKSEvaluator::multiply_plain_mat(const CKKSCiphertext& ct, const
     return temp;
 }
 
-CKKSCiphertext CKKSEvaluator::multiply(const CKKSCiphertext& ct1, const CKKSCiphertext& ct2) {
+CKKSCiphertext CKKSEvaluator::multiply(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
     // it's a lot easier to validate combinations of args if they are in a canonical order. These two
     // statements put row vectors in the first arg, and col vectors in the second arg, which mirrors how
     // this would look on paper.
@@ -168,38 +168,38 @@ CKKSCiphertext CKKSEvaluator::multiply(const CKKSCiphertext& ct1, const CKKSCiph
     return temp;
 }
 
-CKKSCiphertext CKKSEvaluator::square(const CKKSCiphertext& ct) {
+CKKSCiphertext CKKSEvaluator::square(const CKKSCiphertext &ct) {
     VERBOSE(cout << "Square ciphertext" << endl);
     CKKSCiphertext temp = square_internal(ct);
     return temp;
 }
 
-void CKKSEvaluator::modDownTo(CKKSCiphertext& ct, const CKKSCiphertext& target) {
+void CKKSEvaluator::modDownTo(CKKSCiphertext &ct, const CKKSCiphertext &target) {
     VERBOSE(cout << "Decreasing HE level to match target" << endl);
     modDownTo_internal(ct, target);
 }
 
-void CKKSEvaluator::modDownToMin(CKKSCiphertext& ct1, CKKSCiphertext& ct2) {
+void CKKSEvaluator::modDownToMin(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
     VERBOSE(cout << "Equalizing HE levels" << endl);
     modDownToMin_internal(ct1, ct2);
 }
 
-CKKSCiphertext CKKSEvaluator::modDownToLevel(const CKKSCiphertext& ct, int level) {
+CKKSCiphertext CKKSEvaluator::modDownToLevel(const CKKSCiphertext &ct, int level) {
     VERBOSE(cout << "Decreasing HE level to " << level << endl);
     return modDownToLevel_internal(ct, level);
 }
 
-void CKKSEvaluator::rescale_to_next_inplace(CKKSCiphertext& ct) {
+void CKKSEvaluator::rescale_to_next_inplace(CKKSCiphertext &ct) {
     VERBOSE(cout << "Rescaling ciphertext" << endl);
     rescale_to_next_inplace_internal(ct);
 }
 
-void CKKSEvaluator::relinearize_inplace(CKKSCiphertext& ct) {
+void CKKSEvaluator::relinearize_inplace(CKKSCiphertext &ct) {
     VERBOSE(cout << "Relinearizing ciphertext" << endl);
     relinearize_inplace_internal(ct);
 }
 
-ContextDataPtr CKKSEvaluator::getContextData(const CKKSCiphertext& c) {
+ContextDataPtr CKKSEvaluator::getContextData(const CKKSCiphertext &c) {
     // get the context_data for this ciphertext level
     // but do not use the ciphertext itself! Use the he_level,
     // in case we are not doing ciphertext computations

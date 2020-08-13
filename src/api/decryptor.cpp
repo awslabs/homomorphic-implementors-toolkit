@@ -7,7 +7,7 @@
 using namespace std;
 using namespace seal;
 
-CKKSDecryptor::CKKSDecryptor(const shared_ptr<SEALContext>& context, CKKSEncoder* encoder, const SecretKey& secret_key)
+CKKSDecryptor::CKKSDecryptor(const shared_ptr<SEALContext> &context, CKKSEncoder *encoder, const SecretKey &secret_key)
     : encoder(encoder), context(context) {
     decryptor = new Decryptor(context, secret_key);
 }
@@ -16,7 +16,7 @@ CKKSDecryptor::~CKKSDecryptor() {
     delete (decryptor);
 }
 
-vector<double> CKKSDecryptor::decrypt(const CKKSCiphertext& encrypted, bool verbose) {
+vector<double> CKKSDecryptor::decrypt(const CKKSCiphertext &encrypted, bool verbose) {
     Plaintext temp;
 
     int lvl = encrypted.getLevel(context);

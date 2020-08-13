@@ -52,7 +52,7 @@ void printElapsedTime(timepoint start) {
     cout << elapsedTimeToStr(start, end) << endl;
 }
 
-vector<double> decodePlaintext(const vector<double>& encoded_pt, CTEncoding encoding, int height, int width,
+vector<double> decodePlaintext(const vector<double> &encoded_pt, CTEncoding encoding, int height, int width,
                                int encoded_height, int encoded_width) {
     vector<double> dest;
 
@@ -82,7 +82,7 @@ vector<double> decodePlaintext(const vector<double>& encoded_pt, CTEncoding enco
 }
 
 // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
-double diff2Norm(const vector<double>& expected, const vector<double>& actual) {
+double diff2Norm(const vector<double> &expected, const vector<double> &actual) {
     int len = expected.size();
     if (len != actual.size()) {
         stringstream buffer;
@@ -218,7 +218,7 @@ int modulusToPolyDegree(int modBits) {
     }
 }
 
-void securityWarningBox(const string& str, WARN_LEVEL level) {
+void securityWarningBox(const string &str, WARN_LEVEL level) {
     int strlen = str.size();
     // set color to red (SEVERE) or yellow (WARN)
     if (level == SEVERE) {
@@ -259,7 +259,7 @@ void securityWarningBox(const string& str, WARN_LEVEL level) {
     cout << "\033[0m" << endl << endl;
 }
 
-double lInfNorm(const vector<double>& x) {
+double lInfNorm(const vector<double> &x) {
     double xmax = 0;
     for (double i : x) {
         xmax = max(xmax, abs(i));
@@ -280,7 +280,7 @@ vector<double> randomVector(int dim, double maxNorm) {
     return x;
 }
 
-uintmax_t streamSize(iostream& s) {
+uintmax_t streamSize(iostream &s) {
     streampos originalPos = s.tellp();
     s.seekp(0, ios::end);
     uintmax_t size = s.tellp();
@@ -290,28 +290,28 @@ uintmax_t streamSize(iostream& s) {
 
 // Extract the side-by-side plaintext from the ciphertext. Note that there is no decryption happening!
 // This returns the "debug" plaintext.
-Matrix ctPlaintextToMatrix(const CKKSCiphertext& ct) {
+Matrix ctPlaintextToMatrix(const CKKSCiphertext &ct) {
     return Matrix(ct.height, ct.width, ct.getPlaintext());
 }
 
 // Extract the encrypted plaintext from the ciphertext. This actually decrypts and returns the output.
-Matrix ctDecryptedToMatrix(CKKSInstance& inst, const CKKSCiphertext& ct) {
+Matrix ctDecryptedToMatrix(CKKSInstance &inst, const CKKSCiphertext &ct) {
     return Matrix(ct.height, ct.width, inst.decrypt(ct));
 }
 
 // Extract the debug plaintext from each ciphertext and concatenate the results side-by-side.
-Matrix ctPlaintextToMatrix(const vector<CKKSCiphertext>& cts) {
+Matrix ctPlaintextToMatrix(const vector<CKKSCiphertext> &cts) {
     vector<Matrix> mats;
     mats.reserve(cts.size());
-    for (const auto& ct : cts) {
+    for (const auto &ct : cts) {
         mats.push_back(ctPlaintextToMatrix(ct));
     }
     return matrixRowConcat(mats);
 }
 
-Vector ctPlaintextToVector(const vector<CKKSCiphertext>& cts) {
+Vector ctPlaintextToVector(const vector<CKKSCiphertext> &cts) {
     vector<double> stdvec;
-    for (const auto& ct : cts) {
+    for (const auto &ct : cts) {
         vector<double> v = ct.getPlaintext();
         stdvec.insert(stdvec.end(), v.begin(), v.end());
     }
@@ -319,19 +319,19 @@ Vector ctPlaintextToVector(const vector<CKKSCiphertext>& cts) {
 }
 
 // Decrypt each ciphertext and concatenate the results side-by-side.
-Matrix ctDecryptedToMatrix(CKKSInstance& inst, const vector<CKKSCiphertext>& cts) {
+Matrix ctDecryptedToMatrix(CKKSInstance &inst, const vector<CKKSCiphertext> &cts) {
     vector<Matrix> mats;
     mats.reserve(cts.size());
-    for (const auto& ct : cts) {
+    for (const auto &ct : cts) {
         mats.push_back(ctDecryptedToMatrix(inst, ct));
     }
 
     return matrixRowConcat(mats);
 }
 
-Vector ctDecryptedToVector(CKKSInstance& inst, const vector<CKKSCiphertext>& cts) {
+Vector ctDecryptedToVector(CKKSInstance &inst, const vector<CKKSCiphertext> &cts) {
     vector<double> stdvec;
-    for (const auto& ct : cts) {
+    for (const auto &ct : cts) {
         vector<double> v = inst.decrypt(ct);
         stdvec.insert(stdvec.end(), v.begin(), v.end());
     }

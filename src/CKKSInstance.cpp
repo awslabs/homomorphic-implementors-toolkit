@@ -26,42 +26,42 @@ namespace fs = experimental::filesystem;
 // encoding/decoding, this should be set to as high as possible.
 int defaultScaleBits = 30;
 
-CKKSInstance* CKKSInstance::getNewDepthFinderInstance(bool verbose) {
+CKKSInstance *CKKSInstance::getNewDepthFinderInstance(bool verbose) {
     return new CKKSInstance(DEPTH, 4096, 0, defaultScaleBits, verbose, true);
 }
-CKKSInstance* CKKSInstance::getNewOpCountInstance(bool verbose) {
+CKKSInstance *CKKSInstance::getNewOpCountInstance(bool verbose) {
     return new CKKSInstance(OPCOUNT, 4096, 0, defaultScaleBits, verbose, true);
 }
-CKKSInstance* CKKSInstance::getNewPlaintextInstance(int numSlots, bool verbose, bool useSEALParams) {
+CKKSInstance *CKKSInstance::getNewPlaintextInstance(int numSlots, bool verbose, bool useSEALParams) {
     return new CKKSInstance(PLAINTEXT, numSlots, 0, defaultScaleBits, verbose, useSEALParams);
 }
-CKKSInstance* CKKSInstance::getNewScaleEstimatorInstance(int numSlots, int multDepth, bool verbose,
+CKKSInstance *CKKSInstance::getNewScaleEstimatorInstance(int numSlots, int multDepth, bool verbose,
                                                          bool useSEALParams) {
     return new CKKSInstance(SCALE, numSlots, multDepth, defaultScaleBits, verbose, useSEALParams);
 }
-CKKSInstance* CKKSInstance::getNewHomomorphicInstance(int numSlots, int multDepth, int logScale, bool verbose,
-                                                      bool useSEALParams, const vector<int>& galois_steps) {
+CKKSInstance *CKKSInstance::getNewHomomorphicInstance(int numSlots, int multDepth, int logScale, bool verbose,
+                                                      bool useSEALParams, const vector<int> &galois_steps) {
     return new CKKSInstance(numSlots, multDepth, logScale, verbose, useSEALParams, false, galois_steps);
 }
-CKKSInstance* CKKSInstance::loadHomomorphicInstance(istream& paramsStream, istream& galoisKeyStream,
-                                                    istream& relinKeyStream, istream& secretKeyStream, bool verbose) {
+CKKSInstance *CKKSInstance::loadHomomorphicInstance(istream &paramsStream, istream &galoisKeyStream,
+                                                    istream &relinKeyStream, istream &secretKeyStream, bool verbose) {
     return new CKKSInstance(paramsStream, &galoisKeyStream, &relinKeyStream, &secretKeyStream, verbose, NORMAL);
 }
-CKKSInstance* CKKSInstance::getNewDebugInstance(int numSlots, int multDepth, int logScale, bool verbose,
-                                                bool useSEALParams, const vector<int>& galois_steps) {
+CKKSInstance *CKKSInstance::getNewDebugInstance(int numSlots, int multDepth, int logScale, bool verbose,
+                                                bool useSEALParams, const vector<int> &galois_steps) {
     securityWarningBox("CREATING AN INSECURE DEBUG EVALUATOR. DO NOT USE IN PRODUCTION.");
     return new CKKSInstance(numSlots, multDepth, logScale, verbose, useSEALParams, true, galois_steps);
 }
-CKKSInstance* CKKSInstance::loadDebugInstance(istream& paramsStream, istream& galoisKeyStream, istream& relinKeyStream,
-                                              istream& secretKeyStream, bool verbose) {
+CKKSInstance *CKKSInstance::loadDebugInstance(istream &paramsStream, istream &galoisKeyStream, istream &relinKeyStream,
+                                              istream &secretKeyStream, bool verbose) {
     return new CKKSInstance(paramsStream, &galoisKeyStream, &relinKeyStream, &secretKeyStream, verbose, DEBUG);
 }
-CKKSInstance* CKKSInstance::loadEvalInstance(istream& paramsStream, istream& galoisKeyStream, istream& relinKeyStream,
+CKKSInstance *CKKSInstance::loadEvalInstance(istream &paramsStream, istream &galoisKeyStream, istream &relinKeyStream,
                                              bool verbose) {
     return new CKKSInstance(paramsStream, &galoisKeyStream, &relinKeyStream, nullptr, verbose, EVALUATION);
 }
 
-CKKSInstance* CKKSInstance::loadNonEvalInstance(istream& paramsStream, istream& secretKeyStream, bool verbose) {
+CKKSInstance *CKKSInstance::loadNonEvalInstance(istream &paramsStream, istream &secretKeyStream, bool verbose) {
     return new CKKSInstance(paramsStream, nullptr, nullptr, &secretKeyStream, verbose, NONEVALUATION);
 }
 
@@ -78,7 +78,7 @@ protobuf::hit::CKKSParams CKKSInstance::saveCKKSParams() {
     pk.save(sealpkBuf);
     p.set_pubkey(sealpkBuf.str());
 
-    for (const auto& prime : context_data->parms().coeff_modulus()) {
+    for (const auto &prime : context_data->parms().coeff_modulus()) {
         p.add_modulusvec(prime.value());
     }
 
@@ -201,8 +201,8 @@ uint64_t estimateKeySize(int numGaloisShift, int ptslots, int depth) {
     return sk_bytes + pk_bytes + rk_bytes + gk_bytes;
 }
 
-CKKSInstance::CKKSInstance(istream& paramsStream, istream* galoisKeyStream, istream* relinKeyStream,
-                           istream* secretKeyStream, bool verbose, Mode m) {
+CKKSInstance::CKKSInstance(istream &paramsStream, istream *galoisKeyStream, istream *relinKeyStream,
+                           istream *secretKeyStream, bool verbose, Mode m) {
     mode = m;
     protobuf::hit::CKKSParams ckksParams;
     ckksParams.ParseFromIstream(&paramsStream);
@@ -283,8 +283,8 @@ CKKSInstance::CKKSInstance(istream& paramsStream, istream* galoisKeyStream, istr
     }
 }
 
-void CKKSInstance::save(ostream* paramsStream, ostream* galoisKeyStream, ostream* relinKeyStream,
-                        ostream* secretKeyStream) {
+void CKKSInstance::save(ostream *paramsStream, ostream *galoisKeyStream, ostream *relinKeyStream,
+                        ostream *secretKeyStream) {
     if (mode != NORMAL && mode != DEBUG) {
         throw invalid_argument("You can only save homomorphic or debug instances.");
     }
@@ -306,7 +306,7 @@ void CKKSInstance::save(ostream* paramsStream, ostream* galoisKeyStream, ostream
 }
 
 CKKSInstance::CKKSInstance(int numSlots, int multDepth, int logScale, bool verbose, bool useSEALParams, bool debug,
-                           const vector<int>& galois_steps) {
+                           const vector<int> &galois_steps) {
     sharedParamInit(numSlots, multDepth, logScale, useSEALParams, true);
 
     int numGaloisKeys = galois_steps.size();
@@ -382,7 +382,7 @@ CKKSInstance::CKKSInstance(int numSlots, int multDepth, int logScale, bool verbo
         cout << "      parms_id: " << context_data->parms_id() << endl;
         cout << "      coeff_modulus primes: ";
         cout << hex;
-        for (const auto& prime : context_data->parms().coeff_modulus()) {
+        for (const auto &prime : context_data->parms().coeff_modulus()) {
             cout << prime.value() << " ";
         }
         cout << dec << endl;
@@ -403,7 +403,7 @@ CKKSInstance::CKKSInstance(int numSlots, int multDepth, int logScale, bool verbo
             cout << "      parms_id: " << context_data->parms_id() << endl;
             cout << "      coeff_modulus primes: ";
             cout << hex;
-            for (const auto& prime : context_data->parms().coeff_modulus()) {
+            for (const auto &prime : context_data->parms().coeff_modulus()) {
                 cout << prime.value() << " ";
             }
             cout << dec << endl;
@@ -437,7 +437,7 @@ CKKSInstance::~CKKSInstance() {
     delete params;
 }
 
-int CKKSInstance::genModulusVec(int numPrimes, vector<int>& modulusVector) const {
+int CKKSInstance::genModulusVec(int numPrimes, vector<int> &modulusVector) const {
     // covers the initial and final 60-bit modulus
     int modBits = 120;
     // the SEAL examples recommend the last modulus be 60 bits; it's unclear why,
@@ -453,22 +453,22 @@ int CKKSInstance::genModulusVec(int numPrimes, vector<int>& modulusVector) const
     return modBits;
 }
 
-void CKKSInstance::setMaxVal(const vector<double>& plain) {
+void CKKSInstance::setMaxVal(const vector<double> &plain) {
     double maxVal = lInfNorm(plain);
 
     switch (mode) {
         case SCALE: {
-            auto* e = dynamic_cast<ScaleEstimator*>(evaluator);
+            auto *e = dynamic_cast<ScaleEstimator *>(evaluator);
             e->updatePlaintextMaxVal(maxVal);
             break;
         }
         case DEBUG: {
-            auto* e = dynamic_cast<DebugEval*>(evaluator);
+            auto *e = dynamic_cast<DebugEval *>(evaluator);
             e->updatePlaintextMaxVal(maxVal);
             break;
         }
         case PLAINTEXT: {
-            auto* e = dynamic_cast<PlaintextEval*>(evaluator);
+            auto *e = dynamic_cast<PlaintextEval *>(evaluator);
             e->updatePlaintextMaxVal(maxVal);
             break;
         }
@@ -477,24 +477,24 @@ void CKKSInstance::setMaxVal(const vector<double>& plain) {
     }
 }
 
-void CKKSInstance::encryptMatrix(const Matrix& mat, CKKSCiphertext& destination, int level) {
+void CKKSInstance::encryptMatrix(const Matrix &mat, CKKSCiphertext &destination, int level) {
     encryptor->encryptMatrix(mat, pow(2.0, logScale), destination, level);
     setMaxVal(mat.data());
     encryptionCount++;
 }
 
-void CKKSInstance::encryptColVec(const vector<double>& plain, int matHeight, CKKSCiphertext& destination, int level) {
+void CKKSInstance::encryptColVec(const vector<double> &plain, int matHeight, CKKSCiphertext &destination, int level) {
     encryptor->encryptColVec(plain, matHeight, pow(2.0, logScale), destination, level);
     setMaxVal(plain);
     encryptionCount++;
 }
-void CKKSInstance::encryptRowVec(const vector<double>& plain, int matWidth, CKKSCiphertext& destination, int level) {
+void CKKSInstance::encryptRowVec(const vector<double> &plain, int matWidth, CKKSCiphertext &destination, int level) {
     encryptor->encryptRowVec(plain, matWidth, pow(2.0, logScale), destination, level);
     setMaxVal(plain);
     encryptionCount++;
 }
 
-vector<double> CKKSInstance::decrypt(const CKKSCiphertext& encrypted, bool verbose) {
+vector<double> CKKSInstance::decrypt(const CKKSCiphertext &encrypted, bool verbose) {
     if (mode == NORMAL || mode == DEBUG || mode == NONEVALUATION) {
         return decryptor->decrypt(encrypted, verbose);
     }
@@ -507,11 +507,11 @@ int CKKSInstance::plaintextDim() const {
 
 double CKKSInstance::getEstimatedMaxLogScale() const {
     if (mode == SCALE) {
-        auto* e = dynamic_cast<ScaleEstimator*>(evaluator);
+        auto *e = dynamic_cast<ScaleEstimator *>(evaluator);
         return e->getEstimatedMaxLogScale();
     }
     if (mode == DEBUG) {
-        auto* e = dynamic_cast<DebugEval*>(evaluator);
+        auto *e = dynamic_cast<DebugEval *>(evaluator);
         return e->getEstimatedMaxLogScale();
     }
     throw invalid_argument(
@@ -521,15 +521,15 @@ double CKKSInstance::getEstimatedMaxLogScale() const {
 
 double CKKSInstance::getExactMaxLogPlainVal() const {
     if (mode == SCALE) {
-        auto* e = dynamic_cast<ScaleEstimator*>(evaluator);
+        auto *e = dynamic_cast<ScaleEstimator *>(evaluator);
         return e->getExactMaxLogPlainVal();
     }
     if (mode == PLAINTEXT) {
-        auto* e = dynamic_cast<PlaintextEval*>(evaluator);
+        auto *e = dynamic_cast<PlaintextEval *>(evaluator);
         return e->getExactMaxLogPlainVal();
     }
     if (mode == DEBUG) {
-        auto* e = dynamic_cast<DebugEval*>(evaluator);
+        auto *e = dynamic_cast<DebugEval *>(evaluator);
         return e->getExactMaxLogPlainVal();
     }
     throw invalid_argument(
@@ -539,11 +539,11 @@ double CKKSInstance::getExactMaxLogPlainVal() const {
 
 int CKKSInstance::getMultiplicativeDepth() const {
     if (mode == DEPTH) {
-        auto* e = dynamic_cast<DepthFinder*>(evaluator);
+        auto *e = dynamic_cast<DepthFinder *>(evaluator);
         return e->getMultiplicativeDepth();
     }
     if (mode == OPCOUNT) {
-        auto* e = dynamic_cast<OpCount*>(evaluator);
+        auto *e = dynamic_cast<OpCount *>(evaluator);
         return e->getMultiplicativeDepth();
     }
     throw invalid_argument(
@@ -552,7 +552,7 @@ int CKKSInstance::getMultiplicativeDepth() const {
 
 void CKKSInstance::printOpCount() const {
     if (mode == OPCOUNT) {
-        auto* e = dynamic_cast<OpCount*>(evaluator);
+        auto *e = dynamic_cast<OpCount *>(evaluator);
         cout << endl << "Encryptions: " << encryptionCount;
         e->printOpCount();
         return;
@@ -560,7 +560,7 @@ void CKKSInstance::printOpCount() const {
     throw invalid_argument("CKKSInstance: You cannot call printOpCount unless using the OpCount evaluator!");
 }
 
-CKKSInstance* tryLoadInstance(int numSlots, int multDepth, int logScale, Mode mode, const vector<int>& galois_steps) {
+CKKSInstance *tryLoadInstance(int numSlots, int multDepth, int logScale, Mode mode, const vector<int> &galois_steps) {
     string keydir = "keys";
 
     string paramID = to_string(2 * numSlots) + "-" + to_string(multDepth + 2) + "-" + to_string(logScale);
@@ -575,7 +575,7 @@ CKKSInstance* tryLoadInstance(int numSlots, int multDepth, int logScale, Mode mo
     string relinFilePath = paramsPath + "/relin.bin";
     string privkeyFilePath = paramsPath + "/privkey.bin";
 
-    CKKSInstance* c = nullptr;
+    CKKSInstance *c = nullptr;
 
     // We can't create generic fstream here for both cases:
     // if the file doesn't exist, opening an fstream with `ios::in | ios::out`

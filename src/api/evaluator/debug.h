@@ -18,17 +18,17 @@
 
 class DebugEval : public CKKSEvaluator {
    public:
-    DebugEval(const std::shared_ptr<seal::SEALContext>& context, seal::CKKSEncoder& encoder, seal::Encryptor& encryptor,
-              const seal::GaloisKeys& galois_keys, const seal::RelinKeys& relin_keys, double scale,
-              CKKSDecryptor& decryptor, bool verbose);
+    DebugEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder, seal::Encryptor &encryptor,
+              const seal::GaloisKeys &galois_keys, const seal::RelinKeys &relin_keys, double scale,
+              CKKSDecryptor &decryptor, bool verbose);
 
     /* For documentation on the API, see ../evaluator.h */
     ~DebugEval() override;
 
-    DebugEval(const DebugEval&) = delete;
-    DebugEval& operator=(const DebugEval&) = delete;
-    DebugEval(DebugEval&&) = delete;
-    DebugEval& operator=(DebugEval&&) = delete;
+    DebugEval(const DebugEval &) = delete;
+    DebugEval &operator=(const DebugEval &) = delete;
+    DebugEval(DebugEval &&) = delete;
+    DebugEval &operator=(DebugEval &&) = delete;
 
     // primarily used to indicate the maximum value for each *input* to the function.
     // For functions which are a no-op, this function is the only way the evaluator
@@ -46,44 +46,44 @@ class DebugEval : public CKKSEvaluator {
     double getEstimatedMaxLogScale() const;
 
    protected:
-    CKKSCiphertext rotate_vector_right_internal(const CKKSCiphertext& ct, int steps) override;
+    CKKSCiphertext rotate_vector_right_internal(const CKKSCiphertext &ct, int steps) override;
 
-    CKKSCiphertext rotate_vector_left_internal(const CKKSCiphertext& ct, int steps) override;
+    CKKSCiphertext rotate_vector_left_internal(const CKKSCiphertext &ct, int steps) override;
 
-    CKKSCiphertext add_plain_scalar_internal(const CKKSCiphertext& ct, double scalar) override;
+    CKKSCiphertext add_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) override;
 
-    CKKSCiphertext add_internal(const CKKSCiphertext& ct1, const CKKSCiphertext& ct2) override;
+    CKKSCiphertext add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
 
-    CKKSCiphertext multiply_plain_scalar_internal(const CKKSCiphertext& ct, double scalar) override;
+    CKKSCiphertext multiply_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) override;
 
-    CKKSCiphertext multiply_plain_mat_internal(const CKKSCiphertext& ct, const std::vector<double>& plain) override;
+    CKKSCiphertext multiply_plain_mat_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) override;
 
-    CKKSCiphertext multiply_internal(const CKKSCiphertext& ct1, const CKKSCiphertext& ct2) override;
+    CKKSCiphertext multiply_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
 
-    CKKSCiphertext square_internal(const CKKSCiphertext& ct) override;
+    CKKSCiphertext square_internal(const CKKSCiphertext &ct) override;
 
-    void modDownTo_internal(CKKSCiphertext& ct, const CKKSCiphertext& target) override;
+    void modDownTo_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) override;
 
-    void modDownToMin_internal(CKKSCiphertext& ct1, CKKSCiphertext& ct2) override;
+    void modDownToMin_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) override;
 
-    CKKSCiphertext modDownToLevel_internal(const CKKSCiphertext& ct, int level) override;
+    CKKSCiphertext modDownToLevel_internal(const CKKSCiphertext &ct, int level) override;
 
-    void rescale_to_next_inplace_internal(CKKSCiphertext& ct) override;
+    void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
 
-    void relinearize_inplace_internal(CKKSCiphertext& ct) override;
+    void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
     // reuse this evaluator for another computation
     void reset_internal() override;
 
    private:
-    HomomorphicEval* heEval;
-    ScaleEstimator* seEval;
+    HomomorphicEval *heEval;
+    ScaleEstimator *seEval;
 
-    void print_stats(const CKKSCiphertext& ct) const;
+    void print_stats(const CKKSCiphertext &ct) const;
 
-    CKKSDecryptor& decryptor;
-    void checkScale(const CKKSCiphertext& ct) const;
+    CKKSDecryptor &decryptor;
+    void checkScale(const CKKSCiphertext &ct) const;
     double initScale;
 
-    CKKSCiphertext merge_cts(const CKKSCiphertext& ct_he, const CKKSCiphertext& ct_se) const;
+    CKKSCiphertext merge_cts(const CKKSCiphertext &ct_he, const CKKSCiphertext &ct_se) const;
 };

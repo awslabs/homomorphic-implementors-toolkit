@@ -18,22 +18,22 @@
 
 class CKKSDecryptor {
    public:
-    CKKSDecryptor(const std::shared_ptr<seal::SEALContext>& context, seal::CKKSEncoder* encoder,
-                  const seal::SecretKey& secret_key);
+    CKKSDecryptor(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder *encoder,
+                  const seal::SecretKey &secret_key);
 
     ~CKKSDecryptor();
 
-    CKKSDecryptor(const CKKSDecryptor&) = delete;
-    CKKSDecryptor& operator=(const CKKSDecryptor&) = delete;
-    CKKSDecryptor(CKKSDecryptor&&) = delete;
-    CKKSDecryptor& operator=(CKKSDecryptor&&) = delete;
+    CKKSDecryptor(const CKKSDecryptor &) = delete;
+    CKKSDecryptor &operator=(const CKKSDecryptor &) = delete;
+    CKKSDecryptor(CKKSDecryptor &&) = delete;
+    CKKSDecryptor &operator=(CKKSDecryptor &&) = delete;
 
     // verbose should generally be true, but it's annoying when using a debug evaluator which
     // decrypts intermediate computations on purpose
-    std::vector<double> decrypt(const CKKSCiphertext& encrypted, bool verbose = true);
+    std::vector<double> decrypt(const CKKSCiphertext &encrypted, bool verbose = true);
 
    private:
-    seal::CKKSEncoder* encoder;
-    seal::Decryptor* decryptor;
+    seal::CKKSEncoder *encoder;
+    seal::Decryptor *decryptor;
     const std::shared_ptr<seal::SEALContext> context;
 };

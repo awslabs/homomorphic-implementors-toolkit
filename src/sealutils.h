@@ -12,12 +12,12 @@ Helper function: Prints the parameters in a SEALContext.
 
 Copied from SEAL ./native/examples/examples.h
 */
-inline void print_parameters(const std::shared_ptr<seal::SEALContext>& context) {
+inline void print_parameters(const std::shared_ptr<seal::SEALContext> &context) {
     // Verify parameters
     if (!context) {
         throw std::invalid_argument("context is not set");
     }
-    const auto& context_data = *context->key_context_data();
+    const auto &context_data = *context->key_context_data();
 
     /*
     Which scheme are we using?
@@ -63,7 +63,7 @@ Helper function: Prints the `parms_id' to std::ostream.
 
 Copied from SEAL ./native/examples/examples.h
 */
-inline std::ostream& operator<<(std::ostream& stream, seal::parms_id_type parms_id) {
+inline std::ostream &operator<<(std::ostream &stream, seal::parms_id_type parms_id) {
     /*
     Save the formatting information for std::cout.
     */
@@ -84,7 +84,7 @@ inline std::ostream& operator<<(std::ostream& stream, seal::parms_id_type parms_
 /*
 Helper function: Fetch the last prime given SEALContext and heLevel.
 */
-inline std::uint64_t getLastPrime(const std::shared_ptr<seal::SEALContext>& context, const int heLevel) {
+inline std::uint64_t getLastPrime(const std::shared_ptr<seal::SEALContext> &context, const int heLevel) {
     auto context_data = context->first_context_data();
     while (context_data->chain_index() >= heLevel) {
         if (context_data->chain_index() == heLevel) {

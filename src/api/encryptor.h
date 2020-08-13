@@ -23,18 +23,18 @@ class CKKSEncryptor {
     // constructor for Meta and Plaintext mode
     // Ciphertexts include basic metadata like dimensions.
     // If `includePlaintext`, then ciphertexts additionally include padded plaintext.
-    CKKSEncryptor(const std::shared_ptr<seal::SEALContext>& context, int numSlots, bool includePlaintext);
+    CKKSEncryptor(const std::shared_ptr<seal::SEALContext> &context, int numSlots, bool includePlaintext);
 
     // constructor for Homomorphic and Debug modes
-    CKKSEncryptor(const std::shared_ptr<seal::SEALContext>& context, seal::CKKSEncoder* encoder,
-                  seal::Encryptor* encryptor, bool debug = false);
+    CKKSEncryptor(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder *encoder,
+                  seal::Encryptor *encryptor, bool debug = false);
 
-    void encryptMatrix(const Matrix&, double scale, CKKSCiphertext& destination, int lvl = -1);
+    void encryptMatrix(const Matrix &, double scale, CKKSCiphertext &destination, int lvl = -1);
 
-    void encryptColVec(const std::vector<double>& plain, int matHeight, double scale, CKKSCiphertext& destination,
+    void encryptColVec(const std::vector<double> &plain, int matHeight, double scale, CKKSCiphertext &destination,
                        int lvl = -1);
 
-    void encryptRowVec(const std::vector<double>& plain, int matWidth, double scale, CKKSCiphertext& destination,
+    void encryptRowVec(const std::vector<double> &plain, int matWidth, double scale, CKKSCiphertext &destination,
                        int lvl = -1);
 
    private:
@@ -52,8 +52,8 @@ class CKKSEncryptor {
     enum EncryptMode { ENC_META, ENC_PLAIN, ENC_NORMAL, ENC_DEBUG };
     EncryptMode mode;
 
-    seal::CKKSEncoder* encoder;
-    seal::Encryptor* encryptor;
+    seal::CKKSEncoder *encoder;
+    seal::Encryptor *encryptor;
     const std::shared_ptr<seal::SEALContext> context;
     int numSlots;
 };

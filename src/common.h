@@ -30,11 +30,11 @@ void printElapsedTime(timepoint start);
 // less than this many bits
 #define PLAINTEXT_LOG_MAX 59
 
-std::vector<double> decodePlaintext(const std::vector<double>& encoded_pt, CTEncoding encoding, int height, int width,
+std::vector<double> decodePlaintext(const std::vector<double> &encoded_pt, CTEncoding encoding, int height, int width,
                                     int encoded_height, int encoded_width);
 
 // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
-double diff2Norm(const std::vector<double>& expected, const std::vector<double>& actual);
+double diff2Norm(const std::vector<double> &expected, const std::vector<double> &actual);
 
 // tests if x is a power of two or not
 bool isPow2(int x);
@@ -48,21 +48,21 @@ int polyDegreeToMaxModBits(int poly_modulus_degree);
 int modulusToPolyDegree(int modBits);
 
 enum WARN_LEVEL { SEVERE, WARN };
-void securityWarningBox(const std::string& str, WARN_LEVEL level = SEVERE);
+void securityWarningBox(const std::string &str, WARN_LEVEL level = SEVERE);
 
 // the L-infinity norm
-double lInfNorm(const std::vector<double>& x);
+double lInfNorm(const std::vector<double> &x);
 
 std::vector<double> randomVector(int dim, double maxNorm);
 
-uintmax_t streamSize(std::iostream& s);
+uintmax_t streamSize(std::iostream &s);
 
 std::string bytesToStr(uintmax_t sizeBytes);
 
-Matrix ctPlaintextToMatrix(const CKKSCiphertext& ct);
-Matrix ctDecryptedToMatrix(CKKSInstance& inst, const CKKSCiphertext& ct);
+Matrix ctPlaintextToMatrix(const CKKSCiphertext &ct);
+Matrix ctDecryptedToMatrix(CKKSInstance &inst, const CKKSCiphertext &ct);
 
-Matrix ctPlaintextToMatrix(const std::vector<CKKSCiphertext>& cts);
-Vector ctPlaintextToVector(const std::vector<CKKSCiphertext>& cts);
-Matrix ctDecryptedToMatrix(CKKSInstance& inst, const std::vector<CKKSCiphertext>& cts);
-Vector ctDecryptedToVector(CKKSInstance& inst, const std::vector<CKKSCiphertext>& cts);
+Matrix ctPlaintextToMatrix(const std::vector<CKKSCiphertext> &cts);
+Vector ctPlaintextToVector(const std::vector<CKKSCiphertext> &cts);
+Matrix ctDecryptedToMatrix(CKKSInstance &inst, const std::vector<CKKSCiphertext> &cts);
+Vector ctDecryptedToVector(CKKSInstance &inst, const std::vector<CKKSCiphertext> &cts);

@@ -6,7 +6,7 @@
 using namespace std;
 
 // create a matrix where each column is the input vector
-Matrix rowVecToMatrix(const vector<double>& x, int width) {
+Matrix rowVecToMatrix(const vector<double> &x, int width) {
     vector<double> y;
     y.reserve(width * x.size());
     for (double value : x) {
@@ -20,7 +20,7 @@ Matrix rowVecToMatrix(const vector<double>& x, int width) {
 }
 
 // create a matrix where each row is the input vector
-Matrix colVecToMatrix(const vector<double>& x, int height) {
+Matrix colVecToMatrix(const vector<double> &x, int height) {
     vector<double> y;
     y.reserve(height * x.size());
     for (int i = 0; i < height; i++) {
@@ -33,7 +33,7 @@ Matrix colVecToMatrix(const vector<double>& x, int height) {
     return temp;
 }
 
-Matrix matrixRowConcat(const vector<Matrix>& xs) {
+Matrix matrixRowConcat(const vector<Matrix> &xs) {
     if (xs.empty()) {
         throw invalid_argument("matrixRowConcat: xs cannot be empty");
     }
@@ -49,7 +49,7 @@ Matrix matrixRowConcat(const vector<Matrix>& xs) {
 
     vector<double> cmatdata;
     for (int row = 0; row < h; row++) {
-        for (const auto& x : xs) {
+        for (const auto &x : xs) {
             int w = x.size2();
             for (int col = 0; col < w; col++) {
                 cmatdata.push_back(x.data()[row * w + col]);
@@ -61,7 +61,7 @@ Matrix matrixRowConcat(const vector<Matrix>& xs) {
     return temp;
 }
 
-Matrix hadamard_prod(const Matrix& a, const Matrix& b) {
+Matrix hadamard_prod(const Matrix &a, const Matrix &b) {
     if (a.size1() != b.size1()) {
         throw invalid_argument("hadamard_prod: height mismatch");
     }
@@ -82,7 +82,7 @@ Matrix hadamard_prod(const Matrix& a, const Matrix& b) {
     return temp;
 }
 
-Vector fromStdVector(const vector<double>& v) {
+Vector fromStdVector(const vector<double> &v) {
     Vector temp(v.size());
     temp.data() = v;
     return temp;

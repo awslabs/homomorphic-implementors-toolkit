@@ -11,8 +11,8 @@
 using namespace std;
 using namespace seal;
 
-HomomorphicEval::HomomorphicEval(const shared_ptr<SEALContext>& context, CKKSEncoder& encoder, Encryptor& encryptor,
-                                 const GaloisKeys& galois_keys, const RelinKeys& relin_keys, bool verbose)
+HomomorphicEval::HomomorphicEval(const shared_ptr<SEALContext> &context, CKKSEncoder &encoder, Encryptor &encryptor,
+                                 const GaloisKeys &galois_keys, const RelinKeys &relin_keys, bool verbose)
     : /* This evaluator never prints anything, so CKKSEvaluator can be non-verbose */
       CKKSEvaluator(context, verbose),
       evaluator(context),
@@ -28,19 +28,19 @@ HomomorphicEval::~HomomorphicEval() = default;
 void HomomorphicEval::reset_internal() {
 }
 
-CKKSCiphertext HomomorphicEval::rotate_vector_right_internal(const CKKSCiphertext& ct, int steps) {
+CKKSCiphertext HomomorphicEval::rotate_vector_right_internal(const CKKSCiphertext &ct, int steps) {
     CKKSCiphertext dest = ct;
     evaluator.rotate_vector(ct.seal_ct, -steps, galois_keys, dest.seal_ct);
     return dest;
 }
 
-CKKSCiphertext HomomorphicEval::rotate_vector_left_internal(const CKKSCiphertext& ct, int steps) {
+CKKSCiphertext HomomorphicEval::rotate_vector_left_internal(const CKKSCiphertext &ct, int steps) {
     CKKSCiphertext dest = ct;
     evaluator.rotate_vector(ct.seal_ct, steps, galois_keys, dest.seal_ct);
     return dest;
 }
 
-CKKSCiphertext HomomorphicEval::add_plain_scalar_internal(const CKKSCiphertext& ct, double scalar) {
+CKKSCiphertext HomomorphicEval::add_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) {
     CKKSCiphertext dest = ct;
     Plaintext encoded_plain;
     encoder.encode(scalar, ct.seal_ct.parms_id(), ct.seal_ct.scale(), encoded_plain);
@@ -48,7 +48,7 @@ CKKSCiphertext HomomorphicEval::add_plain_scalar_internal(const CKKSCiphertext& 
     return dest;
 }
 
-CKKSCiphertext HomomorphicEval::add_internal(const CKKSCiphertext& ct1, const CKKSCiphertext& ct2) {
+CKKSCiphertext HomomorphicEval::add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
     // check that ciphertexts are at the same level to avoid an obscure SEAL error
     if (ct1.getLevel(context) != ct2.getLevel(context)) {
         stringstream buffer;
@@ -62,7 +62,7 @@ CKKSCiphertext HomomorphicEval::add_internal(const CKKSCiphertext& ct1, const CK
 }
 
 /* WARNING: Multiplying by 0 results in non-constant time behavior! Only multiply by 0 if the scalar is truly public. */
-CKKSCiphertext HomomorphicEval::multiply_plain_scalar_internal(const CKKSCiphertext& ct, double scalar) {
+CKKSCiphertext HomomorphicEval::multiply_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) {
     CKKSCiphertext dest = ct;
     if (scalar != 0.0) {
         Plaintext encoded_plain;
@@ -77,7 +77,7 @@ CKKSCiphertext HomomorphicEval::multiply_plain_scalar_internal(const CKKSCiphert
     return dest;
 }
 
-CKKSCiphertext HomomorphicEval::multiply_plain_mat_internal(const CKKSCiphertext& ct, const vector<double>& plain) {
+CKKSCiphertext HomomorphicEval::multiply_plain_mat_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
     if (plain.size() != ct.width * ct.height) {
         throw invalid_argument(
             "PPLR: Error in HomomorphicEval::multiply_plain: plaintext size does not match ciphertext size");
@@ -89,7 +89,7 @@ CKKSCiphertext HomomorphicEval::multiply_plain_mat_internal(const CKKSCiphertext
     return dest;
 }
 
-CKKSCiphertext HomomorphicEval::multiply_internal(const CKKSCiphertext& ct1, const CKKSCiphertext& ct2) {
+CKKSCiphertext HomomorphicEval::multiply_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
     // check that ciphertexts are at the same level to avoid an obscure SEAL error
     if (ct1.getLevel(context) != ct2.getLevel(context)) {
         stringstream buffer;
@@ -102,13 +102,13 @@ CKKSCiphertext HomomorphicEval::multiply_internal(const CKKSCiphertext& ct1, con
     return dest;
 }
 
-CKKSCiphertext HomomorphicEval::square_internal(const CKKSCiphertext& ct) {
+CKKSCiphertext HomomorphicEval::square_internal(const CKKSCiphertext &ct) {
     CKKSCiphertext dest = ct;
     evaluator.square(ct.seal_ct, dest.seal_ct);
     return dest;
 }
 
-void HomomorphicEval::modDownTo_internal(CKKSCiphertext& ct, const CKKSCiphertext& target) {
+void HomomorphicEval::modDownTo_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
     if (ct.getLevel(context) < target.getLevel(context)) {
         stringstream buffer;
         buffer << "PPLR: Error in modDownTo: input is at a lower level than target. Input level: "
@@ -121,7 +121,7 @@ void HomomorphicEval::modDownTo_internal(CKKSCiphertext& ct, const CKKSCiphertex
     }
 }
 
-void HomomorphicEval::modDownToMin_internal(CKKSCiphertext& ct1, CKKSCiphertext& ct2) {
+void HomomorphicEval::modDownToMin_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
     if (ct1.getLevel(context) > ct2.getLevel(context)) {
         modDownTo_internal(ct1, ct2);
     } else {
@@ -129,7 +129,7 @@ void HomomorphicEval::modDownToMin_internal(CKKSCiphertext& ct1, CKKSCiphertext&
     }
 }
 
-CKKSCiphertext HomomorphicEval::modDownToLevel_internal(const CKKSCiphertext& ct, int level) {
+CKKSCiphertext HomomorphicEval::modDownToLevel_internal(const CKKSCiphertext &ct, int level) {
     if (ct.getLevel(context) < level) {
         stringstream buffer;
         buffer << "PPLR: Error in modDownTo: input is at a lower level than target. Input level: "
@@ -145,10 +145,10 @@ CKKSCiphertext HomomorphicEval::modDownToLevel_internal(const CKKSCiphertext& ct
     return y;
 }
 
-void HomomorphicEval::rescale_to_next_inplace_internal(CKKSCiphertext& ct) {
+void HomomorphicEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
     evaluator.rescale_to_next_inplace(ct.seal_ct);
 }
 
-void HomomorphicEval::relinearize_inplace_internal(CKKSCiphertext& ct) {
+void HomomorphicEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
     evaluator.relinearize_inplace(ct.seal_ct, relin_keys);
 }
