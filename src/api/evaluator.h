@@ -4,6 +4,7 @@
 #pragma once
 
 #include <future>
+
 #include "ciphertext.h"
 #include "seal/context.h"
 #include "seal/seal.h"

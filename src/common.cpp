@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "common.h"
+
 #include <iomanip>  // setprecision
 
 using namespace std;

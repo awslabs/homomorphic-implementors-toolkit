@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "scaleestimator.h"
+
 #include <iomanip>
+
 #include "../../common.h"
 #include "../../sealutils.h"
 

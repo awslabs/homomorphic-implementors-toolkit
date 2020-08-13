@@ -4,6 +4,7 @@
 #include "encryptor.h"
 
 #include <utility>
+
 #include "../common.h"
 
 using namespace std;

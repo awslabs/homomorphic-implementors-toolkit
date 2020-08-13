@@ -3,10 +3,9 @@
 
 #include <iostream>
 
-#include "gtest/gtest.h"
-
 #include "CKKSInstance.h"
 #include "api/ciphertext.h"
+#include "gtest/gtest.h"
 
 using namespace std;
 

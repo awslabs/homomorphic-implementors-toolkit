@@ -6,9 +6,10 @@
  */
 
 #include "evaluator.h"
-#include "../common.h"
 
 #include <utility>
+
+#include "../common.h"
 
 using namespace std;
 using namespace seal;

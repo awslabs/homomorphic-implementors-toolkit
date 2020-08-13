@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "plaintext.h"
+
 #include <iomanip>
+
 #include "../../common.h"
 
 using namespace std;

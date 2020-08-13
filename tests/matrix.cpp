@@ -1,12 +1,12 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "matrix.h"
+
 #include <iostream>
 #include <stdexcept>
 
 #include "gtest/gtest.h"
-
-#include "matrix.h"
 
 using namespace std;
 

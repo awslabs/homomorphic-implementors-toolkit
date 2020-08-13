@@ -1,10 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "CKKSInstance.h"
+
 #include <experimental/filesystem>
 #include <fstream>
 
-#include "CKKSInstance.h"
 #include "api/evaluator/debug.h"
 #include "api/evaluator/depthfinder.h"
 #include "api/evaluator/homomorphic.h"

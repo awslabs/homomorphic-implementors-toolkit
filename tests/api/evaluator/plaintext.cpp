@@ -3,13 +3,12 @@
 
 #include <iostream>
 
-#include "gtest/gtest.h"
-#include "seal/seal.h"
-
 #include "../../testutil.h"
 #include "CKKSInstance.h"
 #include "api/ciphertext.h"
 #include "common.h"
+#include "gtest/gtest.h"
+#include "seal/seal.h"
 
 using namespace std;
 
