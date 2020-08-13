@@ -20,9 +20,9 @@ namespace hit {
 
     class DebugEval : public CKKSEvaluator {
        public:
-        DebugEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder,
-                  seal::Encryptor &encryptor, const seal::GaloisKeys &galois_keys, const seal::RelinKeys &relin_keys,
-                  double scale, CKKSDecryptor &decryptor, bool verbose);
+        DebugEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder, seal::Encryptor &encryptor,
+                  const seal::GaloisKeys &galois_keys, const seal::RelinKeys &relin_keys, double scale,
+                  CKKSDecryptor &decryptor, bool verbose);
 
         /* For documentation on the API, see ../evaluator.h */
         ~DebugEval() override;

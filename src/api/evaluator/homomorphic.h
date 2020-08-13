@@ -24,8 +24,8 @@ namespace hit {
          * and RelinKeys are part of the CKKS scheme's "evaluation keys".
          */
         HomomorphicEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder,
-                        seal::Encryptor &encryptor, const seal::GaloisKeys &galois_keys,
-                        const seal::RelinKeys &relin_keys, bool verbose = false);
+                        seal::Encryptor &encryptor, const seal::GaloisKeys &galois_keys, const seal::RelinKeys &relin_keys,
+                        bool verbose = false);
 
         /* For documentation on the API, see ../evaluator.h */
         ~HomomorphicEval() override;
