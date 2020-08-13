@@ -66,9 +66,9 @@ TEST(DepthFinderTest, AddCiphertextWithDiffHeLevel) {
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext2);
     ciphertext2.he_level = ciphertext1.he_level + 1;
     ASSERT_THROW((
-        // Expect invalid_argument is thrown because he_level of the two ciphertexts is different.
-        ckksInstance->evaluator->add(ciphertext1, ciphertext2)
-        ), invalid_argument);
+                     // Expect invalid_argument is thrown because he_level of the two ciphertexts is different.
+                     ckksInstance->evaluator->add(ciphertext1, ciphertext2)),
+                 invalid_argument);
 }
 
 TEST(DepthFinderTest, MultiplyPlainScalar) {
@@ -109,9 +109,9 @@ TEST(DepthFinderTest, Multiply_InvalidCase) {
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext2);
     ciphertext2.he_level = ciphertext1.he_level + 1;
     ASSERT_THROW((
-        // Expect invalid_argument is thrown because he_level of the two ciphertexts is different.
-        ckksInstance->evaluator->multiply(ciphertext1, ciphertext2)
-        ), invalid_argument);
+                     // Expect invalid_argument is thrown because he_level of the two ciphertexts is different.
+                     ckksInstance->evaluator->multiply(ciphertext1, ciphertext2)),
+                 invalid_argument);
 }
 
 TEST(DepthFinderTest, Square) {
@@ -145,9 +145,9 @@ TEST(DepthFinderTest, ModDownTo_InvalidCase) {
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext2);
     ciphertext2.he_level = ciphertext1.he_level + 1;
     ASSERT_THROW((
-        // Expect invalid_argument is thrown because the he_level of second argument is larger.
-        ckksInstance->evaluator->modDownTo(ciphertext1, ciphertext2)
-        ), invalid_argument);
+                     // Expect invalid_argument is thrown because the he_level of second argument is larger.
+                     ckksInstance->evaluator->modDownTo(ciphertext1, ciphertext2)),
+                 invalid_argument);
 }
 
 TEST(DepthFinderTest, ModDownToMin) {
@@ -182,9 +182,9 @@ TEST(DepthFinderTest, ModDownToLevel_InvalidCase) {
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     int he_level = ciphertext1.he_level;
     ASSERT_THROW((
-        // Expect invalid_argument is thrown when cipherText is mod to higher level.
-        ckksInstance->evaluator->modDownToLevel(ciphertext1, he_level + 1)
-        ), invalid_argument);
+                     // Expect invalid_argument is thrown when cipherText is mod to higher level.
+                     ckksInstance->evaluator->modDownToLevel(ciphertext1, he_level + 1)),
+                 invalid_argument);
 }
 
 TEST(DepthFinderTest, RescaleToNextInPlace) {

@@ -3,18 +3,18 @@
 
 #pragma once
 
-#include "seal/seal.h"
-#include "api/ciphertext.h"
 #include <chrono>
 #include "CKKSInstance.h"
+#include "api/ciphertext.h"
+#include "seal/seal.h"
 
-typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<int64_t, std::ratio<1, 1000000000> > > timepoint; // NOLINT(modernize-use-using)
+typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<int64_t, std::ratio<1, 1000000000>>>
+    timepoint;  // NOLINT(modernize-use-using)
 
-
-enum TimeScale {TS_MS,TS_SEC,TS_MIN,TS_DYNAMIC};
+enum TimeScale { TS_MS, TS_SEC, TS_MIN, TS_DYNAMIC };
 
 uint64_t elapsedTimeMs(timepoint start, timepoint end);
-std::string elapsedTimeToStr(timepoint start, timepoint end, TimeScale=TS_DYNAMIC);
+std::string elapsedTimeToStr(timepoint start, timepoint end, TimeScale = TS_DYNAMIC);
 void printElapsedTime(timepoint start);
 
 /* Provides basic linear algebra encoding functions.
@@ -30,8 +30,8 @@ void printElapsedTime(timepoint start);
 // less than this many bits
 #define PLAINTEXT_LOG_MAX 59
 
-std::vector<double> decodePlaintext(const std::vector<double> &encoded_pt, CTEncoding encoding,
-                                    int height, int width, int encoded_height, int encoded_width);
+std::vector<double> decodePlaintext(const std::vector<double> &encoded_pt, CTEncoding encoding, int height, int width,
+                                    int encoded_height, int encoded_width);
 
 // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
 double diff2Norm(const std::vector<double> &expected, const std::vector<double> &actual);
@@ -47,8 +47,8 @@ int polyDegreeToMaxModBits(int poly_modulus_degree);
 
 int modulusToPolyDegree(int modBits);
 
-enum WARN_LEVEL {SEVERE, WARN};
-void securityWarningBox(const std::string &str, WARN_LEVEL level=SEVERE);
+enum WARN_LEVEL { SEVERE, WARN };
+void securityWarningBox(const std::string &str, WARN_LEVEL level = SEVERE);
 
 // the L-infinity norm
 double lInfNorm(const std::vector<double> &x);

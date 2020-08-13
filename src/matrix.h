@@ -9,8 +9,8 @@
 
 namespace ublas = boost::numeric::ublas;
 
-typedef ublas::matrix<double,ublas::row_major,std::vector<double>> Matrix; // NOLINT(modernize-use-using)
-typedef ublas::vector<double,std::vector<double>> Vector; // NOLINT(modernize-use-using)
+typedef ublas::matrix<double, ublas::row_major, std::vector<double>> Matrix;  // NOLINT(modernize-use-using)
+typedef ublas::vector<double, std::vector<double>> Vector;                    // NOLINT(modernize-use-using)
 
 /* Encode a C++ vector representing a linear algebra row vector as
  * a matrix of width `width`, where each column is the input.

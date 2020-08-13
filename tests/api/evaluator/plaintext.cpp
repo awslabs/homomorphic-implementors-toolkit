@@ -6,10 +6,10 @@
 #include "gtest/gtest.h"
 #include "seal/seal.h"
 
-#include "api/ciphertext.h"
-#include "CKKSInstance.h"
-#include "common.h"
 #include "../../testutil.h"
+#include "CKKSInstance.h"
+#include "api/ciphertext.h"
+#include "common.h"
 
 using namespace std;
 

@@ -17,4 +17,4 @@ AllowShortFunctionsOnASingleLine: false
 # Pointer definition.
 # For consistency, use pointer alignment "int& foo" for this project.
 DerivePointerAlignment: false
-PointerAlignment: Left
+PointerAlignment: Right

@@ -3,12 +3,12 @@
 
 #include <iostream>
 
-#include "seal/seal.h"
 #include "gtest/gtest.h"
+#include "seal/seal.h"
 
 #include "CKKSInstance.h"
-#include "sealutils.h"
 #include "api/ciphertext.h"
+#include "sealutils.h"
 
 using namespace std;
 
@@ -136,7 +136,7 @@ TEST(ScaleEstimatorTest, ModDownToLevel) {
     // Expect he_level is decreased.
     ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext2.he_level);
     // Check scale.
-    ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2)/prime, ciphertext2.scale);
+    ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2) / prime, ciphertext2.scale);
 }
 
 // TODO: investigate why previous impl can still pass this test.
@@ -165,7 +165,7 @@ TEST(ScaleEstimatorTest, ModDownTo) {
     // Expect he_level is decreased.
     ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext1.he_level);
     // Check scale.
-    ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2)/prime, ciphertext1.scale);
+    ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2) / prime, ciphertext1.scale);
 }
 
 TEST(ScaleEstimatorTest, ModDownToMin) {
@@ -182,7 +182,7 @@ TEST(ScaleEstimatorTest, ModDownToMin) {
     // Expect he_level is decreased.
     ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext1.he_level);
     // Check scale.
-    ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2)/prime, ciphertext1.scale);
+    ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2) / prime, ciphertext1.scale);
     // Test modDownToMin symmetric.
     ckksInstance->evaluator->modDownToMin(ciphertext2, ciphertext3);
     // Check estimatedMaxLogScale.
@@ -190,7 +190,7 @@ TEST(ScaleEstimatorTest, ModDownToMin) {
     // Expect he_level is decreased.
     ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext3.he_level);
     // Check scale.
-    ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2)/prime, ciphertext3.scale);
+    ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2) / prime, ciphertext3.scale);
 }
 
 TEST(ScaleEstimatorTest, RescaleToNextInPlace) {
@@ -202,7 +202,7 @@ TEST(ScaleEstimatorTest, RescaleToNextInPlace) {
     ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2), ciphertext2.scale);
     ckksInstance->evaluator->rescale_to_next_inplace(ciphertext2);
     // Check scale.
-    ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2)/prime, ciphertext2.scale);
+    ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2) / prime, ciphertext2.scale);
     // Expect estimatedMaxLogScale is changed.
     double estimatedMaxLogScale = PLAINTEXT_LOG_MAX - log2(VALUE * VALUE);
     ASSERT_EQ(estimatedMaxLogScale, ckksInstance->getEstimatedMaxLogScale());
