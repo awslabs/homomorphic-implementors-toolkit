@@ -7,30 +7,35 @@
 using namespace std;
 using namespace seal;
 
-CKKSDecryptor::CKKSDecryptor(const shared_ptr<SEALContext> &context, CKKSEncoder *encoder, const SecretKey &secret_key)
-    : encoder(encoder), context(context) {
-    decryptor = new Decryptor(context, secret_key);
-}
+namespace hit {
 
-CKKSDecryptor::~CKKSDecryptor() {
-    delete (decryptor);
-}
-
-vector<double> CKKSDecryptor::decrypt(const CKKSCiphertext &encrypted, bool verbose) {
-    Plaintext temp;
-
-    int lvl = encrypted.getLevel(context);
-    if (lvl != 0 && verbose) {
-        cout << "WARNING: Decrypting a ciphertext that is not at level 0! Consider starting with a smaller modulus to "
-                "improve performance!"
-             << endl;
+    CKKSDecryptor::CKKSDecryptor(const shared_ptr<SEALContext> &context, CKKSEncoder *encoder,
+                                 const SecretKey &secret_key)
+        : encoder(encoder), context(context) {
+        decryptor = new Decryptor(context, secret_key);
     }
 
-    decryptor->decrypt(encrypted.seal_ct, temp);
+    CKKSDecryptor::~CKKSDecryptor() {
+        delete (decryptor);
+    }
 
-    vector<double> temp_vec;
-    encoder->decode(temp, temp_vec);
+    vector<double> CKKSDecryptor::decrypt(const CKKSCiphertext &encrypted, bool verbose) {
+        Plaintext temp;
 
-    return decodePlaintext(temp_vec, encrypted.encoding, encrypted.height, encrypted.width, encrypted.encoded_height,
-                           encrypted.encoded_width);
-}
+        int lvl = encrypted.getLevel(context);
+        if (lvl != 0 && verbose) {
+            cout << "WARNING: Decrypting a ciphertext that is not at level 0! Consider starting with a smaller modulus "
+                    "to "
+                    "improve performance!"
+                 << endl;
+        }
+
+        decryptor->decrypt(encrypted.seal_ct, temp);
+
+        vector<double> temp_vec;
+        encoder->decode(temp, temp_vec);
+
+        return decodePlaintext(temp_vec, encrypted.encoding, encrypted.height, encrypted.width,
+                               encrypted.encoded_height, encrypted.encoded_width);
+    }
+}  // namespace hit
