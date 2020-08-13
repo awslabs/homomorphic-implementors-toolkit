@@ -3,30 +3,27 @@
 
 #pragma once
 
-#include "seal/seal.h"
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include "seal/seal.h"
 
 /*
 Helper function: Prints the parameters in a SEALContext.
 
 Copied from SEAL ./native/examples/examples.h
 */
-inline void print_parameters(const std::shared_ptr<seal::SEALContext> &context)
-{
+inline void print_parameters(const std::shared_ptr<seal::SEALContext>& context) {
     // Verify parameters
-    if (!context)
-    {
+    if (!context) {
         throw std::invalid_argument("context is not set");
     }
-    const auto &context_data = *context->key_context_data();
+    const auto& context_data = *context->key_context_data();
 
     /*
     Which scheme are we using?
     */
     std::string scheme_name;
-    switch (context_data.parms().scheme())
-    {
+    switch (context_data.parms().scheme()) {
         case seal::scheme_type::CKKS:
             scheme_name = "CKKS";
             break;
@@ -45,8 +42,7 @@ inline void print_parameters(const std::shared_ptr<seal::SEALContext> &context)
     std::cout << context_data.total_coeff_modulus_bit_count() << " (";
     auto coeff_modulus = context_data.parms().coeff_modulus();
     std::size_t coeff_modulus_size = coeff_modulus.size();
-    for (std::size_t i = 0; i < coeff_modulus_size - 1; i++)
-    {
+    for (std::size_t i = 0; i < coeff_modulus_size - 1; i++) {
         std::cout << coeff_modulus[i].bit_count() << " + ";
     }
     std::cout << coeff_modulus.back().bit_count();
@@ -55,8 +51,7 @@ inline void print_parameters(const std::shared_ptr<seal::SEALContext> &context)
     /*
     For the BFV scheme print the plain_modulus parameter.
     */
-    if (context_data.parms().scheme() == seal::scheme_type::BFV)
-    {
+    if (context_data.parms().scheme() == seal::scheme_type::BFV) {
         std::cout << "|   plain_modulus: " << context_data.parms().plain_modulus().value() << std::endl;
     }
 
@@ -68,8 +63,7 @@ Helper function: Prints the `parms_id' to std::ostream.
 
 Copied from SEAL ./native/examples/examples.h
 */
-inline std::ostream &operator<<(std::ostream &stream, seal::parms_id_type parms_id)
-{
+inline std::ostream& operator<<(std::ostream& stream, seal::parms_id_type parms_id) {
     /*
     Save the formatting information for std::cout.
     */
@@ -90,13 +84,13 @@ inline std::ostream &operator<<(std::ostream &stream, seal::parms_id_type parms_
 /*
 Helper function: Fetch the last prime given SEALContext and heLevel.
 */
-inline std::uint64_t getLastPrime(const std::shared_ptr<seal::SEALContext> &context, const int heLevel) {
-  auto context_data = context->first_context_data();
-  while (context_data->chain_index() >= heLevel) {
-      if (context_data->chain_index() == heLevel) {
-          return context_data->parms().coeff_modulus().back().value();
-      }
-      context_data = context_data->next_context_data();
-  }
-  throw std::invalid_argument("Fail to find target level " + std::to_string(heLevel));
+inline std::uint64_t getLastPrime(const std::shared_ptr<seal::SEALContext>& context, const int heLevel) {
+    auto context_data = context->first_context_data();
+    while (context_data->chain_index() >= heLevel) {
+        if (context_data->chain_index() == heLevel) {
+            return context_data->parms().coeff_modulus().back().value();
+        }
+        context_data = context_data->next_context_data();
+    }
+    throw std::invalid_argument("Fail to find target level " + std::to_string(heLevel));
 }

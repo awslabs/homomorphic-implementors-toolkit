@@ -19,7 +19,7 @@ const int STEPS = 1;
 const vector<double> VECTOR_1(SIZE, VALUE);
 
 TEST(DepthFinderTest, RotateVectorLeft) {
-    CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
+    CKKSInstance* ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->rotate_vector_left(ciphertext1, STEPS);
@@ -29,7 +29,7 @@ TEST(DepthFinderTest, RotateVectorLeft) {
 }
 
 TEST(DepthFinderTest, RotateVectorRight) {
-    CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
+    CKKSInstance* ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->rotate_vector_right(ciphertext1, STEPS);
@@ -39,7 +39,7 @@ TEST(DepthFinderTest, RotateVectorRight) {
 }
 
 TEST(DepthFinderTest, AddPlainScalar) {
-    CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
+    CKKSInstance* ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->add_plain_scalar(ciphertext1, PLAIN_TEXT);
@@ -49,7 +49,7 @@ TEST(DepthFinderTest, AddPlainScalar) {
 }
 
 TEST(DepthFinderTest, Add) {
-    CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
+    CKKSInstance* ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext2);
@@ -60,19 +60,19 @@ TEST(DepthFinderTest, Add) {
 }
 
 TEST(DepthFinderTest, AddCiphertextWithDiffHeLevel) {
-    CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
+    CKKSInstance* ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext2);
     ciphertext2.he_level = ciphertext1.he_level + 1;
     ASSERT_THROW((
-        // Expect invalid_argument is thrown because he_level of the two ciphertexts is different.
-        ckksInstance->evaluator->add(ciphertext1, ciphertext2)
-        ), invalid_argument);
+                     // Expect invalid_argument is thrown because he_level of the two ciphertexts is different.
+                     ckksInstance->evaluator->add(ciphertext1, ciphertext2)),
+                 invalid_argument);
 }
 
 TEST(DepthFinderTest, MultiplyPlainScalar) {
-    CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
+    CKKSInstance* ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->multiply_plain_scalar(ciphertext1, PLAIN_TEXT);
@@ -82,7 +82,7 @@ TEST(DepthFinderTest, MultiplyPlainScalar) {
 }
 
 TEST(DepthFinderTest, MultiplyPlainMattrix) {
-    CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
+    CKKSInstance* ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, 1, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->multiply_plain_mat(ciphertext1, VECTOR_1);
@@ -92,7 +92,7 @@ TEST(DepthFinderTest, MultiplyPlainMattrix) {
 }
 
 TEST(DepthFinderTest, Multiply) {
-    CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
+    CKKSInstance* ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext2);
@@ -103,19 +103,19 @@ TEST(DepthFinderTest, Multiply) {
 }
 
 TEST(DepthFinderTest, Multiply_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
+    CKKSInstance* ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext2);
     ciphertext2.he_level = ciphertext1.he_level + 1;
     ASSERT_THROW((
-        // Expect invalid_argument is thrown because he_level of the two ciphertexts is different.
-        ckksInstance->evaluator->multiply(ciphertext1, ciphertext2)
-        ), invalid_argument);
+                     // Expect invalid_argument is thrown because he_level of the two ciphertexts is different.
+                     ckksInstance->evaluator->multiply(ciphertext1, ciphertext2)),
+                 invalid_argument);
 }
 
 TEST(DepthFinderTest, Square) {
-    CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
+    CKKSInstance* ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->square(ciphertext1);
@@ -125,7 +125,7 @@ TEST(DepthFinderTest, Square) {
 }
 
 TEST(DepthFinderTest, ModDownTo) {
-    CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
+    CKKSInstance* ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext2);
@@ -139,19 +139,19 @@ TEST(DepthFinderTest, ModDownTo) {
 }
 
 TEST(DepthFinderTest, ModDownTo_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
+    CKKSInstance* ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext2);
     ciphertext2.he_level = ciphertext1.he_level + 1;
     ASSERT_THROW((
-        // Expect invalid_argument is thrown because the he_level of second argument is larger.
-        ckksInstance->evaluator->modDownTo(ciphertext1, ciphertext2)
-        ), invalid_argument);
+                     // Expect invalid_argument is thrown because the he_level of second argument is larger.
+                     ckksInstance->evaluator->modDownTo(ciphertext1, ciphertext2)),
+                 invalid_argument);
 }
 
 TEST(DepthFinderTest, ModDownToMin) {
-    CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
+    CKKSInstance* ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext2);
@@ -166,7 +166,7 @@ TEST(DepthFinderTest, ModDownToMin) {
 }
 
 TEST(DepthFinderTest, ModDownToLevel) {
-    CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
+    CKKSInstance* ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     int he_level = ciphertext1.he_level;
@@ -177,18 +177,18 @@ TEST(DepthFinderTest, ModDownToLevel) {
 }
 
 TEST(DepthFinderTest, ModDownToLevel_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
+    CKKSInstance* ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
     CKKSCiphertext ciphertext1;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     int he_level = ciphertext1.he_level;
     ASSERT_THROW((
-        // Expect invalid_argument is thrown when cipherText is mod to higher level.
-        ckksInstance->evaluator->modDownToLevel(ciphertext1, he_level + 1)
-        ), invalid_argument);
+                     // Expect invalid_argument is thrown when cipherText is mod to higher level.
+                     ckksInstance->evaluator->modDownToLevel(ciphertext1, he_level + 1)),
+                 invalid_argument);
 }
 
 TEST(DepthFinderTest, RescaleToNextInPlace) {
-    CKKSInstance *ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
+    CKKSInstance* ckksInstance = CKKSInstance::getNewDepthFinderInstance(VERBOSE);
     CKKSCiphertext ciphertext1;
     ckksInstance->encryptRowVec(VECTOR_1, SIZE, ciphertext1);
     int he_level = ciphertext1.he_level;

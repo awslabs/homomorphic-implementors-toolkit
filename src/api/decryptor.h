@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "seal/seal.h"
-#include "seal/context.h"
 #include "ciphertext.h"
+#include "seal/context.h"
+#include "seal/seal.h"
 
 /* A thin wrapper around the SEAL `Decryptor` class.
  * The API takes a CKKSCiphertext instead of a Ciphertext.
@@ -17,22 +17,23 @@
  */
 
 class CKKSDecryptor {
-public:
-  CKKSDecryptor(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder *encoder, const seal::SecretKey &secret_key);
+   public:
+    CKKSDecryptor(const std::shared_ptr<seal::SEALContext>& context, seal::CKKSEncoder* encoder,
+                  const seal::SecretKey& secret_key);
 
-  ~CKKSDecryptor();
+    ~CKKSDecryptor();
 
-  CKKSDecryptor(const CKKSDecryptor&) = delete;
-  CKKSDecryptor& operator=(const CKKSDecryptor&) = delete;
-  CKKSDecryptor(CKKSDecryptor&&) = delete;
-  CKKSDecryptor& operator=(CKKSDecryptor&&) = delete;
+    CKKSDecryptor(const CKKSDecryptor&) = delete;
+    CKKSDecryptor& operator=(const CKKSDecryptor&) = delete;
+    CKKSDecryptor(CKKSDecryptor&&) = delete;
+    CKKSDecryptor& operator=(CKKSDecryptor&&) = delete;
 
-  // verbose should generally be true, but it's annoying when using a debug evaluator which
-  // decrypts intermediate computations on purpose
-  std::vector<double> decrypt(const CKKSCiphertext &encrypted, bool verbose=true);
+    // verbose should generally be true, but it's annoying when using a debug evaluator which
+    // decrypts intermediate computations on purpose
+    std::vector<double> decrypt(const CKKSCiphertext& encrypted, bool verbose = true);
 
-private:
-  seal::CKKSEncoder *encoder;
-  seal::Decryptor *decryptor;
-  const std::shared_ptr<seal::SEALContext> context;
+   private:
+    seal::CKKSEncoder* encoder;
+    seal::Decryptor* decryptor;
+    const std::shared_ptr<seal::SEALContext> context;
 };
