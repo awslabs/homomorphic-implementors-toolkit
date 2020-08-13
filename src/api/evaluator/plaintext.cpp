@@ -104,7 +104,7 @@ namespace hit {
 
     CKKSCiphertext PlaintextEval::negate_internal(const CKKSCiphertext &ct) {
         CKKSCiphertext dest = ct;
-        for(int i = 0; i < dest.encoded_pt.size(); i++) {
+        for (int i = 0; i < dest.encoded_pt.size(); i++) {
             dest.encoded_pt[i] = -dest.encoded_pt[i];
         }
         VERBOSE(print_stats(dest));
@@ -127,7 +127,6 @@ namespace hit {
         VERBOSE(print_stats(dest));
         return dest;
     }
-
 
     CKKSCiphertext PlaintextEval::add_plain_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
         CKKSCiphertext dest = ct;
@@ -162,7 +161,6 @@ namespace hit {
         VERBOSE(print_stats(dest));
         return dest;
     }
-
 
     CKKSCiphertext PlaintextEval::sub_plain_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
         CKKSCiphertext dest = ct;
