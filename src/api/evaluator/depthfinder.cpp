@@ -34,6 +34,11 @@ namespace hit {
         return ct;
     }
 
+    CKKSCiphertext DepthFinder::negate_internal(const CKKSCiphertext &ct) {
+        VERBOSE(print_stats(ct));
+        return ct;
+    }
+
     CKKSCiphertext DepthFinder::add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         // check that ciphertexts are at the same level to avoid an obscure SEAL error
         if (ct1.he_level != ct2.he_level) {

@@ -12,7 +12,7 @@ using namespace seal;
 
 namespace hit {
 
-    // This is an approximation of -infity, since infNorm(x) >= 0 = 2^-infinity
+// This is an approximation of -infity, since infNorm(x) >= 0 = 2^-infinity
     double initialPtMaxLog = -100;
 
     PlaintextEval::PlaintextEval(const shared_ptr<SEALContext> &context, bool verbose)
@@ -102,6 +102,15 @@ namespace hit {
         return dest;
     }
 
+    CKKSCiphertext PlaintextEval::negate_internal(const CKKSCiphertext &ct) {
+        CKKSCiphertext dest = ct;
+        for(int i = 0; i < dest.encoded_pt.size(); i++) {
+            dest.encoded_pt[i] = -dest.encoded_pt[i];
+        }
+        VERBOSE(print_stats(dest));
+        return dest;
+    }
+
     CKKSCiphertext PlaintextEval::add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         CKKSCiphertext dest = ct1;
         dest.encoded_pt = ct1.encoded_pt + ct2.encoded_pt;
@@ -122,6 +131,14 @@ namespace hit {
 
     CKKSCiphertext PlaintextEval::add_plain_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
         CKKSCiphertext dest = ct;
+
+        if (plain.size() != ct.encoded_pt.size()) {
+            stringstream buffer;
+            buffer << "plaintext.add_plain_internal: public input has the wrong size: " << plain.size()
+                   << " != " << ct.encoded_pt.size();
+            throw invalid_argument(buffer.str());
+        }
+
         Vector coeffVec(ct.encoded_pt.size(), plain);
         dest.encoded_pt = ct.encoded_pt + coeffVec;
         updateMaxLogPlainVal(dest);
@@ -149,6 +166,14 @@ namespace hit {
 
     CKKSCiphertext PlaintextEval::sub_plain_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
         CKKSCiphertext dest = ct;
+
+        if (plain.size() != ct.encoded_pt.size()) {
+            stringstream buffer;
+            buffer << "plaintext.sub_plain_internal: public input has the wrong size: " << plain.size()
+                   << " != " << ct.encoded_pt.size();
+            throw invalid_argument(buffer.str());
+        }
+
         Vector coeffVec(ct.encoded_pt.size(), plain);
         dest.encoded_pt = ct.encoded_pt - coeffVec;
         updateMaxLogPlainVal(dest);
@@ -179,18 +204,16 @@ namespace hit {
 
     CKKSCiphertext PlaintextEval::multiply_plain_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
         CKKSCiphertext dest = ct;
-        Plaintext temp;
-        vector<double> temp_dec = plain;
 
         if (plain.size() != ct.encoded_pt.size()) {
             stringstream buffer;
-            buffer << "plaintext.multiply_plain_mat_internal: public input has the wrong size: " << plain.size()
+            buffer << "plaintext.multiply_plain_internal: public input has the wrong size: " << plain.size()
                    << " != " << ct.encoded_pt.size();
             throw invalid_argument(buffer.str());
         }
 
         for (int i = 0; i < ct.encoded_pt.size(); i++) {
-            dest.encoded_pt[i] = ct.encoded_pt[i] * temp_dec[i];
+            dest.encoded_pt[i] = ct.encoded_pt[i] * plain[i];
         }
         updateMaxLogPlainVal(dest);
         VERBOSE(print_stats(dest));
@@ -207,26 +230,30 @@ namespace hit {
         return dest;
     }
 
-    void PlaintextEval::modDownTo_internal(CKKSCiphertext &ct, const CKKSCiphertext &) {
+    CKKSCiphertext PlaintextEval::mod_down_to_internal(const CKKSCiphertext &ct, const CKKSCiphertext &) {
+        CKKSCiphertext dest = ct;
         // does not change ptMaxLog
         VERBOSE(print_stats(ct));
+        return dest;
     }
 
-    void PlaintextEval::modDownToMin_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
+    void PlaintextEval::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
         // does not change ptMaxLog
         VERBOSE(print_stats(ct1));
         VERBOSE(print_stats(ct2));
     }
 
-    CKKSCiphertext PlaintextEval::modDownToLevel_internal(const CKKSCiphertext &ct, int) {
+    CKKSCiphertext PlaintextEval::mod_down_to_level_internal(const CKKSCiphertext &ct, int) {
         // does not change ptMaxLog
         VERBOSE(print_stats(ct));
         return ct;
     }
 
-    void PlaintextEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
+    CKKSCiphertext PlaintextEval::rescale_to_next_internal(const CKKSCiphertext &ct) {
+        CKKSCiphertext dest = ct;
         // does not change ptMaxLog
         VERBOSE(print_stats(ct));
+        return dest;
     }
 
     void PlaintextEval::relinearize_inplace_internal(CKKSCiphertext &ct) {

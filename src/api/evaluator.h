@@ -185,7 +185,6 @@ namespace hit {
         virtual void mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) = 0;
         virtual CKKSCiphertext mod_down_to_level_internal(const CKKSCiphertext &ct, int level) = 0;
         virtual CKKSCiphertext rescale_to_next_internal(const CKKSCiphertext &ct) = 0;
-        virtual void rescale_to_next_inplace_internal(CKKSCiphertext &ct) = 0;
         virtual void relinearize_inplace_internal(CKKSCiphertext &ct) = 0;
         virtual void reset_internal() = 0;
 

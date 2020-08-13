@@ -36,6 +36,8 @@ namespace hit {
 
         CKKSCiphertext rotate_left_internal(const CKKSCiphertext &ct, int steps) override;
 
+        CKKSCiphertext negate_internal(const CKKSCiphertext &ct) override;
+
         CKKSCiphertext add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
 
         CKKSCiphertext add_plain_internal(const CKKSCiphertext &ct, double scalar) override;
