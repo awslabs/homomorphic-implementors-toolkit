@@ -65,5 +65,4 @@ namespace hit {
     Vector ctPlaintextToVector(const std::vector<CKKSCiphertext> &cts);
     Matrix ctDecryptedToMatrix(CKKSInstance &inst, const std::vector<CKKSCiphertext> &cts);
     Vector ctDecryptedToVector(CKKSInstance &inst, const std::vector<CKKSCiphertext> &cts);
-
 }  // namespace hit
