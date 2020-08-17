@@ -9,6 +9,7 @@
 #include "gtest/gtest.h"
 
 using namespace std;
+using namespace hit;
 
 // A helper function to createMatrix with dimensions (height x width), and set value of each cell.
 Matrix createMatrix(const int height, const int width, const int value = 1) {

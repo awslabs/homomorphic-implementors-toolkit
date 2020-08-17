@@ -10,80 +10,83 @@
 #include "scaleestimator.h"
 #include "seal/seal.h"
 
-/* This is the full debug evaluator. It combines all of the
- * other evaluators, thereby tracking all information
- * from DepthFinder, PlaintextEval, and ScaleEstimator,
- * as well as performing the ciphertext operations.
- */
+namespace hit {
 
-class DebugEval : public CKKSEvaluator {
-   public:
-    DebugEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder, seal::Encryptor &encryptor,
-              const seal::GaloisKeys &galois_keys, const seal::RelinKeys &relin_keys, double scale,
-              CKKSDecryptor &decryptor, bool verbose);
+    /* This is the full debug evaluator. It combines all of the
+     * other evaluators, thereby tracking all information
+     * from DepthFinder, PlaintextEval, and ScaleEstimator,
+     * as well as performing the ciphertext operations.
+     */
 
-    /* For documentation on the API, see ../evaluator.h */
-    ~DebugEval() override;
+    class DebugEval : public CKKSEvaluator {
+       public:
+        DebugEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder,
+                  seal::Encryptor &encryptor, const seal::GaloisKeys &galois_keys, const seal::RelinKeys &relin_keys,
+                  double scale, CKKSDecryptor &decryptor, bool verbose);
 
-    DebugEval(const DebugEval &) = delete;
-    DebugEval &operator=(const DebugEval &) = delete;
-    DebugEval(DebugEval &&) = delete;
-    DebugEval &operator=(DebugEval &&) = delete;
+        /* For documentation on the API, see ../evaluator.h */
+        ~DebugEval() override;
 
-    // primarily used to indicate the maximum value for each *input* to the function.
-    // For functions which are a no-op, this function is the only way the evaluator
-    // can learn the maximum plaintext values, and thereby appropriately restrict the scale.
-    void updatePlaintextMaxVal(double x);
+        DebugEval(const DebugEval &) = delete;
+        DebugEval &operator=(const DebugEval &) = delete;
+        DebugEval(DebugEval &&) = delete;
+        DebugEval &operator=(DebugEval &&) = delete;
 
-    // return the base-2 log of the maximum plaintext value in the computation
-    // this is useful for putting an upper bound on the scale parameter
-    double getExactMaxLogPlainVal() const;
+        // primarily used to indicate the maximum value for each *input* to the function.
+        // For functions which are a no-op, this function is the only way the evaluator
+        // can learn the maximum plaintext values, and thereby appropriately restrict the scale.
+        void updatePlaintextMaxVal(double x);
 
-    // return the base-2 log of the maximum scale that can be used for this
-    // computation. Using a scale larger than this will result in the plaintext
-    // exceeding SEAL's maximum size, and using a scale smaller than this value
-    // will unnecessarily reduce precision of the computation.
-    double getEstimatedMaxLogScale() const;
+        // return the base-2 log of the maximum plaintext value in the computation
+        // this is useful for putting an upper bound on the scale parameter
+        double getExactMaxLogPlainVal() const;
 
-   protected:
-    CKKSCiphertext rotate_vector_right_internal(const CKKSCiphertext &ct, int steps) override;
+        // return the base-2 log of the maximum scale that can be used for this
+        // computation. Using a scale larger than this will result in the plaintext
+        // exceeding SEAL's maximum size, and using a scale smaller than this value
+        // will unnecessarily reduce precision of the computation.
+        double getEstimatedMaxLogScale() const;
 
-    CKKSCiphertext rotate_vector_left_internal(const CKKSCiphertext &ct, int steps) override;
+       protected:
+        CKKSCiphertext rotate_vector_right_internal(const CKKSCiphertext &ct, int steps) override;
 
-    CKKSCiphertext add_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) override;
+        CKKSCiphertext rotate_vector_left_internal(const CKKSCiphertext &ct, int steps) override;
 
-    CKKSCiphertext add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
+        CKKSCiphertext add_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) override;
 
-    CKKSCiphertext multiply_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) override;
+        CKKSCiphertext add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
 
-    CKKSCiphertext multiply_plain_mat_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) override;
+        CKKSCiphertext multiply_plain_scalar_internal(const CKKSCiphertext &ct, double scalar) override;
 
-    CKKSCiphertext multiply_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
+        CKKSCiphertext multiply_plain_mat_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) override;
 
-    CKKSCiphertext square_internal(const CKKSCiphertext &ct) override;
+        CKKSCiphertext multiply_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
 
-    void modDownTo_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) override;
+        CKKSCiphertext square_internal(const CKKSCiphertext &ct) override;
 
-    void modDownToMin_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) override;
+        void modDownTo_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) override;
 
-    CKKSCiphertext modDownToLevel_internal(const CKKSCiphertext &ct, int level) override;
+        void modDownToMin_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) override;
 
-    void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
+        CKKSCiphertext modDownToLevel_internal(const CKKSCiphertext &ct, int level) override;
 
-    void relinearize_inplace_internal(CKKSCiphertext &ct) override;
+        void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
 
-    // reuse this evaluator for another computation
-    void reset_internal() override;
+        void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
-   private:
-    HomomorphicEval *heEval;
-    ScaleEstimator *seEval;
+        // reuse this evaluator for another computation
+        void reset_internal() override;
 
-    void print_stats(const CKKSCiphertext &ct) const;
+       private:
+        HomomorphicEval *heEval;
+        ScaleEstimator *seEval;
 
-    CKKSDecryptor &decryptor;
-    void checkScale(const CKKSCiphertext &ct) const;
-    double initScale;
+        void print_stats(const CKKSCiphertext &ct) const;
 
-    CKKSCiphertext merge_cts(const CKKSCiphertext &ct_he, const CKKSCiphertext &ct_se) const;
-};
+        CKKSDecryptor &decryptor;
+        void checkScale(const CKKSCiphertext &ct) const;
+        double initScale;
+
+        CKKSCiphertext merge_cts(const CKKSCiphertext &ct_he, const CKKSCiphertext &ct_se) const;
+    };
+}  // namespace hit

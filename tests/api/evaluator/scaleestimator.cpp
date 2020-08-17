@@ -10,6 +10,7 @@
 #include "sealutils.h"
 
 using namespace std;
+using namespace hit;
 
 // Test variables.
 const bool VERBOSE = false;
