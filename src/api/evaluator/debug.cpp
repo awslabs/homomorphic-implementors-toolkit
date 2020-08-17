@@ -14,8 +14,8 @@ using namespace seal;
 namespace hit {
 
     DebugEval::DebugEval(const shared_ptr<SEALContext> &context, CKKSEncoder &encoder, Encryptor &encryptor,
-                         const GaloisKeys &galois_keys, const RelinKeys &relin_keys, double scale, CKKSDecryptor &decryptor,
-                         bool verbose)
+                         const GaloisKeys &galois_keys, const RelinKeys &relin_keys, double scale,
+                         CKKSDecryptor &decryptor, bool verbose)
         : CKKSEvaluator(context, verbose), decryptor(decryptor), initScale(scale) {
         heEval = new HomomorphicEval(context, encoder, encryptor, galois_keys, relin_keys, verbose);
         seEval = new ScaleEstimator(context, static_cast<int>(2 * encoder.slot_count()), scale, verbose);
@@ -37,8 +37,8 @@ namespace hit {
         auto context_data = context->first_context_data();
         double expectedScale = initScale;
         while (context_data->chain_index() > ct.he_level) {
-            expectedScale =
-                (expectedScale * expectedScale) / static_cast<double>(context_data->parms().coeff_modulus().back().value());
+            expectedScale = (expectedScale * expectedScale) /
+                            static_cast<double>(context_data->parms().coeff_modulus().back().value());
             context_data = context_data->next_context_data();
         }
         if (ct.seal_ct.scale() != expectedScale && ct.seal_ct.scale() != expectedScale * expectedScale) {
@@ -77,8 +77,8 @@ namespace hit {
 
         if (norm > MAX_NORM) {
             stringstream buffer;
-            buffer << "DebugEvaluator: plaintext and ciphertext divergence: " << norm << " > " << MAX_NORM << ". Scale is "
-                   << log2(seEval->baseScale) << ".";
+            buffer << "DebugEvaluator: plaintext and ciphertext divergence: " << norm << " > " << MAX_NORM
+                   << ". Scale is " << log2(seEval->baseScale) << ".";
 
             maxPrintSize = 32;
             cout << "    + DEBUG Expected result: <";
@@ -115,7 +115,8 @@ namespace hit {
             // decoded_plain is full-dimensional, however. This may not match
             // the dimension of exactPlaintext if the plaintext in question is a
             // vector, so we need to truncate the decoded value.
-            vector<double> truncated_decoded_plain(decoded_plain.begin(), decoded_plain.begin() + exactPlaintext.size());
+            vector<double> truncated_decoded_plain(decoded_plain.begin(),
+                                                   decoded_plain.begin() + exactPlaintext.size());
             double norm2 = diff2Norm(exactPlaintext, truncated_decoded_plain);
             double norm3 = diff2Norm(truncated_decoded_plain, homomPlaintext);
 

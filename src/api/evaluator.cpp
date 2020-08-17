@@ -16,7 +16,8 @@ using namespace seal;
 
 namespace hit {
 
-    CKKSEvaluator::CKKSEvaluator(shared_ptr<SEALContext> context, bool verbose) : context(move(context)), verbose(verbose) {
+    CKKSEvaluator::CKKSEvaluator(shared_ptr<SEALContext> context, bool verbose)
+        : context(move(context)), verbose(verbose) {
     }
 
     CKKSEvaluator::~CKKSEvaluator() = default;
@@ -235,8 +236,8 @@ namespace hit {
 
         // we can multiply a row vector by either a row matrix or a pure matrix. In the first case, this is
         // \vec(a)*(\vec(b)*C), which is equivalent to (\vec(a)*\vec(b))*C, a row vector times a pure matrix. The second
-        // case is simply the first step in an HE row-matrix-times-vector-product. We want the output in either case to be a
-        // ROW_MAT with the same dimensions as the input matrix/row matrix
+        // case is simply the first step in an HE row-matrix-times-vector-product. We want the output in either case to
+        // be a ROW_MAT with the same dimensions as the input matrix/row matrix
         if (ct1.encoding == ROW_VEC && (ct2.encoding == ROW_MAT || ct2.encoding == MATRIX) && is_valid_args(ct1, ct2)) {
             temp.encoding = ROW_MAT;
             temp.width = ct2.width;

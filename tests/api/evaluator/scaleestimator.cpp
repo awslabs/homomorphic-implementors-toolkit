@@ -1,15 +1,15 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <iomanip>  // setprecision
 #include <iostream>
 
 #include "CKKSInstance.h"
 #include "api/ciphertext.h"
+#include "common.h"
 #include "gtest/gtest.h"
 #include "seal/seal.h"
 #include "sealutils.h"
-#include "common.h"
-#include <iomanip>  // setprecision
 
 using namespace std;
 using namespace hit;

@@ -57,9 +57,10 @@ namespace hit {
 
     // At all times, we need ct.scale*lInfNorm(ct.getPlaintext()) <~ q/4
     // Define ct.scale = i*baseScale for i \in {1,2}
-    // If(i > ct.he_level): estimatedMaxLogScale \le (PLAINTEXT_LOG_MAX-log2(lInfNorm(ct.getPlaintext()))/(i-ct.he_level))
-    // Else if (i == ct.he_level): log2(lInfNorm(ct.getPlaintext())) <= 58
-    // Else [i < ct.he_level]: estimatedMaxLogScale \ge <something less than 0> [so we skip this]
+    // If(i > ct.he_level): estimatedMaxLogScale \le
+    // (PLAINTEXT_LOG_MAX-log2(lInfNorm(ct.getPlaintext()))/(i-ct.he_level)) Else if (i == ct.he_level):
+    // log2(lInfNorm(ct.getPlaintext())) <= 58 Else [i < ct.he_level]: estimatedMaxLogScale \ge <something less than 0>
+    // [so we skip this]
 
     void ScaleEstimator::updateMaxLogScale(const CKKSCiphertext &ct) {
         // update the estimatedMaxLogScale

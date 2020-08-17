@@ -128,7 +128,8 @@ namespace hit {
         return dest;
     }
 
-    /* WARNING: Multiplying by 0 results in non-constant time behavior! Only multiply by 0 if the scalar is truly public. */
+    /* WARNING: Multiplying by 0 results in non-constant time behavior! Only multiply by 0 if the scalar is truly
+     * public. */
     CKKSCiphertext HomomorphicEval::multiply_plain_internal(const CKKSCiphertext &ct, double scalar) {
         CKKSCiphertext dest = ct;
         if (scalar != 0.0) {
@@ -147,7 +148,8 @@ namespace hit {
     CKKSCiphertext HomomorphicEval::multiply_plain_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
         if (plain.size() != ct.width * ct.height) {
             throw invalid_argument(
-                "PPLR: Error in HomomorphicEval::multiply_plain_internal: plaintext size does not match ciphertext size");
+                "PPLR: Error in HomomorphicEval::multiply_plain_internal: plaintext size does not match ciphertext "
+                "size");
         }
         CKKSCiphertext dest = ct;
         Plaintext temp;
