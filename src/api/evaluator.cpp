@@ -42,7 +42,6 @@ namespace hit {
         }
         VERBOSE(cout << "Rotate " << abs(steps) << " steps right." << endl);
         return rotate_right_internal(ct, steps);
-        ;
     }
 
     void CKKSEvaluator::rotate_right_inplace(CKKSCiphertext &ct, int steps) {
@@ -55,7 +54,6 @@ namespace hit {
         }
         VERBOSE(cout << "Rotate " << abs(steps) << " steps left." << endl);
         return rotate_left_internal(ct, steps);
-        ;
     }
 
     void CKKSEvaluator::rotate_left_inplace(CKKSCiphertext &ct, int steps) {
