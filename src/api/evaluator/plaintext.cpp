@@ -12,7 +12,7 @@ using namespace seal;
 
 namespace hit {
 
-// This is an approximation of -infity, since infNorm(x) >= 0 = 2^-infinity
+    // This is an approximation of -infity, since infNorm(x) >= 0 = 2^-infinity
     double initialPtMaxLog = -100;
 
     PlaintextEval::PlaintextEval(const shared_ptr<SEALContext> &context, bool verbose)
