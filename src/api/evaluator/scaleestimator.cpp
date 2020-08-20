@@ -42,15 +42,15 @@ namespace hit {
     }
 
     // print some debug info
-    void ScaleEstimator::print_stats(const CKKSCiphertext &c) {
-        double exactPlaintextMaxVal = lInfNorm(c.getPlaintext());
+    void ScaleEstimator::print_stats(const CKKSCiphertext &ct) {
+        double exactPlaintextMaxVal = lInfNorm(ct.getPlaintext());
         double logModulus = 0;
-        auto context_data = getContextData(c);
+        auto context_data = getContextData(ct);
         for (const auto &prime : context_data->parms().coeff_modulus()) {
             logModulus += log2(prime.value());
         }
         cout << "    + Plaintext logmax: " << log2(exactPlaintextMaxVal)
-             << " bits (scaled: " << log2(c.scale) + log2(exactPlaintextMaxVal) << " bits)" << endl;
+             << " bits (scaled: " << log2(ct.scale) + log2(exactPlaintextMaxVal) << " bits)" << endl;
         cout << "    + Total modulus size: " << setprecision(4) << logModulus << " bits" << endl;
         cout << "    + Theoretical max log scale: " << getEstimatedMaxLogScale() << " bits" << endl;
     }
@@ -61,19 +61,19 @@ namespace hit {
     // Else if (i == c.he_level): log2(lInfNorm(c.getPlaintext())) <= 58
     // Else [i < c.he_level]: estimatedMaxLogScale \ge <something less than 0> [so we skip this]
 
-    void ScaleEstimator::updateMaxLogScale(const CKKSCiphertext &c) {
+    void ScaleEstimator::updateMaxLogScale(const CKKSCiphertext &ct) {
         // update the estimatedMaxLogScale
-        int scaleExp = static_cast<int>(round(log2(c.scale) / log2(baseScale)));
+        auto scaleExp = static_cast<int>(round(log2(ct.scale) / log2(baseScale)));
         if (scaleExp != 1 && scaleExp != 2) {
             stringstream buffer;
-            buffer << "INTERNAL ERROR: scaleExp is not 1 or 2: got " << scaleExp << "\t" << log2(c.scale) << "\t"
+            buffer << "INTERNAL ERROR: scaleExp is not 1 or 2: got " << scaleExp << "\t" << log2(ct.scale) << "\t"
                    << log2(baseScale);
             throw invalid_argument(buffer.str());
         }
-        if (scaleExp > c.he_level) {
-            estimatedMaxLogScale = min(
-                estimatedMaxLogScale, (PLAINTEXT_LOG_MAX - log2(lInfNorm(c.getPlaintext()))) / (scaleExp - c.he_level));
-        } else if (scaleExp == c.he_level && log2(lInfNorm(c.getPlaintext())) > PLAINTEXT_LOG_MAX) {
+        if (scaleExp > ct.he_level) {
+            auto estimated_scale = (PLAINTEXT_LOG_MAX - log2(lInfNorm(ct.getPlaintext()))) / (scaleExp - ct.he_level);
+            estimatedMaxLogScale = min(estimatedMaxLogScale, estimated_scale);
+        } else if (scaleExp == ct.he_level && log2(lInfNorm(ct.getPlaintext())) > PLAINTEXT_LOG_MAX) {
             stringstream buffer;
             buffer << "Plaintext exceeded " << PLAINTEXT_LOG_MAX
                    << " bits, which exceeds SEAL's capacity. Overflow is imminent.";
