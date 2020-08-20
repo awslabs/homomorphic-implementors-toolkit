@@ -33,7 +33,7 @@ namespace hit {
 
     // Verify that the ciphertext is either at its expected scale (based on its level),
     // or is at the square of its expected scale.
-    void DebugEval::checkScale(const CKKSCiphertext &ct) const {
+    void DebugEval::check_scale(const CKKSCiphertext &ct) const {
         auto context_data = context->first_context_data();
         double expectedScale = initScale;
         while (context_data->chain_index() > ct.he_level) {
@@ -130,146 +130,146 @@ namespace hit {
 
     void DebugEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
         // recursive calls
-        checkScale(ct);
+        check_scale(ct);
         heEval->rotate_right_inplace_internal(ct, steps);
         seEval->rotate_right_inplace_internal(ct, steps);
 
         print_stats(ct);
-        checkScale(ct);
+        check_scale(ct);
     }
 
     void DebugEval::rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) {
         // recursive calls
-        checkScale(ct);
+        check_scale(ct);
         heEval->rotate_left_inplace_internal(ct, steps);
         seEval->rotate_left_inplace_internal(ct, steps);
 
         print_stats(ct);
-        checkScale(ct);
+        check_scale(ct);
     }
 
     void DebugEval::negate_inplace_internal(CKKSCiphertext &ct) {
         // recursive calls
-        checkScale(ct);
+        check_scale(ct);
         heEval->negate_inplace_internal(ct);
         seEval->negate_inplace_internal(ct);
 
         print_stats(ct);
-        checkScale(ct);
+        check_scale(ct);
     }
 
     void DebugEval::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         // recursive calls
-        checkScale(ct1);
-        checkScale(ct2);
+        check_scale(ct1);
+        check_scale(ct2);
         heEval->add_inplace_internal(ct1, ct2);
         seEval->add_inplace_internal(ct1, ct2);
 
         print_stats(ct1);
-        checkScale(ct1);
+        check_scale(ct1);
     }
 
     void DebugEval::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         // recursive calls
-        checkScale(ct);
+        check_scale(ct);
         heEval->add_plain_inplace_internal(ct, scalar);
         seEval->add_plain_inplace_internal(ct, scalar);
 
         print_stats(ct);
-        checkScale(ct);
+        check_scale(ct);
     }
 
     void DebugEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
         // recursive calls
-        checkScale(ct);
+        check_scale(ct);
         heEval->add_plain_inplace_internal(ct, plain);
         seEval->add_plain_inplace_internal(ct, plain);
 
         print_stats(ct);
-        checkScale(ct);
+        check_scale(ct);
     }
 
     void DebugEval::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         // recursive calls
-        checkScale(ct1);
-        checkScale(ct2);
+        check_scale(ct1);
+        check_scale(ct2);
         heEval->sub_inplace_internal(ct1, ct2);
         seEval->sub_inplace_internal(ct1, ct2);
 
         print_stats(ct1);
-        checkScale(ct1);
+        check_scale(ct1);
     }
 
     void DebugEval::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         // recursive calls
-        checkScale(ct);
+        check_scale(ct);
         heEval->sub_plain_inplace_internal(ct, scalar);
         seEval->sub_plain_inplace_internal(ct, scalar);
 
         print_stats(ct);
-        checkScale(ct);
+        check_scale(ct);
     }
 
     void DebugEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
         // recursive calls
-        checkScale(ct);
+        check_scale(ct);
         heEval->sub_plain_inplace_internal(ct, plain);
         seEval->sub_plain_inplace_internal(ct, plain);
 
         print_stats(ct);
-        checkScale(ct);
+        check_scale(ct);
     }
 
     void DebugEval::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         // recursive calls
-        checkScale(ct1);
-        checkScale(ct2);
+        check_scale(ct1);
+        check_scale(ct2);
         heEval->multiply_inplace_internal(ct1, ct2);
         seEval->multiply_inplace_internal(ct1, ct2);
 
         print_stats(ct1);
-        checkScale(ct1);
+        check_scale(ct1);
     }
 
     void DebugEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         // recursive calls
-        checkScale(ct);
+        check_scale(ct);
         heEval->multiply_plain_inplace_internal(ct, scalar);
         seEval->multiply_plain_inplace_internal(ct, scalar);
 
         print_stats(ct);
-        checkScale(ct);
+        check_scale(ct);
     }
 
     void DebugEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
         // recursive calls
-        checkScale(ct);
+        check_scale(ct);
         heEval->multiply_plain_inplace_internal(ct, plain);
         seEval->multiply_plain_inplace_internal(ct, plain);
 
         print_stats(ct);
-        checkScale(ct);
+        check_scale(ct);
     }
 
     void DebugEval::square_inplace_internal(CKKSCiphertext &ct) {
         // recursive calls
-        checkScale(ct);
+        check_scale(ct);
         heEval->square_inplace_internal(ct);
         seEval->square_inplace_internal(ct);
 
         print_stats(ct);
-        checkScale(ct);
+        check_scale(ct);
     }
 
     void DebugEval::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
         // recursive calls
-        checkScale(ct);
-        checkScale(target);
+        check_scale(ct);
+        check_scale(target);
         heEval->mod_down_to_inplace_internal(ct, target);
         seEval->mod_down_to_inplace_internal(ct, target);
 
         print_stats(ct);
-        checkScale(ct);
+        check_scale(ct);
     }
 
     void DebugEval::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
@@ -283,12 +283,12 @@ namespace hit {
 
     void DebugEval::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
         // recursive calls
-        checkScale(ct);
+        check_scale(ct);
         heEval->mod_down_to_level_inplace_internal(ct, level);
         seEval->mod_down_to_level_inplace_internal(ct, level);
 
         print_stats(ct);
-        checkScale(ct);
+        check_scale(ct);
     }
 
     void DebugEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
@@ -296,7 +296,7 @@ namespace hit {
         uint64_t p = context_data->parms().coeff_modulus().back().value();
         double prime_bit_len = log2(p);
 
-        checkScale(ct);
+        check_scale(ct);
         // recursive calls
         heEval->rescale_to_next_inplace_internal(ct);
         seEval->rescale_to_next_inplace_internal(ct);
@@ -309,17 +309,17 @@ namespace hit {
                      << endl);
 
         print_stats(ct);
-        checkScale(ct);
+        check_scale(ct);
     }
 
     void DebugEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
         // recursive calls
-        checkScale(ct);
+        check_scale(ct);
         heEval->relinearize_inplace_internal(ct);
         seEval->relinearize_inplace_internal(ct);
 
         print_stats(ct);
-        checkScale(ct);
+        check_scale(ct);
     }
 
     void DebugEval::update_plaintext_max_val(double x) {

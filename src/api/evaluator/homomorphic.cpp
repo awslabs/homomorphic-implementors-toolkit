@@ -48,7 +48,7 @@ namespace hit {
         // check that ciphertexts are at the same level to avoid an obscure SEAL error
         if (ct1.getLevel(context) != ct2.getLevel(context)) {
             stringstream buffer;
-            buffer << "PPLR: Error in HomomorphicEval::add: input levels do not match: " << ct1.getLevel(context)
+            buffer << "Error in HomomorphicEval::add: input levels do not match: " << ct1.getLevel(context)
                    << " != " << ct2.getLevel(context);
             throw invalid_argument(buffer.str());
         }
@@ -64,7 +64,7 @@ namespace hit {
     void HomomorphicEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
         if (plain.size() != ct.width * ct.height) {
             throw invalid_argument(
-                "PPLR: Error in HomomorphicEval::add_plain_internal: plaintext size does not match ciphertext size");
+                "Error in HomomorphicEval::add_plain_internal: plaintext size does not match ciphertext size");
         }
         Plaintext temp;
         encoder.encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
@@ -75,7 +75,7 @@ namespace hit {
         // check that ciphertexts are at the same level to avoid an obscure SEAL error
         if (ct1.getLevel(context) != ct2.getLevel(context)) {
             stringstream buffer;
-            buffer << "PPLR: Error in HomomorphicEval::sub: input levels do not match: " << ct1.getLevel(context)
+            buffer << "Error in HomomorphicEval::sub: input levels do not match: " << ct1.getLevel(context)
                    << " != " << ct2.getLevel(context);
             throw invalid_argument(buffer.str());
         }
@@ -91,7 +91,7 @@ namespace hit {
     void HomomorphicEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
         if (plain.size() != ct.width * ct.height) {
             throw invalid_argument(
-                "PPLR: Error in HomomorphicEval::sub_plain_internal: plaintext size does not match ciphertext size");
+                "Error in HomomorphicEval::sub_plain_internal: plaintext size does not match ciphertext size");
         }
         Plaintext temp;
         encoder.encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
@@ -102,7 +102,7 @@ namespace hit {
         // check that ciphertexts are at the same level to avoid an obscure SEAL error
         if (ct1.getLevel(context) != ct2.getLevel(context)) {
             stringstream buffer;
-            buffer << "PPLR: Error in HomomorphicEval::multiply: input levels do not match: " << ct1.getLevel(context)
+            buffer << "Error in HomomorphicEval::multiply: input levels do not match: " << ct1.getLevel(context)
                    << " != " << ct2.getLevel(context);
             throw invalid_argument(buffer.str());
         }
@@ -128,7 +128,7 @@ namespace hit {
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
         if (plain.size() != ct.width * ct.height) {
             throw invalid_argument(
-                "PPLR: Error in HomomorphicEval::multiply_plain_internal: plaintext size does not match ciphertext "
+                "Error in HomomorphicEval::multiply_plain_internal: plaintext size does not match ciphertext "
                 "size");
         }
         Plaintext temp;
@@ -143,7 +143,7 @@ namespace hit {
     void HomomorphicEval::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
         if (ct.getLevel(context) < target.getLevel(context)) {
             stringstream buffer;
-            buffer << "PPLR: Error in modDownTo: input is at a lower level than target. Input level: "
+            buffer << "Error in modDownTo: input is at a lower level than target. Input level: "
                    << ct.getLevel(context) << ", target level: " << target.getLevel(context);
             throw invalid_argument(buffer.str());
         }
@@ -164,7 +164,7 @@ namespace hit {
     void HomomorphicEval::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
         if (ct.getLevel(context) < level) {
             stringstream buffer;
-            buffer << "PPLR: Error in modDownTo: input is at a lower level than target. Input level: "
+            buffer << "Error in modDownTo: input is at a lower level than target. Input level: "
                    << ct.getLevel(context) << ", target level: " << level;
             throw invalid_argument(buffer.str());
         }

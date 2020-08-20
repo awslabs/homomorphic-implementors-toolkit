@@ -94,7 +94,7 @@ namespace hit {
         void print_stats(const CKKSCiphertext &ct) const;
 
         CKKSDecryptor &decryptor;
-        void checkScale(const CKKSCiphertext &ct) const;
+        void check_scale(const CKKSCiphertext &ct) const;
         double initScale;
     };
 }  // namespace hit
