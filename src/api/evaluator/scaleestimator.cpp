@@ -71,8 +71,8 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
         if (scaleExp > ct.he_level) {
-            estimatedMaxLogScale = min(
-                estimatedMaxLogScale, (PLAINTEXT_LOG_MAX - log2(lInfNorm(ct.getPlaintext()))) / (scaleExp - ct.he_level));
+            auto estimated_scale = (PLAINTEXT_LOG_MAX - log2(lInfNorm(ct.getPlaintext()))) / (scaleExp - ct.he_level);
+            estimatedMaxLogScale = min(estimatedMaxLogScale, estimated_scale);
         } else if (scaleExp == ct.he_level && log2(lInfNorm(ct.getPlaintext())) > PLAINTEXT_LOG_MAX) {
             stringstream buffer;
             buffer << "Plaintext exceeded " << PLAINTEXT_LOG_MAX
