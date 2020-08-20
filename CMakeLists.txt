@@ -47,6 +47,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 include(set-common-flags)
 include(download-external-project)
 include(enable-hit-code-format)
+include(enable-clang-tidy)
 
 ############################
 # Third party dependencies #
@@ -55,6 +56,7 @@ include(enable-hit-code-format)
 find_package(BoostLib REQUIRED)
 find_package(SealLib REQUIRED)
 find_package(ProtobufLib REQUIRED)
+find_package(GlogLib REQUIRED)
 
 #####################
 # Compile Protobufs #
@@ -66,8 +68,6 @@ add_subdirectory(protobuf)
 ######################
 # Enable CMake Tools #
 ######################
-
-include(enable-clang-tidy)
 
 # Enable tooling.
 # clang-tidy and clang-format are used to provide some warnings for developer reference during development.
@@ -100,7 +100,7 @@ target_include_directories(aws-hit PUBLIC
 set_common_flags(aws-hit)
 
 # Link dependencies
-target_link_libraries(aws-hit PUBLIC seal PRIVATE stdc++fs ${Boost_LIBRARIES} ${Protobuf_LIBRARIES})
+target_link_libraries(aws-hit PUBLIC seal PRIVATE stdc++fs ${Boost_LIBRARIES} ${Protobuf_LIBRARIES} glog::glog)
 
 install(TARGETS aws-hit EXPORT HITTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -121,8 +121,8 @@ export(TARGETS aws-hit FILE ${HIT_TARGETS_FILENAME})
 #########
 
 # Build HIT test code if enabled.
-option(BUILD_TESTING "Build the unit tests." ON)
-if (BUILD_TESTING)
+option(BUILD_HIT_TESTING "Build the unit tests." ON)
+if (BUILD_HIT_TESTING)
     enable_testing()
     add_subdirectory(${HIT_TESTS_DIR})
 endif ()
@@ -132,7 +132,7 @@ endif ()
 ###############
 
 # Build code in the `examples` directory if enabled.
-option(BUILD_EXAMPLES "Build example/demo code." ON)
-if (BUILD_TESTING)
+option(BUILD_HIT_EXAMPLES "Build HIT example/demo code." OFF)
+if (BUILD_HIT_EXAMPLES)
     add_subdirectory(examples)
 endif ()
