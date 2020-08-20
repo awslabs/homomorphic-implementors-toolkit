@@ -78,7 +78,7 @@ namespace hit {
 
         void add_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
 
-        CKKSCiphertext add_many(std::vector<CKKSCiphertext> cts);
+        CKKSCiphertext add_many(std::vector<CKKSCiphertext> &cts);
 
         CKKSCiphertext sub(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
 
@@ -168,23 +168,23 @@ namespace hit {
         std::launch evalPolicy = std::launch::deferred;
 
        protected:
-        virtual CKKSCiphertext rotate_right_internal(const CKKSCiphertext &ct, int steps) = 0;
-        virtual CKKSCiphertext rotate_left_internal(const CKKSCiphertext &ct, int steps) = 0;
-        virtual CKKSCiphertext negate_internal(const CKKSCiphertext &ct) = 0;
-        virtual CKKSCiphertext add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) = 0;
-        virtual CKKSCiphertext add_plain_internal(const CKKSCiphertext &ct, double scalar) = 0;
-        virtual CKKSCiphertext add_plain_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) = 0;
-        virtual CKKSCiphertext sub_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) = 0;
-        virtual CKKSCiphertext sub_plain_internal(const CKKSCiphertext &ct, double scalar) = 0;
-        virtual CKKSCiphertext sub_plain_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) = 0;
-        virtual CKKSCiphertext multiply_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) = 0;
-        virtual CKKSCiphertext multiply_plain_internal(const CKKSCiphertext &ct, double scalar) = 0;
-        virtual CKKSCiphertext multiply_plain_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) = 0;
-        virtual CKKSCiphertext square_internal(const CKKSCiphertext &ct) = 0;
-        virtual CKKSCiphertext mod_down_to_internal(const CKKSCiphertext &ct, const CKKSCiphertext &target) = 0;
+        virtual void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) = 0;
+        virtual void rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) = 0;
+        virtual void negate_inplace_internal(CKKSCiphertext &ct) = 0;
+        virtual void add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) = 0;
+        virtual void add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) = 0;
+        virtual void add_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain) = 0;
+        virtual void sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) = 0;
+        virtual void sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) = 0;
+        virtual void sub_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain) = 0;
+        virtual void multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) = 0;
+        virtual void multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) = 0;
+        virtual void multiply_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain) = 0;
+        virtual void square_inplace_internal(CKKSCiphertext &ct) = 0;
+        virtual void mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) = 0;
         virtual void mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) = 0;
-        virtual CKKSCiphertext mod_down_to_level_internal(const CKKSCiphertext &ct, int level) = 0;
-        virtual CKKSCiphertext rescale_to_next_internal(const CKKSCiphertext &ct) = 0;
+        virtual void mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) = 0;
+        virtual void rescale_to_next_inplace_internal(CKKSCiphertext &ct) = 0;
         virtual void relinearize_inplace_internal(CKKSCiphertext &ct) = 0;
         virtual void reset_internal() = 0;
 

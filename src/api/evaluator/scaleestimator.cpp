@@ -52,17 +52,20 @@ namespace hit {
         cout << "    + Plaintext logmax: " << log2(exactPlaintextMaxVal)
              << " bits (scaled: " << log2(ct.scale) + log2(exactPlaintextMaxVal) << " bits)" << endl;
         cout << "    + Total modulus size: " << setprecision(4) << logModulus << " bits" << endl;
-        cout << "    + Theoretical max log scale: " << getEstimatedMaxLogScale() << " bits" << endl;
+        cout << "    + Theoretical max log scale: " << get_estimated_max_log_scale() << " bits" << endl;
     }
 
     // At all times, we need ct.scale*lInfNorm(ct.getPlaintext()) <~ q/4
     // Define ct.scale = i*baseScale for i \in {1,2}
     // If(i > ct.he_level): estimatedMaxLogScale \le
-    // (PLAINTEXT_LOG_MAX-log2(lInfNorm(ct.getPlaintext()))/(i-ct.he_level)) Else if (i == ct.he_level):
-    // log2(lInfNorm(ct.getPlaintext())) <= 58 Else [i < ct.he_level]: estimatedMaxLogScale \ge <something less than 0>
-    // [so we skip this]
+    //      (PLAINTEXT_LOG_MAX-log2(lInfNorm(ct.getPlaintext()))/(i-ct.he_level))
+    // Else if (i == ct.he_level):
+    //      log2(lInfNorm(ct.getPlaintext())) <= 58
+    // Else [i < ct.he_level]:
+    //      In this case, the constraint becomes estimatedMaxLogScale > (something less than 0).
+    //      this is bogus, so nothing to do.
 
-    void ScaleEstimator::updateMaxLogScale(const CKKSCiphertext &ct) {
+    void ScaleEstimator::update_max_log_scale(const CKKSCiphertext &ct) {
         // update the estimatedMaxLogScale
         auto scaleExp = static_cast<int>(round(log2(ct.scale) / log2(baseScale)));
         if (scaleExp != 1 && scaleExp != 2) {
@@ -80,177 +83,139 @@ namespace hit {
                    << " bits, which exceeds SEAL's capacity. Overflow is imminent.";
             throw invalid_argument(buffer.str());
         }
-        // else: scaleExp < ct.he_level.
-        // In this case, the constraint becomes estimatedMaxLogScale > (something less than 0).
-        // this is bogus, so nothing to do.
     }
 
-    CKKSCiphertext ScaleEstimator::merge_cts(const CKKSCiphertext &ct_df, const CKKSCiphertext &ct_pt)
-        const {  // NOLINT(readability-convert-member-functions-to-static)
-        CKKSCiphertext t = ct_pt;
-        t.he_level = ct_df.he_level;
-        return t;
+    void ScaleEstimator::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
+        dfEval->rotate_right_inplace_internal(ct, steps);
+        ptEval->rotate_right_inplace_internal(ct, steps);
+        VERBOSE(print_stats(ct));
     }
 
-    CKKSCiphertext ScaleEstimator::rotate_right_internal(const CKKSCiphertext &ct, int steps) {
-        CKKSCiphertext dest_df = dfEval->rotate_right_internal(ct, steps);
-        CKKSCiphertext dest_pt = ptEval->rotate_right_internal(ct, steps);
-        CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
-        VERBOSE(print_stats(dest));
-        return dest;
+    void ScaleEstimator::rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) {
+        dfEval->rotate_left_inplace_internal(ct, steps);
+        ptEval->rotate_left_inplace_internal(ct, steps);
+        VERBOSE(print_stats(ct));
     }
 
-    CKKSCiphertext ScaleEstimator::rotate_left_internal(const CKKSCiphertext &ct, int steps) {
-        CKKSCiphertext dest_df = dfEval->rotate_left_internal(ct, steps);
-        CKKSCiphertext dest_pt = ptEval->rotate_left_internal(ct, steps);
-        CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
-        VERBOSE(print_stats(dest));
-        return dest;
+    void ScaleEstimator::negate_inplace_internal(CKKSCiphertext &ct) {
+        dfEval->negate_inplace_internal(ct);
+        ptEval->negate_inplace_internal(ct);
+        VERBOSE(print_stats(ct));
     }
 
-    CKKSCiphertext ScaleEstimator::negate_internal(const CKKSCiphertext &ct) {
-        CKKSCiphertext dest_df = dfEval->negate_internal(ct);
-        CKKSCiphertext dest_pt = ptEval->negate_internal(ct);
-        CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
-        VERBOSE(print_stats(dest));
-        return dest;
-    }
-
-    CKKSCiphertext ScaleEstimator::add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
+    void ScaleEstimator::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         // recursive call up the stack
-        CKKSCiphertext dest_df = dfEval->add_internal(ct1, ct2);
-        CKKSCiphertext dest_pt = ptEval->add_internal(ct1, ct2);
-        CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
+        dfEval->add_inplace_internal(ct1, ct2);
+        ptEval->add_inplace_internal(ct1, ct2);
 
-        updateMaxLogScale(dest);
-        VERBOSE(print_stats(dest));
-        return dest;
+        update_max_log_scale(ct1);
+        VERBOSE(print_stats(ct1));
     }
 
-    CKKSCiphertext ScaleEstimator::add_plain_internal(const CKKSCiphertext &ct, double scalar) {
+    void ScaleEstimator::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         // recursive call up the stack
-        CKKSCiphertext dest_df = dfEval->add_plain_internal(ct, scalar);
-        CKKSCiphertext dest_pt = ptEval->add_plain_internal(ct, scalar);
-        CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
+        dfEval->add_plain_inplace_internal(ct, scalar);
+        ptEval->add_plain_inplace_internal(ct, scalar);
 
-        updateMaxLogScale(dest);
-        VERBOSE(print_stats(dest));
-        return dest;
+        update_max_log_scale(ct);
+        VERBOSE(print_stats(ct));
     }
 
-    CKKSCiphertext ScaleEstimator::add_plain_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
+    void ScaleEstimator::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
         // recursive call up the stack
-        CKKSCiphertext dest_df = dfEval->add_plain_internal(ct, plain);
-        CKKSCiphertext dest_pt = ptEval->add_plain_internal(ct, plain);
-        CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
+        dfEval->add_plain_inplace_internal(ct, plain);
+        ptEval->add_plain_inplace_internal(ct, plain);
 
-        updateMaxLogScale(dest);
-        VERBOSE(print_stats(dest));
-        return dest;
+        update_max_log_scale(ct);
+        VERBOSE(print_stats(ct));
     }
 
-    CKKSCiphertext ScaleEstimator::sub_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
+    void ScaleEstimator::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         // recursive call up the stack
-        CKKSCiphertext dest_df = dfEval->sub_internal(ct1, ct2);
-        CKKSCiphertext dest_pt = ptEval->sub_internal(ct1, ct2);
-        CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
+        dfEval->sub_inplace_internal(ct1, ct2);
+        ptEval->sub_inplace_internal(ct1, ct2);
 
-        updateMaxLogScale(dest);
-        VERBOSE(print_stats(dest));
-        return dest;
+        update_max_log_scale(ct1);
+        VERBOSE(print_stats(ct1));
     }
 
-    CKKSCiphertext ScaleEstimator::sub_plain_internal(const CKKSCiphertext &ct, double scalar) {
+    void ScaleEstimator::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         // recursive call up the stack
-        CKKSCiphertext dest_df = dfEval->sub_plain_internal(ct, scalar);
-        CKKSCiphertext dest_pt = ptEval->sub_plain_internal(ct, scalar);
-        CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
+        dfEval->sub_plain_inplace_internal(ct, scalar);
+        ptEval->sub_plain_inplace_internal(ct, scalar);
 
-        updateMaxLogScale(dest);
-        VERBOSE(print_stats(dest));
-        return dest;
+        update_max_log_scale(ct);
+        VERBOSE(print_stats(ct));
     }
 
-    CKKSCiphertext ScaleEstimator::sub_plain_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
+    void ScaleEstimator::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
         // recursive call up the stack
-        CKKSCiphertext dest_df = dfEval->sub_plain_internal(ct, plain);
-        CKKSCiphertext dest_pt = ptEval->sub_plain_internal(ct, plain);
-        CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
+        dfEval->sub_plain_inplace_internal(ct, plain);
+        ptEval->sub_plain_inplace_internal(ct, plain);
 
-        updateMaxLogScale(dest);
-        VERBOSE(print_stats(dest));
-        return dest;
+        update_max_log_scale(ct);
+        VERBOSE(print_stats(ct));
     }
 
-    CKKSCiphertext ScaleEstimator::multiply_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
+    void ScaleEstimator::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         // recursive call up the stack
-        CKKSCiphertext dest_df = dfEval->multiply_internal(ct1, ct2);
-        CKKSCiphertext dest_pt = ptEval->multiply_internal(ct1, ct2);
-        CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
+        dfEval->multiply_inplace_internal(ct1, ct2);
+        ptEval->multiply_inplace_internal(ct1, ct2);
 
-        dest.scale = ct1.scale * ct2.scale;
-        updateMaxLogScale(dest);
+        ct1.scale *= ct2.scale;
+        update_max_log_scale(ct1);
 
-        VERBOSE(print_stats(dest));
-        return dest;
+        VERBOSE(print_stats(ct1));
     }
 
-    CKKSCiphertext ScaleEstimator::multiply_plain_internal(const CKKSCiphertext &ct, double scalar) {
+    void ScaleEstimator::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         // recursive call up the stack
-        CKKSCiphertext dest_df = dfEval->multiply_plain_internal(ct, scalar);
-        CKKSCiphertext dest_pt = ptEval->multiply_plain_internal(ct, scalar);
-        CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
+        dfEval->multiply_plain_inplace_internal(ct, scalar);
+        ptEval->multiply_plain_inplace_internal(ct, scalar);
 
-        dest.scale *= dest.scale;
-        updateMaxLogScale(dest);
-        VERBOSE(print_stats(dest));
-        return dest;
+        ct.scale *= ct.scale;
+        update_max_log_scale(ct);
+        VERBOSE(print_stats(ct));
     }
 
-    CKKSCiphertext ScaleEstimator::multiply_plain_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
+    void ScaleEstimator::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
         // recursive call up the stack
-        CKKSCiphertext dest_df = dfEval->multiply_plain_internal(ct, plain);
-        CKKSCiphertext dest_pt = ptEval->multiply_plain_internal(ct, plain);
-        CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
+        dfEval->multiply_plain_inplace_internal(ct, plain);
+        ptEval->multiply_plain_inplace_internal(ct, plain);
 
         double plain_max = 0;
         for (int i = 0; i < ct.height * ct.width; i++) {
             plain_max = max(plain_max, abs(plain[i]));
         }
-        dest.scale = ct.scale * ct.scale;
-        updateMaxLogScale(dest);
-        VERBOSE(print_stats(dest));
-        return dest;
+        ct.scale *= ct.scale;
+        update_max_log_scale(ct);
+        VERBOSE(print_stats(ct));
     }
 
-    CKKSCiphertext ScaleEstimator::square_internal(const CKKSCiphertext &ct) {
+    void ScaleEstimator::square_inplace_internal(CKKSCiphertext &ct) {
         // recursive call up the stack
-        CKKSCiphertext dest_df = dfEval->square_internal(ct);
-        CKKSCiphertext dest_pt = ptEval->square_internal(ct);
-        CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
+        dfEval->square_inplace_internal(ct);
+        ptEval->square_inplace_internal(ct);
 
-        dest.scale *= ct.scale;
-        updateMaxLogScale(dest);
-        VERBOSE(print_stats(dest));
-        return dest;
+        ct.scale *= ct.scale;
+        update_max_log_scale(ct);
+        VERBOSE(print_stats(ct));
     }
 
-    CKKSCiphertext ScaleEstimator::mod_down_to_internal(const CKKSCiphertext &ct, const CKKSCiphertext &target) {
+    void ScaleEstimator::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
         if (ct.he_level == target.he_level && ct.scale != target.scale) {
             throw invalid_argument("modDownTo: levels match, but scales do not.");
         }
 
         // recursive call up the stack
-        CKKSCiphertext dest_df = dfEval->mod_down_to_internal(ct, target);
-        CKKSCiphertext dest_pt = ptEval->mod_down_to_internal(ct, target);
-        CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
+        dfEval->mod_down_to_inplace_internal(ct, target);
+        ptEval->mod_down_to_inplace_internal(ct, target);
 
-        dest.scale = target.scale;
+        ct.scale = target.scale;
 
         // recursive call updated he_level, so we need to update maxLogScale
-        updateMaxLogScale(dest);
-        VERBOSE(print_stats(dest));
-        return dest;
+        update_max_log_scale(ct);
+        VERBOSE(print_stats(ct));
     }
 
     void ScaleEstimator::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
@@ -269,13 +234,13 @@ namespace hit {
         ptEval->mod_down_to_min_inplace_internal(ct1, ct2);
 
         // recursive call updated he_level, so we need to update maxLogScale
-        updateMaxLogScale(ct1);
-        updateMaxLogScale(ct2);
+        update_max_log_scale(ct1);
+        update_max_log_scale(ct2);
         VERBOSE(print_stats(ct1));
         VERBOSE(print_stats(ct2));
     }
 
-    CKKSCiphertext ScaleEstimator::mod_down_to_level_internal(const CKKSCiphertext &ct, int level) {
+    void ScaleEstimator::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
         int lvlDiff = ct.he_level - level;
 
         if (level < 0) {
@@ -283,48 +248,44 @@ namespace hit {
         }
 
         // recursive call up the stack
-        CKKSCiphertext dest_df = dfEval->mod_down_to_level_internal(ct, level);
-        CKKSCiphertext dest_pt = ptEval->mod_down_to_level_internal(ct, level);
-        CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
+        dfEval->mod_down_to_level_inplace_internal(ct, level);
+        ptEval->mod_down_to_level_inplace_internal(ct, level);
 
         // reset he_level for dest
-        dest.he_level += lvlDiff;
-        while (dest.he_level > level) {
-            uint64_t p = getLastPrime(context, dest.he_level);
-            dest.he_level--;
-            dest.scale = (dest.scale * dest.scale) / p;
+        ct.he_level += lvlDiff;
+        while (ct.he_level > level) {
+            uint64_t p = getLastPrime(context, ct.he_level);
+            ct.he_level--;
+            ct.scale = (ct.scale * ct.scale) / p;
         }
-        // dest's level is now reset to level
+        // ct's level is now reset to level
 
         // recursive call updated he_level, so we need to update maxLogScale
-        updateMaxLogScale(dest);
-        VERBOSE(print_stats(dest));
-        return dest;
+        update_max_log_scale(ct);
+        VERBOSE(print_stats(ct));
     }
 
-    CKKSCiphertext ScaleEstimator::rescale_to_next_internal(const CKKSCiphertext &ct) {
+    void ScaleEstimator::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
         // get the last prime *before* making any recursive calls.
         // in particular, the DepthFinder call will change the he_level
         // of the ciphertext, causing `getContextData` to get the wrong
         // prime, resulting in mayhem.
         auto context_data = getContextData(ct);
-        uint64_t p = context_data->parms().coeff_modulus().back().value();
+        uint64_t prime = context_data->parms().coeff_modulus().back().value();
 
         // recursive call up the stack
-        CKKSCiphertext dest_df = dfEval->rescale_to_next_internal(ct);
-        CKKSCiphertext dest_pt = ptEval->rescale_to_next_internal(ct);
-        CKKSCiphertext dest = merge_cts(dest_df, dest_pt);
+        dfEval->rescale_to_next_inplace_internal(ct);
+        ptEval->rescale_to_next_inplace_internal(ct);
 
-        dest.scale /= p;
-        updateMaxLogScale(dest);
-        VERBOSE(print_stats(dest));
-        return dest;
+        ct.scale /= prime;
+        update_max_log_scale(ct);
+        VERBOSE(print_stats(ct));
     }
 
     void ScaleEstimator::relinearize_inplace_internal(CKKSCiphertext &) {
     }
 
-    void ScaleEstimator::updatePlaintextMaxVal(double x) {
+    void ScaleEstimator::update_plaintext_max_val(double x) {
         // account for a freshly-ct ciphertext
         // if this is a depth-0 computation *AND* the parameters are such that it is a no-op,
         // this is the only way we can account for the values in the input. We have to encrypt them,
@@ -335,12 +296,12 @@ namespace hit {
         }
     }
 
-    double ScaleEstimator::getExactMaxLogPlainVal() const {
-        return ptEval->getExactMaxLogPlainVal();
+    double ScaleEstimator::get_exact_max_log_plain_val() const {
+        return ptEval->get_exact_max_log_plain_val();
     }
 
-    double ScaleEstimator::getEstimatedMaxLogScale() const {
-        /* During the evaluation, updateMaxLogScale computed the maximum scale
+    double ScaleEstimator::get_estimated_max_log_scale() const {
+        /* During the evaluation, update_max_log_scale computed the maximum scale
          * implied by the "correctness" constraint (to prevent the computation
          * from overflowing). But there is another constraint: SEAL limits the
          * maximum size of the modulus (in bits) based on the poly_modulus_degree.

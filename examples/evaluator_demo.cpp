@@ -166,10 +166,10 @@ int main() {
   cout << "Using the Plaintext evaluator to test the correctness of the algorithm..." << endl;
   int rows = 32;
   int slots = dim*rows;
-  CKKSInstance *ptInst = CKKSInstance::getNewPlaintextInstance(slots);
+  CKKSInstance *ptInst = CKKSInstance::get_new_plaintext_instance(slots);
   // Encode and encrypt the input
   CKKSCiphertext x_enc_pt;
-  ptInst->encryptColVec(x, rows, x_enc_pt);
+  ptInst->encrypt_col_vec(x, rows, x_enc_pt);
   // Evaluate the function with the Plaintext evaluator,
   // and assign the result to x_enc_pt
   x_enc_pt = sigmoid(x_enc_pt, *ptInst->evaluator);
@@ -199,7 +199,7 @@ int main() {
    * a DepthFinder evaluator.
    */
   cout << "Using the DepthFinder evaluator to compute the multiplicative depth of the sigmoid function..." << endl;
-  CKKSInstance *dfInst = CKKSInstance::getNewDepthFinderInstance();
+  CKKSInstance *dfInst = CKKSInstance::get_new_depthfinder_instance();
   // Encrypt the input
   CKKSCiphertext x_enc_df;
   /* Re-encrypt the input, for two reasons. The first is that
@@ -208,7 +208,7 @@ int main() {
    * the DepthFinder evaluator, since the two evaluators are
    * independent.
    */
-  dfInst->encryptColVec(x, rows, x_enc_df);
+  dfInst->encrypt_col_vec(x, rows, x_enc_df);
   // Evaluate the function with the DepthFinder evaluator,
   // and assign the result to x_enc_df
   x_enc_df = sigmoid(x_enc_df, *dfInst->evaluator);
@@ -239,10 +239,10 @@ int main() {
    * so it must be run serially after the DepthFinder step.
    */
   cout << "Using the ScaleEstimator evaluator to compute the optimal CKKS scale factor..." << endl;
-  CKKSInstance *scaleInst = CKKSInstance::getNewScaleEstimatorInstance(slots, multDepth);
+  CKKSInstance *scaleInst = CKKSInstance::get_new_scaleestimator_instance(slots, multDepth);
   // Re-encrypt the input
   CKKSCiphertext x_enc_scale;
-  scaleInst->encryptColVec(x, rows, x_enc_scale);
+  scaleInst->encrypt_col_vec(x, rows, x_enc_scale);
   // Evaluate the function with the ScaleEstimator evaluator,
   // and assign the result to x_enc_scale
   x_enc_scale = sigmoid(x_enc_scale, *scaleInst->evaluator);
@@ -257,10 +257,10 @@ int main() {
    * construct a evaluator that works on encrypted inputs.
    */
   cout << "Running the computation on ciphertexts..." << endl;
-  CKKSInstance *homomInst = tryLoadInstance(slots, multDepth, logScale, NORMAL);
+  CKKSInstance *homomInst = try_load_instance(slots, multDepth, logScale, NORMAL);
   // Re-encrypt the input
   CKKSCiphertext x_enc_homom;
-  homomInst->encryptColVec(x, rows, x_enc_homom);
+  homomInst->encrypt_col_vec(x, rows, x_enc_homom);
   // Evaluate the function with the Normal homomorphic evaluator,
   // and assign the result to x_enc_homom
   x_enc_homom = sigmoid(x_enc_homom, *homomInst->evaluator);
@@ -284,10 +284,10 @@ int main() {
    * regarding all aspects of the computation in real-time.
    */
   cout << "Running the computation in debug mode..." << endl;
-  CKKSInstance *debugInst = tryLoadInstance(slots, multDepth, logScale, DEBUG);
+  CKKSInstance *debugInst = try_load_instance(slots, multDepth, logScale, DEBUG);
   // Re-encrypt the input
   CKKSCiphertext x_enc_debug;
-  debugInst->encryptColVec(x, rows, x_enc_debug);
+  debugInst->encrypt_col_vec(x, rows, x_enc_debug);
   // Evaluate the function with the Normal homomorphic evaluator,
   // and assign the result to x_enc_debug
   x_enc_debug = sigmoid(x_enc_debug, *debugInst->evaluator);

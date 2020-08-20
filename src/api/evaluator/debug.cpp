@@ -128,183 +128,148 @@ namespace hit {
         VERBOSE(cout << endl);
     }
 
-    CKKSCiphertext DebugEval::merge_cts(const CKKSCiphertext &ct_he, const CKKSCiphertext &ct_se)
-        const {  // NOLINT(readability-convert-member-functions-to-static)
-        CKKSCiphertext t = ct_he;
-        t.copyMetadataFrom(ct_se);
-        return t;
-    }
-
-    CKKSCiphertext DebugEval::rotate_right_internal(const CKKSCiphertext &ct, int steps) {
+    void DebugEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
         // recursive calls
         checkScale(ct);
-        CKKSCiphertext dest_he = heEval->rotate_right_internal(ct, steps);
-        CKKSCiphertext dest_se = seEval->rotate_right_internal(ct, steps);
-        CKKSCiphertext dest = merge_cts(dest_he, dest_se);
+        heEval->rotate_right_inplace_internal(ct, steps);
+        seEval->rotate_right_inplace_internal(ct, steps);
 
-        print_stats(dest);
-        checkScale(dest);
-        return dest;
+        print_stats(ct);
+        checkScale(ct);
     }
 
-    CKKSCiphertext DebugEval::rotate_left_internal(const CKKSCiphertext &ct, int steps) {
+    void DebugEval::rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) {
         // recursive calls
         checkScale(ct);
-        CKKSCiphertext dest_he = heEval->rotate_left_internal(ct, steps);
-        CKKSCiphertext dest_se = seEval->rotate_left_internal(ct, steps);
-        CKKSCiphertext dest = merge_cts(dest_he, dest_se);
+        heEval->rotate_left_inplace_internal(ct, steps);
+        seEval->rotate_left_inplace_internal(ct, steps);
 
-        print_stats(dest);
-        checkScale(dest);
-        return dest;
+        print_stats(ct);
+        checkScale(ct);
     }
 
-    CKKSCiphertext DebugEval::negate_internal(const CKKSCiphertext &ct) {
+    void DebugEval::negate_inplace_internal(CKKSCiphertext &ct) {
         // recursive calls
         checkScale(ct);
-        CKKSCiphertext dest_he = heEval->negate_internal(ct);
-        CKKSCiphertext dest_se = seEval->negate_internal(ct);
-        CKKSCiphertext dest = merge_cts(dest_he, dest_se);
+        heEval->negate_inplace_internal(ct);
+        seEval->negate_inplace_internal(ct);
 
-        print_stats(dest);
-        checkScale(dest);
-        return dest;
+        print_stats(ct);
+        checkScale(ct);
     }
 
-    CKKSCiphertext DebugEval::add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
+    void DebugEval::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         // recursive calls
         checkScale(ct1);
         checkScale(ct2);
-        CKKSCiphertext dest_he = heEval->add_internal(ct1, ct2);
-        CKKSCiphertext dest_se = seEval->add_internal(ct1, ct2);
-        CKKSCiphertext dest = merge_cts(dest_he, dest_se);
+        heEval->add_inplace_internal(ct1, ct2);
+        seEval->add_inplace_internal(ct1, ct2);
 
-        print_stats(dest);
-        checkScale(dest);
-        return dest;
+        print_stats(ct1);
+        checkScale(ct1);
     }
 
-    CKKSCiphertext DebugEval::add_plain_internal(const CKKSCiphertext &ct, double scalar) {
+    void DebugEval::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         // recursive calls
         checkScale(ct);
-        CKKSCiphertext dest_he = heEval->add_plain_internal(ct, scalar);
-        CKKSCiphertext dest_se = seEval->add_plain_internal(ct, scalar);
-        CKKSCiphertext dest = merge_cts(dest_he, dest_se);
+        heEval->add_plain_inplace_internal(ct, scalar);
+        seEval->add_plain_inplace_internal(ct, scalar);
 
-        print_stats(dest);
-        checkScale(dest);
-        return dest;
+        print_stats(ct);
+        checkScale(ct);
     }
 
-    CKKSCiphertext DebugEval::add_plain_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
+    void DebugEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
         // recursive calls
         checkScale(ct);
-        CKKSCiphertext dest_he = heEval->add_plain_internal(ct, plain);
-        CKKSCiphertext dest_se = seEval->add_plain_internal(ct, plain);
-        CKKSCiphertext dest = merge_cts(dest_he, dest_se);
+        heEval->add_plain_inplace_internal(ct, plain);
+        seEval->add_plain_inplace_internal(ct, plain);
 
-        print_stats(dest);
-        checkScale(dest);
-        return dest;
+        print_stats(ct);
+        checkScale(ct);
     }
 
-    CKKSCiphertext DebugEval::sub_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
+    void DebugEval::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         // recursive calls
         checkScale(ct1);
         checkScale(ct2);
-        CKKSCiphertext dest_he = heEval->sub_internal(ct1, ct2);
-        CKKSCiphertext dest_se = seEval->sub_internal(ct1, ct2);
-        CKKSCiphertext dest = merge_cts(dest_he, dest_se);
+        heEval->sub_inplace_internal(ct1, ct2);
+        seEval->sub_inplace_internal(ct1, ct2);
 
-        print_stats(dest);
-        checkScale(dest);
-        return dest;
+        print_stats(ct1);
+        checkScale(ct1);
     }
 
-    CKKSCiphertext DebugEval::sub_plain_internal(const CKKSCiphertext &ct, double scalar) {
+    void DebugEval::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         // recursive calls
         checkScale(ct);
-        CKKSCiphertext dest_he = heEval->sub_plain_internal(ct, scalar);
-        CKKSCiphertext dest_se = seEval->sub_plain_internal(ct, scalar);
-        CKKSCiphertext dest = merge_cts(dest_he, dest_se);
+        heEval->sub_plain_inplace_internal(ct, scalar);
+        seEval->sub_plain_inplace_internal(ct, scalar);
 
-        print_stats(dest);
-        checkScale(dest);
-        return dest;
+        print_stats(ct);
+        checkScale(ct);
     }
 
-    CKKSCiphertext DebugEval::sub_plain_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
+    void DebugEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
         // recursive calls
         checkScale(ct);
-        CKKSCiphertext dest_he = heEval->sub_plain_internal(ct, plain);
-        CKKSCiphertext dest_se = seEval->sub_plain_internal(ct, plain);
-        CKKSCiphertext dest = merge_cts(dest_he, dest_se);
+        heEval->sub_plain_inplace_internal(ct, plain);
+        seEval->sub_plain_inplace_internal(ct, plain);
 
-        print_stats(dest);
-        checkScale(dest);
-        return dest;
+        print_stats(ct);
+        checkScale(ct);
     }
 
-    CKKSCiphertext DebugEval::multiply_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
+    void DebugEval::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         // recursive calls
         checkScale(ct1);
         checkScale(ct2);
-        CKKSCiphertext dest_he = heEval->multiply_internal(ct1, ct2);
-        CKKSCiphertext dest_se = seEval->multiply_internal(ct1, ct2);
-        CKKSCiphertext dest = merge_cts(dest_he, dest_se);
+        heEval->multiply_inplace_internal(ct1, ct2);
+        seEval->multiply_inplace_internal(ct1, ct2);
 
-        print_stats(dest);
-        checkScale(dest);
-        return dest;
+        print_stats(ct1);
+        checkScale(ct1);
     }
 
-    CKKSCiphertext DebugEval::multiply_plain_internal(const CKKSCiphertext &ct, double scalar) {
+    void DebugEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         // recursive calls
         checkScale(ct);
-        CKKSCiphertext dest_he = heEval->multiply_plain_internal(ct, scalar);
-        CKKSCiphertext dest_se = seEval->multiply_plain_internal(ct, scalar);
-        CKKSCiphertext dest = merge_cts(dest_he, dest_se);
+        heEval->multiply_plain_inplace_internal(ct, scalar);
+        seEval->multiply_plain_inplace_internal(ct, scalar);
 
-        print_stats(dest);
-        checkScale(dest);
-        return dest;
+        print_stats(ct);
+        checkScale(ct);
     }
 
-    CKKSCiphertext DebugEval::multiply_plain_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
+    void DebugEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
         // recursive calls
         checkScale(ct);
-        CKKSCiphertext dest_he = heEval->multiply_plain_internal(ct, plain);
-        CKKSCiphertext dest_se = seEval->multiply_plain_internal(ct, plain);
-        CKKSCiphertext dest = merge_cts(dest_he, dest_se);
+        heEval->multiply_plain_inplace_internal(ct, plain);
+        seEval->multiply_plain_inplace_internal(ct, plain);
 
-        print_stats(dest);
-        checkScale(dest);
-        return dest;
+        print_stats(ct);
+        checkScale(ct);
     }
 
-    CKKSCiphertext DebugEval::square_internal(const CKKSCiphertext &ct) {
+    void DebugEval::square_inplace_internal(CKKSCiphertext &ct) {
         // recursive calls
         checkScale(ct);
-        CKKSCiphertext dest_he = heEval->square_internal(ct);
-        CKKSCiphertext dest_se = seEval->square_internal(ct);
-        CKKSCiphertext dest = merge_cts(dest_he, dest_se);
+        heEval->square_inplace_internal(ct);
+        seEval->square_inplace_internal(ct);
 
-        print_stats(dest);
-        checkScale(dest);
-        return dest;
+        print_stats(ct);
+        checkScale(ct);
     }
 
-    CKKSCiphertext DebugEval::mod_down_to_internal(const CKKSCiphertext &ct, const CKKSCiphertext &target) {
+    void DebugEval::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
         // recursive calls
         checkScale(ct);
         checkScale(target);
-        CKKSCiphertext dest_he = heEval->mod_down_to_internal(ct, target);
-        CKKSCiphertext dest_se = seEval->mod_down_to_internal(ct, target);
-        CKKSCiphertext dest = merge_cts(dest_he, dest_se);
+        heEval->mod_down_to_inplace_internal(ct, target);
+        seEval->mod_down_to_inplace_internal(ct, target);
 
-        print_stats(dest);
-        checkScale(dest);
-        return dest;
+        print_stats(ct);
+        checkScale(ct);
     }
 
     void DebugEval::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
@@ -316,28 +281,25 @@ namespace hit {
         print_stats(ct2);
     }
 
-    CKKSCiphertext DebugEval::mod_down_to_level_internal(const CKKSCiphertext &ct, int level) {
+    void DebugEval::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
         // recursive calls
         checkScale(ct);
-        CKKSCiphertext dest_he = heEval->mod_down_to_level_internal(ct, level);
-        CKKSCiphertext dest_se = seEval->mod_down_to_level_internal(ct, level);
-        CKKSCiphertext dest = merge_cts(dest_he, dest_se);
+        heEval->mod_down_to_level_inplace_internal(ct, level);
+        seEval->mod_down_to_level_inplace_internal(ct, level);
 
-        print_stats(dest);
-        checkScale(dest);
-        return dest;
+        print_stats(ct);
+        checkScale(ct);
     }
 
-    CKKSCiphertext DebugEval::rescale_to_next_internal(const CKKSCiphertext &ct) {
+    void DebugEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
         auto context_data = getContextData(ct);
         uint64_t p = context_data->parms().coeff_modulus().back().value();
         double prime_bit_len = log2(p);
 
         checkScale(ct);
         // recursive calls
-        CKKSCiphertext dest_he = heEval->rescale_to_next_internal(ct);
-        CKKSCiphertext dest_se = seEval->rescale_to_next_internal(ct);
-        CKKSCiphertext dest = merge_cts(dest_he, dest_se);
+        heEval->rescale_to_next_inplace_internal(ct);
+        seEval->rescale_to_next_inplace_internal(ct);
 
         // for some reason, the default is to print doubles with no decimal places.
         // To get decimal places, add `<< fixed << setprecision(2)` before printing the log.
@@ -346,9 +308,8 @@ namespace hit {
         VERBOSE(cout << "    + Scaled plaintext down by the ~" << prime_bit_len << "-bit prime " << hex << p << dec
                      << endl);
 
-        print_stats(dest);
-        checkScale(dest);
-        return dest;
+        print_stats(ct);
+        checkScale(ct);
     }
 
     void DebugEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
@@ -361,15 +322,15 @@ namespace hit {
         checkScale(ct);
     }
 
-    void DebugEval::updatePlaintextMaxVal(double x) {
-        seEval->updatePlaintextMaxVal(x);
+    void DebugEval::update_plaintext_max_val(double x) {
+        seEval->update_plaintext_max_val(x);
     }
 
-    double DebugEval::getExactMaxLogPlainVal() const {
-        return seEval->getExactMaxLogPlainVal();
+    double DebugEval::get_exact_max_log_plain_val() const {
+        return seEval->get_exact_max_log_plain_val();
     }
 
-    double DebugEval::getEstimatedMaxLogScale() const {
-        return seEval->getEstimatedMaxLogScale();
+    double DebugEval::get_estimated_max_log_scale() const {
+        return seEval->get_estimated_max_log_scale();
     }
 }  // namespace hit

@@ -24,22 +24,19 @@ namespace hit {
         cout << "    + Level: " << ct.he_level << endl;
     }
 
-    CKKSCiphertext DepthFinder::rotate_right_internal(const CKKSCiphertext &ct, int) {
+    void DepthFinder::rotate_right_inplace_internal(CKKSCiphertext &ct, int) {
         VERBOSE(print_stats(ct));
-        return ct;
     }
 
-    CKKSCiphertext DepthFinder::rotate_left_internal(const CKKSCiphertext &ct, int) {
+    void DepthFinder::rotate_left_inplace_internal(CKKSCiphertext &ct, int) {
         VERBOSE(print_stats(ct));
-        return ct;
     }
 
-    CKKSCiphertext DepthFinder::negate_internal(const CKKSCiphertext &ct) {
+    void DepthFinder::negate_inplace_internal(CKKSCiphertext &ct) {
         VERBOSE(print_stats(ct));
-        return ct;
     }
 
-    CKKSCiphertext DepthFinder::add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
+    void DepthFinder::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         // check that ciphertexts are at the same level to avoid an obscure SEAL error
         if (ct1.he_level != ct2.he_level) {
             stringstream buffer;
@@ -48,20 +45,17 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
         VERBOSE(print_stats(ct1));
-        return ct1;
     }
 
-    CKKSCiphertext DepthFinder::add_plain_internal(const CKKSCiphertext &ct, double) {
+    void DepthFinder::add_plain_inplace_internal(CKKSCiphertext &ct, double) {
         VERBOSE(print_stats(ct));
-        return ct;
     }
 
-    CKKSCiphertext DepthFinder::add_plain_internal(const CKKSCiphertext &ct, const vector<double> &) {
+    void DepthFinder::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &) {
         VERBOSE(print_stats(ct));
-        return ct;
     }
 
-    CKKSCiphertext DepthFinder::sub_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
+    void DepthFinder::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         // check that ciphertexts are at the same level to avoid an obscure SEAL error
         if (ct1.he_level != ct2.he_level) {
             stringstream buffer;
@@ -70,20 +64,17 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
         VERBOSE(print_stats(ct1));
-        return ct1;
     }
 
-    CKKSCiphertext DepthFinder::sub_plain_internal(const CKKSCiphertext &ct, double) {
+    void DepthFinder::sub_plain_inplace_internal(CKKSCiphertext &ct, double) {
         VERBOSE(print_stats(ct));
-        return ct;
     }
 
-    CKKSCiphertext DepthFinder::sub_plain_internal(const CKKSCiphertext &ct, const vector<double> &) {
+    void DepthFinder::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &) {
         VERBOSE(print_stats(ct));
-        return ct;
     }
 
-    CKKSCiphertext DepthFinder::multiply_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
+    void DepthFinder::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         // check that ciphertexts are at the same level to avoid an obscure SEAL error
         if (ct1.he_level != ct2.he_level) {
             stringstream buffer;
@@ -92,33 +83,27 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
         VERBOSE(print_stats(ct1));
-        return ct1;
     }
 
-    CKKSCiphertext DepthFinder::multiply_plain_internal(const CKKSCiphertext &ct, double) {
+    void DepthFinder::multiply_plain_inplace_internal(CKKSCiphertext &ct, double) {
         VERBOSE(print_stats(ct));
-        return ct;
     }
 
-    CKKSCiphertext DepthFinder::multiply_plain_internal(const CKKSCiphertext &ct, const vector<double> &) {
+    void DepthFinder::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &) {
         VERBOSE(print_stats(ct));
-        return ct;
     }
 
-    CKKSCiphertext DepthFinder::square_internal(const CKKSCiphertext &ct) {
+    void DepthFinder::square_inplace_internal(CKKSCiphertext &ct) {
         VERBOSE(print_stats(ct));
-        return ct;
     }
 
-    CKKSCiphertext DepthFinder::mod_down_to_internal(const CKKSCiphertext &ct, const CKKSCiphertext &target) {
-        CKKSCiphertext dest = ct;
-        if (dest.he_level >= target.he_level) {
-            dest.he_level = target.he_level;
+    void DepthFinder::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
+        if (ct.he_level >= target.he_level) {
+            ct.he_level = target.he_level;
         } else {
             throw invalid_argument("ct level is below target level");
         }
-        VERBOSE(print_stats(dest));
-        return dest;
+        VERBOSE(print_stats(ct));
     }
 
     void DepthFinder::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
@@ -130,30 +115,26 @@ namespace hit {
         VERBOSE(print_stats(ct1));
     }
 
-    CKKSCiphertext DepthFinder::mod_down_to_level_internal(const CKKSCiphertext &ct, int level) {
-        CKKSCiphertext ct_out = ct;
+    void DepthFinder::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
         if (ct.he_level >= level) {
-            ct_out.he_level = level;
+            ct.he_level = level;
         } else {
             throw invalid_argument("x level is below target level");
         }
-        VERBOSE(print_stats(ct_out));
-        return ct_out;
+        VERBOSE(print_stats(ct));
     }
 
-    CKKSCiphertext DepthFinder::rescale_to_next_internal(const CKKSCiphertext &ct) {
-        CKKSCiphertext dest = ct;
+    void DepthFinder::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
         int topHELevel = context->first_context_data()->chain_index();
-        dest.he_level--;
-        multiplicativeDepth = max(multiplicativeDepth, topHELevel - dest.he_level);
-        VERBOSE(print_stats(dest));
-        return dest;
+        ct.he_level--;
+        multiplicativeDepth = max(multiplicativeDepth, topHELevel - ct.he_level);
+        VERBOSE(print_stats(ct));
     }
 
     void DepthFinder::relinearize_inplace_internal(CKKSCiphertext &) {
     }
 
-    int DepthFinder::getMultiplicativeDepth() const {
+    int DepthFinder::get_multiplicative_depth() const {
         return multiplicativeDepth;
     }
 }  // namespace hit

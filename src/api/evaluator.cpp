@@ -37,36 +37,42 @@ namespace hit {
     }
 
     CKKSCiphertext CKKSEvaluator::rotate_right(const CKKSCiphertext &ct, int steps) {
+        CKKSCiphertext output = ct;
+        rotate_right_inplace(output, steps);
+        return output;
+    }
+
+    void CKKSEvaluator::rotate_right_inplace(CKKSCiphertext &ct, int steps) {
         if (steps < 0) {
             throw invalid_argument("ERROR: rotate_right must have a positive number of steps.");
         }
         VERBOSE(cout << "Rotate " << abs(steps) << " steps right." << endl);
-        return rotate_right_internal(ct, steps);
-    }
-
-    void CKKSEvaluator::rotate_right_inplace(CKKSCiphertext &ct, int steps) {
-        ct = rotate_right(ct, steps);
+        rotate_right_inplace_internal(ct, steps);
     }
 
     CKKSCiphertext CKKSEvaluator::rotate_left(const CKKSCiphertext &ct, int steps) {
+        CKKSCiphertext output = ct;
+        rotate_left_inplace(output, steps);
+        return output;
+    }
+
+    void CKKSEvaluator::rotate_left_inplace(CKKSCiphertext &ct, int steps) {
         if (steps < 0) {
             throw invalid_argument("ERROR: rotate_left must have a positive number of steps.");
         }
         VERBOSE(cout << "Rotate " << abs(steps) << " steps left." << endl);
-        return rotate_left_internal(ct, steps);
-    }
-
-    void CKKSEvaluator::rotate_left_inplace(CKKSCiphertext &ct, int steps) {
-        ct = rotate_left(ct, steps);
+        rotate_left_inplace_internal(ct, steps);
     }
 
     CKKSCiphertext CKKSEvaluator::negate(const CKKSCiphertext &ct) {
-        VERBOSE(cout << "Negate" << endl);
-        return negate_internal(ct);
+        CKKSCiphertext output = ct;
+        negate_inplace(output);
+        return output;
     }
 
     void CKKSEvaluator::negate_inplace(CKKSCiphertext &ct) {
-        ct = negate(ct);
+        VERBOSE(cout << "Negate" << endl);
+        negate_inplace_internal(ct);
     }
 
     CKKSCiphertext CKKSEvaluator::add(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
@@ -82,7 +88,8 @@ namespace hit {
 
         VERBOSE(cout << "Add ciphertexts" << endl);
 
-        CKKSCiphertext temp = add_internal(ct1, ct2);
+        CKKSCiphertext temp = ct1;
+        add_inplace_internal(temp, ct2);
 
         // combining a ROW_MAT and a MATRIX only makes sense in make-believe linear algebra, like the type used
         // for PPLR training. It doesn't correspond to a real linear-algebra operation because we need this
@@ -117,29 +124,37 @@ namespace hit {
         return temp;
     }
 
-    CKKSCiphertext CKKSEvaluator::add_plain(const CKKSCiphertext &ct, double scalar) {
-        VERBOSE(cout << "Add scalar " << scalar << " to ciphertext" << endl);
-        return add_plain_internal(ct, scalar);
-    }
-
-    void CKKSEvaluator::add_plain_inplace(CKKSCiphertext &ct, double scalar) {
-        ct = add_plain(ct, scalar);
-    }
-
-    CKKSCiphertext CKKSEvaluator::add_plain(const CKKSCiphertext &ct, const vector<double> &plain) {
-        VERBOSE(cout << "Add plaintext to ciphertext" << endl);
-        return add_plain_internal(ct, plain);
-    }
-
-    void CKKSEvaluator::add_plain_inplace(CKKSCiphertext &ct, const vector<double> &plain) {
-        ct = add_plain(ct, plain);
-    }
-
     void CKKSEvaluator::add_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         ct1 = add(ct1, ct2);
     }
 
-    CKKSCiphertext CKKSEvaluator::add_many(vector<CKKSCiphertext> cts) {
+    CKKSCiphertext CKKSEvaluator::add_plain(const CKKSCiphertext &ct, double scalar) {
+        CKKSCiphertext output = ct;
+        add_plain_inplace(output, scalar);
+        return output;
+    }
+
+    void CKKSEvaluator::add_plain_inplace(CKKSCiphertext &ct, double scalar) {
+        VERBOSE(cout << "Add scalar " << scalar << " to ciphertext" << endl);
+        add_plain_inplace_internal(ct, scalar);
+    }
+
+    CKKSCiphertext CKKSEvaluator::add_plain(const CKKSCiphertext &ct, const vector<double> &plain) {
+        CKKSCiphertext output = ct;
+        add_plain_inplace(output, plain);
+        return output;
+    }
+
+    void CKKSEvaluator::add_plain_inplace(CKKSCiphertext &ct, const vector<double> &plain) {
+        VERBOSE(cout << "Add plaintext to ciphertext" << endl);
+        return add_plain_inplace_internal(ct, plain);
+    }
+
+    CKKSCiphertext CKKSEvaluator::add_many(vector<CKKSCiphertext> &cts) {
+        if(cts.empty()) {
+            throw invalid_argument("add_many: vector may not be empty.");
+        }
+
         CKKSCiphertext dest = cts[0];
         for (int i = 1; i < cts.size(); i++) {
             add_inplace(dest, cts[i]);
@@ -160,7 +175,8 @@ namespace hit {
 
         VERBOSE(cout << "Subtract ciphertexts" << endl);
 
-        CKKSCiphertext temp = sub_internal(ct1, ct2);
+        CKKSCiphertext temp = ct1;
+        sub_inplace_internal(temp, ct2);
 
         // combining a ROW_MAT and a MATRIX only makes sense in make-believe linear algebra, like the type used
         // for PPLR training. It doesn't correspond to a real linear-algebra operation because we need this
@@ -200,21 +216,25 @@ namespace hit {
     }
 
     CKKSCiphertext CKKSEvaluator::sub_plain(const CKKSCiphertext &ct, double scalar) {
-        VERBOSE(cout << "Subtract scalar " << scalar << " from ciphertext" << endl);
-        return sub_plain_internal(ct, scalar);
+        CKKSCiphertext output = ct;
+        sub_plain_inplace(output, scalar);
+        return output;
     }
 
     void CKKSEvaluator::sub_plain_inplace(CKKSCiphertext &ct, double scalar) {
-        ct = sub_plain(ct, scalar);
+        VERBOSE(cout << "Subtract scalar " << scalar << " from ciphertext" << endl);
+        sub_plain_inplace_internal(ct, scalar);
     }
 
     CKKSCiphertext CKKSEvaluator::sub_plain(const CKKSCiphertext &ct, const vector<double> &plain) {
-        VERBOSE(cout << "Subtract plaintext from ciphertext" << endl);
-        return sub_plain_internal(ct, plain);
+        CKKSCiphertext output = ct;
+        sub_plain_inplace(output, plain);
+        return output;
     }
 
     void CKKSEvaluator::sub_plain_inplace(CKKSCiphertext &ct, const vector<double> &plain) {
-        ct = sub_plain(ct, plain);
+        VERBOSE(cout << "Subtract plaintext from ciphertext" << endl);
+        sub_plain_inplace_internal(ct, plain);
     }
 
     CKKSCiphertext CKKSEvaluator::multiply(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
@@ -230,7 +250,8 @@ namespace hit {
 
         VERBOSE(cout << "Multiply ciphertexts" << endl);
 
-        CKKSCiphertext temp = multiply_internal(ct1, ct2);
+        CKKSCiphertext temp = ct1;
+        multiply_inplace_internal(temp, ct2);
 
         // we can multiply a row vector by either a row matrix or a pure matrix. In the first case, this is
         // \vec(a)*(\vec(b)*C), which is equivalent to (\vec(a)*\vec(b))*C, a row vector times a pure matrix. The second
@@ -271,42 +292,50 @@ namespace hit {
     }
 
     CKKSCiphertext CKKSEvaluator::multiply_plain(const CKKSCiphertext &ct, double scalar) {
-        VERBOSE(cout << "Multiply ciphertext by scalar " << scalar << endl);
-        return multiply_plain_internal(ct, scalar);
+        CKKSCiphertext output = ct;
+        multiply_plain_inplace(output, scalar);
+        return output;
     }
 
     void CKKSEvaluator::multiply_plain_inplace(CKKSCiphertext &ct, double scalar) {
-        ct = multiply_plain(ct, scalar);
+        VERBOSE(cout << "Multiply ciphertext by scalar " << scalar << endl);
+        multiply_plain_inplace_internal(ct, scalar);
     }
 
     CKKSCiphertext CKKSEvaluator::multiply_plain(const CKKSCiphertext &ct, const vector<double> &plain) {
+        CKKSCiphertext output = ct;
+        multiply_plain_inplace(output, plain);
+        return output;
+    }
+
+    void CKKSEvaluator::multiply_plain_inplace(CKKSCiphertext &ct, const vector<double> &plain) {
         VERBOSE(cout << "Multiply by plaintext" << endl);
         if (ct.encoded_width * ct.encoded_height != plain.size()) {
             throw invalid_argument("CKKSEvaluator::multiply_plain: encoded size does not match plaintext input");
         }
-        return multiply_plain_internal(ct, plain);
-    }
-
-    void CKKSEvaluator::multiply_plain_inplace(CKKSCiphertext &ct, const vector<double> &plain) {
-        ct = multiply_plain(ct, plain);
+        return multiply_plain_inplace_internal(ct, plain);
     }
 
     CKKSCiphertext CKKSEvaluator::square(const CKKSCiphertext &ct) {
-        VERBOSE(cout << "Square ciphertext" << endl);
-        return square_internal(ct);
+        CKKSCiphertext output = ct;
+        square_inplace(output);
+        return output;
     }
 
     void CKKSEvaluator::square_inplace(CKKSCiphertext &ct) {
-        ct = square(ct);
+        VERBOSE(cout << "Square ciphertext" << endl);
+        square_inplace_internal(ct);
     }
 
     CKKSCiphertext CKKSEvaluator::mod_down_to(const CKKSCiphertext &ct, const CKKSCiphertext &target) {
-        VERBOSE(cout << "Decreasing HE level to match target" << endl);
-        return mod_down_to_internal(ct, target);
+        CKKSCiphertext output = ct;
+        mod_down_to_inplace(output, target);
+        return output;
     }
 
     void CKKSEvaluator::mod_down_to_inplace(CKKSCiphertext &ct, const CKKSCiphertext &target) {
-        ct = mod_down_to(ct, target);
+        VERBOSE(cout << "Decreasing HE level to match target" << endl);
+        mod_down_to_inplace_internal(ct, target);
     }
 
     void CKKSEvaluator::mod_down_to_min_inplace(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
@@ -315,21 +344,25 @@ namespace hit {
     }
 
     CKKSCiphertext CKKSEvaluator::mod_down_to_level(const CKKSCiphertext &ct, int level) {
-        VERBOSE(cout << "Decreasing HE level to " << level << endl);
-        return mod_down_to_level_internal(ct, level);
+        CKKSCiphertext output = ct;
+        mod_down_to_level_inplace(output, level);
+        return output;
     }
 
     void CKKSEvaluator::mod_down_to_level_inplace(CKKSCiphertext &ct, int level) {
-        ct = mod_down_to_level(ct, level);
+        VERBOSE(cout << "Decreasing HE level to " << level << endl);
+        mod_down_to_level_inplace_internal(ct, level);
     }
 
     CKKSCiphertext CKKSEvaluator::rescale_to_next(const CKKSCiphertext &ct) {
-        VERBOSE(cout << "Rescaling ciphertext" << endl);
-        return rescale_to_next_internal(ct);
+        CKKSCiphertext output = ct;
+        rescale_to_next_inplace(output);
+        return output;
     }
 
     void CKKSEvaluator::rescale_to_next_inplace(CKKSCiphertext &ct) {
-        ct = rescale_to_next(ct);
+        VERBOSE(cout << "Rescaling ciphertext" << endl);
+        rescale_to_next_inplace_internal(ct);
     }
 
     void CKKSEvaluator::relinearize_inplace(CKKSCiphertext &ct) {

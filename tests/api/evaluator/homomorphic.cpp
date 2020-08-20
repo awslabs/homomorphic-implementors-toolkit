@@ -28,7 +28,7 @@ const vector<double> VECTOR_1(NUM_OF_SLOTS, VALUE1);
 
 TEST(HomomorphicTest, RotateLeft) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2;
@@ -37,7 +37,7 @@ TEST(HomomorphicTest, RotateLeft) {
         vector2.push_back(vector1[i]);
     }
     vector2.push_back(vector1[0]);
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->rotate_left(ciphertext1, STEPS);
     vector<double> vector3 = ckksInstance->decrypt(ciphertext2, VERBOSE);
     // Expect vector is rotated.
@@ -48,7 +48,7 @@ TEST(HomomorphicTest, RotateLeft) {
 
 TEST(HomomorphicTest, RotateLeft_InvalidCase) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1;
     ASSERT_THROW((
                      // Expect invalid_argument is thrown because the rotate step should not be negative.
@@ -58,7 +58,7 @@ TEST(HomomorphicTest, RotateLeft_InvalidCase) {
 
 TEST(HomomorphicTest, RotateRight) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2;
@@ -67,7 +67,7 @@ TEST(HomomorphicTest, RotateRight) {
     for (int i = 0; i < NUM_OF_SLOTS - 1; i++) {
         vector2.push_back(vector1[i]);
     }
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->rotate_right(ciphertext1, STEPS);
     vector<double> vector3 = ckksInstance->decrypt(ciphertext2, VERBOSE);
     // Expect vector is rotated.
@@ -78,7 +78,7 @@ TEST(HomomorphicTest, RotateRight) {
 
 TEST(HomomorphicTest, RotateRight_InvalidCase) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1;
     ASSERT_THROW((
                      // Expect invalid_argument is thrown because the rotate step should not be negative.
@@ -88,10 +88,10 @@ TEST(HomomorphicTest, RotateRight_InvalidCase) {
 
 TEST(HomomorphicTest, Negate) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
     vector<double> vector2(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), negate<>());
     ciphertext3 = ckksInstance->evaluator->negate(ciphertext1);
@@ -104,12 +104,12 @@ TEST(HomomorphicTest, Negate) {
 
 TEST(HomomorphicTest, Add_Two) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2 = randomVector(NUM_OF_SLOTS, RANGE);
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
-    ckksInstance->encryptRowVec(vector2, WIDTH, ciphertext2);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(vector2, WIDTH, ciphertext2);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), plus<>());
     ciphertext3 = ckksInstance->evaluator->add(ciphertext1, ciphertext2);
@@ -122,12 +122,12 @@ TEST(HomomorphicTest, Add_Two) {
 
 TEST(HomomorphicTest, Add_InvalidCase) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2 = randomVector(NUM_OF_SLOTS, RANGE);
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
-    ckksInstance->encryptColVec(vector2, HEIGHT, ciphertext2);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_col_vec(vector2, HEIGHT, ciphertext2);
     ASSERT_THROW((
                      // Expect invalid_argument is thrown because dimensions of the two ciphertexts do not match.
                      ckksInstance->evaluator->add(ciphertext1, ciphertext2)),
@@ -137,11 +137,11 @@ TEST(HomomorphicTest, Add_InvalidCase) {
 TEST(HomomorphicTest, AddPlainScalar) {
     double plaintext = (double)createRandomPositiveInt();
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2(NUM_OF_SLOTS, plaintext);
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), plus<>());
     ciphertext2 = ckksInstance->evaluator->add_plain(ciphertext1, plaintext);
@@ -154,11 +154,11 @@ TEST(HomomorphicTest, AddPlainScalar) {
 
 TEST(HomomorphicTest, AddPlaintext) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2 = randomVector(NUM_OF_SLOTS, RANGE);
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), plus<>());
     ciphertext2 = ckksInstance->evaluator->add_plain(ciphertext1, vector2);
@@ -171,12 +171,12 @@ TEST(HomomorphicTest, AddPlaintext) {
 
 TEST(HomomorphicTest, Sub_Two) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2 = randomVector(NUM_OF_SLOTS, RANGE);
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
-    ckksInstance->encryptRowVec(vector2, WIDTH, ciphertext2);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(vector2, WIDTH, ciphertext2);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), minus<>());
     ciphertext3 = ckksInstance->evaluator->sub(ciphertext1, ciphertext2);
@@ -189,12 +189,12 @@ TEST(HomomorphicTest, Sub_Two) {
 
 TEST(HomomorphicTest, Sub_InvalidCase) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2 = randomVector(NUM_OF_SLOTS, RANGE);
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
-    ckksInstance->encryptColVec(vector2, HEIGHT, ciphertext2);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_col_vec(vector2, HEIGHT, ciphertext2);
     ASSERT_THROW((
                      // Expect invalid_argument is thrown because dimensions of the two ciphertexts do not match.
                      ckksInstance->evaluator->sub(ciphertext1, ciphertext2)),
@@ -204,11 +204,11 @@ TEST(HomomorphicTest, Sub_InvalidCase) {
 TEST(HomomorphicTest, SubPlainScalar) {
     double plaintext = (double)createRandomPositiveInt();
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2(NUM_OF_SLOTS, plaintext);
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), minus<>());
     ciphertext2 = ckksInstance->evaluator->sub_plain(ciphertext1, plaintext);
@@ -221,11 +221,11 @@ TEST(HomomorphicTest, SubPlainScalar) {
 
 TEST(HomomorphicTest, SubPlaintext) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2 = randomVector(NUM_OF_SLOTS, RANGE);
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), minus<>());
     ciphertext2 = ckksInstance->evaluator->sub_plain(ciphertext1, vector2);
@@ -239,11 +239,11 @@ TEST(HomomorphicTest, SubPlaintext) {
 TEST(HomomorphicTest, MultiplyPlainScalar) {
     double plaintext = (double)createRandomPositiveInt();
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2(NUM_OF_SLOTS, plaintext);
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), multiplies<>());
     ciphertext2 = ckksInstance->evaluator->multiply_plain(ciphertext1, plaintext);
@@ -256,11 +256,11 @@ TEST(HomomorphicTest, MultiplyPlainScalar) {
 
 TEST(HomomorphicTest, MultiplyPlainMattrix) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2 = randomVector(NUM_OF_SLOTS, RANGE);
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), multiplies<>());
     ciphertext2 = ckksInstance->evaluator->multiply_plain(ciphertext1, vector2);
@@ -273,9 +273,9 @@ TEST(HomomorphicTest, MultiplyPlainMattrix) {
 
 TEST(HomomorphicTest, MultiplyPlainMattrix_InvalidCase) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1;
-    ckksInstance->encryptRowVec(VECTOR_1, 1, ciphertext1);
+    ckksInstance->encrypt_row_vec(VECTOR_1, 1, ciphertext1);
     vector<double> vector2(1, VALUE1 * VALUE1);
     ASSERT_THROW((
                      // Expect invalid_argument is thrown because encoded size does not match plaintext input.
@@ -285,12 +285,12 @@ TEST(HomomorphicTest, MultiplyPlainMattrix_InvalidCase) {
 
 TEST(HomomorphicTest, Multiply) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2 = randomVector(NUM_OF_SLOTS, RANGE);
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
-    ckksInstance->encryptRowVec(vector2, WIDTH, ciphertext2);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(vector2, WIDTH, ciphertext2);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), multiplies<>());
     ciphertext3 = ckksInstance->evaluator->multiply(ciphertext1, ciphertext2);
@@ -304,16 +304,16 @@ TEST(HomomorphicTest, Multiply) {
 TEST(HomomorphicTest, Constructor_ScaleBelowLowerBounds) {
     ASSERT_THROW((
                      // Expect invalid_argument is thrown because the scale is less than the minimum, 22.
-                     CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, 21, VERBOSE)),
+                     CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, 21, VERBOSE)),
                  invalid_argument);
 }
 
 TEST(HomomorphicTest, Square) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
     vector<double> vector2(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector1.begin(), vector2.begin(), multiplies<>());
     ciphertext2 = ckksInstance->evaluator->square(ciphertext1);
@@ -326,10 +326,10 @@ TEST(HomomorphicTest, Square) {
 
 TEST(HomomorphicTest, ModDownToLevel) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->mod_down_to_level(ciphertext1, ZERO_MULTI_DEPTH);
     // Check vector values.
     vector<double> vector2 = ckksInstance->decrypt(ciphertext2, VERBOSE);
@@ -340,9 +340,9 @@ TEST(HomomorphicTest, ModDownToLevel) {
 
 TEST(HomomorphicTest, ModDownToLevel_InvalidCase) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1;
-    ckksInstance->encryptRowVec(VECTOR_1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext1);
     ASSERT_THROW((
                      // Expect invalid_argument is thrown when the level is higher.
                      ckksInstance->evaluator->mod_down_to_level(ciphertext1, ONE_MULTI_DEPTH)),
@@ -351,10 +351,10 @@ TEST(HomomorphicTest, ModDownToLevel_InvalidCase) {
 
 TEST(HomomorphicTest, ModDownTo) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->mod_down_to_level(ciphertext1, ZERO_MULTI_DEPTH);
     ckksInstance->evaluator->mod_down_to(ciphertext1, ciphertext2);
     // Check vector values.
@@ -366,9 +366,9 @@ TEST(HomomorphicTest, ModDownTo) {
 
 TEST(HomomorphicTest, ModDownTo_InvalidCase) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2;
-    ckksInstance->encryptRowVec(VECTOR_1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->mod_down_to_level(ciphertext1, ZERO_MULTI_DEPTH);
     ASSERT_THROW((
                      // Expect invalid_argument is thrown when the level is higher.
@@ -378,10 +378,10 @@ TEST(HomomorphicTest, ModDownTo_InvalidCase) {
 
 TEST(HomomorphicTest, ModDownToMin) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
     ciphertext3 = ciphertext1;
     ciphertext2 = ckksInstance->evaluator->mod_down_to_level(ciphertext1, ZERO_MULTI_DEPTH);
     ckksInstance->evaluator->mod_down_to_min_inplace(ciphertext1, ciphertext2);
@@ -399,12 +399,12 @@ TEST(HomomorphicTest, ModDownToMin) {
 
 TEST(HomomorphicTest, RescaleToNextInPlace) {
     CKKSInstance *ckksInstance =
-        CKKSInstance::getNewHomomorphicInstance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
+        CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, VERBOSE);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector1.begin(), vector2.begin(), multiplies<>());
-    ckksInstance->encryptRowVec(vector1, WIDTH, ciphertext1);
+    ckksInstance->encrypt_row_vec(vector1, WIDTH, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->square(ciphertext1);
     ckksInstance->evaluator->relinearize_inplace(ciphertext2);
     ckksInstance->evaluator->rescale_to_next_inplace(ciphertext2);

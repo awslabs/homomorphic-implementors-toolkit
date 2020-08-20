@@ -31,12 +31,12 @@ namespace hit {
         CKKSEncryptor(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder *encoder,
                       seal::Encryptor *encryptor, bool debug = false);
 
-        void encryptMatrix(const Matrix &, double scale, CKKSCiphertext &destination, int lvl = -1);
+        void encrypt_matrix(const Matrix &, double scale, CKKSCiphertext &destination, int lvl = -1);
 
-        void encryptColVec(const std::vector<double> &plain, int matHeight, double scale, CKKSCiphertext &destination,
+        void encrypt_col_vec(const std::vector<double> &plain, int matHeight, double scale, CKKSCiphertext &destination,
                            int lvl = -1);
 
-        void encryptRowVec(const std::vector<double> &plain, int matWidth, double scale, CKKSCiphertext &destination,
+        void encrypt_row_vec(const std::vector<double> &plain, int matWidth, double scale, CKKSCiphertext &destination,
                            int lvl = -1);
 
        private:

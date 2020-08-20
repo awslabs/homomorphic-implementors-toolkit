@@ -36,41 +36,41 @@ namespace hit {
         HomomorphicEval &operator=(HomomorphicEval &&) = delete;
 
        protected:
-        CKKSCiphertext rotate_right_internal(const CKKSCiphertext &ct, int steps) override;
+        void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) override;
 
-        CKKSCiphertext rotate_left_internal(const CKKSCiphertext &ct, int steps) override;
+        void rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) override;
 
-        CKKSCiphertext negate_internal(const CKKSCiphertext &ct) override;
+        void negate_inplace_internal(CKKSCiphertext &ct) override;
 
-        CKKSCiphertext add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
+        void add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
 
-        CKKSCiphertext add_plain_internal(const CKKSCiphertext &ct, double scalar) override;
+        void add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) override;
 
-        CKKSCiphertext add_plain_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) override;
+        void add_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain) override;
 
-        CKKSCiphertext sub_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
+        void sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
 
-        CKKSCiphertext sub_plain_internal(const CKKSCiphertext &ct, double scalar) override;
+        void sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) override;
 
-        CKKSCiphertext sub_plain_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) override;
+        void sub_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain) override;
 
-        CKKSCiphertext multiply_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
+        void multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
 
         /* WARNING: Multiplying by 0 results in non-constant time behavior! Only multiply by 0 if the scalar is truly
          * public. */
-        CKKSCiphertext multiply_plain_internal(const CKKSCiphertext &ct, double scalar) override;
+        void multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) override;
 
-        CKKSCiphertext multiply_plain_internal(const CKKSCiphertext &ct, const std::vector<double> &plain) override;
+        void multiply_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain) override;
 
-        CKKSCiphertext square_internal(const CKKSCiphertext &ct) override;
+        void square_inplace_internal(CKKSCiphertext &ct) override;
 
-        CKKSCiphertext mod_down_to_internal(const CKKSCiphertext &ct, const CKKSCiphertext &target) override;
+        void mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) override;
 
         void mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) override;
 
-        CKKSCiphertext mod_down_to_level_internal(const CKKSCiphertext &ct, int level) override;
+        void mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) override;
 
-        CKKSCiphertext rescale_to_next_internal(const CKKSCiphertext &ct) override;
+        void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
 
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 

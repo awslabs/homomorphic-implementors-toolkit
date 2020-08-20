@@ -28,7 +28,7 @@ namespace hit {
         dfEval->reset_internal();
     }
 
-    void OpCount::printOpCount() const {
+    void OpCount::print_op_count() const {
         cout << endl << "Multiplications: " << multiplies << endl;
         cout << "ModDownMuls: " << modDownMuls << endl;
         cout << "Additions: " << additions << endl;
@@ -37,81 +37,81 @@ namespace hit {
         cout << "ModDownTos: " << modDowns << endl << endl;
     }
 
-    int OpCount::getMultiplicativeDepth() const {
-        return dfEval->getMultiplicativeDepth();
+    int OpCount::get_multiplicative_depth() const {
+        return dfEval->get_multiplicative_depth();
     }
 
-    CKKSCiphertext OpCount::rotate_right_internal(const CKKSCiphertext &ct, int steps) {
+    void OpCount::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
         rotations++;
-        return dfEval->rotate_right_internal(ct, steps);
+        dfEval->rotate_right_inplace_internal(ct, steps);
     }
 
-    CKKSCiphertext OpCount::rotate_left_internal(const CKKSCiphertext &ct, int steps) {
+    void OpCount::rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) {
         rotations++;
-        return dfEval->rotate_left_internal(ct, steps);
+        dfEval->rotate_left_inplace_internal(ct, steps);
     }
 
-    CKKSCiphertext OpCount::negate_internal(const CKKSCiphertext &ct) {
+    void OpCount::negate_inplace_internal(CKKSCiphertext &ct) {
         negations++;
-        return dfEval->negate_internal(ct);
+        dfEval->negate_inplace_internal(ct);
     }
 
-    CKKSCiphertext OpCount::add_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
+    void OpCount::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         additions++;
-        return dfEval->add_internal(ct1, ct2);
+        dfEval->add_inplace_internal(ct1, ct2);
     }
 
-    CKKSCiphertext OpCount::add_plain_internal(const CKKSCiphertext &ct, double scalar) {
+    void OpCount::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         additions++;
-        return dfEval->add_plain_internal(ct, scalar);
+        dfEval->add_plain_inplace_internal(ct, scalar);
     }
 
-    CKKSCiphertext OpCount::add_plain_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
+    void OpCount::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
         additions++;
-        return dfEval->add_plain_internal(ct, plain);
+        dfEval->add_plain_inplace_internal(ct, plain);
     }
 
-    CKKSCiphertext OpCount::sub_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
+    void OpCount::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         additions++;
-        return dfEval->sub_internal(ct1, ct2);
+        dfEval->sub_inplace_internal(ct1, ct2);
     }
 
-    CKKSCiphertext OpCount::sub_plain_internal(const CKKSCiphertext &ct, double scalar) {
+    void OpCount::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         additions++;
-        return dfEval->sub_plain_internal(ct, scalar);
+        dfEval->sub_plain_inplace_internal(ct, scalar);
     }
 
-    CKKSCiphertext OpCount::sub_plain_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
+    void OpCount::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
         additions++;
-        return dfEval->sub_plain_internal(ct, plain);
+        dfEval->sub_plain_inplace_internal(ct, plain);
     }
 
-    CKKSCiphertext OpCount::multiply_internal(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
+    void OpCount::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         multiplies++;
-        return dfEval->multiply_internal(ct1, ct2);
+        dfEval->multiply_inplace_internal(ct1, ct2);
     }
 
-    CKKSCiphertext OpCount::multiply_plain_internal(const CKKSCiphertext &ct, double scalar) {
+    void OpCount::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         multiplies++;
-        return dfEval->multiply_plain_internal(ct, scalar);
+        dfEval->multiply_plain_inplace_internal(ct, scalar);
     }
 
-    CKKSCiphertext OpCount::multiply_plain_internal(const CKKSCiphertext &ct, const vector<double> &plain) {
+    void OpCount::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
         multiplies++;
-        return dfEval->multiply_plain_internal(ct, plain);
+        dfEval->multiply_plain_inplace_internal(ct, plain);
     }
 
-    CKKSCiphertext OpCount::square_internal(const CKKSCiphertext &ct) {
+    void OpCount::square_inplace_internal(CKKSCiphertext &ct) {
         multiplies++;
-        return dfEval->square_internal(ct);
+        dfEval->square_inplace_internal(ct);
     }
 
-    CKKSCiphertext OpCount::mod_down_to_internal(const CKKSCiphertext &ct, const CKKSCiphertext &target) {
+    void OpCount::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
         if (ct.he_level - target.he_level > 0) {
             modDowns++;
         }
         modDownMuls += (ct.he_level - target.he_level);
-        return dfEval->mod_down_to_internal(ct, target);
+        dfEval->mod_down_to_inplace_internal(ct, target);
     }
 
     void OpCount::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
@@ -122,16 +122,16 @@ namespace hit {
         dfEval->mod_down_to_min_inplace_internal(ct1, ct2);
     }
 
-    CKKSCiphertext OpCount::mod_down_to_level_internal(const CKKSCiphertext &ct, int level) {
+    void OpCount::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
         if (ct.he_level - level > 0) {
             modDowns++;
         }
         modDownMuls += (ct.he_level - level);
-        return dfEval->mod_down_to_level_internal(ct, level);
+        dfEval->mod_down_to_level_inplace_internal(ct, level);
     }
 
-    CKKSCiphertext OpCount::rescale_to_next_internal(const CKKSCiphertext &ct) {
-        return dfEval->rescale_to_next_internal(ct);
+    void OpCount::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
+        dfEval->rescale_to_next_inplace_internal(ct);
     }
 
     void OpCount::relinearize_inplace_internal(CKKSCiphertext &ct) {
