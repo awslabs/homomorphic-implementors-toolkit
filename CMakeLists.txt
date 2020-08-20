@@ -17,17 +17,6 @@ if (NOT CMAKE_BUILD_TYPE)
 endif ()
 message(STATUS "Build type (CMAKE_BUILD_TYPE): ${CMAKE_BUILD_TYPE}")
 
-# Enable tooling.
-# clang-tidy and clang-format are used to provide some warnings for developer reference during development.
-option(CMake_RUN_HIT_CODE_FORMAT "Run clang-format in place." OFF)
-if (CMake_RUN_HIT_CODE_FORMAT)
-    enable_hit_code_format()
-endif ()
-option(CMake_RUN_CLANG_TIDY "Run clang-tidy with the compiler." OFF)
-if (CMake_RUN_CLANG_TIDY)
-    enable_clang_tidy()
-endif ()
-
 #########
 # Paths #
 #########
@@ -60,6 +49,21 @@ include(set-common-flags)
 include(download-external-project)
 include(enable-hit-code-format)
 include(enable-clang-tidy)
+
+######################
+# Enable CMake Tools #
+######################
+
+# Enable tooling.
+# clang-tidy and clang-format are used to provide some warnings for developer reference during development.
+option(CMake_RUN_HIT_CODE_FORMAT "Run clang-format in place." OFF)
+if (CMake_RUN_HIT_CODE_FORMAT)
+    enable_hit_code_format()
+endif ()
+option(CMake_RUN_CLANG_TIDY "Run clang-tidy with the compiler." OFF)
+if (CMake_RUN_CLANG_TIDY)
+    enable_clang_tidy()
+endif ()
 
 ############################
 # Third party dependencies #
