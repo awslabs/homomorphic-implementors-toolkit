@@ -63,7 +63,7 @@ namespace hit {
 
     void ScaleEstimator::updateMaxLogScale(const CKKSCiphertext &ct) {
         // update the estimatedMaxLogScale
-        int scaleExp = static_cast<int>(round(log2(ct.scale) / log2(baseScale)));
+        auto scaleExp = static_cast<int>(round(log2(ct.scale) / log2(baseScale)));
         if (scaleExp != 1 && scaleExp != 2) {
             stringstream buffer;
             buffer << "INTERNAL ERROR: scaleExp is not 1 or 2: got " << scaleExp << "\t" << log2(ct.scale) << "\t"
