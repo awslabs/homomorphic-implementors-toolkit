@@ -144,34 +144,30 @@ namespace hit {
     }
 
     int polyDegreeToMaxModBits(int poly_modulus_degree) {
-        if (poly_modulus_degree == 1024) {
-            return 27;
-        } else if (poly_modulus_degree == 2048) {
-            return 54;
-        }  // NOLINT(readability-else-after-return)
-        else if (poly_modulus_degree == 4096) {
-            return 109;
-        } else if (poly_modulus_degree == 8192) {
-            return 218;
-        } else if (poly_modulus_degree == 16384) {
-            return 438;
-        } else if (poly_modulus_degree == 32768) {
-            return 881;
-        }
-        // extrapolating a best-fit line for the above data points:
-        // mod_bits <= 0.0269*poly_modulus_degree-1.4428
+        switch (poly_modulus_degree) {
+            case 1024:
+                return 27;
+            case 2048:
+                return 54;
+            case 4096:
+                return 109;
+            case 8192:
+                return 218;
+            case 16384:
+                return 438;
+            case 32768:
+                return 881;
+            case 65536:
+                // extrapolating a best-fit line for the above data points:
+                // mod_bits <= 0.0269*poly_modulus_degree-1.4428
 
-        // SEAL will throw an exception when poly degree is 131072 or larger
-        // (which corresponds to the 262144th cyclotomic ring)
-        else if (poly_modulus_degree == 65536) {
-            return 1761;
-        }
-        // else if(poly_modulus_degree == 131072) { return 3524; }
-        // else if(poly_modulus_degree == 262144) { return 7050; }
-        else {
-            stringstream buffer;
-            buffer << "poly_modulus_degree=" << poly_modulus_degree << " not supported";
-            throw invalid_argument(buffer.str());
+                // SEAL will throw an exception when poly degree is 131072 or larger
+                // (which corresponds to the 262144th cyclotomic ring)
+                return 1761;
+            default:
+                stringstream buffer;
+                buffer << "poly_modulus_degree=" << poly_modulus_degree << " not supported";
+                throw invalid_argument(buffer.str());
         }
     }
 
@@ -195,10 +191,10 @@ namespace hit {
         //     +---------------------+------------------------------+
         if (modBits <= 27) {
             return 1024;
+            // NOLINTNEXTLINE(readability-else-after-return)
         } else if (modBits <= 54) {
             return 2048;
-        }  // NOLINT(readability-else-after-return)
-        else if (modBits <= 109) {
+        } else if (modBits <= 109) {
             return 4096;
         } else if (modBits <= 218) {
             return 8192;
