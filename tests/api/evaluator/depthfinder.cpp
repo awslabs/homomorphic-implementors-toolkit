@@ -3,8 +3,8 @@
 
 #include <iostream>
 
-#include "CKKSInstance.h"
-#include "api/ciphertext.h"
+#include "hit/CKKSInstance.h"
+#include "hit/api/ciphertext.h"
 #include "gtest/gtest.h"
 
 using namespace std;

@@ -4,12 +4,12 @@
 #include <iomanip>  // setprecision
 #include <iostream>
 
-#include "CKKSInstance.h"
-#include "api/ciphertext.h"
-#include "common.h"
+#include "hit/CKKSInstance.h"
+#include "hit/api/ciphertext.h"
+#include "hit/common.h"
 #include "gtest/gtest.h"
 #include "seal/seal.h"
-#include "sealutils.h"
+#include "hit/sealutils.h"
 
 using namespace std;
 using namespace hit;

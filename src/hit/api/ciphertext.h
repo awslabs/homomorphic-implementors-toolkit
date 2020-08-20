@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../matrix.h"
-#include "protobuf/ciphertext.pb.h"  // NOLINT
+#include "hit/protobuf/ciphertext.pb.h"  // NOLINT
 #include "seal/context.h"
 #include "seal/seal.h"
 

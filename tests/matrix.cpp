@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "matrix.h"
+#include "hit/matrix.h"
 
 #include <iostream>
 #include <stdexcept>

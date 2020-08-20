@@ -6,7 +6,7 @@
 #include "api/decryptor.h"
 #include "api/encryptor.h"
 #include "api/evaluator.h"
-#include "protobuf/ckksparams.pb.h"  // NOLINT
+#include "hit/protobuf/ckksparams.pb.h"  // NOLINT
 #include "seal/context.h"
 #include "seal/seal.h"
 
