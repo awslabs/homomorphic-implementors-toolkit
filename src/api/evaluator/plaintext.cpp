@@ -99,8 +99,8 @@ namespace hit {
     }
 
     void PlaintextEval::negate_inplace_internal(CKKSCiphertext &ct) {
-        for (int i = 0; i < ct.encoded_pt.size(); i++) {
-            ct.encoded_pt[i] = -ct.encoded_pt[i];
+        for (auto & coeff : ct.encoded_pt) {
+            coeff = -coeff;
         }
         VERBOSE(print_stats(ct));
     }
@@ -192,8 +192,8 @@ namespace hit {
     }
 
     void PlaintextEval::square_inplace_internal(CKKSCiphertext &ct) {
-        for (int i = 0; i < ct.encoded_pt.size(); i++) {
-            ct.encoded_pt[i] = ct.encoded_pt[i] * ct.encoded_pt[i];
+        for (auto & coeff : ct.encoded_pt) {
+            coeff *= coeff;
         }
         update_max_log_plain_val(ct);
         VERBOSE(print_stats(ct));
