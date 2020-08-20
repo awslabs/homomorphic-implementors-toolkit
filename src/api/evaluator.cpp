@@ -203,12 +203,12 @@ namespace hit {
         relinearize_inplace_internal(ct);
     }
 
-    ContextDataPtr CKKSEvaluator::getContextData(const CKKSCiphertext &c) {
+    ContextDataPtr CKKSEvaluator::getContextData(const CKKSCiphertext &ct) {
         // get the context_data for this ciphertext level
         // but do not use the ciphertext itself! Use the he_level,
         // in case we are not doing ciphertext computations
         auto context_data = context->first_context_data();
-        while (context_data->chain_index() > c.he_level) {
+        while (context_data->chain_index() > ct.he_level) {
             // Step forward in the chain.
             context_data = context_data->next_context_data();
         }

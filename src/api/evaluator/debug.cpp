@@ -48,18 +48,18 @@ namespace hit {
     }
 
     // print some debug info
-    void DebugEval::print_stats(const CKKSCiphertext &c) const {
+    void DebugEval::print_stats(const CKKSCiphertext &ct) const {
         double norm = 0;
 
         // decrypt to compute the approximate plaintext
-        vector<double> homomPlaintext = decryptor.decrypt(c, false);
-        vector<double> exactPlaintext = c.getPlaintext();
+        vector<double> homomPlaintext = decryptor.decrypt(ct, false);
+        vector<double> exactPlaintext = ct.getPlaintext();
 
         norm = diff2Norm(exactPlaintext, homomPlaintext);
-        if (abs(log2(c.scale) - log2(c.seal_ct.scale())) > 0.1) {
+        if (abs(log2(ct.scale) - log2(ct.seal_ct.scale())) > 0.1) {
             stringstream buffer;
-            buffer << "INTERNAL ERROR: SCALE COMPUTATION IS INCORRECT: " << log2(c.scale)
-                   << " != " << c.seal_ct.scale();
+            buffer << "INTERNAL ERROR: SCALE COMPUTATION IS INCORRECT: " << log2(ct.scale)
+                   << " != " << ct.seal_ct.scale();
             throw invalid_argument(buffer.str());
         }
 
@@ -106,7 +106,7 @@ namespace hit {
             cout << ">" << endl;
 
             Plaintext encoded_plain;
-            heEval->encoder.encode(c.encoded_pt.data(), seEval->baseScale, encoded_plain);
+            heEval->encoder.encode(ct.encoded_pt.data(), seEval->baseScale, encoded_plain);
 
             vector<double> decoded_plain;
             heEval->encoder.decode(encoded_plain, decoded_plain);
