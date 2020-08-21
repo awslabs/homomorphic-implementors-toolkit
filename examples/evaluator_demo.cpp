@@ -121,7 +121,7 @@ CKKSCiphertext sigmoid(const CKKSCiphertext &x1_encrypted, CKKSEvaluator &eval) 
 
 /* Now that we have written a function, let's evaluate it. */
 int main() {
-  srand(time(NULL));
+  srand(time(nullptr));
   // *********** Generate Random Input ***********
   /* Generate a random input and compute the expecte result
    * of applying the sigmoid approximation to each component

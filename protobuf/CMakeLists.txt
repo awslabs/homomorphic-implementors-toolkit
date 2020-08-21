@@ -47,8 +47,3 @@ set_source_files_properties(
   PROPERTIES
     COMPILE_FLAGS "-w"
 )
-
-# disable all clang-tidy warnings for auto-generated files
-set_target_properties(aws_hit_proto
-  PROPERTIES
-    CXX_CLANG_TIDY "")
