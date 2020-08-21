@@ -7,7 +7,6 @@
 #include <iostream>
 
 using namespace std;
-// using namespace seal;
 using namespace hit;
 
 /* This file provides a demonstration of how to use this CKKS library and its many evaluators. */
