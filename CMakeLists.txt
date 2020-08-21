@@ -1,7 +1,7 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.12)
 
 project(homomorphic-implementors-toolkit VERSION 0.0.1 LANGUAGES CXX)
 
@@ -32,7 +32,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib/${CMAKE_BUILD
 set(CMAKE_LIBRARY_RUNTIME_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
 set(HIT_TARGETS_FILENAME ${CMAKE_CURRENT_BINARY_DIR}/cmake/HITTargets.cmake)
 set(HIT_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/HIT)
-set(HIT_INCLUDES_INSTALL_DIR ${CMAKE_INSTALL_INCLUDE_DIR}/HIT)
+set(HIT_INCLUDES_INSTALL_DIR ${CMAKE_INSTALL_INCLUDE_DIR}/hit)
 set(HIT_INCLUDES_BUILD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
 
@@ -77,93 +77,32 @@ find_package(ProtobufLib REQUIRED)
 # Compile Protobufs #
 #####################
 
-# https://crascit.com/2017/04/18/generated-sources-in-cmake-builds/
-
-set(HIT_PROTOBUF_SRC ${CMAKE_CURRENT_SOURCE_DIR}/protobuf)
 set(HIT_PROTOBUF_DST ${CMAKE_CURRENT_BINARY_DIR}/protobuf/hit/protobuf)
-
-add_custom_command(
-  OUTPUT
-    ${HIT_PROTOBUF_DST}/ciphertext.pb.h
-    ${HIT_PROTOBUF_DST}/ciphertext.pb.cc
-    ${HIT_PROTOBUF_DST}/ckksparams.pb.h
-    ${HIT_PROTOBUF_DST}/ckksparams.pb.cc
-  COMMAND protoc --cpp_out=${HIT_PROTOBUF_DST} -I${HIT_PROTOBUF_SRC} ${HIT_PROTOBUF_SRC}/ciphertext.proto
-  COMMAND protoc --cpp_out=${HIT_PROTOBUF_DST} -I${HIT_PROTOBUF_SRC} ${HIT_PROTOBUF_SRC}/ckksparams.proto
-  DEPENDS
-    ${HIT_PROTOBUF_SRC}/ciphertext.proto
-    ${HIT_PROTOBUF_SRC}/ckksparams.proto
-)
-
-# https://stackoverflow.com/a/49591908/925978
-# avoid running clang-tidy on generated files
-add_library(hit_proto
-  OBJECT
-    ${HIT_PROTOBUF_DST}/ciphertext.pb.cc
-    ${HIT_PROTOBUF_DST}/ckksparams.pb.cc)
-
-install(
-  FILES
-    ${HIT_PROTOBUF_DST}/ckksparams.pb.h
-    ${HIT_PROTOBUF_DST}/ciphertext.pb.h
-  DESTINATION
-    ${HIT_INCLUDES_INSTALL_DIR}
-)
-
-# disable all compiler warnings for auto-generated files
-set_source_files_properties(
-  ${HIT_PROTOBUF_DST}/ciphertext.pb.h
-  ${HIT_PROTOBUF_DST}/ciphertext.pb.cc
-  ${HIT_PROTOBUF_DST}/ckksparams.pb.h
-  ${HIT_PROTOBUF_DST}/ckksparams.pb.cc
-  PROPERTIES
-    COMPILE_FLAGS "-w"
-)
-
-# disable all clang-tidy warnings for auto-generated files
-set_target_properties(hit_proto
-  PROPERTIES
-    CXX_CLANG_TIDY "")
+add_subdirectory(protobuf)
 
 ###############
 # HIT Library #
 ###############
 
-# Create an object library to compile sources only once
-# Sources are added by the CMakeLists in the source tree via `target_sources`
-add_library(hit_obj OBJECT)
-
-# Add source files to library and header files to install
-add_subdirectory(src/hit)
-
-# Set C++ language version and include directories for the object library
-target_compile_features(hit_obj PUBLIC cxx_std_17)
-target_include_directories(hit_obj PUBLIC
-        ${CMAKE_CURRENT_BINARY_DIR}/protobuf # to allow e.g., #include "protobuf/foo.ph.h"
-        ${HIT_PROTOBUF_DST} # to allow e.g., #include "foo.ph.h", which is how auto-generated protobuf files expect imports to be available
-        $<BUILD_INTERFACE:${HIT_INCLUDES_BUILD_DIR}>
-        $<INSTALL_INTERFACE:${HIT_INCLUDES_INSTALL_DIR}>
-    PRIVATE ${HIT_SOURCE_DIR}
-    )
-target_link_libraries(hit_obj PUBLIC hit_proto PRIVATE seal)
-set_common_flags(hit_obj)
+# Add the main source tree object library
+add_subdirectory(src)
 
 # Always build the static library
-add_library(hit STATIC $<TARGET_OBJECTS:hit_obj> $<TARGET_OBJECTS:hit_proto>)
-target_compile_features(hit PUBLIC cxx_std_17)
-target_include_directories(hit PUBLIC
+add_library(aws-hit STATIC $<TARGET_OBJECTS:aws_hit_obj> $<TARGET_OBJECTS:aws_hit_proto>)
+target_compile_features(aws-hit PUBLIC cxx_std_17)
+target_include_directories(aws-hit PUBLIC
         ${CMAKE_CURRENT_BINARY_DIR}/protobuf # to allow e.g., #include "protobuf/foo.ph.h"
         ${HIT_PROTOBUF_DST} # to allow e.g., #include "foo.ph.h", which is how auto-generated protobuf files expect imports to be available
         $<BUILD_INTERFACE:${HIT_INCLUDES_BUILD_DIR}>
         $<INSTALL_INTERFACE:${HIT_INCLUDES_INSTALL_DIR}>
     PRIVATE ${HIT_SOURCE_DIR}
     )
-set_common_flags(hit)
+set_common_flags(aws-hit)
 
 # Link dependencies
-target_link_libraries(hit PUBLIC seal PRIVATE stdc++fs ${Boost_LIBRARIES} ${Protobuf_LIBRARIES})
+target_link_libraries(aws-hit PUBLIC seal PRIVATE stdc++fs ${Boost_LIBRARIES} ${Protobuf_LIBRARIES})
 
-install(TARGETS hit EXPORT HITTargets
+install(TARGETS aws-hit EXPORT HITTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -175,7 +114,7 @@ export(
     NAMESPACE hit::
     FILE ${HIT_TARGETS_FILENAME})
 
-export(TARGETS hit FILE ${HIT_TARGETS_FILENAME})
+export(TARGETS aws-hit FILE ${HIT_TARGETS_FILENAME})
 
 #########
 # Tests #
@@ -192,13 +131,8 @@ endif ()
 # Executables #
 ###############
 
-add_executable(evaldemo examples/evaluator_demo.cpp)
-set_common_flags(evaldemo)
-target_link_libraries(evaldemo hit)
-
-add_custom_target(
-  run_evaldemo
-  COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/evaldemo
-  WORKING_DIRECTORY ${HELR_ROOT_DIR}
-  DEPENDS evaldemo
-  USES_TERMINAL)
+# Build code in the `examples` directory if enabled.
+option(BUILD_EXAMPLES "Build example/demo code." ON)
+if (BUILD_TESTING)
+    add_subdirectory(examples)
+endif ()
