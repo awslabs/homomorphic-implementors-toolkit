@@ -29,7 +29,7 @@ set(HIT_THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
 include(GNUInstallDirs)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib/${CMAKE_BUILD_TYPE})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib/${CMAKE_BUILD_TYPE})
-set(CMAKE_LIBRARY_RUNTIME_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+set(CMAKE_LIBRARY_RUNTIME_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
 set(HIT_TARGETS_FILENAME ${CMAKE_CURRENT_BINARY_DIR}/cmake/HITTargets.cmake)
 set(HIT_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/HIT)
 set(HIT_INCLUDES_INSTALL_DIR ${CMAKE_INSTALL_INCLUDE_DIR}/HIT)
@@ -139,8 +139,8 @@ add_subdirectory(src/hit)
 # Set C++ language version and include directories for the object library
 target_compile_features(hit_obj PUBLIC cxx_std_17)
 target_include_directories(hit_obj PUBLIC
-        ${CMAKE_CURRENT_BINARY_DIR}/protobuf # to allow e.g., #include "hit/protobuf/foo.ph.h"
-        ${CMAKE_CURRENT_BINARY_DIR}/protobuf/hit/protobuf # to allow e.g., #include "foo.ph.h", which is how auto-generated protobuf files expect imports to be available
+        ${HIT_PROTOBUF_SRC} # to allow e.g., #include "hit/protobuf/foo.ph.h"
+        ${HIT_PROTOBUF_DST} # to allow e.g., #include "foo.ph.h", which is how auto-generated protobuf files expect imports to be available
         $<BUILD_INTERFACE:${HIT_INCLUDES_BUILD_DIR}>
         $<INSTALL_INTERFACE:${HIT_INCLUDES_INSTALL_DIR}>
     PRIVATE ${HIT_SOURCE_DIR}
@@ -152,8 +152,8 @@ set_common_flags(hit_obj)
 add_library(hit STATIC $<TARGET_OBJECTS:hit_obj> $<TARGET_OBJECTS:hit_proto>)
 target_compile_features(hit PUBLIC cxx_std_17)
 target_include_directories(hit PUBLIC
-        ${CMAKE_CURRENT_BINARY_DIR}/protobuf # to allow e.g., #include "protobuf/foo.ph.h"
-        ${CMAKE_CURRENT_BINARY_DIR}/protobuf/hit/protobuf # to allow e.g., #include "foo.ph.h", which is how auto-generated protobuf files expect imports to be available
+        ${HIT_PROTOBUF_SRC} # to allow e.g., #include "hit/protobuf/foo.ph.h"
+        ${HIT_PROTOBUF_DST} # to allow e.g., #include "foo.ph.h", which is how auto-generated protobuf files expect imports to be available
         $<BUILD_INTERFACE:${HIT_INCLUDES_BUILD_DIR}>
         $<INSTALL_INTERFACE:${HIT_INCLUDES_INSTALL_DIR}>
     PRIVATE ${HIT_SOURCE_DIR}
@@ -187,3 +187,18 @@ if (BUILD_TESTING)
     enable_testing()
     add_subdirectory(${HIT_TESTS_DIR})
 endif ()
+
+###############
+# Executables #
+###############
+
+add_executable(evaldemo examples/evaluator_demo.cpp)
+set_common_flags(evaldemo)
+target_link_libraries(evaldemo hit)
+
+add_custom_target(
+  run_evaldemo
+  COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/evaldemo
+  WORKING_DIRECTORY ${HELR_ROOT_DIR}
+  DEPENDS evaldemo
+  USES_TERMINAL)

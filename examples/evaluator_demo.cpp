@@ -1,9 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "CKKSInstance.h"
-#include "api/evaluator.h"
-#include "common.h"
+#include "hit/CKKSInstance.h"
+#include "hit/api/evaluator.h"
+#include "hit/common.h"
 #include <iostream>
 
 using namespace std;
