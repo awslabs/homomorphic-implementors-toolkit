@@ -112,7 +112,7 @@ namespace hit {
     /* WARNING: Multiplying by 0 results in non-constant time behavior! Only multiply by 0 if the scalar is truly
      * public. */
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        if (scalar != 0.0) {
+        if (scalar != double { 0 }) {
             Plaintext encoded_plain;
             encoder.encode(scalar, ct.seal_ct.parms_id(), ct.seal_ct.scale(), encoded_plain);
             evaluator.multiply_plain_inplace(ct.seal_ct, encoded_plain);
