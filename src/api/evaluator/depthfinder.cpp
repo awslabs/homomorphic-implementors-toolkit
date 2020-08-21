@@ -40,7 +40,7 @@ namespace hit {
         // check that ciphertexts are at the same level to avoid an obscure SEAL error
         if (ct1.he_level != ct2.he_level) {
             stringstream buffer;
-            buffer << "PPLR: Error in DepthFinder::add: input levels do not match: " << ct1.he_level
+            buffer << "Error in DepthFinder::add: input levels do not match: " << ct1.he_level
                    << " != " << ct2.he_level;
             throw invalid_argument(buffer.str());
         }
@@ -59,7 +59,7 @@ namespace hit {
         // check that ciphertexts are at the same level to avoid an obscure SEAL error
         if (ct1.he_level != ct2.he_level) {
             stringstream buffer;
-            buffer << "PPLR: Error in DepthFinder::sub: input levels do not match: " << ct1.he_level
+            buffer << "Error in DepthFinder::sub: input levels do not match: " << ct1.he_level
                    << " != " << ct2.he_level;
             throw invalid_argument(buffer.str());
         }
@@ -78,7 +78,7 @@ namespace hit {
         // check that ciphertexts are at the same level to avoid an obscure SEAL error
         if (ct1.he_level != ct2.he_level) {
             stringstream buffer;
-            buffer << "PPLR: Error in DepthFinder::multiply: input levels do not match: " << ct1.he_level
+            buffer << "Error in DepthFinder::multiply: input levels do not match: " << ct1.he_level
                    << " != " << ct2.he_level;
             throw invalid_argument(buffer.str());
         }

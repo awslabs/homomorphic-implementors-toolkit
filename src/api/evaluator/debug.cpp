@@ -129,7 +129,6 @@ namespace hit {
     }
 
     void DebugEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
-        // recursive calls
         check_scale(ct);
         heEval->rotate_right_inplace_internal(ct, steps);
         seEval->rotate_right_inplace_internal(ct, steps);
@@ -139,7 +138,6 @@ namespace hit {
     }
 
     void DebugEval::rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) {
-        // recursive calls
         check_scale(ct);
         heEval->rotate_left_inplace_internal(ct, steps);
         seEval->rotate_left_inplace_internal(ct, steps);
@@ -149,7 +147,6 @@ namespace hit {
     }
 
     void DebugEval::negate_inplace_internal(CKKSCiphertext &ct) {
-        // recursive calls
         check_scale(ct);
         heEval->negate_inplace_internal(ct);
         seEval->negate_inplace_internal(ct);
@@ -159,7 +156,6 @@ namespace hit {
     }
 
     void DebugEval::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        // recursive calls
         check_scale(ct1);
         check_scale(ct2);
         heEval->add_inplace_internal(ct1, ct2);
@@ -170,7 +166,6 @@ namespace hit {
     }
 
     void DebugEval::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        // recursive calls
         check_scale(ct);
         heEval->add_plain_inplace_internal(ct, scalar);
         seEval->add_plain_inplace_internal(ct, scalar);
@@ -180,7 +175,6 @@ namespace hit {
     }
 
     void DebugEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        // recursive calls
         check_scale(ct);
         heEval->add_plain_inplace_internal(ct, plain);
         seEval->add_plain_inplace_internal(ct, plain);
@@ -190,7 +184,6 @@ namespace hit {
     }
 
     void DebugEval::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        // recursive calls
         check_scale(ct1);
         check_scale(ct2);
         heEval->sub_inplace_internal(ct1, ct2);
@@ -201,7 +194,6 @@ namespace hit {
     }
 
     void DebugEval::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        // recursive calls
         check_scale(ct);
         heEval->sub_plain_inplace_internal(ct, scalar);
         seEval->sub_plain_inplace_internal(ct, scalar);
@@ -211,7 +203,6 @@ namespace hit {
     }
 
     void DebugEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        // recursive calls
         check_scale(ct);
         heEval->sub_plain_inplace_internal(ct, plain);
         seEval->sub_plain_inplace_internal(ct, plain);
@@ -221,7 +212,6 @@ namespace hit {
     }
 
     void DebugEval::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        // recursive calls
         check_scale(ct1);
         check_scale(ct2);
         heEval->multiply_inplace_internal(ct1, ct2);
@@ -232,7 +222,6 @@ namespace hit {
     }
 
     void DebugEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        // recursive calls
         check_scale(ct);
         heEval->multiply_plain_inplace_internal(ct, scalar);
         seEval->multiply_plain_inplace_internal(ct, scalar);
@@ -242,7 +231,6 @@ namespace hit {
     }
 
     void DebugEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        // recursive calls
         check_scale(ct);
         heEval->multiply_plain_inplace_internal(ct, plain);
         seEval->multiply_plain_inplace_internal(ct, plain);
@@ -252,7 +240,6 @@ namespace hit {
     }
 
     void DebugEval::square_inplace_internal(CKKSCiphertext &ct) {
-        // recursive calls
         check_scale(ct);
         heEval->square_inplace_internal(ct);
         seEval->square_inplace_internal(ct);
@@ -262,7 +249,6 @@ namespace hit {
     }
 
     void DebugEval::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
-        // recursive calls
         check_scale(ct);
         check_scale(target);
         heEval->mod_down_to_inplace_internal(ct, target);
@@ -273,7 +259,6 @@ namespace hit {
     }
 
     void DebugEval::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
-        // recursive calls
         heEval->mod_down_to_min_inplace_internal(ct1, ct2);
         seEval->mod_down_to_min_inplace_internal(ct1, ct2);
 
@@ -282,7 +267,6 @@ namespace hit {
     }
 
     void DebugEval::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
-        // recursive calls
         check_scale(ct);
         heEval->mod_down_to_level_inplace_internal(ct, level);
         seEval->mod_down_to_level_inplace_internal(ct, level);
@@ -297,7 +281,6 @@ namespace hit {
         double prime_bit_len = log2(p);
 
         check_scale(ct);
-        // recursive calls
         heEval->rescale_to_next_inplace_internal(ct);
         seEval->rescale_to_next_inplace_internal(ct);
 
@@ -313,7 +296,6 @@ namespace hit {
     }
 
     void DebugEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
-        // recursive calls
         check_scale(ct);
         heEval->relinearize_inplace_internal(ct);
         seEval->relinearize_inplace_internal(ct);

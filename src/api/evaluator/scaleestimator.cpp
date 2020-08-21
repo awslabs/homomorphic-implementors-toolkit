@@ -104,7 +104,6 @@ namespace hit {
     }
 
     void ScaleEstimator::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        // recursive call up the stack
         dfEval->add_inplace_internal(ct1, ct2);
         ptEval->add_inplace_internal(ct1, ct2);
 
@@ -113,7 +112,6 @@ namespace hit {
     }
 
     void ScaleEstimator::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        // recursive call up the stack
         dfEval->add_plain_inplace_internal(ct, scalar);
         ptEval->add_plain_inplace_internal(ct, scalar);
 
@@ -122,7 +120,6 @@ namespace hit {
     }
 
     void ScaleEstimator::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        // recursive call up the stack
         dfEval->add_plain_inplace_internal(ct, plain);
         ptEval->add_plain_inplace_internal(ct, plain);
 
@@ -131,7 +128,6 @@ namespace hit {
     }
 
     void ScaleEstimator::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        // recursive call up the stack
         dfEval->sub_inplace_internal(ct1, ct2);
         ptEval->sub_inplace_internal(ct1, ct2);
 
@@ -140,7 +136,6 @@ namespace hit {
     }
 
     void ScaleEstimator::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        // recursive call up the stack
         dfEval->sub_plain_inplace_internal(ct, scalar);
         ptEval->sub_plain_inplace_internal(ct, scalar);
 
@@ -149,7 +144,6 @@ namespace hit {
     }
 
     void ScaleEstimator::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        // recursive call up the stack
         dfEval->sub_plain_inplace_internal(ct, plain);
         ptEval->sub_plain_inplace_internal(ct, plain);
 
@@ -158,7 +152,6 @@ namespace hit {
     }
 
     void ScaleEstimator::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        // recursive call up the stack
         dfEval->multiply_inplace_internal(ct1, ct2);
         ptEval->multiply_inplace_internal(ct1, ct2);
 
@@ -169,7 +162,6 @@ namespace hit {
     }
 
     void ScaleEstimator::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        // recursive call up the stack
         dfEval->multiply_plain_inplace_internal(ct, scalar);
         ptEval->multiply_plain_inplace_internal(ct, scalar);
 
@@ -179,7 +171,6 @@ namespace hit {
     }
 
     void ScaleEstimator::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        // recursive call up the stack
         dfEval->multiply_plain_inplace_internal(ct, plain);
         ptEval->multiply_plain_inplace_internal(ct, plain);
 
@@ -193,7 +184,6 @@ namespace hit {
     }
 
     void ScaleEstimator::square_inplace_internal(CKKSCiphertext &ct) {
-        // recursive call up the stack
         dfEval->square_inplace_internal(ct);
         ptEval->square_inplace_internal(ct);
 
@@ -207,7 +197,6 @@ namespace hit {
             throw invalid_argument("modDownTo: levels match, but scales do not.");
         }
 
-        // recursive call up the stack
         dfEval->mod_down_to_inplace_internal(ct, target);
         ptEval->mod_down_to_inplace_internal(ct, target);
 
@@ -229,7 +218,6 @@ namespace hit {
             ct2.scale = ct1.scale;
         }
 
-        // recursive call up the stack
         dfEval->mod_down_to_min_inplace_internal(ct1, ct2);
         ptEval->mod_down_to_min_inplace_internal(ct1, ct2);
 
@@ -247,7 +235,6 @@ namespace hit {
             throw invalid_argument("modDownToLevel: level must be >= 0.");
         }
 
-        // recursive call up the stack
         dfEval->mod_down_to_level_inplace_internal(ct, level);
         ptEval->mod_down_to_level_inplace_internal(ct, level);
 
@@ -273,7 +260,6 @@ namespace hit {
         auto context_data = getContextData(ct);
         uint64_t prime = context_data->parms().coeff_modulus().back().value();
 
-        // recursive call up the stack
         dfEval->rescale_to_next_inplace_internal(ct);
         ptEval->rescale_to_next_inplace_internal(ct);
 

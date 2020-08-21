@@ -27,7 +27,6 @@ namespace hit {
         /* Print the total number of operations performed in this computation. */
         void print_op_count() const;
 
-        // recursive call to DepthFinder
         int get_multiplicative_depth() const;
 
        protected:
