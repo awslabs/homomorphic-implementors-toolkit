@@ -151,7 +151,7 @@ namespace hit {
     }
 
     CKKSCiphertext CKKSEvaluator::add_many(vector<CKKSCiphertext> &cts) {
-        if(cts.empty()) {
+        if (cts.empty()) {
             throw invalid_argument("add_many: vector may not be empty.");
         }
 

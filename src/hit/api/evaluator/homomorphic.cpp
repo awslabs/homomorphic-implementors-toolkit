@@ -112,7 +112,7 @@ namespace hit {
     /* WARNING: Multiplying by 0 results in non-constant time behavior! Only multiply by 0 if the scalar is truly
      * public. */
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        if (scalar != double { 0 }) {
+        if (scalar != double{0}) {
             Plaintext encoded_plain;
             encoder.encode(scalar, ct.seal_ct.parms_id(), ct.seal_ct.scale(), encoded_plain);
             evaluator.multiply_plain_inplace(ct.seal_ct, encoded_plain);
@@ -143,8 +143,8 @@ namespace hit {
     void HomomorphicEval::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
         if (ct.getLevel(context) < target.getLevel(context)) {
             stringstream buffer;
-            buffer << "Error in modDownTo: input is at a lower level than target. Input level: "
-                   << ct.getLevel(context) << ", target level: " << target.getLevel(context);
+            buffer << "Error in modDownTo: input is at a lower level than target. Input level: " << ct.getLevel(context)
+                   << ", target level: " << target.getLevel(context);
             throw invalid_argument(buffer.str());
         }
         while (ct.getLevel(context) > target.getLevel(context)) {
@@ -164,8 +164,8 @@ namespace hit {
     void HomomorphicEval::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
         if (ct.getLevel(context) < level) {
             stringstream buffer;
-            buffer << "Error in modDownTo: input is at a lower level than target. Input level: "
-                   << ct.getLevel(context) << ", target level: " << level;
+            buffer << "Error in modDownTo: input is at a lower level than target. Input level: " << ct.getLevel(context)
+                   << ", target level: " << level;
             throw invalid_argument(buffer.str());
         }
         while (ct.getLevel(context) > level) {

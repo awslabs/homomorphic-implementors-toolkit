@@ -43,7 +43,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD
 # Include custom cmake module path
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
-message(STATUS "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 # And custom modules
 include(set-common-flags)
 include(download-external-project)

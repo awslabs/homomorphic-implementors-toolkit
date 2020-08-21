@@ -39,29 +39,29 @@ namespace hit {
         return new CKKSInstance(PLAINTEXT, numSlots, 0, defaultScaleBits, verbose, useSEALParams);
     }
     CKKSInstance *CKKSInstance::get_new_scaleestimator_instance(int numSlots, int multDepth, bool verbose,
-                                                             bool useSEALParams) {
+                                                                bool useSEALParams) {
         return new CKKSInstance(SCALE, numSlots, multDepth, defaultScaleBits, verbose, useSEALParams);
     }
     CKKSInstance *CKKSInstance::get_new_homomorphic_instance(int numSlots, int multDepth, int logScale, bool verbose,
-                                                          bool useSEALParams, const vector<int> &galois_steps) {
+                                                             bool useSEALParams, const vector<int> &galois_steps) {
         return new CKKSInstance(numSlots, multDepth, logScale, verbose, useSEALParams, false, galois_steps);
     }
     CKKSInstance *CKKSInstance::load_homomorphic_instance(istream &paramsStream, istream &galoisKeyStream,
-                                                        istream &relinKeyStream, istream &secretKeyStream,
-                                                        bool verbose) {
+                                                          istream &relinKeyStream, istream &secretKeyStream,
+                                                          bool verbose) {
         return new CKKSInstance(paramsStream, &galoisKeyStream, &relinKeyStream, &secretKeyStream, verbose, NORMAL);
     }
     CKKSInstance *CKKSInstance::get_new_debug_instance(int numSlots, int multDepth, int logScale, bool verbose,
-                                                    bool useSEALParams, const vector<int> &galois_steps) {
+                                                       bool useSEALParams, const vector<int> &galois_steps) {
         securityWarningBox("CREATING AN INSECURE DEBUG EVALUATOR. DO NOT USE IN PRODUCTION.");
         return new CKKSInstance(numSlots, multDepth, logScale, verbose, useSEALParams, true, galois_steps);
     }
     CKKSInstance *CKKSInstance::load_debug_instance(istream &paramsStream, istream &galoisKeyStream,
-                                                  istream &relinKeyStream, istream &secretKeyStream, bool verbose) {
+                                                    istream &relinKeyStream, istream &secretKeyStream, bool verbose) {
         return new CKKSInstance(paramsStream, &galoisKeyStream, &relinKeyStream, &secretKeyStream, verbose, DEBUG);
     }
     CKKSInstance *CKKSInstance::load_eval_instance(istream &paramsStream, istream &galoisKeyStream,
-                                                 istream &relinKeyStream, bool verbose) {
+                                                   istream &relinKeyStream, bool verbose) {
         return new CKKSInstance(paramsStream, &galoisKeyStream, &relinKeyStream, nullptr, verbose, EVALUATION);
     }
 
@@ -115,7 +115,8 @@ namespace hit {
         }
     }
 
-    void CKKSInstance::shared_param_init(int numSlots, int multDepth, int logScaleIn, bool useSEALParams, bool verbose) {
+    void CKKSInstance::shared_param_init(int numSlots, int multDepth, int logScaleIn, bool useSEALParams,
+                                         bool verbose) {
         logScale = logScaleIn;
         if (!isPow2(numSlots) || numSlots < 4096) {
             stringstream buffer;
@@ -493,13 +494,13 @@ namespace hit {
     }
 
     void CKKSInstance::encrypt_col_vec(const vector<double> &plain, int matHeight, CKKSCiphertext &destination,
-                                     int level) {
+                                       int level) {
         encryptor->encrypt_col_vec(plain, matHeight, pow(2.0, logScale), destination, level);
         set_max_val(plain);
         encryptionCount++;
     }
     void CKKSInstance::encrypt_row_vec(const vector<double> &plain, int matWidth, CKKSCiphertext &destination,
-                                     int level) {
+                                       int level) {
         encryptor->encrypt_row_vec(plain, matWidth, pow(2.0, logScale), destination, level);
         set_max_val(plain);
         encryptionCount++;
@@ -573,7 +574,7 @@ namespace hit {
     }
 
     CKKSInstance *try_load_instance(int numSlots, int multDepth, int logScale, Mode mode,
-                                  const vector<int> &galois_steps) {
+                                    const vector<int> &galois_steps) {
         string keydir = "keys";
 
         string paramID = to_string(2 * numSlots) + "-" + to_string(multDepth + 2) + "-" + to_string(logScale);
@@ -626,7 +627,8 @@ namespace hit {
             if (mode == DEBUG) {
                 c = CKKSInstance::get_new_debug_instance(numSlots, multDepth, logScale, false, false, galois_steps);
             } else {  // NORMAL *or* NON-EVALUATION
-                c = CKKSInstance::get_new_homomorphic_instance(numSlots, multDepth, logScale, false, false, galois_steps);
+                c = CKKSInstance::get_new_homomorphic_instance(numSlots, multDepth, logScale, false, false,
+                                                               galois_steps);
             }
             cout << "Saving keys to disk..." << flush;
             timepoint start = chrono::steady_clock::now();

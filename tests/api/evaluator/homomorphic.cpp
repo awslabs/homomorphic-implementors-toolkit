@@ -4,10 +4,10 @@
 #include <iostream>
 
 #include "../../testutil.h"
+#include "gtest/gtest.h"
 #include "hit/CKKSInstance.h"
 #include "hit/api/ciphertext.h"
 #include "hit/common.h"
-#include "gtest/gtest.h"
 
 using namespace std;
 using namespace hit;

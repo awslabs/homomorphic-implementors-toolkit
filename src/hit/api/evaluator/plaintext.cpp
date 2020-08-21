@@ -99,7 +99,7 @@ namespace hit {
     }
 
     void PlaintextEval::negate_inplace_internal(CKKSCiphertext &ct) {
-        for (auto & coeff : ct.encoded_pt) {
+        for (auto &coeff : ct.encoded_pt) {
             coeff = -coeff;
         }
         VERBOSE(print_stats(ct));
@@ -192,7 +192,7 @@ namespace hit {
     }
 
     void PlaintextEval::square_inplace_internal(CKKSCiphertext &ct) {
-        for (auto & coeff : ct.encoded_pt) {
+        for (auto &coeff : ct.encoded_pt) {
             coeff *= coeff;
         }
         update_max_log_plain_val(ct);
