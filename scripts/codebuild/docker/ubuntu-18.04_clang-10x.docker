@@ -7,8 +7,8 @@ SHELL ["/bin/bash", "-c"]
 
 RUN set -ex && \
     apt-get update && \
-    apt-get -y --no-install-recommends install clang clang-10 && \
-    update-alternatives --install /usr/bin/clang clang /usr/bin/clang-10 90 --slave /usr/bin/clang++ clang++ /usr/bin/clang-cpp-10 && \
+    apt-get -y --no-install-recommends install clang clang-10 clang-tidy-10 && \
+    update-alternatives --install /usr/bin/clang clang /usr/bin/clang-10 90 --slave /usr/bin/clang++ clang++ /usr/bin/clang-cpp-10 --slave /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-10 && \
     apt-get autoremove --purge -y && \
     apt-get clean && \
     apt-get autoclean && \

@@ -26,7 +26,7 @@ namespace hit {
     }
 
     // print some debug info
-    void PlaintextEval::print_stats(
+    void PlaintextEval::print_stats( // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
         const CKKSCiphertext &ct) const {  // NOLINT(readability-convert-member-functions-to-static)
         // extract just the elements we care about from the real plaintext
         vector<double> exactPlaintext = ct.getPlaintext();
@@ -99,7 +99,7 @@ namespace hit {
     }
 
     void PlaintextEval::negate_inplace_internal(CKKSCiphertext &ct) {
-        for (auto & coeff : ct.encoded_pt) {
+        for (auto &coeff : ct.encoded_pt) {
             coeff = -coeff;
         }
         VERBOSE(print_stats(ct));
@@ -192,7 +192,7 @@ namespace hit {
     }
 
     void PlaintextEval::square_inplace_internal(CKKSCiphertext &ct) {
-        for (auto & coeff : ct.encoded_pt) {
+        for (auto &coeff : ct.encoded_pt) {
             coeff *= coeff;
         }
         update_max_log_plain_val(ct);

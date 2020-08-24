@@ -1,7 +1,7 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-target_sources(hit
+target_sources(aws_hit_obj
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/debug.cpp
         ${CMAKE_CURRENT_LIST_DIR}/depthfinder.cpp

@@ -34,10 +34,10 @@ namespace hit {
         void encrypt_matrix(const Matrix &, double scale, CKKSCiphertext &destination, int lvl = -1);
 
         void encrypt_col_vec(const std::vector<double> &plain, int matHeight, double scale, CKKSCiphertext &destination,
-                           int lvl = -1);
+                             int lvl = -1);
 
         void encrypt_row_vec(const std::vector<double> &plain, int matWidth, double scale, CKKSCiphertext &destination,
-                           int lvl = -1);
+                             int lvl = -1);
 
        private:
         // the encryption mode tells the encryptor which values to set during encryption

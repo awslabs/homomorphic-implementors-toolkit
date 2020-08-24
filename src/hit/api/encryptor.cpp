@@ -70,7 +70,7 @@ namespace hit {
     }
 
     void CKKSEncryptor::encrypt_col_vec(const vector<double> &plain, int matHeight, double scale,
-                                      CKKSCiphertext &destination, int lvl) {
+                                        CKKSCiphertext &destination, int lvl) {
         Matrix encodedVec = colVecToMatrix(plain, matHeight);
         encrypt_matrix(encodedVec, scale, destination, lvl);
         destination.encoding = COL_VEC;
@@ -79,7 +79,7 @@ namespace hit {
     }
 
     void CKKSEncryptor::encrypt_row_vec(const vector<double> &plain, int matWidth, double scale,
-                                      CKKSCiphertext &destination, int lvl) {
+                                        CKKSCiphertext &destination, int lvl) {
         Matrix encodedVec = rowVecToMatrix(plain, matWidth);
         encrypt_matrix(encodedVec, scale, destination, lvl);
         destination.encoding = ROW_VEC;

@@ -3,9 +3,9 @@
 
 #include <iostream>
 
-#include "CKKSInstance.h"
-#include "api/ciphertext.h"
 #include "gtest/gtest.h"
+#include "hit/CKKSInstance.h"
+#include "hit/api/ciphertext.h"
 
 using namespace std;
 using namespace hit;
@@ -242,6 +242,16 @@ TEST(DepthFinderTest, RescaleToNextInPlace) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
     CKKSCiphertext ciphertext1;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
+    int he_level = ciphertext1.he_level;
+    ckksInstance->evaluator->rescale_to_next_inplace(ciphertext1);
+    ASSERT_EQ(he_level - 1, ciphertext1.he_level);
+    ASSERT_EQ(1, ckksInstance->get_multiplicative_depth());
+}
+
+TEST(DepthFinderTest, RescaleToNextInPlace_ExplicitLevel) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSCiphertext ciphertext1;
+    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1, 1);
     int he_level = ciphertext1.he_level;
     ckksInstance->evaluator->rescale_to_next_inplace(ciphertext1);
     ASSERT_EQ(he_level - 1, ciphertext1.he_level);

@@ -1,13 +1,13 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "CKKSInstance.h"
-#include "api/evaluator.h"
-#include "common.h"
+#include "hit/CKKSInstance.h"
+#include "hit/api/evaluator.h"
+#include "hit/common.h"
 #include <iostream>
 
 using namespace std;
-using namespace seal;
+using namespace hit;
 
 /* This file provides a demonstration of how to use this CKKS library and its many evaluators. */
 
@@ -86,7 +86,7 @@ CKKSCiphertext sigmoid(const CKKSCiphertext &x1_encrypted, CKKSEvaluator &eval) 
    * which will bring -0.0015*x and x^2 to the same levels.
    */
   // coeff3_x1_encrypted is sigmoid_c3*x^1
-  CKKSCiphertext coeff3_x1_encrypted = eval.multiply_plain_scalar(x1_encrypted, sigmoid_c3);
+  CKKSCiphertext coeff3_x1_encrypted = eval.multiply_plain(x1_encrypted, sigmoid_c3);
   eval.rescale_to_next_inplace(coeff3_x1_encrypted);
 
   /* Since x2_encrypted and coeff3_x1_encrypted have the same exact scale and use
@@ -103,25 +103,25 @@ CKKSCiphertext sigmoid(const CKKSCiphertext &x1_encrypted, CKKSEvaluator &eval) 
    * with 0.15.
    */
   // coeff1_x1_encrypted is sigmoid_c1*x^1
-  CKKSCiphertext coeff1_x1_encrypted = eval.multiply_plain_scalar(x1_encrypted, sigmoid_c1);
+  CKKSCiphertext coeff1_x1_encrypted = eval.multiply_plain(x1_encrypted, sigmoid_c1);
   eval.rescale_to_next_inplace(coeff1_x1_encrypted);
 
   /* coeff3_x3_encrypted is at level i-2, while coeff1_x1_encrypted is at level i-1.
    * We need to add these two terms together, but that requires them to be at the same
    * level. We solve this problem by multiplying coeff1_x1_encrypted by the scalar 1.
    */
-  eval.modDownTo(coeff1_x1_encrypted, coeff3_x3_encrypted);
+  eval.mod_down_to_inplace(coeff1_x1_encrypted, coeff3_x3_encrypted);
 
   // add 0.5 and 0.15*x
-  CKKSCiphertext result = eval.add_plain_scalar(coeff1_x1_encrypted, sigmoid_c0);
+  CKKSCiphertext result = eval.add_plain(coeff1_x1_encrypted, sigmoid_c0);
 
   // add 0.0015*x^3 with result
   return eval.add(result, coeff3_x3_encrypted);;
 }
 
 /* Now that we have written a function, let's evaluate it. */
-int main() {
-  srand(time(NULL));
+int main() { // NOLINT(bugprone-exception-escape)
+  srand(time(nullptr));
   // *********** Generate Random Input ***********
   /* Generate a random input and compute the expecte result
    * of applying the sigmoid approximation to each component
@@ -213,7 +213,7 @@ int main() {
   // and assign the result to x_enc_df
   x_enc_df = sigmoid(x_enc_df, *dfInst->evaluator);
   // Obtain the multiplicative depth
-  int multDepth = dfInst->getMultiplicativeDepth();
+  int multDepth = dfInst->get_multiplicative_depth();
   // Note that the multiplicative depth is two less than the required number of primes.
   // This is because SEAL requires a "special" modulus that doesn't count towards the
   // depth, and you always have to have at least one modulus.
@@ -247,7 +247,7 @@ int main() {
   // and assign the result to x_enc_scale
   x_enc_scale = sigmoid(x_enc_scale, *scaleInst->evaluator);
   // Obtain the multiplicative depth
-  int logScale = floor(scaleInst->getEstimatedMaxLogScale());
+  int logScale = floor(scaleInst->get_estimated_max_log_scale());
   cout << "\tThe maximum possible scale for this input is 2^" << logScale << endl;
   delete scaleInst;
 

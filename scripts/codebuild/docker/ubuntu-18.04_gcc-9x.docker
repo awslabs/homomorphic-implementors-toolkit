@@ -5,6 +5,8 @@ FROM ubuntu-18.04:base as ci-base
 
 SHELL ["/bin/bash", "-c"]
 
+# Note: this CI does not run clang-tidy.
+
 RUN set -ex && \
     add-apt-repository ppa:ubuntu-toolchain-r/test && \
     apt-get update && \

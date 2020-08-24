@@ -6,7 +6,7 @@
 #include "api/decryptor.h"
 #include "api/encryptor.h"
 #include "api/evaluator.h"
-#include "protobuf/ckksparams.pb.h"  // NOLINT
+#include "hit/protobuf/ckksparams.pb.h"  // NOLINT
 #include "seal/context.h"
 #include "seal/seal.h"
 
@@ -51,19 +51,19 @@ namespace hit {
          * See `get_new_plaintext_instance` for description of `useSEALParams`.
          */
         static CKKSInstance *get_new_scaleestimator_instance(int numSlots, int multDepth, bool verbose = false,
-                                                          bool useSEALParams = true);
+                                                             bool useSEALParams = true);
 
         /* Generate a CKKSInstance targeting the desired number of slots, multiplicative
          * depth and log(scale) value.
          * See `get_new_plaintext_instance` for description of `useSEALParams`.
          */
-        static CKKSInstance *get_new_homomorphic_instance(int numSlots, int multDepth, int logScale, bool verbose = false,
-                                                       bool useSEALParams = true,
-                                                       const std::vector<int> &galois_steps = std::vector<int>());
+        static CKKSInstance *get_new_homomorphic_instance(int numSlots, int multDepth, int logScale,
+                                                          bool verbose = false, bool useSEALParams = true,
+                                                          const std::vector<int> &galois_steps = std::vector<int>());
 
         static CKKSInstance *load_homomorphic_instance(std::istream &paramsStream, std::istream &galoisKeyStream,
-                                                     std::istream &relinKeyStream, std::istream &secretKeyStream,
-                                                     bool verbose = false);
+                                                       std::istream &relinKeyStream, std::istream &secretKeyStream,
+                                                       bool verbose = false);
 
         void save(std::ostream *paramsStream, std::ostream *galoisKeyStream, std::ostream *relinKeyStream,
                   std::ostream *secretKeyStream);
@@ -73,21 +73,21 @@ namespace hit {
          * See `get_new_plaintext_instance` for description of `useSEALParams`.
          */
         static CKKSInstance *get_new_debug_instance(int numSlots, int multDepth, int logScale, bool verbose = false,
-                                                 bool useSEALParams = true,
-                                                 const std::vector<int> &galois_steps = std::vector<int>());
+                                                    bool useSEALParams = true,
+                                                    const std::vector<int> &galois_steps = std::vector<int>());
 
         /* Create a new debug instance from the provided parameters and keys */
         static CKKSInstance *load_debug_instance(std::istream &paramsStream, std::istream &galoisKeyStream,
-                                               std::istream &relinKeyStream, std::istream &secretKeyStream,
-                                               bool verbose = false);
+                                                 std::istream &relinKeyStream, std::istream &secretKeyStream,
+                                                 bool verbose = false);
 
         /* For evaluation only. Decryption is not available. */
         static CKKSInstance *load_eval_instance(std::istream &paramsStream, std::istream &galoisKeyStream,
-                                              std::istream &relinKeyStream, bool verbose = false);
+                                                std::istream &relinKeyStream, bool verbose = false);
 
         /* For encryption and decryption only. Evaluation is not available. */
         static CKKSInstance *load_noneval_instance(std::istream &paramsStream, std::istream &secretKeyStream,
-                                                 bool verbose = false);
+                                                   bool verbose = false);
 
         ~CKKSInstance();
 
@@ -99,14 +99,15 @@ namespace hit {
          * This requires the target matrix height as a parameter.
          */
         void encrypt_col_vec(const std::vector<double> &plain, int matHeight, CKKSCiphertext &destination,
-                           int level = -1);
+                             int level = -1);
 
         /* Encrypt a C++ vector representing a linear algebra row vector.
          * We first encode the vector as a matrix
          * where each column is `plain`; see pplr.cpp for details.
          * This requires the target matrix width as a parameter.
          */
-        void encrypt_row_vec(const std::vector<double> &plain, int matWidth, CKKSCiphertext &destination, int level = -1);
+        void encrypt_row_vec(const std::vector<double> &plain, int matWidth, CKKSCiphertext &destination,
+                             int level = -1);
 
         // verbose flag enables a warning if you decrypt when the ciphertext is not at level 0
         // Usually, decrypting a ciphertext not at level 0 indicates you are doing something
@@ -176,5 +177,5 @@ namespace hit {
     // don't need to perform any evaluation. A `NONEVALUATION` instance can *ONLY* be used for encryption and
     // decryption.
     CKKSInstance *try_load_instance(int numSlots, int multDepth, int logScale, Mode mode,
-                                  const std::vector<int> &galois_steps = std::vector<int>());
+                                    const std::vector<int> &galois_steps = std::vector<int>());
 }  // namespace hit

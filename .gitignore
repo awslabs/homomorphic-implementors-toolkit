@@ -8,6 +8,7 @@ install/*
 **/__pycache__
 *.unison*
 .vscode/
+lib/*
 
 # Ignore third party.
 third-party/*/**
