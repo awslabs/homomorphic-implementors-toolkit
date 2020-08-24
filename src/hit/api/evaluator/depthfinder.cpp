@@ -127,7 +127,19 @@ namespace hit {
     void DepthFinder::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
         int topHELevel = context->first_context_data()->chain_index();
         ct.he_level--;
-        multiplicativeDepth = max(multiplicativeDepth, topHELevel - ct.he_level);
+        /* The DepthFinder is always created as a "depth 0" evaluator, meaning that with
+         * the current implementation in CKKSInstance, topHELevel is *always* 0.
+         * There are two possible scenarios.
+         *  1. All calls to encrypt*() use an implicit level.
+         *     In this case, all CTs are have he_level = 0, so reducing the level
+         *     results in a negative he_level. Then 0-negative = positive, which accurately
+         *     tracks the computation depth.
+         *  2. Alternatively, some calls to encrypt may set explicit encryption levels.
+         *     In this case, ciphertexts are encrypted with a positive level, meaning
+         *     0-positive is never larger than the base multiplicativeDepth of 0. Instead,
+         *     we use the outer `max` to account for explicitly-leveled ciphertexts.
+         */
+        multiplicativeDepth = max(max(multiplicativeDepth, topHELevel - ct.he_level), ct.he_level + 1);
         VERBOSE(print_stats(ct));
     }
 
