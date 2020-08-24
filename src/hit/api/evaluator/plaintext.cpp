@@ -26,7 +26,7 @@ namespace hit {
     }
 
     // print some debug info
-    void PlaintextEval::print_stats(
+    void PlaintextEval::print_stats( // NOLINTNEXTLINE
         const CKKSCiphertext &ct) const {  // NOLINT(readability-convert-member-functions-to-static)
         // extract just the elements we care about from the real plaintext
         vector<double> exactPlaintext = ct.getPlaintext();

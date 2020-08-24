@@ -19,7 +19,7 @@ namespace hit {
     }
 
     // print some debug info
-    void DepthFinder::print_stats(
+    void DepthFinder::print_stats( // NOLINTNEXTLINE
         const CKKSCiphertext &ct) const {  // NOLINT(readability-convert-member-functions-to-static)
         cout << "    + Level: " << ct.he_level << endl;
     }
