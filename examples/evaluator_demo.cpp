@@ -120,7 +120,7 @@ CKKSCiphertext sigmoid(const CKKSCiphertext &x1_encrypted, CKKSEvaluator &eval) 
 }
 
 /* Now that we have written a function, let's evaluate it. */
-int main() {
+int main() { // NOLINT(bugprone-exception-escape)
   srand(time(nullptr));
   // *********** Generate Random Input ***********
   /* Generate a random input and compute the expecte result
