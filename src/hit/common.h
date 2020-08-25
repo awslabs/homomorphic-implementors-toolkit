@@ -9,6 +9,8 @@
 #include "api/ciphertext.h"
 #include "seal/seal.h"
 
+#define LOG_VERBOSE 1
+
 #define INVALID_PARAMETER_EXCEPTION 10
 
 // the maximum normalized norm of the difference between the actual and expected result
