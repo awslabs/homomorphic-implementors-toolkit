@@ -4,6 +4,7 @@
 #include "scaleestimator.h"
 
 #include <iomanip>
+#include <glog/logging.h>
 
 #include "../../common.h"
 #include "../../sealutils.h"
@@ -43,16 +44,19 @@ namespace hit {
 
     // print some debug info
     void ScaleEstimator::print_stats(const CKKSCiphertext &ct) {
+        if (!VLOG_IS_ON(LOG_VERBOSE)) {
+            return;
+        }
         double exactPlaintextMaxVal = lInfNorm(ct.getPlaintext());
         double logModulus = 0;
         auto context_data = getContextData(ct);
         for (const auto &prime : context_data->parms().coeff_modulus()) {
             logModulus += log2(prime.value());
         }
-        cout << "    + Plaintext logmax: " << log2(exactPlaintextMaxVal)
-             << " bits (scaled: " << log2(ct.scale) + log2(exactPlaintextMaxVal) << " bits)" << endl;
-        cout << "    + Total modulus size: " << setprecision(4) << logModulus << " bits" << endl;
-        cout << "    + Theoretical max log scale: " << get_estimated_max_log_scale() << " bits" << endl;
+        VLOG(LOG_VERBOSE) << "    + Plaintext logmax: " << log2(exactPlaintextMaxVal)
+            << " bits (scaled: " << log2(ct.scale) + log2(exactPlaintextMaxVal) << " bits)";
+        VLOG(LOG_VERBOSE) << "    + Total modulus size: " << setprecision(4) << logModulus << " bits";
+        VLOG(LOG_VERBOSE) << "    + Theoretical max log scale: " << get_estimated_max_log_scale() << " bits";
     }
 
     // At all times, we need ct.scale*lInfNorm(ct.getPlaintext()) <~ q/4
@@ -88,19 +92,20 @@ namespace hit {
     void ScaleEstimator::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
         dfEval->rotate_right_inplace_internal(ct, steps);
         ptEval->rotate_right_inplace_internal(ct, steps);
-        VERBOSE(print_stats(ct));
+
+        print_stats(ct);
     }
 
     void ScaleEstimator::rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) {
         dfEval->rotate_left_inplace_internal(ct, steps);
         ptEval->rotate_left_inplace_internal(ct, steps);
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void ScaleEstimator::negate_inplace_internal(CKKSCiphertext &ct) {
         dfEval->negate_inplace_internal(ct);
         ptEval->negate_inplace_internal(ct);
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void ScaleEstimator::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
@@ -108,7 +113,7 @@ namespace hit {
         ptEval->add_inplace_internal(ct1, ct2);
 
         update_max_log_scale(ct1);
-        VERBOSE(print_stats(ct1));
+        print_stats(ct1);
     }
 
     void ScaleEstimator::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
@@ -116,7 +121,7 @@ namespace hit {
         ptEval->add_plain_inplace_internal(ct, scalar);
 
         update_max_log_scale(ct);
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void ScaleEstimator::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
@@ -124,7 +129,7 @@ namespace hit {
         ptEval->add_plain_inplace_internal(ct, plain);
 
         update_max_log_scale(ct);
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void ScaleEstimator::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
@@ -132,7 +137,7 @@ namespace hit {
         ptEval->sub_inplace_internal(ct1, ct2);
 
         update_max_log_scale(ct1);
-        VERBOSE(print_stats(ct1));
+        print_stats(ct1);
     }
 
     void ScaleEstimator::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
@@ -140,7 +145,7 @@ namespace hit {
         ptEval->sub_plain_inplace_internal(ct, scalar);
 
         update_max_log_scale(ct);
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void ScaleEstimator::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
@@ -148,7 +153,7 @@ namespace hit {
         ptEval->sub_plain_inplace_internal(ct, plain);
 
         update_max_log_scale(ct);
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void ScaleEstimator::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
@@ -158,7 +163,7 @@ namespace hit {
         ct1.scale *= ct2.scale;
         update_max_log_scale(ct1);
 
-        VERBOSE(print_stats(ct1));
+        print_stats(ct1);
     }
 
     void ScaleEstimator::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
@@ -167,7 +172,7 @@ namespace hit {
 
         ct.scale *= ct.scale;
         update_max_log_scale(ct);
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void ScaleEstimator::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
@@ -180,7 +185,7 @@ namespace hit {
         }
         ct.scale *= ct.scale;
         update_max_log_scale(ct);
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void ScaleEstimator::square_inplace_internal(CKKSCiphertext &ct) {
@@ -189,7 +194,7 @@ namespace hit {
 
         ct.scale *= ct.scale;
         update_max_log_scale(ct);
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void ScaleEstimator::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
@@ -204,7 +209,7 @@ namespace hit {
 
         // recursive call updated he_level, so we need to update maxLogScale
         update_max_log_scale(ct);
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void ScaleEstimator::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
@@ -224,8 +229,8 @@ namespace hit {
         // recursive call updated he_level, so we need to update maxLogScale
         update_max_log_scale(ct1);
         update_max_log_scale(ct2);
-        VERBOSE(print_stats(ct1));
-        VERBOSE(print_stats(ct2));
+        print_stats(ct1);
+        print_stats(ct2);
     }
 
     void ScaleEstimator::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
@@ -249,7 +254,7 @@ namespace hit {
 
         // recursive call updated he_level, so we need to update maxLogScale
         update_max_log_scale(ct);
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void ScaleEstimator::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
@@ -265,7 +270,7 @@ namespace hit {
 
         ct.scale /= prime;
         update_max_log_scale(ct);
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void ScaleEstimator::relinearize_inplace_internal(CKKSCiphertext &) {
