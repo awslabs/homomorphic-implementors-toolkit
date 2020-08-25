@@ -5,6 +5,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include <glog/logging.h>
 
 #include "seal/seal.h"
 
@@ -32,32 +33,34 @@ namespace hit {
             default:
                 throw std::invalid_argument("unsupported scheme");
         }
-        std::cout << "/" << std::endl;
-        std::cout << "| Encryption parameters :" << std::endl;
-        std::cout << "|   scheme: " << scheme_name << std::endl;
-        std::cout << "|   poly_modulus_degree: " << context_data.parms().poly_modulus_degree() << std::endl;
+        LOG(INFO) << "/";
+        LOG(INFO) << "| Encryption parameters :";
+        LOG(INFO) << "|   scheme: " << scheme_name;
+        LOG(INFO) << "|   poly_modulus_degree: " << context_data.parms().poly_modulus_degree();
 
         /*
         Print the size of the true (product) coefficient modulus.
         */
-        std::cout << "|   coeff_modulus size: ";
-        std::cout << context_data.total_coeff_modulus_bit_count() << " (";
+        std::stringstream coeff_modulus_size_info;
+        coeff_modulus_size_info << "|   coeff_modulus size: ";
+        coeff_modulus_size_info << context_data.total_coeff_modulus_bit_count() << " (";
         auto coeff_modulus = context_data.parms().coeff_modulus();
         std::size_t coeff_modulus_size = coeff_modulus.size();
         for (std::size_t i = 0; i < coeff_modulus_size - 1; i++) {
-            std::cout << coeff_modulus[i].bit_count() << " + ";
+            coeff_modulus_size_info << coeff_modulus[i].bit_count() << " + ";
         }
-        std::cout << coeff_modulus.back().bit_count();
-        std::cout << ") bits" << std::endl;
+        coeff_modulus_size_info << coeff_modulus.back().bit_count();
+        coeff_modulus_size_info << ") bits";
+        LOG(INFO) << coeff_modulus_size_info.str();
 
         /*
         For the BFV scheme print the plain_modulus parameter.
         */
         if (context_data.parms().scheme() == seal::scheme_type::BFV) {
-            std::cout << "|   plain_modulus: " << context_data.parms().plain_modulus().value() << std::endl;
+            LOG(INFO) << "|   plain_modulus: " << context_data.parms().plain_modulus().value();
         }
 
-        std::cout << "\\" << std::endl;
+        LOG(INFO) << "\\";
     }
 
     /*
