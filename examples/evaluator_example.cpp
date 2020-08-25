@@ -136,7 +136,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   vector<double> x = randomVector(dim, approxRange);
 
   // *********** Generate Expected Result ***********
-  cout << "Generating expected result..." << endl;
+  LOG(INFO) << "Generating expected result...";
   vector<double> exactResult;
   exactResult.reserve(dim);
   for(int i = 0; i < dim; i++) {
@@ -168,7 +168,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
    * CKKS plaintext. We will target a plaintext with dimension 4096, which
    * means will encode the vector as a 32x128 matrix.
    */
-  cout << "Using the Plaintext evaluator to test the correctness of the algorithm..." << endl;
+  LOG(INFO) << "Using the Plaintext evaluator to test the correctness of the algorithm...";
   int rows = 32;
   int slots = dim*rows;
   CKKSInstance *ptInst = CKKSInstance::get_new_plaintext_instance(slots);
@@ -182,7 +182,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   // getPlaintext() decodes the shadow plaintext
   double errNorm = diff2Norm(exactResult, x_enc_pt.getPlaintext());
   if(errNorm < 0.0001) {
-    cout << "\tHomomorphic algorithm matches cleartext algorithm." << endl;
+    LOG(INFO) << "\tHomomorphic algorithm matches cleartext algorithm.";
   }
   else {
     throw invalid_argument("Results from homomorphic and cleartext algorithms do not match!");
@@ -203,7 +203,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
    * We construct a CKKSInstance using the basic constructor, which contains
    * a DepthFinder evaluator.
    */
-  cout << "Using the DepthFinder evaluator to compute the multiplicative depth of the sigmoid function..." << endl;
+  LOG(INFO) << "Using the DepthFinder evaluator to compute the multiplicative depth of the sigmoid function...";
   CKKSInstance *dfInst = CKKSInstance::get_new_depthfinder_instance();
   // Encrypt the input
   CKKSCiphertext x_enc_df;
@@ -222,7 +222,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   // Note that the multiplicative depth is two less than the required number of primes.
   // This is because SEAL requires a "special" modulus that doesn't count towards the
   // depth, and you always have to have at least one modulus.
-  cout << "\tMultiplicative depth=" << multDepth << endl;
+  LOG(INFO) << "\tMultiplicative depth=" << multDepth;
   delete dfInst;
 
 
@@ -243,7 +243,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
    * step requires knowledge of the multiplicative depth of the computation,
    * so it must be run serially after the DepthFinder step.
    */
-  cout << "Using the ScaleEstimator evaluator to compute the optimal CKKS scale factor..." << endl;
+  LOG(INFO) << "Using the ScaleEstimator evaluator to compute the optimal CKKS scale factor...";
   CKKSInstance *scaleInst = CKKSInstance::get_new_scaleestimator_instance(slots, multDepth);
   // Re-encrypt the input
   CKKSCiphertext x_enc_scale;
@@ -253,7 +253,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   x_enc_scale = sigmoid(x_enc_scale, *scaleInst->evaluator);
   // Obtain the multiplicative depth
   int logScale = floor(scaleInst->get_estimated_max_log_scale());
-  cout << "\tThe maximum possible scale for this input is 2^" << logScale << endl;
+  LOG(INFO) << "\tThe maximum possible scale for this input is 2^" << logScale;
   delete scaleInst;
 
 
@@ -261,7 +261,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   /* Armed with the requisite encryption parameters, we can now
    * construct a evaluator that works on encrypted inputs.
    */
-  cout << "Running the computation on ciphertexts..." << endl;
+  LOG(INFO) << "Running the computation on ciphertexts...";
   CKKSInstance *homomInst = try_load_instance(slots, multDepth, logScale, NORMAL);
   // Re-encrypt the input
   CKKSCiphertext x_enc_homom;
@@ -274,7 +274,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   // See if the test passed
   double errNorm_homom = diff2Norm(exactResult, homom_result);
   if(errNorm_homom < 0.0001) {
-    cout << "\tHomomorphic result matches cleartext result." << endl;
+    LOG(INFO) << "\tHomomorphic result matches cleartext result.";
   }
   else {
     throw invalid_argument("Check your CKKS parameters and try again!");
@@ -288,7 +288,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
    * computation, use the debug evaluator. It provides verbose output
    * regarding all aspects of the computation in real-time.
    */
-  cout << "Running the computation in debug mode..." << endl;
+  LOG(INFO) << "Running the computation in debug mode...";
   CKKSInstance *debugInst = try_load_instance(slots, multDepth, logScale, DEBUG);
   // Re-encrypt the input
   CKKSCiphertext x_enc_debug;
