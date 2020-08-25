@@ -37,10 +37,6 @@ namespace hit {
         return new CKKSInstance(OPCOUNT, 4096, 0, defaultScaleBits, verbose, true);
     }
     CKKSInstance *CKKSInstance::get_new_plaintext_instance(int numSlots, bool verbose, bool useSEALParams) {
-        VLOG(LOG_VERBOSE) << "kidsafd shanggu keys...";
-        if (VLOG_IS_ON(LOG_VERBOSE)) {
-            LOG(INFO) << "shag hello 2";
-        }
         return new CKKSInstance(PLAINTEXT, numSlots, 0, defaultScaleBits, verbose, useSEALParams);
     }
     CKKSInstance *CKKSInstance::get_new_scaleestimator_instance(int numSlots, int multDepth, bool verbose,
