@@ -20,6 +20,6 @@ if [ -d ${GLOG_log_dir} ]; then rm -Rf ${GLOG_log_dir}; fi
 mkdir -p ${GLOG_log_dir}
 if [ -d build ]; then rm -Rf build; fi
 mkdir -p build && cd build
-cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMake_RUN_CLANG_TIDY=OFF -DBUILD_HIT_EXAMPLES=ON ../
+cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMake_RUN_CLANG_TIDY=ON -DBUILD_HIT_EXAMPLES=ON ../
 ninja -j $(nproc)
 ${CUR_DIR}/bin/Release/hit-example
