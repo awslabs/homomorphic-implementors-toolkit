@@ -4,6 +4,7 @@
 #include "opcount.h"
 
 #include <iomanip>
+#include <glog/logging.h>
 
 using namespace std;
 using namespace seal;
@@ -29,12 +30,12 @@ namespace hit {
     }
 
     void OpCount::print_op_count() const {
-        cout << endl << "Multiplications: " << multiplies << endl;
-        cout << "ModDownMuls: " << modDownMuls << endl;
-        cout << "Additions: " << additions << endl;
-        cout << "Negations: " << negations << endl;
-        cout << "Rotations: " << rotations << endl;
-        cout << "ModDownTos: " << modDowns << endl << endl;
+        LOG(INFO) << "Multiplications: " << multiplies;
+        LOG(INFO) << "ModDownMuls: " << modDownMuls;
+        LOG(INFO) << "Additions: " << additions;
+        LOG(INFO) << "Negations: " << negations;
+        LOG(INFO) << "Rotations: " << rotations;
+        LOG(INFO) << "ModDownTos: " << modDowns;
     }
 
     int OpCount::get_multiplicative_depth() const {
