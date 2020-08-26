@@ -6,4 +6,4 @@ version: 0.2
 phases:
   build:
     commands:
-      - ./scripts/codebuild/run-unit-tests.sh
+      - ./scripts/codebuild/run-hit-ci.sh

@@ -5,6 +5,7 @@
 #include "hit/api/evaluator.h"
 #include "hit/common.h"
 #include <iostream>
+#include <glog/logging.h>
 
 using namespace std;
 using namespace hit;
@@ -120,14 +121,18 @@ CKKSCiphertext sigmoid(const CKKSCiphertext &x1_encrypted, CKKSEvaluator &eval) 
 }
 
 /* Now that we have written a function, let's evaluate it. */
-int main() { // NOLINT(bugprone-exception-escape)
-  srand(time(nullptr));
+int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
+  // Initialize Google's logging library.
+  google::InitGoogleLogging(argv[0]);
+  // Dump useful information when the program crashes on certain signals such as SIGSEGV.
+  google::InstallFailureSignalHandler();
   // *********** Generate Random Input ***********
   /* Generate a random input and compute the expecte result
    * of applying the sigmoid approximation to each component
    */
+  srand(time(nullptr));
   int dim = 128;
-  cout << "Generating random input vector of length " << dim << "..." << endl;
+  LOG(INFO) << "Generating random input vector of length " << dim << "...";
   vector<double> x = randomVector(dim, approxRange);
 
   // *********** Generate Expected Result ***********
