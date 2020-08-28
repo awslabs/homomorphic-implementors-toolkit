@@ -6,6 +6,7 @@ target_sources(aws_hit_obj
     ${CMAKE_CURRENT_LIST_DIR}/CKKSInstance.cpp
     ${CMAKE_CURRENT_LIST_DIR}/common.cpp
     ${CMAKE_CURRENT_LIST_DIR}/matrix.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/sealutils.cpp
 )
 
 install(
@@ -13,6 +14,7 @@ install(
     ${CMAKE_CURRENT_LIST_DIR}/CKKSInstance.h
     ${CMAKE_CURRENT_LIST_DIR}/common.h
     ${CMAKE_CURRENT_LIST_DIR}/matrix.h
+    ${CMAKE_CURRENT_LIST_DIR}/sealutils.h
   DESTINATION
     ${HIT_INCLUDES_INSTALL_DIR}
 )
