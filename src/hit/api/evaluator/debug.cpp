@@ -3,6 +3,7 @@
 
 #include "debug.h"
 
+#include <glog/logging.h>
 #include <iomanip>
 
 #include "../../common.h"
@@ -63,17 +64,21 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
 
-        VERBOSE(cout << setprecision(8) << "    + Approximation norm: " << norm << endl);
+        VLOG(LOG_VERBOSE) << setprecision(8) << "    + Approximation norm: " << norm;
 
         int maxPrintSize = 8;
-        VERBOSE(cout << "    + Homom Result:   < ");
-        for (int i = 0; i < min(maxPrintSize, static_cast<int>(homomPlaintext.size())); i++) {
-            VERBOSE(cout << setprecision(8) << homomPlaintext[i] << ", ");
+        if (VLOG_IS_ON(LOG_VERBOSE)) {
+            stringstream verbose_info;
+            verbose_info << "    + Homom Result:   < ";
+            for (int i = 0; i < min(maxPrintSize, static_cast<int>(homomPlaintext.size())); i++) {
+                verbose_info << setprecision(8) << homomPlaintext[i] << ", ";
+            }
+            if (homomPlaintext.size() > maxPrintSize) {
+                verbose_info << "... ";
+            }
+            verbose_info << ">";
+            VLOG(LOG_VERBOSE) << verbose_info.str();
         }
-        if (homomPlaintext.size() > maxPrintSize) {
-            VERBOSE(cout << "... ");
-        }
-        VERBOSE(cout << ">" << endl);
 
         if (norm > MAX_NORM) {
             stringstream buffer;
@@ -81,29 +86,33 @@ namespace hit {
                    << ". Scale is " << log2(seEval->baseScale) << ".";
 
             maxPrintSize = 32;
-            cout << "    + DEBUG Expected result: <";
+            stringstream expect_debug_result;
+            expect_debug_result << "    + DEBUG Expected result: <";
             for (int i = 0; i < min(maxPrintSize, static_cast<int>(exactPlaintext.size())); i++) {
-                cout << setprecision(8) << exactPlaintext[i];
+                expect_debug_result << setprecision(8) << exactPlaintext[i];
                 if (i < exactPlaintext.size() - 1) {
-                    cout << ", ";
+                    expect_debug_result << ", ";
                 }
             }
             if (exactPlaintext.size() > maxPrintSize) {
-                cout << "..., ";
+                expect_debug_result << "..., ";
             }
-            cout << ">" << endl;
+            expect_debug_result << ">";
+            LOG(INFO) << expect_debug_result.str();
 
-            cout << "    + DEBUG Actual result:   <";
+            stringstream actual_debug_result;
+            actual_debug_result << "    + DEBUG Actual result:   <";
             for (int i = 0; i < min(maxPrintSize, static_cast<int>(homomPlaintext.size())); i++) {
-                cout << setprecision(8) << homomPlaintext[i];
+                actual_debug_result << setprecision(8) << homomPlaintext[i];
                 if (i < exactPlaintext.size() - 1) {
-                    cout << ", ";
+                    actual_debug_result << ", ";
                 }
             }
             if (homomPlaintext.size() > maxPrintSize) {
-                cout << "..., ";
+                actual_debug_result << "..., ";
             }
-            cout << ">" << endl;
+            actual_debug_result << ">";
+            LOG(INFO) << actual_debug_result.str();
 
             Plaintext encoded_plain;
             heEval->encoder.encode(ct.encoded_pt.data(), seEval->baseScale, encoded_plain);
@@ -120,12 +129,11 @@ namespace hit {
             double norm2 = diff2Norm(exactPlaintext, truncated_decoded_plain);
             double norm3 = diff2Norm(truncated_decoded_plain, homomPlaintext);
 
-            cout << "Encoding norm: " << norm2 << endl;
-            cout << "Encryption norm: " << norm3 << endl;
+            LOG(INFO) << "Encoding norm: " << norm2;
+            LOG(INFO) << "Encryption norm: " << norm3;
 
             throw invalid_argument(buffer.str());
         }
-        VERBOSE(cout << endl);
     }
 
     void DebugEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
@@ -288,8 +296,8 @@ namespace hit {
         // To get decimal places, add `<< fixed << setprecision(2)` before printing the log.
         // Note that you'll need a lot of decimal places because these values are very close
         // to an integer.
-        VERBOSE(cout << "    + Scaled plaintext down by the ~" << prime_bit_len << "-bit prime " << hex << p << dec
-                     << endl);
+        VLOG(LOG_VERBOSE) << "    + Scaled plaintext down by the ~" << prime_bit_len << "-bit prime " << hex << p
+                          << dec;
 
         print_stats(ct);
         check_scale(ct);

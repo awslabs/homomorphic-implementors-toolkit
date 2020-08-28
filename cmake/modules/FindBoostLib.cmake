@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 message(STATUS "Searching Boost lib.")
-find_package(Boost 1.65)
+find_package(Boost 1.65 QUIET)
 if (Boost_FOUND)
     message(STATUS "Boost is found. Skip downloading source code.")
 else ()

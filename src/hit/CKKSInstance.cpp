@@ -3,6 +3,7 @@
 
 #include "CKKSInstance.h"
 
+#include <glog/logging.h>
 #include <experimental/filesystem>
 #include <fstream>
 
@@ -117,6 +118,8 @@ namespace hit {
 
     void CKKSInstance::shared_param_init(int numSlots, int multDepth, int logScaleIn, bool useSEALParams,
                                          bool verbose) {
+        // TODO(ubuntu): remove the verbose variable.
+        VLOG(LOG_VERBOSE) << "Verbose is " << verbose;
         logScale = logScaleIn;
         if (!isPow2(numSlots) || numSlots < 4096) {
             stringstream buffer;
@@ -149,25 +152,19 @@ namespace hit {
         params->set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulusVector));
         timepoint start = chrono::steady_clock::now();
         if (useSEALParams) {
-            if (verbose) {
-                cout << "Creating encryption context..." << flush;
-            }
+            VLOG(LOG_VERBOSE) << "Creating encryption context...";
             context = SEALContext::Create(*params);
-            if (verbose) {
+            if (VLOG_IS_ON(LOG_VERBOSE)) {
                 printElapsedTime(start);
             }
             standardParams = true;
         } else {
-            securityWarningBox(
-                "YOU ARE NOT USING SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security. DO NOT USE "
-                "IN "
-                "PRODUCTION.");
+            LOG(WARNING) << "YOU ARE NOT USING SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security"
+                         << "DO NOT USE IN PRODUCTION";
             // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-            if (verbose) {
-                cout << "Creating encryption context..." << flush;
-            }
+            VLOG(LOG_VERBOSE) << "Creating encryption context...";
             context = SEALContext::Create(*params, true, sec_level_type::none);
-            if (verbose) {
+            if (VLOG_IS_ON(LOG_VERBOSE)) {
                 printElapsedTime(start);
             }
             standardParams = false;
@@ -231,33 +228,25 @@ namespace hit {
         standardParams = ckksParams.standardparams();
         timepoint start = chrono::steady_clock::now();
         if (standardParams) {
-            if (verbose) {
-                cout << "Creating encryption context..." << flush;
-            }
+            VLOG(LOG_VERBOSE) << "Creating encryption context...";
             context = SEALContext::Create(*params);
-            if (verbose) {
+            if (VLOG_IS_ON(LOG_VERBOSE)) {
                 printElapsedTime(start);
             }
         } else {
-            securityWarningBox(
-                "YOU ARE NOT USING SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security. DO NOT USE "
-                "IN "
-                "PRODUCTION.");
+            LOG(WARNING) << "YOU ARE NOT USING SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security."
+                         << " DO NOT USE IN PRODUCTION";
             // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-            if (verbose) {
-                cout << "Creating encryption context..." << flush;
-            }
+            VLOG(LOG_VERBOSE) << "Creating encryption context...";
             context = SEALContext::Create(*params, true, sec_level_type::none);
-            if (verbose) {
+            if (VLOG_IS_ON(LOG_VERBOSE)) {
                 printElapsedTime(start);
             }
         }
         encoder = new CKKSEncoder(context);
 
         start = chrono::steady_clock::now();
-        if (verbose) {
-            cout << "Reading keys..." << flush;
-        }
+        VLOG(LOG_VERBOSE) << "Reading keys...";
         istringstream pkstream(ckksParams.pubkey());
         pk.load(context, pkstream);
         sealEncryptor = new Encryptor(context, pk);
@@ -319,27 +308,27 @@ namespace hit {
         shared_param_init(numSlots, multDepth, logScale, useSEALParams, true);
 
         int numGaloisKeys = galois_steps.size();
-        cout << "Generating keys for " << numSlots << " slots and depth " << multDepth << ", including "
-             << (numGaloisKeys != 0 ? to_string(numGaloisKeys) : "all") << " Galois keys." << endl;
+        LOG(INFO) << "Generating keys for " << numSlots << " slots and depth " << multDepth << ", including "
+                  << (numGaloisKeys != 0 ? to_string(numGaloisKeys) : "all") << " Galois keys." << endl;
 
         double keysSizeBytes = estimate_key_size(galois_steps.size(), numSlots, multDepth);
-        cout << "Estimated size is " << setprecision(3);
+        LOG(INFO) << "Estimated size is " << setprecision(3);
         // using base-10 (SI) units, rather than base-2 units.
         double unitMultiplier = 1000;
         double bytesPerKB = unitMultiplier;
         double bytesPerMB = bytesPerKB * unitMultiplier;
         double bytesPerGB = bytesPerMB * unitMultiplier;
         if (keysSizeBytes < bytesPerKB) {
-            cout << keysSizeBytes << " bytes" << endl;
+            LOG(INFO) << keysSizeBytes << " bytes";
         } else if (keysSizeBytes < bytesPerMB) {
-            cout << keysSizeBytes / bytesPerKB << " kilobytes (base 10)" << endl;
+            LOG(INFO) << keysSizeBytes / bytesPerKB << " kilobytes (base 10)";
         } else if (keysSizeBytes < bytesPerGB) {
-            cout << keysSizeBytes / bytesPerMB << " megabytes (base 10)" << endl;
+            LOG(INFO) << keysSizeBytes / bytesPerMB << " megabytes (base 10)";
         } else {
-            cout << keysSizeBytes / bytesPerGB << " gigabytes (base 10)" << endl;
+            LOG(INFO) << keysSizeBytes / bytesPerGB << " gigabytes (base 10)";
         }
 
-        cout << "Generating keys..." << flush;
+        LOG(INFO) << "Generating keys...";
         timepoint start = chrono::steady_clock::now();
 
         // generate keys
@@ -371,9 +360,8 @@ namespace hit {
             mode = NORMAL;
         }
 
-        if (debug && verbose) {
+        if (debug && VLOG_IS_ON(LOG_VERBOSE)) {
             print_parameters(context);
-            cout << endl;
 
             // There are convenience method for accessing the SEALContext::ContextData for
             // some of the most important levels:
@@ -383,47 +371,40 @@ namespace hit {
             //     SEALContext::last_context_data(): access to lowest level ContextData
 
             // We iterate over the chain and print the parms_id for each set of parameters.
-            cout << "Print the modulus switching chain." << endl;
+            LOG(INFO) << "Print the modulus switching chain.";
 
             // First print the key level parameter information.
             auto context_data = context->key_context_data();
-            cout << "----> Level (chain index): " << context_data->chain_index();
-            cout << " ...... key_context_data()" << endl;
-            cout << "      parms_id: " << context_data->parms_id() << endl;
-            cout << "      coeff_modulus primes: ";
-            cout << hex;
+            LOG(INFO) << "----> Level (chain index): " << context_data->chain_index() << " ...... key_context_data()";
+            LOG(INFO) << "      parms_id: " << context_data->parms_id();
+            stringstream key_level_primes;
             for (const auto &prime : context_data->parms().coeff_modulus()) {
-                cout << prime.value() << " ";
+                key_level_primes << prime.value() << " ";
             }
-            cout << dec << endl;
-            cout << "\\" << endl;
-            cout << " \\-->";
+            LOG(INFO) << "      coeff_modulus primes: " << hex << key_level_primes.str() << dec;
+            LOG(INFO) << "\\";
 
             // Next iterate over the remaining (data) levels.
             context_data = context->first_context_data();
             while (context_data) {
-                cout << " Level (chain index): " << context_data->chain_index();
+                LOG(INFO) << " \\--> Level (chain index): " << context_data->chain_index();
                 if (context_data->parms_id() == context->first_parms_id()) {
-                    cout << " ...... first_context_data()" << endl;
+                    LOG(INFO) << " ...... first_context_data()";
                 } else if (context_data->parms_id() == context->last_parms_id()) {
-                    cout << " ...... last_context_data()" << endl;
-                } else {
-                    cout << endl;
+                    LOG(INFO) << " ...... last_context_data()";
                 }
-                cout << "      parms_id: " << context_data->parms_id() << endl;
-                cout << "      coeff_modulus primes: ";
-                cout << hex;
+                LOG(INFO) << "      parms_id: " << context_data->parms_id() << endl;
+                stringstream data_level_primes;
                 for (const auto &prime : context_data->parms().coeff_modulus()) {
-                    cout << prime.value() << " ";
+                    data_level_primes << prime.value() << " ";
                 }
-                cout << dec << endl;
-                cout << "\\" << endl;
-                cout << " \\-->";
+                LOG(INFO) << "      coeff_modulus primes: " << hex << data_level_primes.str() << dec;
+                LOG(INFO) << "\\";
 
                 // Step forward in the chain.
                 context_data = context_data->next_context_data();
             }
-            cout << " End of chain reached" << endl << endl;
+            LOG(INFO) << " End of chain reached" << endl;
         }
     }
 
@@ -566,7 +547,7 @@ namespace hit {
     void CKKSInstance::print_op_count() const {
         if (mode == OPCOUNT) {
             auto *e = dynamic_cast<OpCount *>(evaluator);
-            cout << endl << "Encryptions: " << encryptionCount;
+            LOG(INFO) << endl << "Encryptions: " << encryptionCount;
             e->print_op_count();
             return;
         }
@@ -630,7 +611,7 @@ namespace hit {
                 c = CKKSInstance::get_new_homomorphic_instance(numSlots, multDepth, logScale, false, false,
                                                                galois_steps);
             }
-            cout << "Saving keys to disk..." << flush;
+            LOG(INFO) << "Saving keys to disk...";
             timepoint start = chrono::steady_clock::now();
             c->save(&paramsFile, &galoisFile, &relinFile, &privkeyFile);
             printElapsedTime(start);

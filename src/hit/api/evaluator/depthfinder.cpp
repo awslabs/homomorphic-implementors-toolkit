@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "depthfinder.h"
+#include "../../common.h"
+
+#include <glog/logging.h>
 
 using namespace std;
 using namespace seal;
@@ -19,21 +22,21 @@ namespace hit {
     }
 
     // print some debug info
-    void DepthFinder::print_stats( // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
+    void DepthFinder::print_stats(         // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
         const CKKSCiphertext &ct) const {  // NOLINT(readability-convert-member-functions-to-static)
-        cout << "    + Level: " << ct.he_level << endl;
+        VLOG(LOG_VERBOSE) << "    + Level: " << ct.he_level;
     }
 
     void DepthFinder::rotate_right_inplace_internal(CKKSCiphertext &ct, int) {
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void DepthFinder::rotate_left_inplace_internal(CKKSCiphertext &ct, int) {
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void DepthFinder::negate_inplace_internal(CKKSCiphertext &ct) {
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void DepthFinder::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
@@ -44,15 +47,15 @@ namespace hit {
                    << " != " << ct2.he_level;
             throw invalid_argument(buffer.str());
         }
-        VERBOSE(print_stats(ct1));
+        print_stats(ct1);
     }
 
     void DepthFinder::add_plain_inplace_internal(CKKSCiphertext &ct, double) {
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void DepthFinder::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &) {
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void DepthFinder::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
@@ -63,15 +66,15 @@ namespace hit {
                    << " != " << ct2.he_level;
             throw invalid_argument(buffer.str());
         }
-        VERBOSE(print_stats(ct1));
+        print_stats(ct1);
     }
 
     void DepthFinder::sub_plain_inplace_internal(CKKSCiphertext &ct, double) {
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void DepthFinder::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &) {
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void DepthFinder::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
@@ -82,19 +85,19 @@ namespace hit {
                    << " != " << ct2.he_level;
             throw invalid_argument(buffer.str());
         }
-        VERBOSE(print_stats(ct1));
+        print_stats(ct1);
     }
 
     void DepthFinder::multiply_plain_inplace_internal(CKKSCiphertext &ct, double) {
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void DepthFinder::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &) {
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void DepthFinder::square_inplace_internal(CKKSCiphertext &ct) {
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void DepthFinder::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
@@ -103,7 +106,7 @@ namespace hit {
         } else {
             throw invalid_argument("ct level is below target level");
         }
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void DepthFinder::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
@@ -112,7 +115,7 @@ namespace hit {
         ct2.he_level = minLevel;
         // doesn't matter which input I print stats for since we only
         // print the level, and both have the same level at this point.
-        VERBOSE(print_stats(ct1));
+        print_stats(ct1);
     }
 
     void DepthFinder::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
@@ -121,7 +124,7 @@ namespace hit {
         } else {
             throw invalid_argument("x level is below target level");
         }
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void DepthFinder::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
@@ -140,7 +143,7 @@ namespace hit {
          *     we use the outer `max` to account for explicitly-leveled ciphertexts.
          */
         multiplicativeDepth = max(max(multiplicativeDepth, topHELevel - ct.he_level), ct.he_level + 1);
-        VERBOSE(print_stats(ct));
+        print_stats(ct);
     }
 
     void DepthFinder::relinearize_inplace_internal(CKKSCiphertext &) {

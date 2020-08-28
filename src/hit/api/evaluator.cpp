@@ -7,6 +7,7 @@
 
 #include "evaluator.h"
 
+#include <glog/logging.h>
 #include <utility>
 
 #include "../common.h"
@@ -46,7 +47,7 @@ namespace hit {
         if (steps < 0) {
             throw invalid_argument("ERROR: rotate_right must have a positive number of steps.");
         }
-        VERBOSE(cout << "Rotate " << abs(steps) << " steps right." << endl);
+        VLOG(LOG_VERBOSE) << "Rotate " << abs(steps) << " steps right.";
         rotate_right_inplace_internal(ct, steps);
     }
 
@@ -60,7 +61,7 @@ namespace hit {
         if (steps < 0) {
             throw invalid_argument("ERROR: rotate_left must have a positive number of steps.");
         }
-        VERBOSE(cout << "Rotate " << abs(steps) << " steps left." << endl);
+        VLOG(LOG_VERBOSE) << "Rotate " << abs(steps) << " steps left.";
         rotate_left_inplace_internal(ct, steps);
     }
 
@@ -71,7 +72,7 @@ namespace hit {
     }
 
     void CKKSEvaluator::negate_inplace(CKKSCiphertext &ct) {
-        VERBOSE(cout << "Negate" << endl);
+        VLOG(LOG_VERBOSE) << "Negate";
         negate_inplace_internal(ct);
     }
 
@@ -86,7 +87,7 @@ namespace hit {
             return add(ct2, ct1);
         }
 
-        VERBOSE(cout << "Add ciphertexts" << endl);
+        VLOG(LOG_VERBOSE) << "Add ciphertexts";
 
         CKKSCiphertext temp = ct1;
         add_inplace_internal(temp, ct2);
@@ -114,10 +115,10 @@ namespace hit {
         // Then we can compute A*b=A_1*b_1+A_2*b_2, and similarly for ROW_MATs.
         else if (ct1.encoding == ct2.encoding && is_valid_args(ct1, ct2)) {
         } else {
-            cout << "Arg 1: Encoding(" << ct1.encoding << "), Dimensions: " << ct1.height << "x" << ct1.width
-                 << ", Embedded dimensions: " << ct1.encoded_height << "x" << ct1.encoded_width << endl;
-            cout << "Arg 2: Encoding(" << ct2.encoding << "), Dimensions: " << ct2.height << "x" << ct2.width
-                 << ", Embedded dimensions: " << ct2.encoded_height << "x" << ct2.encoded_width << endl;
+            LOG(INFO) << "Arg 1: Encoding(" << ct1.encoding << "), Dimensions: " << ct1.height << "x" << ct1.width
+                      << ", Embedded dimensions: " << ct1.encoded_height << "x" << ct1.encoded_width;
+            LOG(INFO) << "Arg 2: Encoding(" << ct2.encoding << "), Dimensions: " << ct2.height << "x" << ct2.width
+                      << ", Embedded dimensions: " << ct2.encoded_height << "x" << ct2.encoded_width;
             throw invalid_argument("PPLR ERROR: cannot add arguments.");
         }
 
@@ -135,7 +136,7 @@ namespace hit {
     }
 
     void CKKSEvaluator::add_plain_inplace(CKKSCiphertext &ct, double scalar) {
-        VERBOSE(cout << "Add scalar " << scalar << " to ciphertext" << endl);
+        VLOG(LOG_VERBOSE) << "Add scalar " << scalar << " to ciphertext";
         add_plain_inplace_internal(ct, scalar);
     }
 
@@ -146,7 +147,7 @@ namespace hit {
     }
 
     void CKKSEvaluator::add_plain_inplace(CKKSCiphertext &ct, const vector<double> &plain) {
-        VERBOSE(cout << "Add plaintext to ciphertext" << endl);
+        VLOG(LOG_VERBOSE) << "Add plaintext to ciphertext";
         return add_plain_inplace_internal(ct, plain);
     }
 
@@ -173,7 +174,7 @@ namespace hit {
             return sub(ct2, ct1);
         }
 
-        VERBOSE(cout << "Subtract ciphertexts" << endl);
+        VLOG(LOG_VERBOSE) << "Subtract ciphertexts";
 
         CKKSCiphertext temp = ct1;
         sub_inplace_internal(temp, ct2);
@@ -201,10 +202,10 @@ namespace hit {
         // Then we can compute A*b=A_1*b_1+A_2*b_2, and similarly for ROW_MATs.
         else if (ct1.encoding == ct2.encoding && is_valid_args(ct1, ct2)) {
         } else {
-            cout << "Arg 1: Encoding(" << ct1.encoding << "), Dimensions: " << ct1.height << "x" << ct1.width
-                 << ", Embedded dimensions: " << ct1.encoded_height << "x" << ct1.encoded_width << endl;
-            cout << "Arg 2: Encoding(" << ct2.encoding << "), Dimensions: " << ct2.height << "x" << ct2.width
-                 << ", Embedded dimensions: " << ct2.encoded_height << "x" << ct2.encoded_width << endl;
+            LOG(INFO) << "Arg 1: Encoding(" << ct1.encoding << "), Dimensions: " << ct1.height << "x" << ct1.width
+                      << ", Embedded dimensions: " << ct1.encoded_height << "x" << ct1.encoded_width;
+            LOG(INFO) << "Arg 2: Encoding(" << ct2.encoding << "), Dimensions: " << ct2.height << "x" << ct2.width
+                      << ", Embedded dimensions: " << ct2.encoded_height << "x" << ct2.encoded_width;
             throw invalid_argument("PPLR ERROR: cannot subtract arguments.");
         }
 
@@ -222,7 +223,7 @@ namespace hit {
     }
 
     void CKKSEvaluator::sub_plain_inplace(CKKSCiphertext &ct, double scalar) {
-        VERBOSE(cout << "Subtract scalar " << scalar << " from ciphertext" << endl);
+        VLOG(LOG_VERBOSE) << "Subtract scalar " << scalar << " from ciphertext";
         sub_plain_inplace_internal(ct, scalar);
     }
 
@@ -233,7 +234,7 @@ namespace hit {
     }
 
     void CKKSEvaluator::sub_plain_inplace(CKKSCiphertext &ct, const vector<double> &plain) {
-        VERBOSE(cout << "Subtract plaintext from ciphertext" << endl);
+        VLOG(LOG_VERBOSE) << "Subtract plaintext from ciphertext";
         sub_plain_inplace_internal(ct, plain);
     }
 
@@ -248,7 +249,7 @@ namespace hit {
             return multiply(ct2, ct1);
         }
 
-        VERBOSE(cout << "Multiply ciphertexts" << endl);
+        VLOG(LOG_VERBOSE) << "Multiply ciphertexts";
 
         CKKSCiphertext temp = ct1;
         multiply_inplace_internal(temp, ct2);
@@ -277,10 +278,10 @@ namespace hit {
         else if (ct1.encoding == COL_VEC && ct2.encoding == COL_VEC && is_valid_args(ct1, ct2)) {
         } else if (ct1.encoding == ROW_VEC && ct2.encoding == ROW_VEC && is_valid_args(ct1, ct2)) {
         } else {
-            cout << "Arg 1: Encoding(" << ct1.encoding << "), Dimensions: " << ct1.height << "x" << ct1.width
-                 << ", Embedded dimensions: " << ct1.encoded_height << "x" << ct1.encoded_width << endl;
-            cout << "Arg 2: Encoding(" << ct2.encoding << "), Dimensions: " << ct2.height << "x" << ct2.width
-                 << ", Embedded dimensions: " << ct2.encoded_height << "x" << ct2.encoded_width << endl;
+            LOG(INFO) << "Arg 1: Encoding(" << ct1.encoding << "), Dimensions: " << ct1.height << "x" << ct1.width
+                      << ", Embedded dimensions: " << ct1.encoded_height << "x" << ct1.encoded_width;
+            LOG(INFO) << "Arg 2: Encoding(" << ct2.encoding << "), Dimensions: " << ct2.height << "x" << ct2.width
+                      << ", Embedded dimensions: " << ct2.encoded_height << "x" << ct2.encoded_width;
             throw invalid_argument("PPLR ERROR: cannot multiply arguments.");
         }
 
@@ -298,7 +299,7 @@ namespace hit {
     }
 
     void CKKSEvaluator::multiply_plain_inplace(CKKSCiphertext &ct, double scalar) {
-        VERBOSE(cout << "Multiply ciphertext by scalar " << scalar << endl);
+        VLOG(LOG_VERBOSE) << "Multiply ciphertext by scalar " << scalar;
         multiply_plain_inplace_internal(ct, scalar);
     }
 
@@ -309,7 +310,7 @@ namespace hit {
     }
 
     void CKKSEvaluator::multiply_plain_inplace(CKKSCiphertext &ct, const vector<double> &plain) {
-        VERBOSE(cout << "Multiply by plaintext" << endl);
+        VLOG(LOG_VERBOSE) << "Multiply by plaintext";
         if (ct.encoded_width * ct.encoded_height != plain.size()) {
             throw invalid_argument("CKKSEvaluator::multiply_plain: encoded size does not match plaintext input");
         }
@@ -323,7 +324,7 @@ namespace hit {
     }
 
     void CKKSEvaluator::square_inplace(CKKSCiphertext &ct) {
-        VERBOSE(cout << "Square ciphertext" << endl);
+        VLOG(LOG_VERBOSE) << "Square ciphertext";
         square_inplace_internal(ct);
     }
 
@@ -334,12 +335,12 @@ namespace hit {
     }
 
     void CKKSEvaluator::mod_down_to_inplace(CKKSCiphertext &ct, const CKKSCiphertext &target) {
-        VERBOSE(cout << "Decreasing HE level to match target" << endl);
+        VLOG(LOG_VERBOSE) << "Decreasing HE level to match target";
         mod_down_to_inplace_internal(ct, target);
     }
 
     void CKKSEvaluator::mod_down_to_min_inplace(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
-        VERBOSE(cout << "Equalizing HE levels" << endl);
+        VLOG(LOG_VERBOSE) << "Equalizing HE levels";
         mod_down_to_min_inplace_internal(ct1, ct2);
     }
 
@@ -350,7 +351,7 @@ namespace hit {
     }
 
     void CKKSEvaluator::mod_down_to_level_inplace(CKKSCiphertext &ct, int level) {
-        VERBOSE(cout << "Decreasing HE level to " << level << endl);
+        VLOG(LOG_VERBOSE) << "Decreasing HE level to " << level;
         mod_down_to_level_inplace_internal(ct, level);
     }
 
@@ -361,12 +362,12 @@ namespace hit {
     }
 
     void CKKSEvaluator::rescale_to_next_inplace(CKKSCiphertext &ct) {
-        VERBOSE(cout << "Rescaling ciphertext" << endl);
+        VLOG(LOG_VERBOSE) << "Rescaling ciphertext";
         rescale_to_next_inplace_internal(ct);
     }
 
     void CKKSEvaluator::relinearize_inplace(CKKSCiphertext &ct) {
-        VERBOSE(cout << "Relinearizing ciphertext" << endl);
+        VLOG(LOG_VERBOSE) << "Relinearizing ciphertext";
         relinearize_inplace_internal(ct);
     }
 

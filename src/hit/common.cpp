@@ -3,6 +3,7 @@
 
 #include "common.h"
 
+#include <glog/logging.h>
 #include <iomanip>  // setprecision
 
 using namespace std;
@@ -52,7 +53,7 @@ namespace hit {
 
     void printElapsedTime(timepoint start) {
         timepoint end = chrono::steady_clock::now();
-        cout << elapsedTimeToStr(start, end) << endl;
+        LOG(INFO) << elapsedTimeToStr(start, end);
     }
 
     vector<double> decodePlaintext(const vector<double> &encoded_pt, CTEncoding encoding, int height, int width,
@@ -120,10 +121,10 @@ namespace hit {
         }
 
         if (expectedL2Norm <= maxAllowedL2Norm) {
-            cout << "WEIRD NORM SITUATION: " << expectedL2Norm << "\t" << actualL2Norm << endl;
+            LOG(INFO) << "WEIRD NORM SITUATION: " << expectedL2Norm << "\t" << actualL2Norm;
         }
         if (diffL2Norm > MAX_NORM) {
-            cout << "LogL2Norm: " << setprecision(8) << log2(expectedL2Norm) << endl;
+            LOG(INFO) << "LogL2Norm: " << setprecision(8) << log2(expectedL2Norm);
         }
         return diffL2Norm;
     }
