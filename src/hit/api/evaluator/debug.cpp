@@ -53,7 +53,7 @@ namespace hit {
         double norm = 0;
 
         // decrypt to compute the approximate plaintext
-        vector<double> homomPlaintext = decryptor.decrypt(ct, false);
+        vector<double> homomPlaintext = decryptor.decrypt(ct);
         vector<double> exactPlaintext = ct.getPlaintext();
 
         norm = diff2Norm(exactPlaintext, homomPlaintext);

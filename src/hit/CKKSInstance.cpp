@@ -91,7 +91,7 @@ namespace hit {
 
     CKKSInstance::CKKSInstance(Mode m, int numSlots, int multDepth, int logScale, bool useSEALParams)
         : sealEncryptor(nullptr), decryptor(nullptr), mode(m) {
-        shared_param_init(numSlots, multDepth, logScale, useSEALParams, false);
+        shared_param_init(numSlots, multDepth, logScale, useSEALParams);
 
         switch (mode) {
             case DEPTH:
@@ -301,7 +301,7 @@ namespace hit {
 
     CKKSInstance::CKKSInstance(int numSlots, int multDepth, int logScale, bool useSEALParams, bool debug,
                                const vector<int> &galois_steps) {
-        shared_param_init(numSlots, multDepth, logScale, useSEALParams, true);
+        shared_param_init(numSlots, multDepth, logScale, useSEALParams);
 
         int numGaloisKeys = galois_steps.size();
         LOG(INFO) << "Generating keys for " << numSlots << " slots and depth " << multDepth << ", including "
@@ -602,10 +602,9 @@ namespace hit {
             ofstream relinFile(relinFilePath, ios::out | ios::binary);
             ofstream privkeyFile(privkeyFilePath, ios::out | ios::binary);
             if (mode == DEBUG) {
-                c = CKKSInstance::get_new_debug_instance(numSlots, multDepth, logScale, false, false, galois_steps);
+                c = CKKSInstance::get_new_debug_instance(numSlots, multDepth, logScale, false, galois_steps);
             } else {  // NORMAL *or* NON-EVALUATION
-                c = CKKSInstance::get_new_homomorphic_instance(numSlots, multDepth, logScale, false, false,
-                                                               galois_steps);
+                c = CKKSInstance::get_new_homomorphic_instance(numSlots, multDepth, logScale, false, galois_steps);
             }
             LOG(INFO) << "Saving keys to disk...";
             timepoint start = chrono::steady_clock::now();

@@ -15,7 +15,7 @@ namespace hit {
      */
     class DepthFinder : public CKKSEvaluator {
        public:
-        DepthFinder(const std::shared_ptr<seal::SEALContext> &context, bool verbose);
+        explicit DepthFinder(const std::shared_ptr<seal::SEALContext> &context);
 
         /* For documentation on the API, see ../evaluator.h */
         ~DepthFinder() override;
