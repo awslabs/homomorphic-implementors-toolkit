@@ -3,8 +3,8 @@
 
 #include "opcount.h"
 
-#include <iomanip>
 #include <glog/logging.h>
+#include <iomanip>
 
 using namespace std;
 using namespace seal;

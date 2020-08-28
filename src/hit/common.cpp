@@ -3,8 +3,8 @@
 
 #include "common.h"
 
-#include <iomanip>  // setprecision
 #include <glog/logging.h>
+#include <iomanip>  // setprecision
 
 using namespace std;
 

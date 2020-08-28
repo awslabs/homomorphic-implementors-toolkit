@@ -1,9 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <glog/logging.h>
 #include <iomanip>
 #include <iostream>
-#include <glog/logging.h>
 
 #include "seal/seal.h"
 

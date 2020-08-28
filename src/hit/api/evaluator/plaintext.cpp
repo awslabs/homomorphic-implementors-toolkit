@@ -3,8 +3,8 @@
 
 #include "plaintext.h"
 
-#include <iomanip>
 #include <glog/logging.h>
+#include <iomanip>
 
 #include "../../common.h"
 
@@ -27,7 +27,7 @@ namespace hit {
     }
 
     // print some debug info
-    void PlaintextEval::print_stats( // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
+    void PlaintextEval::print_stats(       // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
         const CKKSCiphertext &ct) const {  // NOLINT(readability-convert-member-functions-to-static)
         if (!VLOG_IS_ON(LOG_VERBOSE)) {
             return;
@@ -38,7 +38,7 @@ namespace hit {
         VLOG(LOG_VERBOSE) << "    + Plaintext dimension: " << ct.height << "x" << ct.width;
         VLOG(LOG_VERBOSE) << "    + Scale: " << setprecision(4) << log2(ct.scale) << " bits";
         VLOG(LOG_VERBOSE) << "    + Exact plaintext logmax: " << log2(exactPlaintextMaxVal)
-            << " bits (scaled: " << log2(ct.scale) + log2(exactPlaintextMaxVal) << " bits)";
+                          << " bits (scaled: " << log2(ct.scale) + log2(exactPlaintextMaxVal) << " bits)";
 
         int maxPrintSize = 8;
         stringstream exact_plaintext_info;

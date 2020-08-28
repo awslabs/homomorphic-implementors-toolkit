@@ -3,8 +3,8 @@
 
 #include "debug.h"
 
-#include <iomanip>
 #include <glog/logging.h>
+#include <iomanip>
 
 #include "../../common.h"
 #include "../evaluator.h"
@@ -296,7 +296,8 @@ namespace hit {
         // To get decimal places, add `<< fixed << setprecision(2)` before printing the log.
         // Note that you'll need a lot of decimal places because these values are very close
         // to an integer.
-        VLOG(LOG_VERBOSE) << "    + Scaled plaintext down by the ~" << prime_bit_len << "-bit prime " << hex << p << dec;
+        VLOG(LOG_VERBOSE) << "    + Scaled plaintext down by the ~" << prime_bit_len << "-bit prime " << hex << p
+                          << dec;
 
         print_stats(ct);
         check_scale(ct);

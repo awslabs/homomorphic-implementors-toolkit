@@ -3,9 +3,9 @@
 
 #include "CKKSInstance.h"
 
+#include <glog/logging.h>
 #include <experimental/filesystem>
 #include <fstream>
-#include <glog/logging.h>
 
 #include "api/evaluator/debug.h"
 #include "api/evaluator/depthfinder.h"
@@ -160,7 +160,7 @@ namespace hit {
             standardParams = true;
         } else {
             LOG(WARNING) << "YOU ARE NOT USING SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security"
-                << "DO NOT USE IN PRODUCTION";
+                         << "DO NOT USE IN PRODUCTION";
             // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
             VLOG(LOG_VERBOSE) << "Creating encryption context...";
             context = SEALContext::Create(*params, true, sec_level_type::none);
@@ -235,7 +235,7 @@ namespace hit {
             }
         } else {
             LOG(WARNING) << "YOU ARE NOT USING SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security."
-                << " DO NOT USE IN PRODUCTION";
+                         << " DO NOT USE IN PRODUCTION";
             // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
             VLOG(LOG_VERBOSE) << "Creating encryption context...";
             context = SEALContext::Create(*params, true, sec_level_type::none);
@@ -309,7 +309,7 @@ namespace hit {
 
         int numGaloisKeys = galois_steps.size();
         LOG(INFO) << "Generating keys for " << numSlots << " slots and depth " << multDepth << ", including "
-             << (numGaloisKeys != 0 ? to_string(numGaloisKeys) : "all") << " Galois keys." << endl;
+                  << (numGaloisKeys != 0 ? to_string(numGaloisKeys) : "all") << " Galois keys." << endl;
 
         double keysSizeBytes = estimate_key_size(galois_steps.size(), numSlots, multDepth);
         LOG(INFO) << "Estimated size is " << setprecision(3);

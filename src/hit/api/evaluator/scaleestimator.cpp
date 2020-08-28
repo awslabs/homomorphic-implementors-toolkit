@@ -3,8 +3,8 @@
 
 #include "scaleestimator.h"
 
-#include <iomanip>
 #include <glog/logging.h>
+#include <iomanip>
 
 #include "../../common.h"
 #include "../../sealutils.h"
@@ -54,7 +54,7 @@ namespace hit {
             logModulus += log2(prime.value());
         }
         VLOG(LOG_VERBOSE) << "    + Plaintext logmax: " << log2(exactPlaintextMaxVal)
-            << " bits (scaled: " << log2(ct.scale) + log2(exactPlaintextMaxVal) << " bits)";
+                          << " bits (scaled: " << log2(ct.scale) + log2(exactPlaintextMaxVal) << " bits)";
         VLOG(LOG_VERBOSE) << "    + Total modulus size: " << setprecision(4) << logModulus << " bits";
         VLOG(LOG_VERBOSE) << "    + Theoretical max log scale: " << get_estimated_max_log_scale() << " bits";
     }

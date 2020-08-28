@@ -30,7 +30,7 @@ namespace hit {
             // TODO(ubuntu): delete the verbose related log when verbose is removed from HIT.
             LOG(INFO) << "Verbose " << verbose;
             LOG(WARNING) << "Decrypting a ciphertext that is not at level 0! Consider starting with a smaller modulus"
-                << " to improve performance!";
+                         << " to improve performance!";
         }
 
         decryptor->decrypt(encrypted.seal_ct, temp);

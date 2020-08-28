@@ -7,8 +7,8 @@
 
 #include "evaluator.h"
 
-#include <utility>
 #include <glog/logging.h>
+#include <utility>
 
 #include "../common.h"
 
@@ -116,9 +116,9 @@ namespace hit {
         else if (ct1.encoding == ct2.encoding && is_valid_args(ct1, ct2)) {
         } else {
             LOG(INFO) << "Arg 1: Encoding(" << ct1.encoding << "), Dimensions: " << ct1.height << "x" << ct1.width
-                 << ", Embedded dimensions: " << ct1.encoded_height << "x" << ct1.encoded_width;
+                      << ", Embedded dimensions: " << ct1.encoded_height << "x" << ct1.encoded_width;
             LOG(INFO) << "Arg 2: Encoding(" << ct2.encoding << "), Dimensions: " << ct2.height << "x" << ct2.width
-                 << ", Embedded dimensions: " << ct2.encoded_height << "x" << ct2.encoded_width;
+                      << ", Embedded dimensions: " << ct2.encoded_height << "x" << ct2.encoded_width;
             throw invalid_argument("PPLR ERROR: cannot add arguments.");
         }
 
@@ -203,9 +203,9 @@ namespace hit {
         else if (ct1.encoding == ct2.encoding && is_valid_args(ct1, ct2)) {
         } else {
             LOG(INFO) << "Arg 1: Encoding(" << ct1.encoding << "), Dimensions: " << ct1.height << "x" << ct1.width
-                 << ", Embedded dimensions: " << ct1.encoded_height << "x" << ct1.encoded_width;
+                      << ", Embedded dimensions: " << ct1.encoded_height << "x" << ct1.encoded_width;
             LOG(INFO) << "Arg 2: Encoding(" << ct2.encoding << "), Dimensions: " << ct2.height << "x" << ct2.width
-                 << ", Embedded dimensions: " << ct2.encoded_height << "x" << ct2.encoded_width;
+                      << ", Embedded dimensions: " << ct2.encoded_height << "x" << ct2.encoded_width;
             throw invalid_argument("PPLR ERROR: cannot subtract arguments.");
         }
 
@@ -279,9 +279,9 @@ namespace hit {
         } else if (ct1.encoding == ROW_VEC && ct2.encoding == ROW_VEC && is_valid_args(ct1, ct2)) {
         } else {
             LOG(INFO) << "Arg 1: Encoding(" << ct1.encoding << "), Dimensions: " << ct1.height << "x" << ct1.width
-                 << ", Embedded dimensions: " << ct1.encoded_height << "x" << ct1.encoded_width;
+                      << ", Embedded dimensions: " << ct1.encoded_height << "x" << ct1.encoded_width;
             LOG(INFO) << "Arg 2: Encoding(" << ct2.encoding << "), Dimensions: " << ct2.height << "x" << ct2.width
-                 << ", Embedded dimensions: " << ct2.encoded_height << "x" << ct2.encoded_width;
+                      << ", Embedded dimensions: " << ct2.encoded_height << "x" << ct2.encoded_width;
             throw invalid_argument("PPLR ERROR: cannot multiply arguments.");
         }
 
