@@ -18,7 +18,7 @@ namespace hit {
      */
     class ScaleEstimator : public CKKSEvaluator {
        public:
-        ScaleEstimator(const std::shared_ptr<seal::SEALContext> &context, int poly_deg, double baseScale, bool verbose);
+        ScaleEstimator(const std::shared_ptr<seal::SEALContext> &context, int poly_deg, double baseScale);
 
         /* For documentation on the API, see ../evaluator.h */
         ~ScaleEstimator() override;

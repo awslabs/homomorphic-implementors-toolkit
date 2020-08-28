@@ -13,7 +13,7 @@ namespace hit {
     /* This evaluator tracks the plaintext computation */
     class PlaintextEval : public CKKSEvaluator {
        public:
-        PlaintextEval(const std::shared_ptr<seal::SEALContext> &context, bool verbose);
+        PlaintextEval(const std::shared_ptr<seal::SEALContext> &context);
 
         /* For documentation on the API, see ../evaluator.h */
         ~PlaintextEval() override;

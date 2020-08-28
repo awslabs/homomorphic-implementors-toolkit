@@ -14,10 +14,10 @@ using namespace seal;
 
 namespace hit {
 
-    ScaleEstimator::ScaleEstimator(const shared_ptr<SEALContext> &context, int poly_deg, double baseScale, bool verbose)
-        : CKKSEvaluator(context, verbose), baseScale(baseScale), poly_deg(poly_deg) {
-        ptEval = new PlaintextEval(context, verbose);
-        dfEval = new DepthFinder(context, verbose);
+    ScaleEstimator::ScaleEstimator(const shared_ptr<SEALContext> &context, int poly_deg, double baseScale)
+        : CKKSEvaluator(context), baseScale(baseScale), poly_deg(poly_deg) {
+        ptEval = new PlaintextEval(context);
+        dfEval = new DepthFinder(context);
 
         // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         estimatedMaxLogScale = PLAINTEXT_LOG_MAX - 60;

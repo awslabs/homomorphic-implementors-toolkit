@@ -30,9 +30,8 @@ namespace hit {
         CKKSDecryptor(CKKSDecryptor &&) = delete;
         CKKSDecryptor &operator=(CKKSDecryptor &&) = delete;
 
-        // verbose should generally be true, but it's annoying when using a debug evaluator which
-        // decrypts intermediate computations on purpose
-        std::vector<double> decrypt(const CKKSCiphertext &encrypted, bool verbose = true);
+
+        std::vector<double> decrypt(const CKKSCiphertext &encrypted);
 
        private:
         seal::CKKSEncoder *encoder;

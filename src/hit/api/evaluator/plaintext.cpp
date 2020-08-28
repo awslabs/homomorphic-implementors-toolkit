@@ -16,8 +16,8 @@ namespace hit {
     // This is an approximation of -infity, since infNorm(x) >= 0 = 2^-infinity
     double initialPtMaxLog = -100;
 
-    PlaintextEval::PlaintextEval(const shared_ptr<SEALContext> &context, bool verbose)
-        : CKKSEvaluator(context, verbose), ptMaxLog(initialPtMaxLog) {
+    PlaintextEval::PlaintextEval(const shared_ptr<SEALContext> &context)
+        : CKKSEvaluator(context), ptMaxLog(initialPtMaxLog) {
     }
 
     PlaintextEval::~PlaintextEval() = default;
