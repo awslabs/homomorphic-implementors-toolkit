@@ -53,7 +53,7 @@ namespace hit {
     }
     CKKSInstance *CKKSInstance::get_new_debug_instance(int numSlots, int multDepth, int logScale,
                                                        bool useSEALParams, const vector<int> &galois_steps) {
-        securityWarningBox("CREATING AN INSECURE DEBUG EVALUATOR. DO NOT USE IN PRODUCTION.");
+        LOG(WARNING) <<"CREATING AN INSECURE DEBUG EVALUATOR. DO NOT USE IN PRODUCTION.";
         return new CKKSInstance(numSlots, multDepth, logScale, useSEALParams, true, galois_steps);
     }
     CKKSInstance *CKKSInstance::load_debug_instance(istream &paramsStream, istream &galoisKeyStream,
