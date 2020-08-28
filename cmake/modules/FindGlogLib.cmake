@@ -3,7 +3,7 @@
 
 # https://github.com/google/glog/blob/master/cmake/INSTALL.md
 message(STATUS "Searching glog lib.")
-find_package(glog 0.3.5)
+find_package(glog 0.3.5 QUIET)
 if (glog_FOUND)
     message(STATUS "Glog is found. Skip downloading source code.")
 else ()

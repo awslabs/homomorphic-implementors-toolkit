@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 message(STATUS "Searching Protobuf.")
-find_package(Protobuf "3.0.0")
+find_package(Protobuf "3.0.0" QUIET)
 if (Protobuf_FOUND)
     message(STATUS "Protobuf is found. Skip downloading source code.")
 else ()
