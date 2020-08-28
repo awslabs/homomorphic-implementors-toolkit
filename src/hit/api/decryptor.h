@@ -30,7 +30,6 @@ namespace hit {
         CKKSDecryptor(CKKSDecryptor &&) = delete;
         CKKSDecryptor &operator=(CKKSDecryptor &&) = delete;
 
-
         std::vector<double> decrypt(const CKKSCiphertext &encrypted);
 
        private:

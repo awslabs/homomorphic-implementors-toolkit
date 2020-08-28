@@ -17,8 +17,7 @@ using namespace seal;
 
 namespace hit {
 
-    CKKSEvaluator::CKKSEvaluator(shared_ptr<SEALContext> context)
-        : context(move(context)) {
+    CKKSEvaluator::CKKSEvaluator(shared_ptr<SEALContext> context) : context(move(context)) {
     }
 
     CKKSEvaluator::~CKKSEvaluator() = default;

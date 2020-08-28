@@ -39,8 +39,7 @@ namespace hit {
     CKKSInstance *CKKSInstance::get_new_plaintext_instance(int numSlots, bool useSEALParams) {
         return new CKKSInstance(PLAINTEXT, numSlots, 0, defaultScaleBits, useSEALParams);
     }
-    CKKSInstance *CKKSInstance::get_new_scaleestimator_instance(int numSlots, int multDepth,
-                                                                bool useSEALParams) {
+    CKKSInstance *CKKSInstance::get_new_scaleestimator_instance(int numSlots, int multDepth, bool useSEALParams) {
         return new CKKSInstance(SCALE, numSlots, multDepth, defaultScaleBits, useSEALParams);
     }
     CKKSInstance *CKKSInstance::get_new_homomorphic_instance(int numSlots, int multDepth, int logScale,
@@ -51,9 +50,9 @@ namespace hit {
                                                           istream &relinKeyStream, istream &secretKeyStream) {
         return new CKKSInstance(paramsStream, &galoisKeyStream, &relinKeyStream, &secretKeyStream, NORMAL);
     }
-    CKKSInstance *CKKSInstance::get_new_debug_instance(int numSlots, int multDepth, int logScale,
-                                                       bool useSEALParams, const vector<int> &galois_steps) {
-        LOG(WARNING) <<"CREATING AN INSECURE DEBUG EVALUATOR. DO NOT USE IN PRODUCTION.";
+    CKKSInstance *CKKSInstance::get_new_debug_instance(int numSlots, int multDepth, int logScale, bool useSEALParams,
+                                                       const vector<int> &galois_steps) {
+        LOG(WARNING) << "CREATING AN INSECURE DEBUG EVALUATOR. DO NOT USE IN PRODUCTION.";
         return new CKKSInstance(numSlots, multDepth, logScale, useSEALParams, true, galois_steps);
     }
     CKKSInstance *CKKSInstance::load_debug_instance(istream &paramsStream, istream &galoisKeyStream,
@@ -267,8 +266,7 @@ namespace hit {
         }
 
         if (mode == DEBUG) {
-            evaluator =
-                new DebugEval(context, *encoder, *sealEncryptor, gk, rk, pow(2.0, logScale), *decryptor);
+            evaluator = new DebugEval(context, *encoder, *sealEncryptor, gk, rk, pow(2.0, logScale), *decryptor);
         } else if (mode == NONEVALUATION) {
             // don't make an evaluator
             return;
@@ -348,8 +346,7 @@ namespace hit {
         decryptor = new CKKSDecryptor(context, encoder, sk);
 
         if (debug) {
-            evaluator =
-                new DebugEval(context, *encoder, *sealEncryptor, gk, rk, pow(2.0, logScale), *decryptor);
+            evaluator = new DebugEval(context, *encoder, *sealEncryptor, gk, rk, pow(2.0, logScale), *decryptor);
             mode = DEBUG;
         } else {
             evaluator = new HomomorphicEval(context, *encoder, *sealEncryptor, gk, rk);
