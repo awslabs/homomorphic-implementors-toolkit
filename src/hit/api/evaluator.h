@@ -241,7 +241,7 @@ namespace hit {
         virtual void relinearize_inplace_internal(CKKSCiphertext &ct) = 0;
         virtual void reset_internal() = 0;
 
-        CKKSEvaluator(std::shared_ptr<seal::SEALContext> context);
+        explicit CKKSEvaluator(std::shared_ptr<seal::SEALContext> context);
 
         ContextDataPtr getContextData(const CKKSCiphertext &ct);
 
