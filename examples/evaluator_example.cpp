@@ -285,7 +285,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
 
   // *********** View Debug Output ***********
   /* If anything fails, or if you want to see more details about your
-   * computation, use the debug evaluator. By defining GLOG_V, it provides verbose output
+   * computation, use the debug evaluator. By defining environment variable 'GLOG_v=1', it provides verbose output
    * regarding all aspects of the computation in real-time.
    */
   LOG(INFO) << "Running the computation in debug mode...";
