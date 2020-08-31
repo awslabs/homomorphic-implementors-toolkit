@@ -10,8 +10,8 @@ using namespace std;
 using namespace seal;
 namespace hit {
 
-    OpCount::OpCount(const shared_ptr<SEALContext> &context, bool verbose) : CKKSEvaluator(context, verbose) {
-        dfEval = new DepthFinder(context, verbose);
+    OpCount::OpCount(const shared_ptr<SEALContext> &context) : CKKSEvaluator(context) {
+        dfEval = new DepthFinder(context);
     }
 
     OpCount::~OpCount() {

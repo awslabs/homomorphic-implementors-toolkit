@@ -14,7 +14,7 @@ namespace hit {
     /* This evaluator tracks the plaintext computation */
     class OpCount : public CKKSEvaluator {
        public:
-        OpCount(const std::shared_ptr<seal::SEALContext> &context, bool verbose);
+        explicit OpCount(const std::shared_ptr<seal::SEALContext> &context);
 
         /* For documentation on the API, see ../evaluator.h */
         ~OpCount() override;

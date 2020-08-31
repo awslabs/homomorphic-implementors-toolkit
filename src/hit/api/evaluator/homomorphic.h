@@ -25,7 +25,7 @@ namespace hit {
          */
         HomomorphicEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder,
                         seal::Encryptor &encryptor, const seal::GaloisKeys &galois_keys,
-                        const seal::RelinKeys &relin_keys, bool verbose = false);
+                        const seal::RelinKeys &relin_keys);
 
         /* For documentation on the API, see ../evaluator.h */
         ~HomomorphicEval() override;

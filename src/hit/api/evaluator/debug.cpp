@@ -16,10 +16,10 @@ namespace hit {
 
     DebugEval::DebugEval(const shared_ptr<SEALContext> &context, CKKSEncoder &encoder, Encryptor &encryptor,
                          const GaloisKeys &galois_keys, const RelinKeys &relin_keys, double scale,
-                         CKKSDecryptor &decryptor, bool verbose)
-        : CKKSEvaluator(context, verbose), decryptor(decryptor), initScale(scale) {
-        heEval = new HomomorphicEval(context, encoder, encryptor, galois_keys, relin_keys, verbose);
-        seEval = new ScaleEstimator(context, static_cast<int>(2 * encoder.slot_count()), scale, verbose);
+                         CKKSDecryptor &decryptor)
+        : CKKSEvaluator(context), decryptor(decryptor), initScale(scale) {
+        heEval = new HomomorphicEval(context, encoder, encryptor, galois_keys, relin_keys);
+        seEval = new ScaleEstimator(context, static_cast<int>(2 * encoder.slot_count()), scale);
     }
 
     DebugEval::~DebugEval() {
@@ -53,7 +53,7 @@ namespace hit {
         double norm = 0;
 
         // decrypt to compute the approximate plaintext
-        vector<double> homomPlaintext = decryptor.decrypt(ct, false);
+        vector<double> homomPlaintext = decryptor.decrypt(ct);
         vector<double> exactPlaintext = ct.getPlaintext();
 
         norm = diff2Norm(exactPlaintext, homomPlaintext);

@@ -15,9 +15,8 @@ using namespace seal;
 namespace hit {
 
     HomomorphicEval::HomomorphicEval(const shared_ptr<SEALContext> &context, CKKSEncoder &encoder, Encryptor &encryptor,
-                                     const GaloisKeys &galois_keys, const RelinKeys &relin_keys, bool verbose)
-        : /* This evaluator never prints anything, so CKKSEvaluator can be non-verbose */
-          CKKSEvaluator(context, verbose),
+                                     const GaloisKeys &galois_keys, const RelinKeys &relin_keys)
+        : CKKSEvaluator(context),
           evaluator(context),
           encoder(encoder),
           encryptor(encryptor),

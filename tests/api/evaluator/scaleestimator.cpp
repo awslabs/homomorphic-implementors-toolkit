@@ -14,7 +14,6 @@ using namespace std;
 using namespace hit;
 
 // Test variables.
-const bool VERBOSE = false;
 const int DEFAULT_LOG_SCALE = 30;
 const int WIDTH = 1;
 const int NUM_OF_SLOTS = 4096;
@@ -27,7 +26,7 @@ const int STEPS = 1;
 const vector<double> VECTOR_1(NUM_OF_SLOTS, VALUE);
 
 TEST(ScaleEstimatorTest, RotateLeft) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext1);
     double estimatedMaxLogScale = ckksInstance->get_estimated_max_log_scale();
@@ -39,7 +38,7 @@ TEST(ScaleEstimatorTest, RotateLeft) {
 }
 
 TEST(ScaleEstimatorTest, RotateRight) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext1);
     double estimatedMaxLogScale = ckksInstance->get_estimated_max_log_scale();
@@ -51,7 +50,7 @@ TEST(ScaleEstimatorTest, RotateRight) {
 }
 
 TEST(ScaleEstimatorTest, Negate) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext1);
     double estimatedMaxLogScale = ckksInstance->get_estimated_max_log_scale();
@@ -63,7 +62,7 @@ TEST(ScaleEstimatorTest, Negate) {
 }
 
 TEST(ScaleEstimatorTest, AddPlaintext) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->add_plain(ciphertext1, VECTOR_1);
@@ -75,7 +74,7 @@ TEST(ScaleEstimatorTest, AddPlaintext) {
 }
 
 TEST(ScaleEstimatorTest, AddPlainScalar) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->add_plain(ciphertext1, PLAIN_TEXT);
@@ -87,7 +86,7 @@ TEST(ScaleEstimatorTest, AddPlainScalar) {
 }
 
 TEST(ScaleEstimatorTest, Add) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext1);
     ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext2);
@@ -100,7 +99,7 @@ TEST(ScaleEstimatorTest, Add) {
 }
 
 TEST(ScaleEstimatorTest, SubPlaintext) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
     vector<double> randomVector1 = randomVector(NUM_OF_SLOTS, VALUE);
     vector<double> randomVector2 = randomVector(NUM_OF_SLOTS, VALUE);
     CKKSCiphertext ciphertext1, ciphertext2;
@@ -117,7 +116,7 @@ TEST(ScaleEstimatorTest, SubPlaintext) {
 }
 
 TEST(ScaleEstimatorTest, SubPlainScalar) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
     vector<double> randomVector1 = randomVector(NUM_OF_SLOTS, VALUE);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(randomVector1, WIDTH, ciphertext1);
@@ -133,7 +132,7 @@ TEST(ScaleEstimatorTest, SubPlainScalar) {
 }
 
 TEST(ScaleEstimatorTest, Sub) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
     vector<double> randomVector1 = randomVector(NUM_OF_SLOTS, VALUE);
     vector<double> randomVector2 = randomVector(NUM_OF_SLOTS, VALUE);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
@@ -151,7 +150,7 @@ TEST(ScaleEstimatorTest, Sub) {
 }
 
 TEST(ScaleEstimatorTest, MultiplyPlainScalar) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->multiply_plain(ciphertext1, PLAIN_TEXT);
@@ -163,7 +162,7 @@ TEST(ScaleEstimatorTest, MultiplyPlainScalar) {
 }
 
 TEST(ScaleEstimatorTest, MultiplyPlainMattrix) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->multiply_plain(ciphertext1, VECTOR_1);
@@ -175,7 +174,7 @@ TEST(ScaleEstimatorTest, MultiplyPlainMattrix) {
 }
 
 TEST(ScaleEstimatorTest, Multiply) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext1);
     ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext2);
@@ -188,7 +187,7 @@ TEST(ScaleEstimatorTest, Multiply) {
 }
 
 TEST(ScaleEstimatorTest, Square) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->square(ciphertext1);
@@ -200,7 +199,7 @@ TEST(ScaleEstimatorTest, Square) {
 }
 
 TEST(ScaleEstimatorTest, ModDownToLevel) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext1);
     uint64_t prime = getLastPrime(ckksInstance->context, ciphertext1.he_level);
@@ -216,7 +215,7 @@ TEST(ScaleEstimatorTest, ModDownToLevel) {
 
 // TODO: investigate why previous impl can still pass this test.
 TEST(ScaleEstimatorTest, ModDownToLevel_MultiDepthIsTwo) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, TWO_MULTI_DEPTH, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, TWO_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext1, TWO_MULTI_DEPTH);
     ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext3, ZERO_MULTI_DEPTH);
@@ -228,7 +227,7 @@ TEST(ScaleEstimatorTest, ModDownToLevel_MultiDepthIsTwo) {
 }
 
 TEST(ScaleEstimatorTest, ModDownTo) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext1);
     uint64_t prime = getLastPrime(ckksInstance->context, ciphertext1.he_level);
@@ -244,7 +243,7 @@ TEST(ScaleEstimatorTest, ModDownTo) {
 }
 
 TEST(ScaleEstimatorTest, ModDownToMin) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext1);
     ciphertext3 = ciphertext1;
@@ -269,7 +268,7 @@ TEST(ScaleEstimatorTest, ModDownToMin) {
 }
 
 TEST(ScaleEstimatorTest, RescaleToNextInPlace) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ckksInstance->encrypt_row_vec(VECTOR_1, WIDTH, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->square(ciphertext1);

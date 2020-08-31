@@ -218,47 +218,6 @@ namespace hit {
         }
     }
 
-    void securityWarningBox(const string &str, WARN_LEVEL level) {
-        int strlen = str.size();
-        // set color to red (SEVERE) or yellow (WARN)
-        if (level == SEVERE) {
-            cout << endl << "\033[1;31m";
-        } else {
-            cout << endl << "\033[1;33m";
-        }
-
-        // print the top of the box
-        for (int i = 0; i < strlen + 4; i++) {
-            cout << "*";
-        }
-        cout << endl;
-
-        // print a "blank" line for the second row
-        cout << "*";
-        for (int i = 0; i < strlen + 2; i++) {
-            cout << " ";
-        }
-        cout << "*" << endl;
-
-        // print the string itself
-        cout << "* " << str << " *" << endl;
-
-        // print a "blank" line for the second-to-last row
-        cout << "*";
-        for (int i = 0; i < strlen + 2; i++) {
-            cout << " ";
-        }
-        cout << "*" << endl;
-
-        // print the bottom row of the box
-        for (int i = 0; i < strlen + 4; i++) {
-            cout << "*";
-        }
-
-        // reset the color
-        cout << "\033[0m" << endl << endl;
-    }
-
     double lInfNorm(const vector<double> &x) {
         double xmax = 0;
         for (double i : x) {

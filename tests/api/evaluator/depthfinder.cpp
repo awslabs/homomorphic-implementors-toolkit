@@ -11,7 +11,6 @@ using namespace std;
 using namespace hit;
 
 // Test variables.
-const bool VERBOSE = false;
 const int SIZE = 4096;
 const double VALUE = 1;
 const double PLAIN_TEXT = 1;
@@ -19,7 +18,7 @@ const int STEPS = 1;
 const vector<double> VECTOR_1(SIZE, VALUE);
 
 TEST(DepthFinderTest, RotateLeft) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->rotate_left(ciphertext1, STEPS);
@@ -29,7 +28,7 @@ TEST(DepthFinderTest, RotateLeft) {
 }
 
 TEST(DepthFinderTest, RotateRight) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->rotate_right(ciphertext1, STEPS);
@@ -39,7 +38,7 @@ TEST(DepthFinderTest, RotateRight) {
 }
 
 TEST(DepthFinderTest, Negate) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->negate(ciphertext1);
@@ -49,7 +48,7 @@ TEST(DepthFinderTest, Negate) {
 }
 
 TEST(DepthFinderTest, AddPlainScalar) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->add_plain(ciphertext1, PLAIN_TEXT);
@@ -59,7 +58,7 @@ TEST(DepthFinderTest, AddPlainScalar) {
 }
 
 TEST(DepthFinderTest, AddPlaintext) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->add_plain(ciphertext1, VECTOR_1);
@@ -69,7 +68,7 @@ TEST(DepthFinderTest, AddPlaintext) {
 }
 
 TEST(DepthFinderTest, Add) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext2);
@@ -80,7 +79,7 @@ TEST(DepthFinderTest, Add) {
 }
 
 TEST(DepthFinderTest, SubPlainScalar) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->sub_plain(ciphertext1, PLAIN_TEXT);
@@ -90,7 +89,7 @@ TEST(DepthFinderTest, SubPlainScalar) {
 }
 
 TEST(DepthFinderTest, SubPlaintext) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->sub_plain(ciphertext1, VECTOR_1);
@@ -100,7 +99,7 @@ TEST(DepthFinderTest, SubPlaintext) {
 }
 
 TEST(DepthFinderTest, Sub) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext2);
@@ -111,7 +110,7 @@ TEST(DepthFinderTest, Sub) {
 }
 
 TEST(DepthFinderTest, AddCiphertextWithDiffHeLevel) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext2);
@@ -123,7 +122,7 @@ TEST(DepthFinderTest, AddCiphertextWithDiffHeLevel) {
 }
 
 TEST(DepthFinderTest, MultiplyPlainScalar) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->multiply_plain(ciphertext1, PLAIN_TEXT);
@@ -133,7 +132,7 @@ TEST(DepthFinderTest, MultiplyPlainScalar) {
 }
 
 TEST(DepthFinderTest, MultiplyPlainMattrix) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, 1, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->multiply_plain(ciphertext1, VECTOR_1);
@@ -143,7 +142,7 @@ TEST(DepthFinderTest, MultiplyPlainMattrix) {
 }
 
 TEST(DepthFinderTest, Multiply) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext2);
@@ -154,7 +153,7 @@ TEST(DepthFinderTest, Multiply) {
 }
 
 TEST(DepthFinderTest, Multiply_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext2);
@@ -166,7 +165,7 @@ TEST(DepthFinderTest, Multiply_InvalidCase) {
 }
 
 TEST(DepthFinderTest, Square) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     ciphertext2 = ckksInstance->evaluator->square(ciphertext1);
@@ -176,7 +175,7 @@ TEST(DepthFinderTest, Square) {
 }
 
 TEST(DepthFinderTest, ModDownTo) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext2);
@@ -190,7 +189,7 @@ TEST(DepthFinderTest, ModDownTo) {
 }
 
 TEST(DepthFinderTest, ModDownTo_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext2);
@@ -202,7 +201,7 @@ TEST(DepthFinderTest, ModDownTo_InvalidCase) {
 }
 
 TEST(DepthFinderTest, ModDownToMin) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext2);
@@ -217,7 +216,7 @@ TEST(DepthFinderTest, ModDownToMin) {
 }
 
 TEST(DepthFinderTest, ModDownToLevel) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     int he_level = ciphertext1.he_level;
@@ -228,7 +227,7 @@ TEST(DepthFinderTest, ModDownToLevel) {
 }
 
 TEST(DepthFinderTest, ModDownToLevel_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     int he_level = ciphertext1.he_level;
@@ -239,7 +238,7 @@ TEST(DepthFinderTest, ModDownToLevel_InvalidCase) {
 }
 
 TEST(DepthFinderTest, RescaleToNextInPlace) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
     int he_level = ciphertext1.he_level;
@@ -249,7 +248,7 @@ TEST(DepthFinderTest, RescaleToNextInPlace) {
 }
 
 TEST(DepthFinderTest, RescaleToNextInPlace_ExplicitLevel) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance(VERBOSE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1;
     ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1, 1);
     int he_level = ciphertext1.he_level;

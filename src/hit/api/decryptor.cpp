@@ -22,13 +22,11 @@ namespace hit {
         delete (decryptor);
     }
 
-    vector<double> CKKSDecryptor::decrypt(const CKKSCiphertext &encrypted, bool verbose) {
+    vector<double> CKKSDecryptor::decrypt(const CKKSCiphertext &encrypted) {
         Plaintext temp;
 
         int lvl = encrypted.getLevel(context);
-        if (VLOG_IS_ON(LOG_VERBOSE) && lvl != 0) {
-            // TODO(ubuntu): delete the verbose related log when verbose is removed from HIT.
-            LOG(INFO) << "Verbose " << verbose;
+        if (lvl != 0) {
             LOG(WARNING) << "Decrypting a ciphertext that is not at level 0! Consider starting with a smaller modulus"
                          << " to improve performance!";
         }

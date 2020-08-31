@@ -22,7 +22,7 @@ namespace hit {
        public:
         DebugEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder,
                   seal::Encryptor &encryptor, const seal::GaloisKeys &galois_keys, const seal::RelinKeys &relin_keys,
-                  double scale, CKKSDecryptor &decryptor, bool verbose);
+                  double scale, CKKSDecryptor &decryptor);
 
         /* For documentation on the API, see ../evaluator.h */
         ~DebugEval() override;

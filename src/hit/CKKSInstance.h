@@ -25,10 +25,10 @@ namespace hit {
     class CKKSInstance {
        public:
         // only for finding the depth of a computation
-        static CKKSInstance *get_new_depthfinder_instance(bool verbose = false);
+        static CKKSInstance *get_new_depthfinder_instance();
 
         // only for counting the number of operations in the computation
-        static CKKSInstance *get_new_opcount_instance(bool verbose = false);
+        static CKKSInstance *get_new_opcount_instance();
 
         /* only for doing plaintext computation
          * The number of slots is a proxy for the dimension of the underlying cyclotomic ring.
@@ -42,7 +42,7 @@ namespace hit {
          * `useSEALParams` to false allows you to set parameters which may not achieve 128-bits
          * of security.
          */
-        static CKKSInstance *get_new_plaintext_instance(int numSlots, bool verbose = false, bool useSEALParams = true);
+        static CKKSInstance *get_new_plaintext_instance(int numSlots, bool useSEALParams = true);
 
         /* only for scale estimation
          * See the previous constuctor for an explanation of `numSlots`.
@@ -50,20 +50,18 @@ namespace hit {
          * using the DepthFinder evaluator.
          * See `get_new_plaintext_instance` for description of `useSEALParams`.
          */
-        static CKKSInstance *get_new_scaleestimator_instance(int numSlots, int multDepth, bool verbose = false,
-                                                             bool useSEALParams = true);
+        static CKKSInstance *get_new_scaleestimator_instance(int numSlots, int multDepth, bool useSEALParams = true);
 
         /* Generate a CKKSInstance targeting the desired number of slots, multiplicative
          * depth and log(scale) value.
          * See `get_new_plaintext_instance` for description of `useSEALParams`.
          */
         static CKKSInstance *get_new_homomorphic_instance(int numSlots, int multDepth, int logScale,
-                                                          bool verbose = false, bool useSEALParams = true,
+                                                          bool useSEALParams = true,
                                                           const std::vector<int> &galois_steps = std::vector<int>());
 
         static CKKSInstance *load_homomorphic_instance(std::istream &paramsStream, std::istream &galoisKeyStream,
-                                                       std::istream &relinKeyStream, std::istream &secretKeyStream,
-                                                       bool verbose = false);
+                                                       std::istream &relinKeyStream, std::istream &secretKeyStream);
 
         void save(std::ostream *paramsStream, std::ostream *galoisKeyStream, std::ostream *relinKeyStream,
                   std::ostream *secretKeyStream);
@@ -72,22 +70,20 @@ namespace hit {
          * tracking of relevant values to the computation
          * See `get_new_plaintext_instance` for description of `useSEALParams`.
          */
-        static CKKSInstance *get_new_debug_instance(int numSlots, int multDepth, int logScale, bool verbose = false,
+        static CKKSInstance *get_new_debug_instance(int numSlots, int multDepth, int logScale,
                                                     bool useSEALParams = true,
                                                     const std::vector<int> &galois_steps = std::vector<int>());
 
         /* Create a new debug instance from the provided parameters and keys */
         static CKKSInstance *load_debug_instance(std::istream &paramsStream, std::istream &galoisKeyStream,
-                                                 std::istream &relinKeyStream, std::istream &secretKeyStream,
-                                                 bool verbose = false);
+                                                 std::istream &relinKeyStream, std::istream &secretKeyStream);
 
         /* For evaluation only. Decryption is not available. */
         static CKKSInstance *load_eval_instance(std::istream &paramsStream, std::istream &galoisKeyStream,
-                                                std::istream &relinKeyStream, bool verbose = false);
+                                                std::istream &relinKeyStream);
 
         /* For encryption and decryption only. Evaluation is not available. */
-        static CKKSInstance *load_noneval_instance(std::istream &paramsStream, std::istream &secretKeyStream,
-                                                   bool verbose = false);
+        static CKKSInstance *load_noneval_instance(std::istream &paramsStream, std::istream &secretKeyStream);
 
         ~CKKSInstance();
 
@@ -109,11 +105,11 @@ namespace hit {
         void encrypt_row_vec(const std::vector<double> &plain, int matWidth, CKKSCiphertext &destination,
                              int level = -1);
 
-        // verbose flag enables a warning if you decrypt when the ciphertext is not at level 0
+        // A warning will show in log if you decrypt when the ciphertext is not at level 0
         // Usually, decrypting a ciphertext not at level 0 indicates you are doing something
         // inefficient. However for testing purposes, it may be useful, so you will want to
         // suppress the warning.
-        std::vector<double> decrypt(const CKKSCiphertext &encrypted, bool verbose = true);
+        std::vector<double> decrypt(const CKKSCiphertext &encrypted);
 
         int plaintext_dim() const;
 
@@ -138,19 +134,19 @@ namespace hit {
 
        private:
         // instances without keys
-        CKKSInstance(Mode m, int numSlots, int multDepth, int logScale, bool verbose, bool useSEALParams);
+        CKKSInstance(Mode m, int numSlots, int multDepth, int logScale, bool useSEALParams);
 
         // generate all keys
-        CKKSInstance(int numSlots, int multDepth, int logScale, bool verbose, bool useSEALParams, bool debug,
+        CKKSInstance(int numSlots, int multDepth, int logScale, bool useSEALParams, bool debug,
                      const std::vector<int> &galois_steps);
 
         // loading an instance from streams
         CKKSInstance(std::istream &paramsStream, std::istream *galoisKeyStream, std::istream *relinKeyStream,
-                     std::istream *secretKeyStream, bool verbose, Mode m);
+                     std::istream *secretKeyStream, Mode m);
 
         int gen_modulus_vec(int numPrimes, std::vector<int> &modulusVector) const;
         void set_max_val(const std::vector<double> &plain);
-        void shared_param_init(int numSlots, int multDepth, int logScaleIn, bool useSEALParams, bool verbose);
+        void shared_param_init(int numSlots, int multDepth, int logScaleIn, bool useSEALParams);
         protobuf::hit::CKKSParams save_ckks_params();
 
         seal::Encryptor *sealEncryptor;

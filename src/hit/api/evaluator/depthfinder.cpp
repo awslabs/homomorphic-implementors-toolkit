@@ -11,8 +11,7 @@ using namespace seal;
 
 namespace hit {
 
-    DepthFinder::DepthFinder(const shared_ptr<SEALContext> &context, bool verbose)
-        : CKKSEvaluator(context, verbose), multiplicativeDepth(0) {
+    DepthFinder::DepthFinder(const shared_ptr<SEALContext> &context) : CKKSEvaluator(context), multiplicativeDepth(0) {
     }
 
     DepthFinder::~DepthFinder() = default;

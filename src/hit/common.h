@@ -48,9 +48,6 @@ namespace hit {
 
     int modulusToPolyDegree(int modBits);
 
-    enum WARN_LEVEL { SEVERE, WARN };
-    void securityWarningBox(const std::string &str, WARN_LEVEL level = SEVERE);
-
     // the L-infinity norm
     double lInfNorm(const std::vector<double> &x);
 

@@ -16,11 +16,6 @@
  * The wrapper provides simplified APIs compared to the SEAL Evaluator class.
  */
 
-#define VERBOSE(x) \
-    if (verbose) { \
-        x;         \
-    }
-
 #define ContextDataPtr std::shared_ptr<const seal::SEALContext::ContextData>
 
 namespace hit {
@@ -246,13 +241,11 @@ namespace hit {
         virtual void relinearize_inplace_internal(CKKSCiphertext &ct) = 0;
         virtual void reset_internal() = 0;
 
-        CKKSEvaluator(std::shared_ptr<seal::SEALContext> context, bool verbose);
+        explicit CKKSEvaluator(std::shared_ptr<seal::SEALContext> context);
 
         ContextDataPtr getContextData(const CKKSCiphertext &ct);
 
         const std::shared_ptr<seal::SEALContext> context;
-
-        bool verbose;
     };
 
     // ensure that metadata for two arguments matches
