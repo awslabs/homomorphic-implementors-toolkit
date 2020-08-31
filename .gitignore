@@ -9,6 +9,7 @@ install/*
 *.unison*
 .vscode/
 lib/*
+hit_log/*
 
 # Ignore third party.
 third-party/*/**
