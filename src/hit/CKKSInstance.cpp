@@ -68,8 +68,8 @@ namespace hit {
         return new CKKSInstance(paramsStream, nullptr, nullptr, &secretKeyStream, NONEVALUATION);
     }
 
-    protobuf::hit::CKKSParams CKKSInstance::save_ckks_params() {
-        protobuf::hit::CKKSParams p;
+    protobuf::CKKSParams CKKSInstance::save_ckks_params() {
+        protobuf::CKKSParams p;
 
         p.set_version(0);
         auto context_data = context->key_context_data();
@@ -203,7 +203,7 @@ namespace hit {
     CKKSInstance::CKKSInstance(istream &paramsStream, istream *galoisKeyStream, istream *relinKeyStream,
                                istream *secretKeyStream, Mode m) {
         mode = m;
-        protobuf::hit::CKKSParams ckksParams;
+        protobuf::CKKSParams ckksParams;
         ckksParams.ParseFromIstream(&paramsStream);
         logScale = ckksParams.logscale();
         int numSlots = ckksParams.numslots();
@@ -284,7 +284,7 @@ namespace hit {
             sk.save(*secretKeyStream);
         }
         if (paramsStream != nullptr) {
-            protobuf::hit::CKKSParams ckksParams = save_ckks_params();
+            protobuf::CKKSParams ckksParams = save_ckks_params();
             ckksParams.SerializeToOstream(paramsStream);
         }
         if (galoisKeyStream != nullptr) {

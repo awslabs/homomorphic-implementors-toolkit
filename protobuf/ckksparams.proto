@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 syntax = "proto2";
-package protobuf.hit;
+package hit.protobuf;
 
 message CKKSParams {
 	required int32 version = 1;

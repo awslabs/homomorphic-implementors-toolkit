@@ -28,7 +28,7 @@ namespace hit {
         scale = src.scale;
     }
 
-    CKKSCiphertext::CKKSCiphertext(const shared_ptr<SEALContext> &context, const protobuf::hit::Ciphertext &proto_ct) {
+    CKKSCiphertext::CKKSCiphertext(const shared_ptr<SEALContext> &context, const protobuf::Ciphertext &proto_ct) {
         if (proto_ct.version() != 0) {
             throw invalid_argument("CKKSCiphertext serialization: Expected version 0");
         }
@@ -68,13 +68,13 @@ namespace hit {
         return decodePlaintext(encoded_pt.data(), encoding, height, width, encoded_height, encoded_width);
     }
 
-    protobuf::hit::Ciphertext *CKKSCiphertext::save() const {
-        auto *proto_ct = new protobuf::hit::Ciphertext();
+    protobuf::Ciphertext *CKKSCiphertext::save() const {
+        auto *proto_ct = new protobuf::Ciphertext();
         save(proto_ct);
         return proto_ct;
     }
 
-    void CKKSCiphertext::save(protobuf::hit::Ciphertext *proto_ct) const {
+    void CKKSCiphertext::save(protobuf::Ciphertext *proto_ct) const {
         proto_ct->set_version(0);
         proto_ct->set_height(height);
         proto_ct->set_encoded_height(encoded_height);

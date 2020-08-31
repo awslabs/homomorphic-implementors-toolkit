@@ -147,7 +147,7 @@ namespace hit {
         int gen_modulus_vec(int numPrimes, std::vector<int> &modulusVector) const;
         void set_max_val(const std::vector<double> &plain);
         void shared_param_init(int numSlots, int multDepth, int logScaleIn, bool useSEALParams);
-        protobuf::hit::CKKSParams save_ckks_params();
+        hit::protobuf::CKKSParams save_ckks_params();
 
         seal::Encryptor *sealEncryptor;
         seal::CKKSEncoder *encoder;
