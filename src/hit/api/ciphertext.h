@@ -48,7 +48,7 @@ namespace hit {
         // A default constructor is useful since we often write, e.g, `Ciphertext &a;`
         CKKSCiphertext();
 
-        CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context, const protobuf::hit::Ciphertext &proto_ct);
+        CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context, const hit::protobuf::Ciphertext &proto_ct);
 
         // Copy all members except the ciphertext itself
         void copyMetadataFrom(const CKKSCiphertext &src);
@@ -62,7 +62,7 @@ namespace hit {
 
         std::vector<double> getPlaintext() const;
 
-        protobuf::hit::Ciphertext *save() const;
-        void save(protobuf::hit::Ciphertext *proto_ct) const;
+        hit::protobuf::Ciphertext *save() const;
+        void save(hit::protobuf::Ciphertext *proto_ct) const;
     };
 }  // namespace hit
