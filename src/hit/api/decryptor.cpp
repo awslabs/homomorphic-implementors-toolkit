@@ -33,10 +33,9 @@ namespace hit {
 
         decryptor->decrypt(encrypted.seal_ct, temp);
 
-        vector<double> temp_vec;
-        encoder->decode(temp, temp_vec);
+        vector<double> decoded_output;
+        encoder->decode(temp, decoded_output);
 
-        return decodePlaintext(temp_vec, encrypted.encoding, encrypted.height, encrypted.width,
-                               encrypted.encoded_height, encrypted.encoded_width);
+        return decoded_output;
     }
 }  // namespace hit

@@ -462,24 +462,11 @@ namespace hit {
         }
     }
 
-    void CKKSInstance::encrypt_matrix(const Matrix &mat, CKKSCiphertext &destination, int level) {
-        encryptor->encrypt_matrix(mat, pow(2.0, logScale), destination, level);
-        set_max_val(mat.data());
+    CKKSCiphertext CKKSInstance::encrypt(const vector<double> &coeffs, int level) {
+        CKKSCiphertext ct = encryptor->encrypt(coeffs, pow(2.0, logScale), level);
+        set_max_val(coeffs);
         encryptionCount++;
-    }
-
-    void CKKSInstance::encrypt_col_vec(const vector<double> &plain, int matHeight, CKKSCiphertext &destination,
-                                       int level) {
-        encryptor->encrypt_col_vec(plain, matHeight, pow(2.0, logScale), destination, level);
-        set_max_val(plain);
-        encryptionCount++;
-    }
-
-    void CKKSInstance::encrypt_row_vec(const vector<double> &plain, int matWidth, CKKSCiphertext &destination,
-                                       int level) {
-        encryptor->encrypt_row_vec(plain, matWidth, pow(2.0, logScale), destination, level);
-        set_max_val(plain);
-        encryptionCount++;
+        return ct;
     }
 
     vector<double> CKKSInstance::decrypt(const CKKSCiphertext &encrypted) {
