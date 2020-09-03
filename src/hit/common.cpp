@@ -57,34 +57,34 @@ namespace hit {
         LOG(INFO) << elapsedTimeToStr(start, end);
     }
 
-    vector<double> decodePlaintext(const vector<double> &encoded_pt, CTEncoding encoding, int height, int width,
-                                   int encoded_height, int encoded_width) {
-        vector<double> dest;
+    // vector<double> decodePlaintext(const vector<double> &encoded_pt, CTEncoding encoding, int height, int width,
+    //                                int encoded_height, int encoded_width) {
+    //     vector<double> dest;
 
-        if (encoding == COL_VEC && (width != 1 || height != encoded_width)) {
-            stringstream buffer;
-            buffer << "Invalid column vector encoding: real size= " << height << "x" << width
-                   << "; encoded size= " << encoded_height << "x" << encoded_width;
-            throw invalid_argument(buffer.str());
-        }
-        if (encoding == ROW_VEC && (height != 1 || width != encoded_height)) {
-            stringstream buffer;
-            buffer << "Invalid row vector encoding: real size= " << height << "x" << width
-                   << "; encoded size= " << encoded_height << "x" << encoded_width;
-            throw invalid_argument(buffer.str());
-        }
+    //     if (encoding == COL_VEC && (width != 1 || height != encoded_width)) {
+    //         stringstream buffer;
+    //         buffer << "Invalid column vector encoding: real size= " << height << "x" << width
+    //                << "; encoded size= " << encoded_height << "x" << encoded_width;
+    //         throw invalid_argument(buffer.str());
+    //     }
+    //     if (encoding == ROW_VEC && (height != 1 || width != encoded_height)) {
+    //         stringstream buffer;
+    //         buffer << "Invalid row vector encoding: real size= " << height << "x" << width
+    //                << "; encoded size= " << encoded_height << "x" << encoded_width;
+    //         throw invalid_argument(buffer.str());
+    //     }
 
-        if (encoding == MATRIX || encoding == ROW_MAT || encoding == COL_MAT || encoding == COL_VEC) {
-            int size = height * width;
-            dest = vector<double>(encoded_pt.begin(), encoded_pt.begin() + size);
-        } else {  // encoding is a row vector, which becomes the columns of the matrix
-            for (int i = 0; i < width; i++) {
-                // puts the left column into the destination, which corresponds to the encoded row vector
-                dest.push_back(encoded_pt[i * encoded_width]);
-            }
-        }
-        return dest;
-    }
+    //     if (encoding == MATRIX || encoding == ROW_MAT || encoding == COL_MAT || encoding == COL_VEC) {
+    //         int size = height * width;
+    //         dest = vector<double>(encoded_pt.begin(), encoded_pt.begin() + size);
+    //     } else {  // encoding is a row vector, which becomes the columns of the matrix
+    //         for (int i = 0; i < width; i++) {
+    //             // puts the left column into the destination, which corresponds to the encoded row vector
+    //             dest.push_back(encoded_pt[i * encoded_width]);
+    //         }
+    //     }
+    //     return dest;
+    // }
 
     // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
     double diff2Norm(const vector<double> &expected, const vector<double> &actual) {
@@ -246,56 +246,6 @@ namespace hit {
         uintmax_t size = s.tellp();
         s.seekp(originalPos);
         return size;
-    }
-
-    // Extract the side-by-side plaintext from the ciphertext. Note that there is no decryption happening!
-    // This returns the "debug" plaintext.
-    Matrix ctPlaintextToMatrix(const CKKSCiphertext &ct) {
-        return Matrix(ct.height, ct.width, ct.getPlaintext());
-    }
-
-    // Extract the encrypted plaintext from the ciphertext. This actually decrypts and returns the output.
-    Matrix ctDecryptedToMatrix(CKKSInstance &inst, const CKKSCiphertext &ct) {
-        return Matrix(ct.height, ct.width, inst.decrypt(ct));
-    }
-
-    // Extract the debug plaintext from each ciphertext and concatenate the results side-by-side.
-    Matrix ctPlaintextToMatrix(const vector<CKKSCiphertext> &cts) {
-        vector<Matrix> mats;
-        mats.reserve(cts.size());
-        for (const auto &ct : cts) {
-            mats.push_back(ctPlaintextToMatrix(ct));
-        }
-        return matrixRowConcat(mats);
-    }
-
-    Vector ctPlaintextToVector(const vector<CKKSCiphertext> &cts) {
-        vector<double> stdvec;
-        for (const auto &ct : cts) {
-            vector<double> v = ct.getPlaintext();
-            stdvec.insert(stdvec.end(), v.begin(), v.end());
-        }
-        return fromStdVector(stdvec);
-    }
-
-    // Decrypt each ciphertext and concatenate the results side-by-side.
-    Matrix ctDecryptedToMatrix(CKKSInstance &inst, const vector<CKKSCiphertext> &cts) {
-        vector<Matrix> mats;
-        mats.reserve(cts.size());
-        for (const auto &ct : cts) {
-            mats.push_back(ctDecryptedToMatrix(inst, ct));
-        }
-
-        return matrixRowConcat(mats);
-    }
-
-    Vector ctDecryptedToVector(CKKSInstance &inst, const vector<CKKSCiphertext> &cts) {
-        vector<double> stdvec;
-        for (const auto &ct : cts) {
-            vector<double> v = inst.decrypt(ct);
-            stdvec.insert(stdvec.end(), v.begin(), v.end());
-        }
-        return fromStdVector(stdvec);
     }
 
 }  // namespace hit
