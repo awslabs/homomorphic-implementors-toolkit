@@ -59,6 +59,6 @@ namespace hit {
 
     private:
         // number of plaintext slots
-        int num_slots_;
+        size_t num_slots_;     // NOLINT(modernize-use-default-member-init)
     };
 }  // namespace hit

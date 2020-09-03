@@ -31,9 +31,6 @@ namespace hit {
     std::string elapsedTimeToStr(timepoint start, timepoint end, TimeScale = TS_DYNAMIC);
     void printElapsedTime(timepoint start);
 
-    // std::vector<double> decodePlaintext(const std::vector<double> &encoded_pt, CTEncoding encoding, int height,
-    //                                     int width, int encoded_height, int encoded_width);
-
     // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
     double diff2Norm(const std::vector<double> &expected, const std::vector<double> &actual);
 
@@ -51,7 +48,7 @@ namespace hit {
     // the L-infinity norm
     double lInfNorm(const std::vector<double> &x);
 
-    // TODO: This shouldn't be here. It's only used in tests and the example. The question is: should we duplicate it, or something else?
+    // TO DO: This shouldn't be here. It's only used in tests and the example. The question is: should we duplicate it, or something else?
     std::vector<double> randomVector(int dim, double maxNorm);
 
     uintmax_t streamSize(std::iostream &s);
