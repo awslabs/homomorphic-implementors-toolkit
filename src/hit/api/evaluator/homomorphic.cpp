@@ -61,7 +61,7 @@ namespace hit {
     }
 
     void HomomorphicEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        if (plain.size() != ct.width * ct.height) {
+        if (plain.size() != ct.num_slots()) {
             throw invalid_argument(
                 "Error in HomomorphicEval::add_plain_internal: plaintext size does not match ciphertext size");
         }
@@ -88,7 +88,7 @@ namespace hit {
     }
 
     void HomomorphicEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        if (plain.size() != ct.width * ct.height) {
+        if (plain.size() != ct.num_slots()) {
             throw invalid_argument(
                 "Error in HomomorphicEval::sub_plain_internal: plaintext size does not match ciphertext size");
         }
@@ -125,7 +125,7 @@ namespace hit {
     }
 
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        if (plain.size() != ct.width * ct.height) {
+        if (plain.size() != ct.num_slots()) {
             throw invalid_argument(
                 "Error in HomomorphicEval::multiply_plain_internal: plaintext size does not match ciphertext "
                 "size");

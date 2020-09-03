@@ -48,7 +48,7 @@ namespace hit {
         if (!VLOG_IS_ON(LOG_VERBOSE)) {
             return;
         }
-        double exactPlaintextMaxVal = lInfNorm(ct.getPlaintext());
+        double exactPlaintextMaxVal = lInfNorm(ct.raw_pt.data());
         double logModulus = 0;
         auto context_data = getContextData(ct);
         for (const auto &prime : context_data->parms().coeff_modulus()) {
@@ -80,9 +80,9 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
         if (scaleExp > ct.he_level) {
-            auto estimated_scale = (PLAINTEXT_LOG_MAX - log2(lInfNorm(ct.getPlaintext()))) / (scaleExp - ct.he_level);
+            auto estimated_scale = (PLAINTEXT_LOG_MAX - log2(lInfNorm(ct.raw_pt.data()))) / (scaleExp - ct.he_level);
             estimatedMaxLogScale = min(estimatedMaxLogScale, estimated_scale);
-        } else if (scaleExp == ct.he_level && log2(lInfNorm(ct.getPlaintext())) > PLAINTEXT_LOG_MAX) {
+        } else if (scaleExp == ct.he_level && log2(lInfNorm(ct.raw_pt.data())) > PLAINTEXT_LOG_MAX) {
             stringstream buffer;
             buffer << "Plaintext exceeded " << PLAINTEXT_LOG_MAX
                    << " bits, which exceeds SEAL's capacity. Overflow is imminent.";
@@ -181,7 +181,7 @@ namespace hit {
         ptEval->multiply_plain_inplace_internal(ct, plain);
 
         double plain_max = 0;
-        for (int i = 0; i < ct.height * ct.width; i++) {
+        for (int i = 0; i < ct.num_slots(); i++) {
             plain_max = max(plain_max, abs(plain[i]));
         }
         ct.scale *= ct.scale;

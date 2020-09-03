@@ -55,7 +55,7 @@ namespace hit {
 
         // decrypt to compute the approximate plaintext
         vector<double> homomPlaintext = decryptor.decrypt(ct);
-        vector<double> exactPlaintext = ct.getPlaintext();
+        vector<double> exactPlaintext = ct.raw_pt.data();
 
         norm = diff2Norm(exactPlaintext, homomPlaintext);
         if (abs(log2(ct.scale) - log2(ct.seal_ct.scale())) > 0.1) {
@@ -116,7 +116,7 @@ namespace hit {
             LOG(INFO) << actual_debug_result.str();
 
             Plaintext encoded_plain;
-            heEval->encoder.encode(ct.encoded_pt.data(), seEval->baseScale, encoded_plain);
+            heEval->encoder.encode(ct.raw_pt.data(), seEval->baseScale, encoded_plain);
 
             vector<double> decoded_plain;
             heEval->encoder.decode(encoded_plain, decoded_plain);

@@ -249,5 +249,5 @@ namespace hit {
     };
 
     // ensure that metadata for two arguments matches
-    bool is_valid_args(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
+    // bool is_valid_args(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
 }  // namespace hit
