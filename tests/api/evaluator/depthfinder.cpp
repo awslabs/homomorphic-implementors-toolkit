@@ -20,7 +20,7 @@ const vector<double> VECTOR_1(SIZE, VALUE);
 TEST(DepthFinderTest, RotateLeft) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
     ciphertext2 = ckksInstance->evaluator->rotate_left(ciphertext1, STEPS);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level, ciphertext1.he_level);
@@ -30,7 +30,7 @@ TEST(DepthFinderTest, RotateLeft) {
 TEST(DepthFinderTest, RotateRight) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
     ciphertext2 = ckksInstance->evaluator->rotate_right(ciphertext1, STEPS);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level, ciphertext1.he_level);
@@ -40,7 +40,7 @@ TEST(DepthFinderTest, RotateRight) {
 TEST(DepthFinderTest, Negate) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
     ciphertext2 = ckksInstance->evaluator->negate(ciphertext1);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level, ciphertext1.he_level);
@@ -50,7 +50,7 @@ TEST(DepthFinderTest, Negate) {
 TEST(DepthFinderTest, AddPlainScalar) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
     ciphertext2 = ckksInstance->evaluator->add_plain(ciphertext1, PLAIN_TEXT);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level, ciphertext1.he_level);
@@ -60,7 +60,7 @@ TEST(DepthFinderTest, AddPlainScalar) {
 TEST(DepthFinderTest, AddPlaintext) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
     ciphertext2 = ckksInstance->evaluator->add_plain(ciphertext1, VECTOR_1);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level, ciphertext1.he_level);
@@ -70,8 +70,8 @@ TEST(DepthFinderTest, AddPlaintext) {
 TEST(DepthFinderTest, Add) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext2);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
+    ciphertext2 = ckksInstance->encrypt(VECTOR_1);
     ciphertext3 = ckksInstance->evaluator->add(ciphertext1, ciphertext2);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext3.he_level, ciphertext1.he_level);
@@ -81,7 +81,7 @@ TEST(DepthFinderTest, Add) {
 TEST(DepthFinderTest, SubPlainScalar) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
     ciphertext2 = ckksInstance->evaluator->sub_plain(ciphertext1, PLAIN_TEXT);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level, ciphertext1.he_level);
@@ -91,7 +91,7 @@ TEST(DepthFinderTest, SubPlainScalar) {
 TEST(DepthFinderTest, SubPlaintext) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
     ciphertext2 = ckksInstance->evaluator->sub_plain(ciphertext1, VECTOR_1);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level, ciphertext1.he_level);
@@ -101,8 +101,8 @@ TEST(DepthFinderTest, SubPlaintext) {
 TEST(DepthFinderTest, Sub) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext2);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
+    ciphertext2 = ckksInstance->encrypt(VECTOR_1);
     ciphertext3 = ckksInstance->evaluator->sub(ciphertext1, ciphertext2);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext3.he_level, ciphertext1.he_level);
@@ -112,8 +112,8 @@ TEST(DepthFinderTest, Sub) {
 TEST(DepthFinderTest, AddCiphertextWithDiffHeLevel) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext2);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
+    ciphertext2 = ckksInstance->encrypt(VECTOR_1);
     ciphertext2.he_level = ciphertext1.he_level + 1;
     ASSERT_THROW((
                      // Expect invalid_argument is thrown because he_level of the two ciphertexts is different.
@@ -124,17 +124,17 @@ TEST(DepthFinderTest, AddCiphertextWithDiffHeLevel) {
 TEST(DepthFinderTest, MultiplyPlainScalar) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
     ciphertext2 = ckksInstance->evaluator->multiply_plain(ciphertext1, PLAIN_TEXT);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level, ciphertext1.he_level);
     ASSERT_EQ(0, ckksInstance->get_multiplicative_depth());
 }
 
-TEST(DepthFinderTest, MultiplyPlainMattrix) {
+TEST(DepthFinderTest, MultiplyPlainMatrix) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
-    ckksInstance->encrypt_row_vec(VECTOR_1, 1, ciphertext1);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1, 1);
     ciphertext2 = ckksInstance->evaluator->multiply_plain(ciphertext1, VECTOR_1);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level, ciphertext1.he_level);
@@ -144,8 +144,8 @@ TEST(DepthFinderTest, MultiplyPlainMattrix) {
 TEST(DepthFinderTest, Multiply) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext2);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
+    ciphertext2 = ckksInstance->encrypt(VECTOR_1);
     ciphertext3 = ckksInstance->evaluator->multiply(ciphertext1, ciphertext2);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext3.he_level, ciphertext1.he_level);
@@ -155,8 +155,8 @@ TEST(DepthFinderTest, Multiply) {
 TEST(DepthFinderTest, Multiply_InvalidCase) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext2);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
+    ciphertext2 = ckksInstance->encrypt(VECTOR_1);
     ciphertext2.he_level = ciphertext1.he_level + 1;
     ASSERT_THROW((
                      // Expect invalid_argument is thrown because he_level of the two ciphertexts is different.
@@ -167,7 +167,7 @@ TEST(DepthFinderTest, Multiply_InvalidCase) {
 TEST(DepthFinderTest, Square) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
     ciphertext2 = ckksInstance->evaluator->square(ciphertext1);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level, ciphertext1.he_level);
@@ -177,8 +177,8 @@ TEST(DepthFinderTest, Square) {
 TEST(DepthFinderTest, ModDownTo) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext2);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
+    ciphertext2 = ckksInstance->encrypt(VECTOR_1);
     int he_level = ciphertext1.he_level;
     ASSERT_EQ(he_level, ciphertext2.he_level);
     ciphertext1.he_level = he_level + 1;
@@ -191,8 +191,8 @@ TEST(DepthFinderTest, ModDownTo) {
 TEST(DepthFinderTest, ModDownTo_InvalidCase) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext2);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
+    ciphertext2 = ckksInstance->encrypt(VECTOR_1);
     ciphertext2.he_level = ciphertext1.he_level + 1;
     ASSERT_THROW((
                      // Expect invalid_argument is thrown because the he_level of second argument is larger.
@@ -203,9 +203,9 @@ TEST(DepthFinderTest, ModDownTo_InvalidCase) {
 TEST(DepthFinderTest, ModDownToMin) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext2);
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext3);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
+    ciphertext2 = ckksInstance->encrypt(VECTOR_1);
+    ciphertext3 = ckksInstance->encrypt(VECTOR_1);
     ciphertext3.he_level = ciphertext3.he_level - 1;
     ckksInstance->evaluator->mod_down_to_min_inplace(ciphertext1, ciphertext3);
     ckksInstance->evaluator->mod_down_to_min_inplace(ciphertext3, ciphertext2);
@@ -218,7 +218,7 @@ TEST(DepthFinderTest, ModDownToMin) {
 TEST(DepthFinderTest, ModDownToLevel) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1, ciphertext2;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
     int he_level = ciphertext1.he_level;
     ciphertext2 = ckksInstance->evaluator->mod_down_to_level(ciphertext1, he_level - 1);
     // Expect he_level is changed.
@@ -229,7 +229,7 @@ TEST(DepthFinderTest, ModDownToLevel) {
 TEST(DepthFinderTest, ModDownToLevel_InvalidCase) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
     int he_level = ciphertext1.he_level;
     ASSERT_THROW((
                      // Expect invalid_argument is thrown when cipherText is mod to higher level.
@@ -240,7 +240,7 @@ TEST(DepthFinderTest, ModDownToLevel_InvalidCase) {
 TEST(DepthFinderTest, RescaleToNextInPlace) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
     int he_level = ciphertext1.he_level;
     ckksInstance->evaluator->rescale_to_next_inplace(ciphertext1);
     ASSERT_EQ(he_level - 1, ciphertext1.he_level);
@@ -250,7 +250,7 @@ TEST(DepthFinderTest, RescaleToNextInPlace) {
 TEST(DepthFinderTest, RescaleToNextInPlace_ExplicitLevel) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_depthfinder_instance();
     CKKSCiphertext ciphertext1;
-    ckksInstance->encrypt_row_vec(VECTOR_1, SIZE, ciphertext1, 1);
+    ciphertext1 = ckksInstance->encrypt(VECTOR_1, 1);
     int he_level = ciphertext1.he_level;
     ckksInstance->evaluator->rescale_to_next_inplace(ciphertext1);
     ASSERT_EQ(he_level - 1, ciphertext1.he_level);
