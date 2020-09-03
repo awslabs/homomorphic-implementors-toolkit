@@ -4,6 +4,7 @@
 #include "common.h"
 
 #include <glog/logging.h>
+
 #include <iomanip>  // setprecision
 
 using namespace std;

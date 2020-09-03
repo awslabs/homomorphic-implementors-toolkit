@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <glog/logging.h>
+
 #include <iomanip>
 #include <iostream>
 

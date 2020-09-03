@@ -3,9 +3,9 @@
 
 #include "decryptor.h"
 
-#include "../common.h"
-
 #include <glog/logging.h>
+
+#include "../common.h"
 
 using namespace std;
 using namespace seal;

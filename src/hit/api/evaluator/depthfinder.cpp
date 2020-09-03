@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "depthfinder.h"
-#include "../../common.h"
 
 #include <glog/logging.h>
+
+#include "../../common.h"
 
 using namespace std;
 using namespace seal;

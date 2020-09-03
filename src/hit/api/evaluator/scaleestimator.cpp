@@ -4,6 +4,7 @@
 #include "scaleestimator.h"
 
 #include <glog/logging.h>
+
 #include <iomanip>
 
 #include "../../common.h"

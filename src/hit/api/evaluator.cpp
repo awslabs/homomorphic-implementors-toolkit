@@ -8,6 +8,7 @@
 #include "evaluator.h"
 
 #include <glog/logging.h>
+
 #include <utility>
 
 #include "../common.h"

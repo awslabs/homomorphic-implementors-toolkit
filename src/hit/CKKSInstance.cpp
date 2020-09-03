@@ -4,6 +4,7 @@
 #include "CKKSInstance.h"
 
 #include <glog/logging.h>
+
 #include <experimental/filesystem>
 #include <fstream>
 
@@ -473,6 +474,7 @@ namespace hit {
         set_max_val(plain);
         encryptionCount++;
     }
+
     void CKKSInstance::encrypt_row_vec(const vector<double> &plain, int matWidth, CKKSCiphertext &destination,
                                        int level) {
         encryptor->encrypt_row_vec(plain, matWidth, pow(2.0, logScale), destination, level);

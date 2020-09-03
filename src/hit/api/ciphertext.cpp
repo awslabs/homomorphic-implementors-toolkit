@@ -3,9 +3,9 @@
 
 #include "ciphertext.h"
 
-#include "../common.h"
-
 #include <glog/logging.h>
+
+#include "../common.h"
 
 using namespace std;
 using namespace seal;
@@ -78,7 +78,8 @@ namespace hit {
 
     void CKKSCiphertext::save(protobuf::Ciphertext *proto_ct) const {
         if (!encoded_pt.empty()) {
-            LOG(WARNING) << "Serializing ciphertext with plaintext data attached! Use the homomorphic evaluator instead for secure computation.";
+            LOG(WARNING) << "Serializing ciphertext with plaintext data attached! Use the homomorphic evaluator "
+                            "instead for secure computation.";
         }
 
         proto_ct->set_version(0);

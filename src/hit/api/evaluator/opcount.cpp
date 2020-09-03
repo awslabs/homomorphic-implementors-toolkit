@@ -4,6 +4,7 @@
 #include "opcount.h"
 
 #include <glog/logging.h>
+
 #include <iomanip>
 
 using namespace std;
