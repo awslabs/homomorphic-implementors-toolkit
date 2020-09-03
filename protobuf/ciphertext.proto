@@ -6,17 +6,9 @@ package hit.protobuf;
 
 message Ciphertext {
 	required int32 version = 1;
-	required int32 height = 2;
-	required int32 width = 3;
-	required int32 encoded_height = 4;
-	required int32 encoded_width = 5;
-	required int32 encoding = 6;
-	optional bytes sealct = 7;
-	required int32 heLevel = 8;
-	repeated double encoded_pt = 9;
-	required double scale = 10;
-}
-
-message CiphertextVector {
-	repeated Ciphertext cts = 1;
+	required bool initialized = 2;
+	optional bytes sealct = 3;
+	required int32 heLevel = 4;
+	repeated double raw_pt = 5;
+	required double scale = 6;
 }
