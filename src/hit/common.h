@@ -51,6 +51,7 @@ namespace hit {
     // the L-infinity norm
     double lInfNorm(const std::vector<double> &x);
 
+    // TODO: This shouldn't be here. It's only used in tests and the example. The question is: should we duplicate it, or something else?
     std::vector<double> randomVector(int dim, double maxNorm);
 
     uintmax_t streamSize(std::iostream &s);
