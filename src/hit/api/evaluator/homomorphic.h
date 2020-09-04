@@ -22,10 +22,13 @@ namespace hit {
          *
          * All of these parameters contain only public information. The GaloisKeys
          * and RelinKeys are part of the CKKS scheme's "evaluation keys".
+         *
+         * update_metadata indicates whether this evaluator should update ciphertext metadata or not
+         * Generally, it should, unless that is being done by other evaluators
          */
         HomomorphicEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder,
                         seal::Encryptor &encryptor, const seal::GaloisKeys &galois_keys,
-                        const seal::RelinKeys &relin_keys);
+                        const seal::RelinKeys &relin_keys, bool update_metadata);
 
         /* For documentation on the API, see ../evaluator.h */
         ~HomomorphicEval() override;
@@ -89,6 +92,10 @@ namespace hit {
         // the situation.
         const seal::GaloisKeys &galois_keys;
         const seal::RelinKeys &relin_keys;
+
+        bool update_metadata;
+
+        int get_SEAL_level(const CKKSCiphertext &ct) const;
 
         friend class DebugEval;
     };

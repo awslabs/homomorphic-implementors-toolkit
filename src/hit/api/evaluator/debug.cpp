@@ -19,7 +19,7 @@ namespace hit {
                          const GaloisKeys &galois_keys, const RelinKeys &relin_keys, double scale,
                          CKKSDecryptor &decryptor)
         : CKKSEvaluator(context), decryptor(decryptor), initScale(scale) {
-        heEval = new HomomorphicEval(context, encoder, encryptor, galois_keys, relin_keys);
+        heEval = new HomomorphicEval(context, encoder, encryptor, galois_keys, relin_keys, false);
         seEval = new ScaleEstimator(context, static_cast<int>(2 * encoder.slot_count()), scale);
     }
 

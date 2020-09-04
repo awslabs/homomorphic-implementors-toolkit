@@ -15,19 +15,15 @@ namespace hit {
         // SEAL ciphertext
         seal::Ciphertext seal_ct;
 
-        // flag indicating whether this CT has been initialized or not
-        // CKKSCiphertexts are initialized upon encryption
-        bool initialized;     // NOLINT(modernize-use-default-member-init)
-
         // The raw plaintxt. This is used during development, but not by the Homomorphic evaluator.
         // This plaintext is not CKKS-encoded.
         Vector raw_pt;
 
         // `scale` is used by the ScaleEstimator evaluator
-        double scale;  // NOLINT(modernize-use-default-member-init)
+        double scale = 0;
 
         // A default constructor is useful since we often write, e.g, `Ciphertext &a;`
-        CKKSCiphertext();
+        CKKSCiphertext() = default;
 
         CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context, const hit::protobuf::Ciphertext &proto_ct);
 
@@ -51,10 +47,14 @@ namespace hit {
         friend class CKKSEncryptor;
 
     private:
+        // flag indicating whether this CT has been initialized or not
+        // CKKSCiphertexts are initialized upon encryption
+        bool initialized = false;
+
         // heLevel is used by the depthFinder
-        int he_level_;  // NOLINT(modernize-use-default-member-init)
+        int he_level_ = 0;
 
         // number of plaintext slots
-        size_t num_slots_;     // NOLINT(modernize-use-default-member-init)
+        size_t num_slots_ = 0;
     };
 }  // namespace hit

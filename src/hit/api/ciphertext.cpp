@@ -11,13 +11,6 @@ using namespace std;
 using namespace seal;
 
 namespace hit {
-
-    // these values will be properly initilized by the implicit
-    // copy constructor or during encryption.
-    CKKSCiphertext::CKKSCiphertext()
-        : initialized(false), scale(0), he_level_(0), num_slots_(0) {
-    }
-
     void CKKSCiphertext::copyMetadataFrom(const CKKSCiphertext &src) {
         initialized = src.initialized;
         he_level_ = src.he_level_;

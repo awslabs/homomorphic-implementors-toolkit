@@ -272,7 +272,7 @@ namespace hit {
             // don't make an evaluator
             return;
         } else {  // mode == NORMAL or EVALUATION
-            evaluator = new HomomorphicEval(context, *encoder, *sealEncryptor, gk, rk);
+            evaluator = new HomomorphicEval(context, *encoder, *sealEncryptor, gk, rk, true);
         }
     }
 
@@ -350,7 +350,7 @@ namespace hit {
             evaluator = new DebugEval(context, *encoder, *sealEncryptor, gk, rk, pow(2.0, logScale), *decryptor);
             mode = DEBUG;
         } else {
-            evaluator = new HomomorphicEval(context, *encoder, *sealEncryptor, gk, rk);
+            evaluator = new HomomorphicEval(context, *encoder, *sealEncryptor, gk, rk, true);
             mode = NORMAL;
         }
 
