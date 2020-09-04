@@ -25,7 +25,7 @@ namespace hit {
     vector<double> CKKSDecryptor::decrypt(const CKKSCiphertext &encrypted) {
         Plaintext temp;
 
-        int lvl = encrypted.getLevel(context);
+        int lvl = encrypted.he_level();
         if (lvl != 0) {
             LOG(WARNING) << "Decrypting a ciphertext that is not at level 0! Consider starting with a smaller modulus"
                          << " to improve performance!";

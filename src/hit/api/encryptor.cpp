@@ -45,13 +45,9 @@ namespace hit {
         }
 
         CKKSCiphertext destination;
+        destination.he_level() = lvl;
+        destination.scale = scale;
 
-        // only set he_level and scale if we aren't in Homomorphic mode
-        if (mode != ENC_NORMAL) {
-            // only for the DepthFinder evaluator
-            destination.he_level = lvl;
-            destination.scale = scale;
-        }
         // Only set the plaintext in Plaintext or Debug modes
         if (mode == ENC_PLAIN || mode == ENC_DEBUG) {
             destination.raw_pt = coeffs;

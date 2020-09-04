@@ -45,10 +45,10 @@ namespace hit {
 
     void HomomorphicEval::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         // check that ciphertexts are at the same level to avoid an obscure SEAL error
-        if (ct1.getLevel(context) != ct2.getLevel(context)) {
+        if (ct1.he_level() != ct2.he_level()) {
             stringstream buffer;
-            buffer << "Error in HomomorphicEval::add: input levels do not match: " << ct1.getLevel(context)
-                   << " != " << ct2.getLevel(context);
+            buffer << "Error in HomomorphicEval::add: input levels do not match: " << ct1.he_level()
+                   << " != " << ct2.he_level();
             throw invalid_argument(buffer.str());
         }
         evaluator.add_inplace(ct1.seal_ct, ct2.seal_ct);
@@ -72,10 +72,10 @@ namespace hit {
 
     void HomomorphicEval::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         // check that ciphertexts are at the same level to avoid an obscure SEAL error
-        if (ct1.getLevel(context) != ct2.getLevel(context)) {
+        if (ct1.he_level() != ct2.he_level()) {
             stringstream buffer;
-            buffer << "Error in HomomorphicEval::sub: input levels do not match: " << ct1.getLevel(context)
-                   << " != " << ct2.getLevel(context);
+            buffer << "Error in HomomorphicEval::sub: input levels do not match: " << ct1.he_level()
+                   << " != " << ct2.he_level();
             throw invalid_argument(buffer.str());
         }
         evaluator.sub_inplace(ct1.seal_ct, ct2.seal_ct);
@@ -99,13 +99,14 @@ namespace hit {
 
     void HomomorphicEval::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         // check that ciphertexts are at the same level to avoid an obscure SEAL error
-        if (ct1.getLevel(context) != ct2.getLevel(context)) {
+        if (ct1.he_level() != ct2.he_level()) {
             stringstream buffer;
-            buffer << "Error in HomomorphicEval::multiply: input levels do not match: " << ct1.getLevel(context)
-                   << " != " << ct2.getLevel(context);
+            buffer << "Error in HomomorphicEval::multiply: input levels do not match: " << ct1.he_level()
+                   << " != " << ct2.he_level();
             throw invalid_argument(buffer.str());
         }
         evaluator.multiply_inplace(ct1.seal_ct, ct2.seal_ct);
+        ct1.scale *= ct2.scale;
     }
 
     /* WARNING: Multiplying by 0 results in non-constant time behavior! Only multiply by 0 if the scalar is truly
@@ -115,6 +116,7 @@ namespace hit {
             Plaintext encoded_plain;
             encoder.encode(scalar, ct.seal_ct.parms_id(), ct.seal_ct.scale(), encoded_plain);
             evaluator.multiply_plain_inplace(ct.seal_ct, encoded_plain);
+            ct.scale *= ct.scale;
         } else {
             double previous_scale = ct.seal_ct.scale();
             encryptor.encrypt_zero(ct.seal_ct.parms_id(), ct.seal_ct);
@@ -133,27 +135,29 @@ namespace hit {
         Plaintext temp;
         encoder.encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
         evaluator.multiply_plain_inplace(ct.seal_ct, temp);
+        ct.scale *= ct.scale;
     }
 
     void HomomorphicEval::square_inplace_internal(CKKSCiphertext &ct) {
         evaluator.square_inplace(ct.seal_ct);
+        ct.scale *= ct.scale;
     }
 
     void HomomorphicEval::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
-        if (ct.getLevel(context) < target.getLevel(context)) {
+        if (ct.he_level() < target.he_level()) {
             stringstream buffer;
-            buffer << "Error in modDownTo: input is at a lower level than target. Input level: " << ct.getLevel(context)
-                   << ", target level: " << target.getLevel(context);
+            buffer << "Error in modDownTo: input is at a lower level than target. Input level: " << ct.he_level()
+                   << ", target level: " << target.he_level();
             throw invalid_argument(buffer.str());
         }
-        while (ct.getLevel(context) > target.getLevel(context)) {
+        while (ct.he_level() > target.he_level()) {
             multiply_plain_inplace(ct, 1);
             rescale_to_next_inplace(ct);
         }
     }
 
     void HomomorphicEval::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
-        if (ct1.getLevel(context) > ct2.getLevel(context)) {
+        if (ct1.he_level() > ct2.he_level()) {
             mod_down_to_inplace_internal(ct1, ct2);
         } else {
             mod_down_to_inplace_internal(ct2, ct1);
@@ -161,13 +165,13 @@ namespace hit {
     }
 
     void HomomorphicEval::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
-        if (ct.getLevel(context) < level) {
+        if (ct.he_level() < level) {
             stringstream buffer;
-            buffer << "Error in modDownTo: input is at a lower level than target. Input level: " << ct.getLevel(context)
+            buffer << "Error in modDownTo: input is at a lower level than target. Input level: " << ct.he_level()
                    << ", target level: " << level;
             throw invalid_argument(buffer.str());
         }
-        while (ct.getLevel(context) > level) {
+        while (ct.he_level() > level) {
             multiply_plain_inplace(ct, 1);
             rescale_to_next_inplace(ct);
         }
@@ -175,6 +179,11 @@ namespace hit {
 
     void HomomorphicEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
         evaluator.rescale_to_next_inplace(ct.seal_ct);
+        ct.he_level()--;
+
+        auto context_data = getContextData(ct);
+        uint64_t prime = context_data->parms().coeff_modulus().back().value();
+        ct.scale /= prime;
     }
 
     void HomomorphicEval::relinearize_inplace_internal(CKKSCiphertext &ct) {

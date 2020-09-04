@@ -38,7 +38,7 @@ namespace hit {
     void DebugEval::check_scale(const CKKSCiphertext &ct) const {
         auto context_data = context->first_context_data();
         double expectedScale = initScale;
-        while (context_data->chain_index() > ct.he_level) {
+        while (context_data->chain_index() > ct.he_level()) {
             expectedScale = (expectedScale * expectedScale) /
                             static_cast<double>(context_data->parms().coeff_modulus().back().value());
             context_data = context_data->next_context_data();

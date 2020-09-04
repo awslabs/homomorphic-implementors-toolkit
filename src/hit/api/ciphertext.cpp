@@ -15,12 +15,12 @@ namespace hit {
     // these values will be properly initilized by the implicit
     // copy constructor or during encryption.
     CKKSCiphertext::CKKSCiphertext()
-        : initialized(false), he_level(0), scale(0), num_slots_(0) {
+        : initialized(false), scale(0), he_level_(0), num_slots_(0) {
     }
 
     void CKKSCiphertext::copyMetadataFrom(const CKKSCiphertext &src) {
         initialized = src.initialized;
-        he_level = src.he_level;
+        he_level_ = src.he_level_;
         raw_pt = src.raw_pt;
         scale = src.scale;
         num_slots_ = src.num_slots_;
@@ -33,7 +33,7 @@ namespace hit {
 
         initialized = proto_ct.initialized();
         scale = proto_ct.scale();
-        he_level = proto_ct.helevel();
+        he_level_ = proto_ct.helevel();
         num_slots_ = context->first_context_data()->parms().poly_modulus_degree()/2;
 
         if (initialized) {
@@ -46,10 +46,6 @@ namespace hit {
             istringstream ctstream(proto_ct.sealct());
             seal_ct.load(context, ctstream);
         }
-    }
-
-    int CKKSCiphertext::getLevel(const shared_ptr<SEALContext> &context) const {
-        return context->get_context_data(seal_ct.parms_id())->chain_index();
     }
 
     protobuf::Ciphertext *CKKSCiphertext::save() const {
@@ -67,7 +63,7 @@ namespace hit {
         proto_ct->set_version(0);
         proto_ct->set_initialized(initialized);
         proto_ct->set_scale(scale);
-        proto_ct->set_helevel(he_level);
+        proto_ct->set_helevel(he_level_);
 
         if (initialized) {
             ostringstream sealctBuf;
@@ -82,5 +78,14 @@ namespace hit {
 
     int CKKSCiphertext::num_slots() const {
         return num_slots_;
+    }
+
+    int& CKKSCiphertext::he_level() {
+        return he_level_;
+    }
+
+
+    const int& CKKSCiphertext::he_level() const {
+        return he_level_;
     }
 }  // namespace hit
