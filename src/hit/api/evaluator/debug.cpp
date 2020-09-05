@@ -47,6 +47,9 @@ namespace hit {
             throw invalid_argument("CHECK_SCALE: Expected " + to_string(expectedScale) + "^{1,2}, got " +
                                    to_string(ct.seal_ct.scale()));
         }
+        if (ct.seal_ct.scale() != ct.scale) {
+            throw invalid_argument("HIT scale calculation does not match SEAL.");
+        }
     }
 
     // print some debug info
