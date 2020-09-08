@@ -15,8 +15,9 @@ namespace hit {
         // SEAL ciphertext
         seal::Ciphertext seal_ct;
 
-        // The raw plaintxt. This is used during development, but not by the Homomorphic evaluator.
-        // This plaintext is not CKKS-encoded.
+        // The raw plaintxt. This is used with some of the evaluators tha track ciphertext
+        // metadata (e.g., DebugEval and PlaintextEval), but not by the Homomorphic evaluator.
+        // This plaintext is not CKKS-encoded; in particular it is not scaled by the scale factor.
         Vector raw_pt;
 
         // `scale` is used by the ScaleEstimator evaluator

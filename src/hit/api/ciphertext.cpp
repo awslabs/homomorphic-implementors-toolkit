@@ -26,7 +26,7 @@ namespace hit {
 
         initialized = proto_ct.initialized();
         scale = proto_ct.scale();
-        he_level_ = proto_ct.helevel();
+        he_level_ = proto_ct.he_level();
         num_slots_ = context->first_context_data()->parms().poly_modulus_degree()/2;
 
         if (initialized) {
@@ -36,7 +36,7 @@ namespace hit {
                 raw_pt[i] = proto_ct.raw_pt(i);
             }
 
-            istringstream ctstream(proto_ct.sealct());
+            istringstream ctstream(proto_ct.seal_ct());
             seal_ct.load(context, ctstream);
         }
     }
@@ -56,12 +56,12 @@ namespace hit {
         proto_ct->set_version(0);
         proto_ct->set_initialized(initialized);
         proto_ct->set_scale(scale);
-        proto_ct->set_helevel(he_level_);
+        proto_ct->set_he_level(he_level_);
 
         if (initialized) {
             ostringstream sealctBuf;
             seal_ct.save(sealctBuf);
-            proto_ct->set_sealct(sealctBuf.str());
+            proto_ct->set_seal_ct(sealctBuf.str());
 
             for (double i : raw_pt) {
                 proto_ct->add_raw_pt(i);

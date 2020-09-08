@@ -87,6 +87,8 @@ namespace hit {
 
         ~CKKSInstance();
 
+        // Encrypt a (full-dimensional) vector of coefficients. If an encryption level (integer >= 0) is not specified,
+        // the ciphertext will be encrypted at the highest level allowed by the parameters.
         CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1);
 
         // A warning will show in log if you decrypt when the ciphertext is not at level 0

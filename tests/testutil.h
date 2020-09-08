@@ -1,11 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+#pragma once
+
 #include <iostream>
+#include <vector>
 
-using namespace std;
+uint32_t createRandomPositiveInt(const int mod = 100);
 
-inline uint32_t createRandomPositiveInt(const int mod = 100) {
-    srand(time(nullptr));
-    return rand() % mod + 1;
-}
+std::vector<double> randomVector(int dim, double maxNorm);

@@ -24,7 +24,9 @@ namespace hit {
          * and RelinKeys are part of the CKKS scheme's "evaluation keys".
          *
          * update_metadata indicates whether this evaluator should update ciphertext metadata or not
-         * Generally, it should, unless that is being done by other evaluators
+         * When HomomorphicEval is used alone, update_metadata should be true.
+         * When HomomorphicEval is used as a sub-evaluator (e.g., as a component of the Debug evaluator) where
+         * other sub-evaluators compute the metadata, then update_metadata should be false.
          */
         HomomorphicEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder,
                         seal::Encryptor &encryptor, const seal::GaloisKeys &galois_keys,
@@ -94,8 +96,6 @@ namespace hit {
         const seal::RelinKeys &relin_keys;
 
         bool update_metadata;
-
-        int get_SEAL_level(const CKKSCiphertext &ct) const;
 
         friend class DebugEval;
     };

@@ -119,6 +119,18 @@ CKKSCiphertext sigmoid(const CKKSCiphertext &x1_encrypted, CKKSEvaluator &eval) 
   return eval.add(result, coeff3_x3_encrypted);;
 }
 
+vector<double> randomVector(int dim, double maxNorm) {
+    vector<double> x;
+    x.reserve(dim);
+
+    for (int i = 0; i < dim; i++) {
+        // generate a random double between -maxNorm and maxNorm
+        double a = -maxNorm + ((static_cast<double>(random())) / (static_cast<double>(RAND_MAX))) * (2 * maxNorm);
+        x.push_back(a);
+    }
+    return x;
+}
+
 /* Now that we have written a function, let's evaluate it. */
 int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   // Initialize Google's logging library.

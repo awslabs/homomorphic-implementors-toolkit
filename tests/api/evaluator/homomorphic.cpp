@@ -8,6 +8,7 @@
 #include "hit/CKKSInstance.h"
 #include "hit/api/ciphertext.h"
 #include "hit/common.h"
+#include "../../testutil.h"
 
 using namespace std;
 using namespace hit;

@@ -9,6 +9,7 @@
 #include "hit/common.h"
 #include "hit/sealutils.h"
 #include "seal/seal.h"
+#include "../../testutil.h"
 
 using namespace std;
 using namespace hit;
