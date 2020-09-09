@@ -200,11 +200,12 @@ namespace hit {
         evaluator.rescale_to_next_inplace(ct.seal_ct);
 
         if(update_metadata) {
-            ct.he_level()--;
-
+            // we have to get the last prime *before* reducing the HE level,
+            // since the "last prime" is level-dependent
             auto context_data = getContextData(ct);
             uint64_t prime = context_data->parms().coeff_modulus().back().value();
             ct.scale /= prime;
+            ct.he_level()--;
         }
     }
 
