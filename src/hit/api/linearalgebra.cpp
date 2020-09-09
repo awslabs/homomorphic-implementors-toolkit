@@ -353,8 +353,6 @@ namespace hit {
     template EncryptedMatrix LinearAlgebra::add(const EncryptedMatrix&, double);
     template void LinearAlgebra::add_inplace(EncryptedMatrix &mat, double scalar);
     template EncryptedMatrix LinearAlgebra::multiply(const EncryptedMatrix&, double);
-    template EncryptedMatrix LinearAlgebra::mod_down_to(const EncryptedMatrix&, const EncryptedMatrix&);
-    template void LinearAlgebra::mod_down_to_inplace(EncryptedMatrix&, const EncryptedMatrix&);
     template void LinearAlgebra::mod_down_to_min_inplace(EncryptedMatrix&, EncryptedMatrix&);
     template EncryptedMatrix LinearAlgebra::mod_down_to_level(const EncryptedMatrix&, int);
     template void LinearAlgebra::mod_down_to_level_inplace(EncryptedMatrix&, int);
@@ -370,8 +368,6 @@ namespace hit {
     template EncryptedRowVector LinearAlgebra::add(const EncryptedRowVector&, double);
     template void LinearAlgebra::add_inplace(EncryptedRowVector &mat, double scalar);
     template EncryptedRowVector LinearAlgebra::multiply(const EncryptedRowVector&, double);
-    template EncryptedRowVector LinearAlgebra::mod_down_to(const EncryptedRowVector&, const EncryptedRowVector&);
-    template void LinearAlgebra::mod_down_to_inplace(EncryptedRowVector&, const EncryptedRowVector&);
     template void LinearAlgebra::mod_down_to_min_inplace(EncryptedRowVector&, EncryptedRowVector&);
     template EncryptedRowVector LinearAlgebra::mod_down_to_level(const EncryptedRowVector&, int);
     template void LinearAlgebra::mod_down_to_level_inplace(EncryptedRowVector&, int);
@@ -387,8 +383,6 @@ namespace hit {
     template EncryptedColVector LinearAlgebra::add(const EncryptedColVector&, double);
     template void LinearAlgebra::add_inplace(EncryptedColVector &mat, double scalar);
     template EncryptedColVector LinearAlgebra::multiply(const EncryptedColVector&, double);
-    template EncryptedColVector LinearAlgebra::mod_down_to(const EncryptedColVector&, const EncryptedColVector&);
-    template void LinearAlgebra::mod_down_to_inplace(EncryptedColVector&, const EncryptedColVector&);
     template void LinearAlgebra::mod_down_to_min_inplace(EncryptedColVector&, EncryptedColVector&);
     template EncryptedColVector LinearAlgebra::mod_down_to_level(const EncryptedColVector&, int);
     template void LinearAlgebra::mod_down_to_level_inplace(EncryptedColVector&, int);
