@@ -36,8 +36,8 @@ namespace hit {
         // A ciphertext starts with many primes (corresponding to the highest chain_index/level)
         // but we remove primes to scale down the noise. A single prime (the lowest level) corresponds
         // to level 0.
-        int& he_level();
-        const int& he_level() const;
+        int &he_level();
+        const int &he_level() const;
 
         // the number of plaintext slots in this ciphertext
         int num_slots() const;
@@ -47,7 +47,7 @@ namespace hit {
 
         friend class CKKSEncryptor;
 
-    private:
+       private:
         // flag indicating whether this CT has been initialized or not
         // CKKSCiphertexts are initialized upon encryption
         bool initialized = false;

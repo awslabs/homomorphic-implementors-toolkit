@@ -178,7 +178,9 @@ namespace hit {
     void CKKSEvaluator::multiply_plain_inplace(CKKSCiphertext &ct, const vector<double> &plain) {
         VLOG(LOG_VERBOSE) << "Multiply by plaintext";
         if (ct.num_slots() != plain.size()) {
-            throw invalid_argument("CKKSEvaluator::multiply_plain: encoded size does not match plaintext input. Expected " + to_string(ct.num_slots()) + ", got " + to_string(plain.size()));
+            throw invalid_argument(
+                "CKKSEvaluator::multiply_plain: encoded size does not match plaintext input. Expected " +
+                to_string(ct.num_slots()) + ", got " + to_string(plain.size()));
         }
         return multiply_plain_inplace_internal(ct, plain);
     }

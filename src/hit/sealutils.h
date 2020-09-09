@@ -6,8 +6,8 @@
 #include <iomanip>
 #include <iostream>
 
-#include "seal/seal.h"
 #include "api/ciphertext.h"
+#include "seal/seal.h"
 
 namespace hit {
     /*
@@ -28,7 +28,6 @@ namespace hit {
     Helper function: Fetch the last prime given SEALContext and heLevel.
     */
     std::uint64_t getLastPrime(const std::shared_ptr<seal::SEALContext> &context, int heLevel);
-
 
     /*
     Helper function: Return the HE level of the SEAL ciphertext.

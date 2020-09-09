@@ -29,8 +29,10 @@ namespace hit {
         if (mode != ENC_META && coeffs.size() != numSlots) {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
-            throw invalid_argument("You can only encrypt vectors which have exactly as many coefficients as the number of plaintext slots: Expected " +
-                                   to_string(numSlots) + ", got " + to_string(coeffs.size()));
+            throw invalid_argument(
+                "You can only encrypt vectors which have exactly as many coefficients as the number of plaintext "
+                "slots: Expected " +
+                to_string(numSlots) + ", got " + to_string(coeffs.size()));
         }
 
         if (lvl == -1) {

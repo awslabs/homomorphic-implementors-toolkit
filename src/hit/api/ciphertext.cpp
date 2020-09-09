@@ -27,7 +27,7 @@ namespace hit {
         initialized = proto_ct.initialized();
         scale = proto_ct.scale();
         he_level_ = proto_ct.he_level();
-        num_slots_ = context->first_context_data()->parms().poly_modulus_degree()/2;
+        num_slots_ = context->first_context_data()->parms().poly_modulus_degree() / 2;
 
         if (initialized) {
             int raw_pt_size = proto_ct.raw_pt_size();
@@ -73,12 +73,11 @@ namespace hit {
         return num_slots_;
     }
 
-    int& CKKSCiphertext::he_level() {
+    int &CKKSCiphertext::he_level() {
         return he_level_;
     }
 
-
-    const int& CKKSCiphertext::he_level() const {
+    const int &CKKSCiphertext::he_level() const {
         return he_level_;
     }
 }  // namespace hit

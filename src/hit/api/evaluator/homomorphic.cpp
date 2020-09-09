@@ -6,9 +6,10 @@
  */
 
 #include "homomorphic.h"
-#include "../../sealutils.h"
 
 #include <future>
+
+#include "../../sealutils.h"
 
 using namespace std;
 using namespace seal;
@@ -16,12 +17,12 @@ using namespace seal;
 namespace hit {
 
     /* Note: there is a flag to update_metadata of ciphertexts
-     * however, *this evaluator must not depend on those values*.
-     * Instead, it must depend on SEAL's metadata.
+     * however, *this evaluator must not depend on those values* (specifically: he_level() and scale()).
+     * Instead, it must depend on SEAL's metadata for ciphertext level and scale.
      * This is a result of the current architecture of the evaluators:
      * In the Debug evaluator, we turn off update_metadata and let the DepthFinder/ScaleEstimator
-     * evaluators take care of that. That means if this evaluator tries to use that metadata, it will
-     * always be incorrect (no matter which order Debug calls its sub-evaluators).
+     * evaluators take compute HE level and scale. That means if this evaluator tries to use those
+     * metadata values, it will always be incorrect (no matter which order Debug calls its sub-evaluators).
      */
 
     HomomorphicEval::HomomorphicEval(const shared_ptr<SEALContext> &context, CKKSEncoder &encoder, Encryptor &encryptor,
@@ -117,7 +118,7 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
         evaluator.multiply_inplace(ct1.seal_ct, ct2.seal_ct);
-        if(update_metadata) {
+        if (update_metadata) {
             ct1.scale *= ct2.scale;
         }
     }
@@ -136,7 +137,7 @@ namespace hit {
             // with our mirror calculation
             ct.seal_ct.scale() = previous_scale * previous_scale;
         }
-        if(update_metadata) {
+        if (update_metadata) {
             ct.scale *= ct.scale;
         }
     }
@@ -150,14 +151,14 @@ namespace hit {
         Plaintext temp;
         encoder.encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
         evaluator.multiply_plain_inplace(ct.seal_ct, temp);
-        if(update_metadata) {
+        if (update_metadata) {
             ct.scale *= ct.scale;
         }
     }
 
     void HomomorphicEval::square_inplace_internal(CKKSCiphertext &ct) {
         evaluator.square_inplace(ct.seal_ct);
-        if(update_metadata) {
+        if (update_metadata) {
             ct.scale *= ct.scale;
         }
     }
@@ -165,8 +166,8 @@ namespace hit {
     void HomomorphicEval::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
         if (get_SEAL_level(context, ct) < target.he_level()) {
             stringstream buffer;
-            buffer << "Error in mod_down_to: input is at a lower level than target. Input level: " << get_SEAL_level(context, ct)
-                   << ", target level: " << target.he_level();
+            buffer << "Error in mod_down_to: input is at a lower level than target. Input level: "
+                   << get_SEAL_level(context, ct) << ", target level: " << target.he_level();
             throw invalid_argument(buffer.str());
         }
         while (get_SEAL_level(context, ct) > target.he_level()) {
@@ -186,8 +187,8 @@ namespace hit {
     void HomomorphicEval::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
         if (get_SEAL_level(context, ct) < level) {
             stringstream buffer;
-            buffer << "Error in mod_down_to_level: input is at a lower level than target. Input level: " << get_SEAL_level(context, ct)
-                   << ", target level: " << level;
+            buffer << "Error in mod_down_to_level: input is at a lower level than target. Input level: "
+                   << get_SEAL_level(context, ct) << ", target level: " << level;
             throw invalid_argument(buffer.str());
         }
         while (get_SEAL_level(context, ct) > level) {
@@ -199,7 +200,7 @@ namespace hit {
     void HomomorphicEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
         evaluator.rescale_to_next_inplace(ct.seal_ct);
 
-        if(update_metadata) {
+        if (update_metadata) {
             // we have to get the last prime *before* reducing the HE level,
             // since the "last prime" is level-dependent
             auto context_data = getContextData(ct);
