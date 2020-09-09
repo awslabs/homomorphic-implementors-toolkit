@@ -34,11 +34,11 @@ namespace hit {
             return;
         }
         // extract just the elements we care about from the real plaintext
-        vector<double> exactPlaintext = ct.raw_pt.data();
+        vector<double> exactPlaintext = ct.plaintext().data();
         double exactPlaintextMaxVal = lInfNorm(exactPlaintext);
-        VLOG(LOG_VERBOSE) << "    + Scale: " << setprecision(4) << log2(ct.scale) << " bits";
+        VLOG(LOG_VERBOSE) << "    + Scale: " << setprecision(4) << log2(ct.scale()) << " bits";
         VLOG(LOG_VERBOSE) << "    + Exact plaintext logmax: " << log2(exactPlaintextMaxVal)
-                          << " bits (scaled: " << log2(ct.scale) + log2(exactPlaintextMaxVal) << " bits)";
+                          << " bits (scaled: " << log2(ct.scale()) + log2(exactPlaintextMaxVal) << " bits)";
 
         int maxPrintSize = 8;
         stringstream exact_plaintext_info;
@@ -54,7 +54,7 @@ namespace hit {
     }
 
     void PlaintextEval::update_max_log_plain_val(const CKKSCiphertext &ct) {
-        double exactPlaintextMaxVal = lInfNorm(ct.raw_pt.data());
+        double exactPlaintextMaxVal = lInfNorm(ct.plaintext().data());
 
         ptMaxLog = max(ptMaxLog, log2(exactPlaintextMaxVal));
     }
@@ -112,14 +112,14 @@ namespace hit {
     }
 
     void PlaintextEval::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        ct1.raw_pt = ct1.raw_pt + ct2.raw_pt;
+        ct1.raw_pt = ct1.plaintext() + ct2.plaintext();
         update_max_log_plain_val(ct1);
         print_stats(ct1);
     }
 
     void PlaintextEval::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         Vector coeffVec(ct.num_slots(), scalar);
-        ct.raw_pt = ct.raw_pt + coeffVec;
+        ct.raw_pt = ct.plaintext() + coeffVec;
         update_max_log_plain_val(ct);
         print_stats(ct);
     }
@@ -133,20 +133,20 @@ namespace hit {
         }
 
         Vector coeffVec(ct.num_slots(), plain);
-        ct.raw_pt = ct.raw_pt + coeffVec;
+        ct.raw_pt = ct.plaintext() + coeffVec;
         update_max_log_plain_val(ct);
         print_stats(ct);
     }
 
     void PlaintextEval::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        ct1.raw_pt = ct1.raw_pt - ct2.raw_pt;
+        ct1.raw_pt = ct1.plaintext() - ct2.plaintext();
         update_max_log_plain_val(ct1);
         print_stats(ct1);
     }
 
     void PlaintextEval::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         Vector coeffVec(ct.num_slots(), scalar);
-        ct.raw_pt = ct.raw_pt - coeffVec;
+        ct.raw_pt = ct.plaintext() - coeffVec;
         update_max_log_plain_val(ct);
         print_stats(ct);
     }
@@ -160,7 +160,7 @@ namespace hit {
         }
 
         Vector coeffVec(ct.num_slots(), plain);
-        ct.raw_pt = ct.raw_pt - coeffVec;
+        ct.raw_pt = ct.plaintext() - coeffVec;
         update_max_log_plain_val(ct);
         print_stats(ct);
     }
@@ -169,7 +169,7 @@ namespace hit {
         if (ct1.num_slots() != ct2.num_slots()) {
             throw invalid_argument("INTERNAL ERROR: Plaintext size mismatch");
         }
-        for (int i = 0; i < ct1.raw_pt.size(); i++) {
+        for (int i = 0; i < ct1.plaintext().size(); i++) {
             ct1.raw_pt[i] = ct1.raw_pt[i] * ct2.raw_pt[i];
         }
         update_max_log_plain_val(ct1);
@@ -177,7 +177,7 @@ namespace hit {
     }
 
     void PlaintextEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        ct.raw_pt = scalar * ct.raw_pt;
+        ct.raw_pt = scalar * ct.plaintext();
         update_max_log_plain_val(ct);
         print_stats(ct);
     }

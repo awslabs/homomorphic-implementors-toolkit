@@ -28,9 +28,4 @@ namespace hit {
     Helper function: Fetch the last prime given SEALContext and heLevel.
     */
     std::uint64_t getLastPrime(const std::shared_ptr<seal::SEALContext> &context, int heLevel);
-
-    /*
-    Helper function: Return the HE level of the SEAL ciphertext.
-    */
-    int get_SEAL_level(const std::shared_ptr<seal::SEALContext> &context, const CKKSCiphertext &ct);
 }  // namespace hit

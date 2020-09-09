@@ -55,7 +55,7 @@ namespace hit {
             logModulus += log2(prime.value());
         }
         VLOG(LOG_VERBOSE) << "    + Plaintext logmax: " << log2(exactPlaintextMaxVal)
-                          << " bits (scaled: " << log2(ct.scale) + log2(exactPlaintextMaxVal) << " bits)";
+                          << " bits (scaled: " << log2(ct.scale()) + log2(exactPlaintextMaxVal) << " bits)";
         VLOG(LOG_VERBOSE) << "    + Total modulus size: " << setprecision(4) << logModulus << " bits";
         VLOG(LOG_VERBOSE) << "    + Theoretical max log scale: " << get_estimated_max_log_scale() << " bits";
     }
@@ -72,10 +72,10 @@ namespace hit {
 
     void ScaleEstimator::update_max_log_scale(const CKKSCiphertext &ct) {
         // update the estimatedMaxLogScale
-        auto scaleExp = static_cast<int>(round(log2(ct.scale) / log2(baseScale)));
+        auto scaleExp = static_cast<int>(round(log2(ct.scale()) / log2(baseScale)));
         if (scaleExp != 1 && scaleExp != 2) {
             stringstream buffer;
-            buffer << "INTERNAL ERROR: scaleExp is not 1 or 2: got " << scaleExp << "\t" << log2(ct.scale) << "\t"
+            buffer << "INTERNAL ERROR: scaleExp is not 1 or 2: got " << scaleExp << "\t" << log2(ct.scale()) << "\t"
                    << log2(baseScale);
             throw invalid_argument(buffer.str());
         }
@@ -160,7 +160,7 @@ namespace hit {
         dfEval->multiply_inplace_internal(ct1, ct2);
         ptEval->multiply_inplace_internal(ct1, ct2);
 
-        ct1.scale *= ct2.scale;
+        ct1.scale_ *= ct2.scale();
         update_max_log_scale(ct1);
 
         print_stats(ct1);
@@ -170,7 +170,7 @@ namespace hit {
         dfEval->multiply_plain_inplace_internal(ct, scalar);
         ptEval->multiply_plain_inplace_internal(ct, scalar);
 
-        ct.scale *= ct.scale;
+        ct.scale_ *= ct.scale();
         update_max_log_scale(ct);
         print_stats(ct);
     }
@@ -183,7 +183,7 @@ namespace hit {
         for (int i = 0; i < ct.num_slots(); i++) {
             plain_max = max(plain_max, abs(plain[i]));
         }
-        ct.scale *= ct.scale;
+        ct.scale_ *= ct.scale();
         update_max_log_scale(ct);
         print_stats(ct);
     }
@@ -192,20 +192,20 @@ namespace hit {
         dfEval->square_inplace_internal(ct);
         ptEval->square_inplace_internal(ct);
 
-        ct.scale *= ct.scale;
+        ct.scale_ *= ct.scale();
         update_max_log_scale(ct);
         print_stats(ct);
     }
 
     void ScaleEstimator::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
-        if (ct.he_level() == target.he_level() && ct.scale != target.scale) {
+        if (ct.he_level() == target.he_level() && ct.scale() != target.scale()) {
             throw invalid_argument("modDownTo: levels match, but scales do not.");
         }
 
         dfEval->mod_down_to_inplace_internal(ct, target);
         ptEval->mod_down_to_inplace_internal(ct, target);
 
-        ct.scale = target.scale;
+        ct.scale_ = target.scale();
 
         // recursive call updated he_level, so we need to update maxLogScale
         update_max_log_scale(ct);
@@ -213,14 +213,14 @@ namespace hit {
     }
 
     void ScaleEstimator::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
-        if (ct1.he_level() == ct2.he_level() && ct1.scale != ct2.scale) {
+        if (ct1.he_level() == ct2.he_level() && ct1.scale() != ct2.scale()) {
             throw invalid_argument("modDownToMin: levels match, but scales do not.");
         }
 
         if (ct1.he_level() > ct2.he_level()) {
-            ct1.scale = ct2.scale;
+            ct1.scale_ = ct2.scale();
         } else {
-            ct2.scale = ct1.scale;
+            ct2.scale_ = ct1.scale();
         }
 
         dfEval->mod_down_to_min_inplace_internal(ct1, ct2);
@@ -244,11 +244,11 @@ namespace hit {
         ptEval->mod_down_to_level_inplace_internal(ct, level);
 
         // reset he_level for dest
-        ct.he_level() += lvlDiff;
+        ct.he_level_ += lvlDiff;
         while (ct.he_level() > level) {
             uint64_t p = getLastPrime(context, ct.he_level());
-            ct.he_level()--;
-            ct.scale = (ct.scale * ct.scale) / p;
+            ct.he_level_--;
+            ct.scale_ = (ct.scale() * ct.scale()) / p;
         }
         // ct's level is now reset to level
 
@@ -268,7 +268,7 @@ namespace hit {
         dfEval->rescale_to_next_inplace_internal(ct);
         ptEval->rescale_to_next_inplace_internal(ct);
 
-        ct.scale /= prime;
+        ct.scale_ /= prime;
         update_max_log_scale(ct);
         print_stats(ct);
     }

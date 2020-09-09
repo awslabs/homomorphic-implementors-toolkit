@@ -191,7 +191,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   x_enc_pt = sigmoid(x_enc_pt, *ptInst->evaluator);
   // Compare the plaintext inside x_enc_pt to the expected result
   // getPlaintext() decodes the shadow plaintext
-  double errNorm = diff2Norm(exactResult, x_enc_pt.raw_pt.data());
+  double errNorm = diff2Norm(exactResult, x_enc_pt.plaintext().data());
   if(errNorm < 0.0001) {
     LOG(INFO) << "\tHomomorphic algorithm matches cleartext algorithm.";
   }

@@ -11,11 +11,12 @@ using namespace std;
 using namespace seal;
 
 namespace hit {
+
     void CKKSCiphertext::copyMetadataFrom(const CKKSCiphertext &src) {
+        raw_pt = src.raw_pt;
         initialized = src.initialized;
         he_level_ = src.he_level_;
-        raw_pt = src.raw_pt;
-        scale = src.scale;
+        scale_ = src.scale_;
         num_slots_ = src.num_slots_;
     }
 
@@ -25,7 +26,7 @@ namespace hit {
         }
 
         initialized = proto_ct.initialized();
-        scale = proto_ct.scale();
+        scale_ = proto_ct.scale();
         he_level_ = proto_ct.he_level();
         num_slots_ = context->first_context_data()->parms().poly_modulus_degree() / 2;
 
@@ -55,7 +56,7 @@ namespace hit {
 
         proto_ct->set_version(0);
         proto_ct->set_initialized(initialized);
-        proto_ct->set_scale(scale);
+        proto_ct->set_scale(scale_);
         proto_ct->set_he_level(he_level_);
 
         if (initialized) {
@@ -69,15 +70,20 @@ namespace hit {
         }
     }
 
+    // Metadata interface functions
     int CKKSCiphertext::num_slots() const {
         return num_slots_;
     }
 
-    int &CKKSCiphertext::he_level() {
+    int CKKSCiphertext::he_level() const {
         return he_level_;
     }
 
-    const int &CKKSCiphertext::he_level() const {
-        return he_level_;
+    double CKKSCiphertext::scale() const {
+        return scale_;
+    }
+
+    Vector CKKSCiphertext::plaintext() const {
+        return raw_pt;
     }
 }  // namespace hit

@@ -83,6 +83,10 @@ namespace hit {
         void reset_internal() override;
 
        private:
+        /* Helper function: Return the HE level of the SEAL ciphertext.
+         */
+        int get_SEAL_level(const CKKSCiphertext &ct) const;
+
         seal::Evaluator evaluator;
         seal::CKKSEncoder &encoder;
         seal::Encryptor &encryptor;
