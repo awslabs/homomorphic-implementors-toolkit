@@ -1024,54 +1024,6 @@ TEST(LinearAlgebraTest, MultiplyMatrixCol) {
     test_multiply_matrix_col(laInst, 300, 27, PI, unit1);
 }
 
-TEST(LinearAlgebraTest, ModDownToMatrix) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
-
-    int unit1_height = 64; // a 64x64 encoding unit
-    EncodingUnit unit1 = laInst.make_unit(unit1_height);
-
-    Matrix mat = random_mat(64, 64);
-    EncryptedMatrix ct_mat1 = laInst.encrypt_matrix(mat, unit1);
-    EncryptedMatrix ct_mat0 = laInst.encrypt_matrix(mat, unit1, 0);
-    ASSERT_EQ(ct_mat1.he_level(), 1);
-    ASSERT_EQ(ct_mat0.he_level(), 0);
-    laInst.mod_down_to_inplace(ct_mat1, ct_mat0);
-    ASSERT_EQ(ct_mat1.he_level(), 0);
-}
-
-TEST(LinearAlgebraTest, ModDownToRow) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
-
-    int unit1_height = 64; // a 64x64 encoding unit
-    EncodingUnit unit1 = laInst.make_unit(unit1_height);
-
-    Vector vec = random_vec(64);
-    EncryptedRowVector ct_vec1 = laInst.encrypt_row_vector(vec, unit1);
-    EncryptedRowVector ct_vec0 = laInst.encrypt_row_vector(vec, unit1, 0);
-    ASSERT_EQ(ct_vec1.he_level(), 1);
-    ASSERT_EQ(ct_vec0.he_level(), 0);
-    laInst.mod_down_to_inplace(ct_vec1, ct_vec0);
-    ASSERT_EQ(ct_vec1.he_level(), 0);
-}
-
-TEST(LinearAlgebraTest, ModDownToCol) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
-
-    int unit1_height = 64; // a 64x64 encoding unit
-    EncodingUnit unit1 = laInst.make_unit(unit1_height);
-
-    Vector vec = random_vec(64);
-    EncryptedColVector ct_vec1 = laInst.encrypt_col_vector(vec, unit1);
-    EncryptedColVector ct_vec0 = laInst.encrypt_col_vector(vec, unit1, 0);
-    ASSERT_EQ(ct_vec1.he_level(), 1);
-    ASSERT_EQ(ct_vec0.he_level(), 0);
-    laInst.mod_down_to_inplace(ct_vec1, ct_vec0);
-    ASSERT_EQ(ct_vec1.he_level(), 0);
-}
-
 TEST(LinearAlgebraTest, ModDownToMinMatrix) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
