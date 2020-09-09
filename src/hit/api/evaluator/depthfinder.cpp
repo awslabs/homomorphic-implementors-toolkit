@@ -100,15 +100,6 @@ namespace hit {
         print_stats(ct);
     }
 
-    void DepthFinder::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
-        if (ct.he_level() >= target.he_level()) {
-            ct.he_level_ = target.he_level();
-        } else {
-            throw invalid_argument("ct level is below target level");
-        }
-        print_stats(ct);
-    }
-
     void DepthFinder::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
         int minLevel = min(ct1.he_level(), ct2.he_level());
         ct1.he_level_ = minLevel;

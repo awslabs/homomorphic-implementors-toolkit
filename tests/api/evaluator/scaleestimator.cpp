@@ -226,22 +226,6 @@ TEST(ScaleEstimatorTest, ModDownToLevel_MultiDepthIsTwo) {
     ASSERT_EQ(ciphertext3.scale(), ciphertext2.scale());
 }
 
-TEST(ScaleEstimatorTest, ModDownTo) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
-    CKKSCiphertext ciphertext1, ciphertext2;
-    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
-    uint64_t prime = getLastPrime(ckksInstance->context, ciphertext1.he_level());
-    ciphertext2 = ckksInstance->evaluator->mod_down_to_level(ciphertext1, ZERO_MULTI_DEPTH);
-    ckksInstance->evaluator->mod_down_to_inplace(ciphertext1, ciphertext2);
-    // Check estimatedMaxLogScale.
-    double estimatedMaxLogScale = PLAINTEXT_LOG_MAX - log2(VALUE);
-    ASSERT_EQ(estimatedMaxLogScale, ckksInstance->get_estimated_max_log_scale());
-    // Expect he_level is decreased.
-    ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext1.he_level());
-    // Check scale.
-    ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2) / prime, ciphertext1.scale());
-}
-
 TEST(ScaleEstimatorTest, ModDownToMin) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;

@@ -171,12 +171,6 @@ namespace hit {
          */
         void square_inplace(CKKSCiphertext &ct);
 
-        CKKSCiphertext mod_down_to(const CKKSCiphertext &ct, const CKKSCiphertext &target);
-
-        /* Reduce the HE level of `x` to the level of the `target`, inplace.
-         */
-        void mod_down_to_inplace(CKKSCiphertext &ct, const CKKSCiphertext &target);
-
         /* Reduce the HE level of both inputs to the lower of the two levels.
          * This can modify at most one of the inputs.
          */
@@ -234,7 +228,6 @@ namespace hit {
         virtual void multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) = 0;
         virtual void multiply_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain) = 0;
         virtual void square_inplace_internal(CKKSCiphertext &ct) = 0;
-        virtual void mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) = 0;
         virtual void mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) = 0;
         virtual void mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) = 0;
         virtual void rescale_to_next_inplace_internal(CKKSCiphertext &ct) = 0;

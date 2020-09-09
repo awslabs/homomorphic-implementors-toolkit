@@ -70,8 +70,6 @@ namespace hit {
 
         void square_inplace_internal(CKKSCiphertext &ct) override;
 
-        void mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) override;
-
         void mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) override;
 
         void mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) override;

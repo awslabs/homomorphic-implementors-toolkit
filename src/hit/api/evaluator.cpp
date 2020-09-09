@@ -196,17 +196,6 @@ namespace hit {
         square_inplace_internal(ct);
     }
 
-    CKKSCiphertext CKKSEvaluator::mod_down_to(const CKKSCiphertext &ct, const CKKSCiphertext &target) {
-        CKKSCiphertext output = ct;
-        mod_down_to_inplace(output, target);
-        return output;
-    }
-
-    void CKKSEvaluator::mod_down_to_inplace(CKKSCiphertext &ct, const CKKSCiphertext &target) {
-        VLOG(LOG_VERBOSE) << "Decreasing HE level to match target";
-        mod_down_to_inplace_internal(ct, target);
-    }
-
     void CKKSEvaluator::mod_down_to_min_inplace(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
         VLOG(LOG_VERBOSE) << "Equalizing HE levels";
         mod_down_to_min_inplace_internal(ct1, ct2);

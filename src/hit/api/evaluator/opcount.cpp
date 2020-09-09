@@ -108,14 +108,6 @@ namespace hit {
         dfEval->square_inplace_internal(ct);
     }
 
-    void OpCount::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
-        if (ct.he_level() - target.he_level() > 0) {
-            modDowns++;
-        }
-        modDownMuls += (ct.he_level() - target.he_level());
-        dfEval->mod_down_to_inplace_internal(ct, target);
-    }
-
     void OpCount::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
         if (abs(ct1.he_level() - ct2.he_level()) > 0) {
             modDowns++;

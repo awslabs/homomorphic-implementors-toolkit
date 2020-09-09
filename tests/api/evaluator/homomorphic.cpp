@@ -300,31 +300,6 @@ TEST(HomomorphicTest, ModDownToLevel_InvalidCase) {
                  invalid_argument);
 }
 
-TEST(HomomorphicTest, ModDownTo) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    CKKSCiphertext ciphertext1, ciphertext2;
-    vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
-    ciphertext1 = ckksInstance->encrypt(vector1);
-    ciphertext2 = ckksInstance->evaluator->mod_down_to_level(ciphertext1, ZERO_MULTI_DEPTH);
-    ckksInstance->evaluator->mod_down_to(ciphertext1, ciphertext2);
-    // Check vector values.
-    vector<double> vector2 = ckksInstance->decrypt(ciphertext1);
-    double diff = diff2Norm(vector1, vector2);
-    ASSERT_NE(diff, INVALID_NORM);
-    ASSERT_LE(diff, MAX_NORM);
-}
-
-TEST(HomomorphicTest, ModDownTo_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    CKKSCiphertext ciphertext1, ciphertext2;
-    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
-    ciphertext2 = ckksInstance->evaluator->mod_down_to_level(ciphertext1, ZERO_MULTI_DEPTH);
-    ASSERT_THROW((
-                     // Expect invalid_argument is thrown when the level is higher.
-                     ckksInstance->evaluator->mod_down_to(ciphertext2, ciphertext1)),
-                 invalid_argument);
-}
-
 TEST(HomomorphicTest, ModDownToMin) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;

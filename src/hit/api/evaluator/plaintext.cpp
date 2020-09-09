@@ -205,11 +205,6 @@ namespace hit {
         print_stats(ct);
     }
 
-    void PlaintextEval::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &) {
-        // does not change ptMaxLog
-        print_stats(ct);
-    }
-
     void PlaintextEval::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
         // does not change ptMaxLog
         print_stats(ct1);

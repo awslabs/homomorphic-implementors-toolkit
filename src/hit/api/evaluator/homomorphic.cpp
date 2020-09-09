@@ -167,24 +167,11 @@ namespace hit {
         }
     }
 
-    void HomomorphicEval::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
-        if (get_SEAL_level(ct) < target.he_level()) {
-            stringstream buffer;
-            buffer << "Error in mod_down_to: input is at a lower level than target. Input level: " << get_SEAL_level(ct)
-                   << ", target level: " << target.he_level();
-            throw invalid_argument(buffer.str());
-        }
-        while (get_SEAL_level(ct) > target.he_level()) {
-            multiply_plain_inplace(ct, 1);
-            rescale_to_next_inplace(ct);
-        }
-    }
-
     void HomomorphicEval::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
         if (get_SEAL_level(ct1) > get_SEAL_level(ct2)) {
-            mod_down_to_inplace_internal(ct1, ct2);
+            mod_down_to_level_inplace_internal(ct1, get_SEAL_level(ct2));
         } else {
-            mod_down_to_inplace_internal(ct2, ct1);
+            mod_down_to_level_inplace_internal(ct2, get_SEAL_level(ct1));
         }
     }
 
