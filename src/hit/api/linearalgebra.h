@@ -321,6 +321,16 @@ namespace hit {
             return temp;
         }
 
+        /* Coefficient-wise (Hadamard) product of two objects.
+         * Inputs: One of the following options
+         *   - EncryptedMatrix, EncryptedMatrix
+         *   - EncryptedRowVector, EncryptedRowVector
+         *   - EncryptedColVector, EncryptedColVector
+         * Output: An encrypted object containing the hadamard product of the inputs.
+         *
+         * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
+         * at the same level as the input, so it needs to be relinearized and rescaled.
+         */
         template<typename T>
         T hadamard_multiply(const T &arg1, const T &arg2) {
             T temp = arg1;
@@ -328,17 +338,38 @@ namespace hit {
             return temp;
         }
 
+        /* Coefficient-wise (Hadamard) product of two objects, storing result in first argument.
+         * Inputs: One of the following options
+         *   - EncryptedMatrix, EncryptedMatrix
+         *   - EncryptedRowVector, EncryptedRowVector
+         *   - EncryptedColVector, EncryptedColVector
+         * Output: None
+         *
+         * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
+         * at the same level as the input, so it needs to be relinearized and rescaled.
+         */
         template<typename T>
         void hadamard_multiply_inplace(T &arg1, const T &arg2) {
-            if (!arg1.initialized() || !arg2.initialized()) {
+            if (!arg1.initialized() || !arg2.initialized() || !arg1.same_size(arg2)) {
                 throw std::invalid_argument("LinearAlgebra::hadamard_multiply: arguments not initialized.");
             }
 
-            for(size_t i = 0; i < arg.num_cts(); i++) {
+            for(size_t i = 0; i < arg1.num_cts(); i++) {
                 eval.multiply_inplace(arg1[i], arg2[i]);
             }
         }
 
+        /* Squares each coefficient of an object.
+         * Inputs: One of the following options
+         *   - EncryptedMatrix
+         *   - EncryptedRowVector
+         *   - EncryptedColVector
+         * Output: An encrypted object where each coefficient is the square of the corresponding
+         * coefficient of the input.
+         *
+         * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
+         * at the same level as the input, so it needs to be relinearized and rescaled.
+         */
         template<typename T>
         T hadamard_square(const T &arg) {
             T temp = arg;
@@ -346,6 +377,16 @@ namespace hit {
             return temp;
         }
 
+        /* Squares each coefficient of an object, inplace.
+         * Inputs: One of the following options
+         *   - EncryptedMatrix
+         *   - EncryptedRowVector
+         *   - EncryptedColVector
+         * Output: None
+         *
+         * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
+         * at the same level as the input, so it needs to be relinearized and rescaled.
+         */
         template<typename T>
         void hadamard_square_inplace(T &arg) {
             if (!arg.initialized()) {
@@ -357,6 +398,29 @@ namespace hit {
             }
         }
 
+        /* Hadamard product of a row vector with each column of a matrix.
+         * Inputs: A row vector and a matrix, both at the same HE level and encoded with respect to the same encoding unit.
+         *         Input dimensions must be compatibile for standard row-vector/matrix product, i.e., the length of the
+         *         vector must be the same as the height of the matrix.
+         * Output: An encrypted matrix where each column is the hadamard product of the (encoded) row vector
+         *         and the corresponding column of the input matrix.
+         *
+         * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
+         * at the same level as the input, so it needs to be relinearized and rescaled.
+         */
+        EncryptedMatrix hadamard_multiply(const EncryptedRowVector &vec, const EncryptedMatrix &mat);
+
+        /* Hadamard product of a column vector with each row of a matrix.
+         * Inputs: A column vector and a matrix, both at the same HE level and encoded with respect to the same encoding unit.
+         *         Input dimensions must be compatibile for standard matrix/column-vector product, i.e., the length of the
+         *         vector must be the same as the width of the matrix.
+         * Output: An encrypted matrix where each row is the hadamard product of the (encoded) column vector
+         *         and the corresponding row of the input matrix.
+         *
+         * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
+         * at the same level as the input, so it needs to be relinearized and rescaled.
+         */
+        EncryptedMatrix hadamard_multiply(const EncryptedMatrix &mat, const EncryptedColVector &vec);
 
         /* Scale an encrypted object by a constant.
          * Inputs: One of the following options
@@ -569,6 +633,40 @@ namespace hit {
             }
         }
 
+        /* Sum the columns of a matrix, and encode the result as a row vector.
+         * This is a key algorithm for (standard) matrix/column-vector multiplication,
+         * which is achieved by performing a hadamard product between the matrix and column
+         * vector (see hadamard_multiply()), and then summing the columns of the result.
+         * This algorithm can optionally scale the result by a constant.
+         * Inputs: An encrypted matrix and an optional scalar, which is 1 if not specified.
+         * Output: A row vector which is the (transposed) sum of the columns of the input matrix,
+         * scaled by a constant.
+         *
+         * Notes: This function is an additive homomorphism:
+         * sum_cols(mat1, c) + sum_cols(mat2, c) = sum_cols(mat1 + mat2, c)
+         * It's fairly expensive to evaluate, so taking advantage of this homomorphism is recommended.
+         *
+         * This function has multiplicative depth one and outputs a linear ciphertext at the same level
+         * as the input, so it needs to be rescaled but not relinearized.
+         */
+        EncryptedRowVector sum_cols(const EncryptedMatrix &mat, double scalar = 1);
+
+        /* Sum the rows of a matrix, and encode the result as a column vector.
+         * This is a key algorithm for (standard) row-vector/matrix multiplication,
+         * which is achieved by performing a hadamard product between the row vector and matrix
+         * (see hadamard_multiply()), and then summing the rows of the result.
+         * Inputs: An encrypted matrix.
+         * Output: A column vector which is the (transposed) sum of the rows of the input matrix.
+         *
+         * Notes: This function is an additive homomorphism:
+         * sum_rows(mat1) + sum_rows(mat2) = sum_rows(mat1 + mat2)
+         * It's fairly expensive to evaluate, so taking advantage of this homomorphism is recommended.
+         *
+         * This function has multiplicative depth zero and outputs a linear ciphertext at the same level
+         * as the input, so it does not need to be rescaled or relinearized.
+         */
+        EncryptedColVector sum_rows(const EncryptedMatrix &mat);
+
     private:
         /* Algorithm 3 in HHCP'18; see the paper for details.
          * sum the columns of a matrix packed into a single ciphertext
@@ -590,7 +688,7 @@ namespace hit {
          *       extended to work for an arbitrary width, as in LPR'13.
          * The output needs to be rescaled!
          */
-        CKKSCiphertext sum_cols(const CKKSCiphertext &ct, const EncodingUnit &unit, double scalar = 1);
+        CKKSCiphertext sum_cols_core(const CKKSCiphertext &ct, const EncodingUnit &unit, double scalar);
 
         /* Algorithm 2 in HHCP'18; see the paper for details.
          * sum the rows of a matrix packed into a single ciphertext
@@ -609,16 +707,19 @@ namespace hit {
          *       as in colSum, at the cost of flexibility
          * The output needs to be rescaled!
          */
-        CKKSCiphertext sum_rows(const CKKSCiphertext &ct, const EncodingUnit &unit);
+        CKKSCiphertext sum_rows_core(const CKKSCiphertext &ct, const EncodingUnit &unit);
 
         // helper function for sum_rows and sum_cols which repeatedly shifts by increasing powers of two, adding the results
         void rot(CKKSCiphertext &t1, int max, int stride, bool rotateLeft);
 
-        // inner loop for matrix/row vector multiplication
-        CKKSCiphertext matrix_rowvec_mul_loop(const EncryptedMatrix &mat, const EncryptedRowVector &vec, int j);
+        // inner loop for matrix/row vector hadamard multiplication
+        std::vector<CKKSCiphertext> matrix_rowvec_hadamard_mul_loop(const EncryptedRowVector &vec, const EncryptedMatrix &mat, int j);
 
-        // inner loop for matrix/column vector multiplication
-        CKKSCiphertext matrix_colvec_mul_loop(const EncryptedMatrix &mat, const EncryptedColVector &vec, double scalar, int i);
+        // inner loop for matrix/column vector hadamard multiplication
+        std::vector<CKKSCiphertext> matrix_colvec_hadamard_mul_loop(const EncryptedMatrix &mat, const EncryptedColVector &vec, int i);
+
+        // inner loop for sum_rows
+        CKKSCiphertext sum_rows_loop(const EncryptedMatrix &mat, int j);
 
         // inner loop for matrix/matrix multiplication
         EncryptedColVector matrix_matrix_mul_loop(const EncryptedMatrix &matrix_aTrans, const EncryptedMatrix &matrix_b, double scalar, int k, bool transpose_unit);

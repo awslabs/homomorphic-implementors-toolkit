@@ -438,22 +438,22 @@ namespace hit {
         }
     }
 
-    CKKSCiphertext LinearAlgebra::matrix_rowvec_mul_loop(const EncryptedMatrix &mat, const EncryptedRowVector &vec, int j) {
+    vector<CKKSCiphertext> LinearAlgebra::matrix_rowvec_hadamard_mul_loop(const EncryptedRowVector &vec, const EncryptedMatrix &mat, int j) {
         vector<CKKSCiphertext> col_prods(mat.num_vertical_units());
         for(int i = 0; i < mat.num_vertical_units(); i++) {
             col_prods[i] = eval.multiply(mat.cts[i][j], vec.cts[i]);
             // rotation requires a linear ciphertext, but does not require rescaling
             eval.relinearize_inplace(col_prods[i]);
         }
-        return sum_rows(eval.add_many(col_prods), mat.encoding_unit());
+        return col_prods;
     }
 
-    EncryptedColVector LinearAlgebra::multiply(const EncryptedRowVector &vec, const EncryptedMatrix &mat) {
+    EncryptedMatrix LinearAlgebra::hadamard_multiply(const EncryptedRowVector &vec, const EncryptedMatrix &mat) {
         if(!vec.initialized() || !mat.initialized() || mat.height() != vec.width() || mat.encoding_unit() != vec.encoding_unit()) {
             throw invalid_argument("Dimension mismatch in LinearAlgebra::multiply.");
         }
 
-        vector<CKKSCiphertext> cts(mat.num_horizontal_units());
+        vector<vector<CKKSCiphertext>> cts_transpose(mat.num_horizontal_units());
 
 #ifdef HIT_USE_TBB
         vector<int> iterIdxs(mat.num_horizontal_units());
@@ -463,38 +463,51 @@ namespace hit {
 
         if(eval.evalPolicy == launch::deferred) {
             std::for_each(execution::seq, begin(iterIdxs), end(iterIdxs), [&](int j) {
-                cts[j] = matrix_rowvec_mul_loop(mat, vec, j);
+                cts_transpose[j] = matrix_rowvec_hadamard_mul_loop(vec, mat, j);
             });
         }
         else {
             std::for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int j) {
-                cts[j] = matrix_rowvec_mul_loop(mat, vec, j);
+                cts_transpose[j] = matrix_rowvec_hadamard_mul_loop(vec, mat, j);
             });
         }
 #else // !HIT_USE_TBB
         for(int j = 0; j < mat.num_horizontal_units(); j++) {
-            cts[j] = matrix_rowvec_mul_loop(mat, vec, j);
+            cts_transpose[j] = matrix_rowvec_hadamard_mul_loop(vec, mat, j);
         }
 #endif // HIT_USE_TBB
-        return EncryptedColVector(mat.width(), mat.encoding_unit(), cts);
+
+        // Because we iterate over the *columns* of the encoding, the encoding units are transposed
+        // We un-transpose them here.
+        vector<vector<CKKSCiphertext>> cts(mat.num_vertical_units());
+
+        for(int i = 0; i < mat.num_vertical_units(); i++) {
+            vector<CKKSCiphertext> mat_row(mat.num_horizontal_units());
+            for(int j = 0; j < mat.num_horizontal_units(); j++) {
+                mat_row[j] = cts_transpose[j][i];
+            }
+            cts[i] = mat_row;
+        }
+
+        return EncryptedMatrix(mat.height(), mat.width(), mat.encoding_unit(), cts);
     }
 
-    CKKSCiphertext LinearAlgebra::matrix_colvec_mul_loop(const EncryptedMatrix &mat, const EncryptedColVector &vec, double scalar, int i) {
+    vector<CKKSCiphertext> LinearAlgebra::matrix_colvec_hadamard_mul_loop(const EncryptedMatrix &mat, const EncryptedColVector &vec, int i) {
         vector<CKKSCiphertext> row_prods(mat.num_horizontal_units());
         for(int j = 0; j < mat.num_horizontal_units(); j++) {
             row_prods[j] = eval.multiply(mat.cts[i][j], vec.cts[j]);
             eval.relinearize_inplace(row_prods[j]);
             eval.rescale_to_next_inplace(row_prods[j]);
         }
-        return sum_cols(eval.add_many(row_prods), mat.encoding_unit(), scalar);
+        return row_prods;
     }
 
-    EncryptedRowVector LinearAlgebra::multiply(const EncryptedMatrix &mat, const EncryptedColVector &vec, double scalar) {
+    EncryptedMatrix LinearAlgebra::hadamard_multiply(const EncryptedMatrix &mat, const EncryptedColVector &vec) {
         if(!vec.initialized() || !mat.initialized() || mat.width() != vec.height() || mat.encoding_unit() != vec.encoding_unit()) {
             throw invalid_argument("Dimension mismatch in LinearAlgebra::multiply.");
         }
 
-        vector<CKKSCiphertext> cts(mat.num_vertical_units());
+        vector<vector<CKKSCiphertext>> cts(mat.num_vertical_units());
 
 #ifdef HIT_USE_TBB
         vector<int> iterIdxs(mat.num_vertical_units());
@@ -504,21 +517,31 @@ namespace hit {
 
         if(eval.evalPolicy == launch::deferred) {
             std::for_each(execution::seq, begin(iterIdxs), end(iterIdxs), [&](int i) {
-                cts[i] = matrix_colvec_mul_loop(mat, vec, scalar, i);
+                cts[i] = matrix_colvec_hadamard_mul_loop(mat, vec, i);
             });
         }
         else {
             std::for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int i) {
-                cts[i] = matrix_colvec_mul_loop(mat, vec, scalar, i);
+                cts[i] = matrix_colvec_hadamard_mul_loop(mat, vec, i);
             });
         }
 #else // !HIT_USE_TBB
         for(int i = 0; i < mat.num_vertical_units(); i++) {
-            cts[i] = matrix_colvec_mul_loop(mat, vec, scalar, i);
+            cts[i] = matrix_colvec_hadamard_mul_loop(mat, vec, i);
         }
 #endif // HIT_USE_TBB
 
-        return EncryptedRowVector(mat.height(), mat.encoding_unit(), cts);
+        return EncryptedMatrix(mat.height(), mat.width(), mat.encoding_unit(), cts);
+    }
+
+    EncryptedColVector LinearAlgebra::multiply(const EncryptedRowVector &vec, const EncryptedMatrix &mat) {
+        EncryptedMatrix hadmard_prod = hadamard_multiply(vec, mat);
+        return sum_rows(hadmard_prod);
+    }
+
+    EncryptedRowVector LinearAlgebra::multiply(const EncryptedMatrix &mat, const EncryptedColVector &vec, double scalar) {
+        EncryptedMatrix hadmard_prod = hadamard_multiply(mat, vec);
+        return sum_cols(hadmard_prod, scalar);
     }
 
     /* Computes (the encoding of) the k^th row of A, given A^T */
@@ -766,7 +789,7 @@ namespace hit {
       // Forget that.
       // This function returns the encoding of the *transpose* of that column vector,
       // which is a *row* vector.
-    CKKSCiphertext LinearAlgebra::sum_cols(const CKKSCiphertext &ct, const EncodingUnit &unit, double scalar) {
+    CKKSCiphertext LinearAlgebra::sum_cols_core(const CKKSCiphertext &ct, const EncodingUnit &unit, double scalar) {
       // if(!isPow2(ct.width)) {
       //   stringstream buffer;
       //   buffer << "sum_cols called with a non-power-2 width: " << ct.width;
@@ -816,6 +839,38 @@ namespace hit {
       return output;
     }
 
+
+    // To sum the columns of a matrix, first sum all of the units in each row,
+    // then call sum_cols_core on the result.
+    // Repeat for each encoding unit row.
+    EncryptedRowVector LinearAlgebra::sum_cols(const EncryptedMatrix &mat, double scalar) {
+        vector<CKKSCiphertext> cts(mat.num_vertical_units());
+
+#ifdef HIT_USE_TBB
+        vector<int> iterIdxs(mat.num_vertical_units());
+        for(int i = 0; i < mat.num_vertical_units(); i++) {
+            iterIdxs[i] = i;
+        }
+
+        if(eval.evalPolicy == launch::deferred) {
+            std::for_each(execution::seq, begin(iterIdxs), end(iterIdxs), [&](int i) {
+                cts[i] = sum_cols_core(eval.add_many(mat.cts[i]), mat.encoding_unit(), scalar);
+            });
+        }
+        else {
+            std::for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int i) {
+                cts[i] = sum_cols_core(eval.add_many(mat.cts[i]), mat.encoding_unit(), scalar);
+            });
+        }
+#else // !HIT_USE_TBB
+        for(int i = 0; i < mat.num_vertical_units(); i++) {
+            cts[i] = sum_cols_core(eval.add_many(mat.cts[i]), mat.encoding_unit(), scalar);
+        }
+#endif // HIT_USE_TBB
+
+        return EncryptedRowVector(mat.height(), mat.encoding_unit(), cts);
+    }
+
     /* Summing the rows of a matrix would typically produce a row vector.
      * Forget that.
      * This function returns the encoding of the *transpose* of that row vector,
@@ -836,11 +891,113 @@ namespace hit {
      *       This prevents the need for masking and a second round of shifting
      *       as in colSum, at the cost of flexibility
      */
-    CKKSCiphertext LinearAlgebra::sum_rows(const CKKSCiphertext &ct, const EncodingUnit &unit) {
+    CKKSCiphertext LinearAlgebra::sum_rows_core(const CKKSCiphertext &ct, const EncodingUnit &unit) {
       CKKSCiphertext output = ct;
       rot(output, unit.encoding_height(), unit.encoding_width(), true);
       return output;
     }
+
+    CKKSCiphertext LinearAlgebra::sum_rows_loop(const EncryptedMatrix &mat, int j) {
+        vector<CKKSCiphertext> col_prods(mat.num_vertical_units());
+        // extract the j^th column of encoding units
+        for(int i = 0; i < mat.num_vertical_units(); i++) {
+            col_prods[i] = mat.cts[i][j];
+        }
+        return sum_rows_core(eval.add_many(col_prods), mat.encoding_unit());
+    }
+
+    // To sum the rows of a matrix, first sum all of the units in each column,
+    // then call sum_rows_core on the result.
+    // Repeat for each encoding unit column.
+    EncryptedColVector LinearAlgebra::sum_rows(const EncryptedMatrix &mat) {
+        vector<CKKSCiphertext> cts(mat.num_horizontal_units());
+
+#ifdef HIT_USE_TBB
+        vector<int> iterIdxs(mat.num_horizontal_units());
+        for(int i = 0; i < mat.num_horizontal_units(); i++) {
+            iterIdxs[i] = i;
+        }
+
+        if(eval.evalPolicy == launch::deferred) {
+            std::for_each(execution::seq, begin(iterIdxs), end(iterIdxs), [&](int j) {
+                cts[j] = sum_rows_loop(mat, j);
+            });
+        }
+        else {
+            std::for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int j) {
+                cts[j] = sum_rows_loop(mat, j);
+            });
+        }
+#else // !HIT_USE_TBB
+        for(int j = 0; j < mat.num_horizontal_units(); j++) {
+            cts[j] = sum_rows_loop(mat, j);
+        }
+#endif // HIT_USE_TBB
+        return EncryptedColVector(mat.width(), mat.encoding_unit(), cts);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /********* A Word on Encodings *********
+     *
+     *********   CKKS Basics   *********
+     * The basic form of a CKKS plaintext is an 'array' of real or complex values
+     * (distinguished from a 'vector', which will refer to linear algebra vectors
+     * below). All plaintext arrays must first be *encoded* into a CKKS Plaintext
+     * type. This encoding is done implicitly in the high-level API.
+     * Plaintexts can then be encrypted to obtain a Ciphertext.
+     *
+     *********   HELR 101   *********
+     * The algorithm implemented below is called 'mini-batch logistic regression
+     * training'. The algorithm primarily utilizes linear algebra objects like
+     * matrices and vectors. Recall that CKKS only knows how to handle arrays,
+     * so we first need to encode these linear algebra objects as an array
+     * before we can CKKS-encode them and encrypt them.
+     *
+     *********   Matrix Encoding   *********
+     * A matrix is encoded as a single array (which is then encoded as a CKKS
+     * plaintext, and then encrypted into a CKKS ciphertext) by concatenating the
+     * rows of the matrix (i.e., row-major encoding). Any operations that refer to
+     * matrices really is talking about inducing something on the underlying array
+     * representation. (Note: It *really* induces an operation on the *padded* array.
+     * CKKS encoding takes a plaintext array like < 1,2,3,4 > and first pads it with
+     * 0s until it has length poly_modulus_degree/2.)
+     * A good example is a rotation. Rotations don't operate
+     * directly on rows of the matrix, they operate on the array as a whole, which
+     * does not correspond to rotating the rows of the matrix. We have to do extra
+     * work to build "matrix row rotation" out of "array rotation".
+     *
+     *********   Vector Encoding   *********
+     * It might seem obvious that we should encode vectors directly as arrays.
+     * However, it turns out to be more convenient to first encode a linear algebra
+     * vector \vec{x} as a *matrix* X. There are two different encodings: either as
+     * rows or columns. We would encode a *column* vector as *rows* of a matrix,
+     * and a *row* vector as *columns* of a matrix. The intuition for this is that
+     * for an  matrix A, we can compute A*x for a column vector x as A(*)X,
+     * where (*) is the Hadamard (component-wise) product and X is the m x n
+     * row-encoding of \vec{x}. (This accomplishes the multiplication in a
+     * single step; the 'sum' portion of the dot product is another step.)
+     * Similarly, for a row-vector x, we can
+     * compute x*A easily if we use the column-encoding for X and compute X(*)A.
+     * The vector encoding is always relative to a matrix A, and the dimension of
+     * the the encoded matrix X is the same as the dimension of the transpose of A.
+     *                                                 [ x y ]
+     *                                   |x|             ...
+     * The row encoding turns the vector |y| to matrix [ x y ], while the column
+     *                                         [ x ... x ]
+     * encoding of | x y | produces the matrix [ y ... y ].
+     */
 
     vector<vector<Matrix>> encode_matrix(const Matrix &mat, const EncodingUnit &unit) {
         int height = mat.size1();
