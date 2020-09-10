@@ -3,9 +3,9 @@
 
 #pragma once
 
+#include "../CKKSInstance.h"
 #include "ciphertext.h"
 #include "evaluator.h"
-#include "../CKKSInstance.h"
 
 /* The LinearAlgebra API lifts the Evaluator API to linear algebra objects like row/column vectors and matrices.
  * It provides a simple API for performing many common linear algebra tasks, and automatic encoding and decoding
@@ -20,14 +20,14 @@
 namespace hit {
 
     struct EncodingUnit {
-    public:
+       public:
         // use `makeUnit` in `LinearAlgebra` to construct an encoding unit
         EncodingUnit() = default;
-        friend bool operator== (const EncodingUnit & lhs, const EncodingUnit & rhs);
-        friend bool operator!= (const EncodingUnit & lhs, const EncodingUnit & rhs);
-        int encoding_height() const; // height of this encoding unit
-        int encoding_width() const;  // width of this encoding unit
-    private:
+        friend bool operator==(const EncodingUnit &lhs, const EncodingUnit &rhs);
+        friend bool operator!=(const EncodingUnit &lhs, const EncodingUnit &rhs);
+        int encoding_height() const;  // height of this encoding unit
+        int encoding_width() const;   // width of this encoding unit
+       private:
         EncodingUnit(int encoding_height, int encoding_width);
         int encoding_height_ = 0;  // height of the encoding unit
         int encoding_width_ = 0;   // width of the encoding unit
@@ -40,15 +40,15 @@ namespace hit {
     };
 
     struct EncryptedMatrix : CiphertextMetadata<Matrix> {
-    public:
+       public:
         // use `encrypt_matrix` in `LinearAlgebra` to construct an encrypted matrix
         EncryptedMatrix() = default;
 
-        int height() const; // height of the encrypted matrix
-        int width() const;  // width of the encrypted matrix
-        int num_vertical_units() const; // number of encoding units tiled vertically to encode this matrix
-        int num_horizontal_units() const; // number of encoding units tiled horizontally to encode this matrix
-        EncodingUnit encoding_unit() const; // encoding unit used to encode this matrix
+        int height() const;                  // height of the encrypted matrix
+        int width() const;                   // width of the encrypted matrix
+        int num_vertical_units() const;      // number of encoding units tiled vertically to encode this matrix
+        int num_horizontal_units() const;    // number of encoding units tiled horizontally to encode this matrix
+        EncodingUnit encoding_unit() const;  // encoding unit used to encode this matrix
 
         // number of plaintext slots in the CKKS parameters
         int num_slots() const override;
@@ -58,22 +58,23 @@ namespace hit {
         double scale() const override;
         // Underlying plaintext matrix. This is only available with the Plaintext, Debug, and ScaleEstimator evaluators
         Matrix plaintext() const override;
-    private:
+
+       private:
         EncryptedMatrix(int height, int width, const EncodingUnit &unit, std::vector<std::vector<CKKSCiphertext>> &cts);
 
         bool initialized() const;
 
-        int height_ = 0;         // height of the encoded matrix
-        int width_ = 0;          // width of the encoded matrix
-        EncodingUnit unit;       // encoding unit
+        int height_ = 0;    // height of the encoded matrix
+        int width_ = 0;     // width of the encoded matrix
+        EncodingUnit unit;  // encoding unit
         // two-dimensional grid of encoding units composing this encrypted matrix
         // First index is the row, second index is the column
         std::vector<std::vector<CKKSCiphertext>> cts;
 
         // simple iterator
         size_t num_cts() const;
-        CKKSCiphertext& operator[](size_t idx);
-        const CKKSCiphertext& operator[](size_t idx) const;
+        CKKSCiphertext &operator[](size_t idx);
+        const CKKSCiphertext &operator[](size_t idx) const;
 
         // compare this matrix to another matrix to determine if they have the same size (dimensions and encoding unit)
         bool same_size(const EncryptedMatrix &mat) const;
@@ -82,7 +83,7 @@ namespace hit {
     };
 
     struct EncryptedRowVector : CiphertextMetadata<Vector> {
-    public:
+       public:
         // use `encrypt_row_vector` in `LinearAlgebra` to construct an encrypted row vector
         EncryptedRowVector() = default;
 
@@ -98,19 +99,20 @@ namespace hit {
         double scale() const override;
         // Underlying plaintext vector. This is only available with the Plaintext, Debug, and ScaleEstimator evaluators
         Vector plaintext() const override;
-    private:
+
+       private:
         EncryptedRowVector(int width, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts);
 
         bool initialized() const;
 
-        int width_ = 0;                    // width of the encoded matrix
+        int width_ = 0;                   // width of the encoded matrix
         EncodingUnit unit;                // encoding unit
         std::vector<CKKSCiphertext> cts;  // ciphertexts composing this encrypted matrix
 
         // simple iterator
         size_t num_cts() const;
-        CKKSCiphertext& operator[](size_t idx);
-        const CKKSCiphertext& operator[](size_t idx) const;
+        CKKSCiphertext &operator[](size_t idx);
+        const CKKSCiphertext &operator[](size_t idx) const;
 
         // compare this row vector to another to determine if they have the same size (dimension and encoding unit)
         bool same_size(const EncryptedRowVector &vec) const;
@@ -119,7 +121,7 @@ namespace hit {
     };
 
     struct EncryptedColVector : CiphertextMetadata<Vector> {
-    public:
+       public:
         // use `encrypt_row_vector` in `LinearAlgebra` to construct an encrypted row vector
         EncryptedColVector() = default;
 
@@ -135,19 +137,20 @@ namespace hit {
         double scale() const override;
         // Underlying plaintext vector. This is only available with the Plaintext, Debug, and ScaleEstimator evaluators
         Vector plaintext() const override;
-    private:
+
+       private:
         EncryptedColVector(int height, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts);
 
         bool initialized() const;
 
-        int height_ = 0;                   // height of the encoded vector
+        int height_ = 0;                  // height of the encoded vector
         EncodingUnit unit;                // encoding unit
         std::vector<CKKSCiphertext> cts;  // ciphertexts composing this encrypted matrix
 
         // simple iterator
         size_t num_cts() const;
-        CKKSCiphertext& operator[](size_t idx);
-        const CKKSCiphertext& operator[](size_t idx) const;
+        CKKSCiphertext &operator[](size_t idx);
+        const CKKSCiphertext &operator[](size_t idx) const;
 
         // compare this column vector to another to determine if they have the same size (dimension and encoding unit)
         bool same_size(const EncryptedColVector &vec) const;
@@ -157,7 +160,7 @@ namespace hit {
 
     // Evaluation and Encryption API for Linear Algebra objects
     class LinearAlgebra {
-    public:
+       public:
         /* Wraps a CKKSInstance to create a high-level API for linear algebra encoding, encryption, and operations
          */
         explicit LinearAlgebra(CKKSInstance &inst);
@@ -212,7 +215,7 @@ namespace hit {
          *
          * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
          */
-        template<typename T1, typename T2>
+        template <typename T1, typename T2>
         T1 add(const T1 &arg1, const T2 &arg2) {
             T1 temp = arg1;
             add_inplace(temp, arg2);
@@ -229,35 +232,32 @@ namespace hit {
          *
          * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
          */
-        template<typename T>
+        template <typename T>
         void add_inplace(T &arg1, const T &arg2) {
             if (!arg1.initialized() || !arg2.initialized() || arg1.same_size(arg2)) {
                 throw std::invalid_argument("Arguments to LinearAlgebra::add_inplace do not have the same dimensions");
             }
-            for(size_t i = 0; i < arg1.num_cts(); i++) {
+            for (size_t i = 0; i < arg1.num_cts(); i++) {
                 eval.add_inplace(arg1[i], arg2[i]);
             }
         }
 
-        /* Computes the sum of an encrypted matrix and a public matrix, where the result is stored in the first argument.
-         * Inputs: An encrypted matrix and a public matrix, both with the same dimensions.
-         * Output: None
+        /* Computes the sum of an encrypted matrix and a public matrix, where the result is stored in the first
+         * argument. Inputs: An encrypted matrix and a public matrix, both with the same dimensions. Output: None
          *
          * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
          */
         void add_inplace(EncryptedMatrix &mat1, const Matrix &mat2);
 
-        /* Computes the sum of an encrypted row vector and a public vector, where the result is stored in the first argument.
-         * Inputs: An encrypted vector and a public vector, both with the same dimensions.
-         * Output: None
+        /* Computes the sum of an encrypted row vector and a public vector, where the result is stored in the first
+         * argument. Inputs: An encrypted vector and a public vector, both with the same dimensions. Output: None
          *
          * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
          */
         void add_inplace(EncryptedRowVector &vec1, const Vector &vec2);
 
-        /* Computes the sum of an encrypted column vector and a public vector, where the result is stored in the first argument.
-         * Inputs: An encrypted vector and a public vector, both with the same dimensions.
-         * Output: None
+        /* Computes the sum of an encrypted column vector and a public vector, where the result is stored in the first
+         * argument. Inputs: An encrypted vector and a public vector, both with the same dimensions. Output: None
          *
          * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
          */
@@ -272,12 +272,12 @@ namespace hit {
          *
          * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
          */
-        template<typename T>
+        template <typename T>
         void add_inplace(T &arg, double scalar) {
             if (!arg.initialized()) {
                 throw std::invalid_argument("LinearAlgebra::add_inplace: argument not initialized.");
             }
-            for(size_t i = 0; i < arg.num_cts(); i++) {
+            for (size_t i = 0; i < arg.num_cts(); i++) {
                 eval.add_plain_inplace(arg[i], scalar);
             }
         }
@@ -291,7 +291,7 @@ namespace hit {
          *
          * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
          */
-        template<typename T>
+        template <typename T>
         T add(const T &arg1, double scalar) {
             T temp = arg1;
             add_inplace(temp, scalar);
@@ -308,14 +308,14 @@ namespace hit {
          * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
          * The input vector may not be empty.
          */
-        template<typename T>
+        template <typename T>
         T add(const std::vector<T> &args) {
-            if(args.empty()) {
+            if (args.empty()) {
                 throw std::invalid_argument("Vector of summands to LinearAlgebra::add cannot be empty.");
             }
             // no further validation needed since we call a LinearAlgebra function
             T temp = args[0];
-            for(size_t i = 1; i < args.size(); i++) {
+            for (size_t i = 1; i < args.size(); i++) {
                 add_inplace(temp, args[i]);
             }
             return temp;
@@ -331,7 +331,7 @@ namespace hit {
          * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
          * at the same level as the input, so it needs to be relinearized and rescaled.
          */
-        template<typename T>
+        template <typename T>
         T hadamard_multiply(const T &arg1, const T &arg2) {
             T temp = arg1;
             hadamard_multiply_inplace(temp, arg2);
@@ -348,13 +348,13 @@ namespace hit {
          * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
          * at the same level as the input, so it needs to be relinearized and rescaled.
          */
-        template<typename T>
+        template <typename T>
         void hadamard_multiply_inplace(T &arg1, const T &arg2) {
             if (!arg1.initialized() || !arg2.initialized() || !arg1.same_size(arg2)) {
                 throw std::invalid_argument("LinearAlgebra::hadamard_multiply: arguments not initialized.");
             }
 
-            for(size_t i = 0; i < arg1.num_cts(); i++) {
+            for (size_t i = 0; i < arg1.num_cts(); i++) {
                 eval.multiply_inplace(arg1[i], arg2[i]);
             }
         }
@@ -370,7 +370,7 @@ namespace hit {
          * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
          * at the same level as the input, so it needs to be relinearized and rescaled.
          */
-        template<typename T>
+        template <typename T>
         T hadamard_square(const T &arg) {
             T temp = arg;
             hadamard_square_inplace(temp);
@@ -387,20 +387,20 @@ namespace hit {
          * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
          * at the same level as the input, so it needs to be relinearized and rescaled.
          */
-        template<typename T>
+        template <typename T>
         void hadamard_square_inplace(T &arg) {
             if (!arg.initialized()) {
                 throw std::invalid_argument("LinearAlgebra::hadamard_square: argument not initialized.");
             }
 
-            for(size_t i = 0; i < arg.num_cts(); i++) {
+            for (size_t i = 0; i < arg.num_cts(); i++) {
                 eval.square_inplace(arg[i]);
             }
         }
 
         /* Hadamard product of a row vector with each column of a matrix.
-         * Inputs: A row vector and a matrix, both at the same HE level and encoded with respect to the same encoding unit.
-         *         Input dimensions must be compatibile for standard row-vector/matrix product, i.e., the length of the
+         * Inputs: A row vector and a matrix, both at the same HE level and encoded with respect to the same encoding
+         * unit. Input dimensions must be compatibile for standard row-vector/matrix product, i.e., the length of the
          *         vector must be the same as the height of the matrix.
          * Output: An encrypted matrix where each column is the hadamard product of the (encoded) row vector
          *         and the corresponding column of the input matrix.
@@ -411,8 +411,8 @@ namespace hit {
         EncryptedMatrix hadamard_multiply(const EncryptedRowVector &vec, const EncryptedMatrix &mat);
 
         /* Hadamard product of a column vector with each row of a matrix.
-         * Inputs: A column vector and a matrix, both at the same HE level and encoded with respect to the same encoding unit.
-         *         Input dimensions must be compatibile for standard matrix/column-vector product, i.e., the length of the
+         * Inputs: A column vector and a matrix, both at the same HE level and encoded with respect to the same encoding
+         * unit. Input dimensions must be compatibile for standard matrix/column-vector product, i.e., the length of the
          *         vector must be the same as the width of the matrix.
          * Output: An encrypted matrix where each row is the hadamard product of the (encoded) column vector
          *         and the corresponding row of the input matrix.
@@ -432,7 +432,7 @@ namespace hit {
          * Notes: This function has multiplicative depth one and returns a linear ciphertext at
          * the same level as the input, so it needs to be rescaled but *not* relinearized.
          */
-        template<typename T>
+        template <typename T>
         T multiply(const T &arg1, double scalar) {
             T temp = arg1;
             multiply_inplace(temp, scalar);
@@ -449,13 +449,13 @@ namespace hit {
          * Notes: This function has multiplicative depth one and returns a linear ciphertext at
          * the same level as the input, so it needs to be rescaled but *not* relinearized.
          */
-        template<typename T>
+        template <typename T>
         void multiply_inplace(T &arg, double scalar) {
             if (!arg.initialized()) {
                 throw std::invalid_argument("LinearAlgebra::multiply_inplace: argument not initialized.");
             }
 
-            for(size_t i = 0; i < arg.num_cts(); i++) {
+            for (size_t i = 0; i < arg.num_cts(); i++) {
                 eval.multiply_plain_inplace(arg[i], scalar);
             }
         }
@@ -468,7 +468,8 @@ namespace hit {
          * The matrix B must be encrypted at at least level 2. The output is two levels below the level of A^T,
          * but is a linear ciphertext with squared scale, so it needs to be rescaled but *not* relinearized.
          */
-        EncryptedMatrix multiply(const EncryptedMatrix &matrix_aTrans, const EncryptedMatrix &matrix_b, double scalar = 1);
+        EncryptedMatrix multiply(const EncryptedMatrix &matrix_aTrans, const EncryptedMatrix &matrix_b,
+                                 double scalar = 1);
 
         /* Special case of a standard matrix product.
          * Inputs: A t-by-s matrix A^T and t-by-u matrix B, both encoded with the same n-times-m unit,
@@ -479,7 +480,8 @@ namespace hit {
          * The matrix B must be encrypted at at least level 2. The output is two levels below the level of A^T,
          * but is a linear ciphertext with squared scale, so it needs to be rescaled but *not* relinearized.
          */
-        EncryptedMatrix multiply_unit_transpose(const EncryptedMatrix &matrix_aTrans, const EncryptedMatrix &matrix_b, double scalar = 1);
+        EncryptedMatrix multiply_unit_transpose(const EncryptedMatrix &matrix_aTrans, const EncryptedMatrix &matrix_b,
+                                                double scalar = 1);
 
         /* Computes a standard row vector/matrix product.
          * Inputs: Row vector and Matrix, both encoded with the same unit
@@ -512,13 +514,13 @@ namespace hit {
          * Notes: This function repeatedly multiplies by the constant 1 and then rescales. The modified argument is
          * a linear ciphertext which does not need to be rescaled.
          */
-        template<typename T>
+        template <typename T>
         void mod_down_to_min_inplace(T &arg1, T &arg2) {
             if (!arg1.initialized() || !arg2.initialized()) {
                 throw std::invalid_argument("LinearAlgebra::mod_down_to_min: arguments not initialized.");
             }
 
-            for(size_t i = 0; i < arg1.num_cts(); i++) {
+            for (size_t i = 0; i < arg1.num_cts(); i++) {
                 eval.mod_down_to_min_inplace(arg1[i], arg2[i]);
             }
         }
@@ -534,7 +536,7 @@ namespace hit {
          * Notes: This function repeatedly multiplies by the constant 1 and then rescales. The output is
          * a linear ciphertext which does not need to be rescaled.
          */
-        template<typename T>
+        template <typename T>
         T mod_down_to_level(const T &arg, int level) {
             T temp = arg;
             mod_down_to_level_inplace(temp, level);
@@ -552,13 +554,13 @@ namespace hit {
          * Notes: This function repeatedly multiplies by the constant 1 and then rescales. The output is
          * a linear ciphertext which does not need to be rescaled.
          */
-        template<typename T>
+        template <typename T>
         void mod_down_to_level_inplace(T &arg, int level) {
             if (!arg.initialized()) {
                 throw std::invalid_argument("LinearAlgebra::mod_down_to_level: argument not initialized.");
             }
 
-            for(size_t i = 0; i < arg.num_cts(); i++) {
+            for (size_t i = 0; i < arg.num_cts(); i++) {
                 eval.mod_down_to_level_inplace(arg[i], level);
             }
         }
@@ -574,7 +576,7 @@ namespace hit {
          *
          * Notes: The output is a linear ciphertext which does not need to be rescaled.
          */
-        template<typename T>
+        template <typename T>
         T rescale_to_next(const T &arg) {
             T temp = arg;
             rescale_to_next_inplace(temp);
@@ -591,13 +593,13 @@ namespace hit {
          *
          * Notes: The output is a linear ciphertext which does not need to be rescaled.
          */
-        template<typename T>
+        template <typename T>
         void rescale_to_next_inplace(T &arg) {
             if (!arg.initialized()) {
                 throw std::invalid_argument("LinearAlgebra::mod_down_to_level: argument not initialized.");
             }
 
-            for(size_t i = 0; i < arg.num_cts(); i++) {
+            for (size_t i = 0; i < arg.num_cts(); i++) {
                 eval.rescale_to_next_inplace(arg[i]);
             }
         }
@@ -622,13 +624,13 @@ namespace hit {
          *
          * Notes: The output is a linear ciphertext which does not need to be rescaled.
          */
-        template<typename T>
+        template <typename T>
         void relinearize_inplace(T &arg) {
             if (!arg.initialized()) {
                 throw std::invalid_argument("LinearAlgebra::mod_down_to_level: argument not initialized.");
             }
 
-            for(size_t i = 0; i < arg.num_cts(); i++) {
+            for (size_t i = 0; i < arg.num_cts(); i++) {
                 eval.relinearize_inplace(arg[i]);
             }
         }
@@ -667,7 +669,7 @@ namespace hit {
          */
         EncryptedColVector sum_rows(const EncryptedMatrix &mat);
 
-    private:
+       private:
         /* Algorithm 3 in HHCP'18; see the paper for details.
          * sum the columns of a matrix packed into a single ciphertext
          * The plaintext is a vector representing the row-major format of a matrix with `width` columns.
@@ -709,23 +711,29 @@ namespace hit {
          */
         CKKSCiphertext sum_rows_core(const CKKSCiphertext &ct, const EncodingUnit &unit);
 
-        // helper function for sum_rows and sum_cols which repeatedly shifts by increasing powers of two, adding the results
+        // helper function for sum_rows and sum_cols which repeatedly shifts by increasing powers of two, adding the
+        // results
         void rot(CKKSCiphertext &t1, int max, int stride, bool rotateLeft);
 
         // inner loop for matrix/row vector hadamard multiplication
-        std::vector<CKKSCiphertext> matrix_rowvec_hadamard_mul_loop(const EncryptedRowVector &vec, const EncryptedMatrix &mat, int j);
+        std::vector<CKKSCiphertext> matrix_rowvec_hadamard_mul_loop(const EncryptedRowVector &vec,
+                                                                    const EncryptedMatrix &mat, int j);
 
         // inner loop for matrix/column vector hadamard multiplication
-        std::vector<CKKSCiphertext> matrix_colvec_hadamard_mul_loop(const EncryptedMatrix &mat, const EncryptedColVector &vec, int i);
+        std::vector<CKKSCiphertext> matrix_colvec_hadamard_mul_loop(const EncryptedMatrix &mat,
+                                                                    const EncryptedColVector &vec, int i);
 
         // inner loop for sum_rows
         CKKSCiphertext sum_rows_loop(const EncryptedMatrix &mat, int j);
 
         // inner loop for matrix/matrix multiplication
-        EncryptedColVector matrix_matrix_mul_loop(const EncryptedMatrix &matrix_aTrans, const EncryptedMatrix &matrix_b, double scalar, int k, bool transpose_unit);
+        EncryptedColVector matrix_matrix_mul_loop(const EncryptedMatrix &matrix_aTrans, const EncryptedMatrix &matrix_b,
+                                                  double scalar, int k, bool transpose_unit);
 
         // common core for matrix/matrix multiplication; used by both multiply and multiply_unit_transpose
-        std::vector<EncryptedColVector> multiply_common(const EncryptedMatrix &matrix_aTrans, const EncryptedMatrix &matrix_b, double scalar, bool transpose_unit);
+        std::vector<EncryptedColVector> multiply_common(const EncryptedMatrix &matrix_aTrans,
+                                                        const EncryptedMatrix &matrix_b, double scalar,
+                                                        bool transpose_unit);
 
         // helper function for matrix/matrix multiplication which extracts a single row of A (given the encoding of A^T)
         EncryptedRowVector extractRow(const EncryptedMatrix &aTrans, int row);
