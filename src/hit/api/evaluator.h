@@ -93,7 +93,7 @@ namespace hit {
 
         /* Add the ciphertexts in a vector. The vector must be non-empty.
          */
-        CKKSCiphertext add_many(std::vector<CKKSCiphertext> &cts);
+        CKKSCiphertext add_many(const std::vector<CKKSCiphertext> &cts);
 
         /* Subtract two ciphertexts (inducing component-wise subtraction on plaintexts)
          * and store the result in a new ciphertext.
