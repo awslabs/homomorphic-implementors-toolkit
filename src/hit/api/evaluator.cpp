@@ -100,7 +100,7 @@ namespace hit {
         return add_plain_inplace_internal(ct, plain);
     }
 
-    CKKSCiphertext CKKSEvaluator::add_many(vector<CKKSCiphertext> &cts) {
+    CKKSCiphertext CKKSEvaluator::add_many(const vector<CKKSCiphertext> &cts) {
         if (cts.empty()) {
             throw invalid_argument("add_many: vector may not be empty.");
         }
