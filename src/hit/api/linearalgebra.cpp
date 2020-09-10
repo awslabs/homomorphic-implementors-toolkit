@@ -359,6 +359,10 @@ namespace hit {
     template void LinearAlgebra::rescale_to_next_inplace(EncryptedMatrix&);
     template EncryptedMatrix LinearAlgebra::rescale_to_next(const EncryptedMatrix&);
     template void LinearAlgebra::relinearize_inplace(EncryptedMatrix&);
+    template void LinearAlgebra::hadamard_square_inplace(EncryptedMatrix&);
+    template EncryptedMatrix LinearAlgebra::hadamard_square(const EncryptedMatrix&);
+    template EncryptedMatrix LinearAlgebra::hadamard_multiply(const EncryptedMatrix&, const EncryptedMatrix&);
+    template void LinearAlgebra::hadamard_multiply_inplace(EncryptedMatrix&, const EncryptedMatrix&);
 
     // explicit template instantiation
     template EncryptedRowVector LinearAlgebra::add(const EncryptedRowVector&, const EncryptedRowVector&);
@@ -374,6 +378,10 @@ namespace hit {
     template void LinearAlgebra::rescale_to_next_inplace(EncryptedRowVector&);
     template EncryptedRowVector LinearAlgebra::rescale_to_next(const EncryptedRowVector&);
     template void LinearAlgebra::relinearize_inplace(EncryptedRowVector&);
+    template void LinearAlgebra::hadamard_square_inplace(EncryptedRowVector&);
+    template EncryptedRowVector LinearAlgebra::hadamard_square(const EncryptedRowVector&);
+    template EncryptedRowVector LinearAlgebra::hadamard_multiply(const EncryptedRowVector&, const EncryptedRowVector&);
+    template void LinearAlgebra::hadamard_multiply_inplace(EncryptedRowVector&, const EncryptedRowVector&);
 
     // explicit template instantiation
     template EncryptedColVector LinearAlgebra::add(const EncryptedColVector&, const EncryptedColVector&);
@@ -389,6 +397,10 @@ namespace hit {
     template void LinearAlgebra::rescale_to_next_inplace(EncryptedColVector&);
     template EncryptedColVector LinearAlgebra::rescale_to_next(const EncryptedColVector&);
     template void LinearAlgebra::relinearize_inplace(EncryptedColVector&);
+    template void LinearAlgebra::hadamard_square_inplace(EncryptedColVector&);
+    template EncryptedColVector LinearAlgebra::hadamard_square(const EncryptedColVector&);
+    template EncryptedColVector LinearAlgebra::hadamard_multiply(const EncryptedColVector&, const EncryptedColVector&);
+    template void LinearAlgebra::hadamard_multiply_inplace(EncryptedColVector&, const EncryptedColVector&);
 
     void LinearAlgebra::add_inplace(EncryptedMatrix &mat1, const Matrix &mat2) {
         if (!mat1.initialized() || mat1.height() != mat2.size1() || mat1.width() != mat2.size2()) {

@@ -321,6 +321,43 @@ namespace hit {
             return temp;
         }
 
+        template<typename T>
+        T hadamard_multiply(const T &arg1, const T &arg2) {
+            T temp = arg1;
+            hadamard_multiply_inplace(temp, arg2);
+            return temp;
+        }
+
+        template<typename T>
+        void hadamard_multiply_inplace(T &arg1, const T &arg2) {
+            if (!arg1.initialized() || !arg2.initialized()) {
+                throw std::invalid_argument("LinearAlgebra::hadamard_multiply: arguments not initialized.");
+            }
+
+            for(size_t i = 0; i < arg.num_cts(); i++) {
+                eval.multiply_inplace(arg1[i], arg2[i]);
+            }
+        }
+
+        template<typename T>
+        T hadamard_square(const T &arg) {
+            T temp = arg;
+            hadamard_square_inplace(temp);
+            return temp;
+        }
+
+        template<typename T>
+        void hadamard_square_inplace(T &arg) {
+            if (!arg.initialized()) {
+                throw std::invalid_argument("LinearAlgebra::hadamard_square: argument not initialized.");
+            }
+
+            for(size_t i = 0; i < arg.num_cts(); i++) {
+                eval.square_inplace(arg[i]);
+            }
+        }
+
+
         /* Scale an encrypted object by a constant.
          * Inputs: One of the following options
          *   - EncryptedMatrix, double
