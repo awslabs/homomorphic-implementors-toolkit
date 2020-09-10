@@ -100,15 +100,6 @@ namespace hit {
         print_stats(ct);
     }
 
-    void DepthFinder::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
-        int minLevel = min(ct1.he_level(), ct2.he_level());
-        ct1.he_level_ = minLevel;
-        ct2.he_level_ = minLevel;
-        // doesn't matter which input I print stats for since we only
-        // print the level, and both have the same level at this point.
-        print_stats(ct1);
-    }
-
     void DepthFinder::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
         if (ct.he_level() >= level) {
             ct.he_level_ = level;

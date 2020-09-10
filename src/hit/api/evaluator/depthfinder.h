@@ -58,8 +58,6 @@ namespace hit {
 
         void square_inplace_internal(CKKSCiphertext &ct) override;
 
-        void mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) override;
-
         void mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) override;
 
         void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;

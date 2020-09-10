@@ -167,14 +167,6 @@ namespace hit {
         }
     }
 
-    void HomomorphicEval::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
-        if (get_SEAL_level(ct1) > get_SEAL_level(ct2)) {
-            mod_down_to_level_inplace_internal(ct1, get_SEAL_level(ct2));
-        } else {
-            mod_down_to_level_inplace_internal(ct2, get_SEAL_level(ct1));
-        }
-    }
-
     void HomomorphicEval::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
         if (get_SEAL_level(ct) < level) {
             stringstream buffer;

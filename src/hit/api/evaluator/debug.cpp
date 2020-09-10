@@ -260,14 +260,6 @@ namespace hit {
         check_scale(ct);
     }
 
-    void DebugEval::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
-        heEval->mod_down_to_min_inplace_internal(ct1, ct2);
-        seEval->mod_down_to_min_inplace_internal(ct1, ct2);
-
-        print_stats(ct1);
-        print_stats(ct2);
-    }
-
     void DebugEval::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
         check_scale(ct);
         heEval->mod_down_to_level_inplace_internal(ct, level);

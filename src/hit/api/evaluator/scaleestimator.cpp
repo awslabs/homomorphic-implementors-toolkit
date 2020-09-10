@@ -197,27 +197,6 @@ namespace hit {
         print_stats(ct);
     }
 
-    void ScaleEstimator::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
-        if (ct1.he_level() == ct2.he_level() && ct1.scale() != ct2.scale()) {
-            throw invalid_argument("modDownToMin: levels match, but scales do not.");
-        }
-
-        if (ct1.he_level() > ct2.he_level()) {
-            ct1.scale_ = ct2.scale();
-        } else {
-            ct2.scale_ = ct1.scale();
-        }
-
-        dfEval->mod_down_to_min_inplace_internal(ct1, ct2);
-        ptEval->mod_down_to_min_inplace_internal(ct1, ct2);
-
-        // recursive call updated he_level, so we need to update maxLogScale
-        update_max_log_scale(ct1);
-        update_max_log_scale(ct2);
-        print_stats(ct1);
-        print_stats(ct2);
-    }
-
     void ScaleEstimator::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
         int lvlDiff = ct.he_level() - level;
 
