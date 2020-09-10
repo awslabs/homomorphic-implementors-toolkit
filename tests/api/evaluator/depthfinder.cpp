@@ -114,7 +114,7 @@ TEST(DepthFinderTest, AddCiphertextWithDiffHeLevel) {
     CKKSCiphertext ciphertext1, ciphertext2;
     ciphertext1 = ckksInstance->encrypt(VECTOR_1);
     ciphertext2 = ckksInstance->encrypt(VECTOR_1);
-    ckksInstance->evaluator->mod_down_to_level_inplace(ciphertext2, ciphertext2.he_level()-1);
+    ckksInstance->evaluator->mod_down_to_level_inplace(ciphertext2, ciphertext2.he_level() - 1);
     ASSERT_THROW((
                      // Expect invalid_argument is thrown because he_level of the two ciphertexts is different.
                      ckksInstance->evaluator->add(ciphertext1, ciphertext2)),
@@ -157,7 +157,7 @@ TEST(DepthFinderTest, Multiply_InvalidCase) {
     CKKSCiphertext ciphertext1, ciphertext2;
     ciphertext1 = ckksInstance->encrypt(VECTOR_1);
     ciphertext2 = ckksInstance->encrypt(VECTOR_1);
-    ckksInstance->evaluator->mod_down_to_level_inplace(ciphertext2, ciphertext2.he_level()-1);
+    ckksInstance->evaluator->mod_down_to_level_inplace(ciphertext2, ciphertext2.he_level() - 1);
     ASSERT_THROW((
                      // Expect invalid_argument is thrown because he_level of the two ciphertexts is different.
                      ckksInstance->evaluator->multiply(ciphertext1, ciphertext2)),
@@ -180,7 +180,7 @@ TEST(DepthFinderTest, ModDownToMin) {
     ciphertext1 = ckksInstance->encrypt(VECTOR_1);
     ciphertext2 = ckksInstance->encrypt(VECTOR_1);
     ciphertext3 = ckksInstance->encrypt(VECTOR_1);
-    ckksInstance->evaluator->mod_down_to_level_inplace(ciphertext3, ciphertext3.he_level()-1);
+    ckksInstance->evaluator->mod_down_to_level_inplace(ciphertext3, ciphertext3.he_level() - 1);
     ckksInstance->evaluator->mod_down_to_min_inplace(ciphertext1, ciphertext3);
     ckksInstance->evaluator->mod_down_to_min_inplace(ciphertext3, ciphertext2);
     // Expect he_level is changed.

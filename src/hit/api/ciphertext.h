@@ -5,9 +5,9 @@
 
 #include "../matrix.h"
 #include "hit/protobuf/ciphertext.pb.h"  // NOLINT
+#include "metadata.h"
 #include "seal/context.h"
 #include "seal/seal.h"
-#include "metadata.h"
 
 namespace hit {
     /* This is a wrapper around the SEAL `Ciphertext` type.
@@ -29,15 +29,15 @@ namespace hit {
         double scale() const override;
         Vector plaintext() const override;
 
-        friend class CKKSEncryptor;
-        friend class CKKSDecryptor; // needs access to seal_ct
-        friend class DebugEval; // needs access to seal_ct
-        friend class DepthFinder; // modifies he_level_
-        friend class HomomorphicEval; // needs access to seal_ct
-        friend class PlaintextEval; // modifies raw_pt
-        friend class ScaleEstimator; // modifies scale_
+        friend class CKKSEncryptor;    // needs access to all fields of seal_ct
+        friend class CKKSDecryptor;    // needs access to seal_ct
+        friend class DebugEval;        // needs access to seal_ct
+        friend class DepthFinder;      // modifies he_level_
+        friend class HomomorphicEval;  // needs access to seal_ct
+        friend class PlaintextEval;    // modifies raw_pt
+        friend class ScaleEstimator;   // modifies scale_
 
-    private:
+       private:
         // Copy all members except the ciphertext itself
         void copyMetadataFrom(const CKKSCiphertext &src);
 
