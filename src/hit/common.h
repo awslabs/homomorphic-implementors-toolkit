@@ -31,9 +31,6 @@ namespace hit {
     std::string elapsedTimeToStr(timepoint start, timepoint end, TimeScale = TS_DYNAMIC);
     void printElapsedTime(timepoint start);
 
-    std::vector<double> decodePlaintext(const std::vector<double> &encoded_pt, CTEncoding encoding, int height,
-                                        int width, int encoded_height, int encoded_width);
-
     // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
     double diff2Norm(const std::vector<double> &expected, const std::vector<double> &actual);
 
@@ -51,17 +48,8 @@ namespace hit {
     // the L-infinity norm
     double lInfNorm(const std::vector<double> &x);
 
-    std::vector<double> randomVector(int dim, double maxNorm);
-
     uintmax_t streamSize(std::iostream &s);
 
     std::string bytesToStr(uintmax_t sizeBytes);
 
-    Matrix ctPlaintextToMatrix(const CKKSCiphertext &ct);
-    Matrix ctDecryptedToMatrix(CKKSInstance &inst, const CKKSCiphertext &ct);
-
-    Matrix ctPlaintextToMatrix(const std::vector<CKKSCiphertext> &cts);
-    Vector ctPlaintextToVector(const std::vector<CKKSCiphertext> &cts);
-    Matrix ctDecryptedToMatrix(CKKSInstance &inst, const std::vector<CKKSCiphertext> &cts);
-    Vector ctDecryptedToVector(CKKSInstance &inst, const std::vector<CKKSCiphertext> &cts);
 }  // namespace hit

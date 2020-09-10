@@ -4,6 +4,7 @@
 #include "debug.h"
 
 #include <glog/logging.h>
+
 #include <iomanip>
 
 #include "../../common.h"
@@ -18,7 +19,7 @@ namespace hit {
                          const GaloisKeys &galois_keys, const RelinKeys &relin_keys, double scale,
                          CKKSDecryptor &decryptor)
         : CKKSEvaluator(context), decryptor(decryptor), initScale(scale) {
-        heEval = new HomomorphicEval(context, encoder, encryptor, galois_keys, relin_keys);
+        heEval = new HomomorphicEval(context, encoder, encryptor, galois_keys, relin_keys, false);
         seEval = new ScaleEstimator(context, static_cast<int>(2 * encoder.slot_count()), scale);
     }
 
@@ -37,7 +38,7 @@ namespace hit {
     void DebugEval::check_scale(const CKKSCiphertext &ct) const {
         auto context_data = context->first_context_data();
         double expectedScale = initScale;
-        while (context_data->chain_index() > ct.he_level) {
+        while (context_data->chain_index() > ct.he_level()) {
             expectedScale = (expectedScale * expectedScale) /
                             static_cast<double>(context_data->parms().coeff_modulus().back().value());
             context_data = context_data->next_context_data();
@@ -45,6 +46,9 @@ namespace hit {
         if (ct.seal_ct.scale() != expectedScale && ct.seal_ct.scale() != expectedScale * expectedScale) {
             throw invalid_argument("CHECK_SCALE: Expected " + to_string(expectedScale) + "^{1,2}, got " +
                                    to_string(ct.seal_ct.scale()));
+        }
+        if (ct.seal_ct.scale() != ct.scale) {
+            throw invalid_argument("HIT scale calculation does not match SEAL.");
         }
     }
 
@@ -54,7 +58,7 @@ namespace hit {
 
         // decrypt to compute the approximate plaintext
         vector<double> homomPlaintext = decryptor.decrypt(ct);
-        vector<double> exactPlaintext = ct.getPlaintext();
+        vector<double> exactPlaintext = ct.raw_pt.data();
 
         norm = diff2Norm(exactPlaintext, homomPlaintext);
         if (abs(log2(ct.scale) - log2(ct.seal_ct.scale())) > 0.1) {
@@ -115,7 +119,7 @@ namespace hit {
             LOG(INFO) << actual_debug_result.str();
 
             Plaintext encoded_plain;
-            heEval->encoder.encode(ct.encoded_pt.data(), seEval->baseScale, encoded_plain);
+            heEval->encoder.encode(ct.raw_pt.data(), seEval->baseScale, encoded_plain);
 
             vector<double> decoded_plain;
             heEval->encoder.decode(encoded_plain, decoded_plain);

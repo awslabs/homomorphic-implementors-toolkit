@@ -12,7 +12,7 @@ using namespace hit;
 
 /* This file provides a demonstration of how to use this CKKS library and its many evaluators. */
 
-/* The pplr library provides an interface for low-level homomorphic operations
+/* The HIT library provides an interface for low-level homomorphic operations
  * like addition and multiplication. Higher level functions are composed of
  * these primitive operations. As an example, we will demonstrate how to
  * evaluate a polynomial homomorphically. This is a useful technique in HE
@@ -22,8 +22,7 @@ using namespace hit;
  * plaintext slot independently. The real function is \sigma(x) = 1/(1+e^{-x}).
  * We instead use a least-squares cubic polynomial approximation
  * \sigma'(x) = -0.0015x^3 + 0.15x + 0.5.
- * The code below is strongly inspired by the SEAL example 4_ckks_basics.cpp,
- * which also computes a cubic function.
+ * The code below is strongly inspired by the SEAL example 4_ckks_basics.cpp.
  *
  * We compute the approximation using the following circuit:
  *
@@ -120,31 +119,45 @@ CKKSCiphertext sigmoid(const CKKSCiphertext &x1_encrypted, CKKSEvaluator &eval) 
   return eval.add(result, coeff3_x3_encrypted);;
 }
 
+vector<double> randomVector(int dim, double maxNorm) {
+    vector<double> x;
+    x.reserve(dim);
+
+    for (int i = 0; i < dim; i++) {
+        // generate a random double between -maxNorm and maxNorm
+        double a = -maxNorm + ((static_cast<double>(random())) / (static_cast<double>(RAND_MAX))) * (2 * maxNorm);
+        x.push_back(a);
+    }
+    return x;
+}
+
 /* Now that we have written a function, let's evaluate it. */
 int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   // Initialize Google's logging library.
   google::InitGoogleLogging(argv[0]);
   // Dump useful information when the program crashes on certain signals such as SIGSEGV.
   google::InstallFailureSignalHandler();
+
   // *********** Generate Random Input ***********
   /* Generate a random input and compute the expecte result
    * of applying the sigmoid approximation to each component
    */
   srand(time(nullptr));
-  int dim = 128;
-  LOG(INFO) << "Generating random input vector of length " << dim << "...";
-  vector<double> x = randomVector(dim, approxRange);
+  int slots = 4096;
+  LOG(INFO) << "Generating random input vector of length " << slots << "...";
+  vector<double> x = randomVector(slots, approxRange);
 
   // *********** Generate Expected Result ***********
   LOG(INFO) << "Generating expected result...";
   vector<double> exactResult;
-  exactResult.reserve(dim);
-  for(int i = 0; i < dim; i++) {
+  exactResult.reserve(slots);
+  for(int i = 0; i < slots; i++) {
     // compute the expected result
     double y = x[i];
     double sigx = sigmoid_c3*y*y*y+sigmoid_c1*y+sigmoid_c0;
     exactResult.push_back(sigx);
   }
+
 
   // *********** Verify Correctness of Homomorphic Algorithm ***********
   /* The algorithm for computing the sigmoid approximation homomorphically
@@ -169,18 +182,16 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
    * means will encode the vector as a 32x128 matrix.
    */
   LOG(INFO) << "Using the Plaintext evaluator to test the correctness of the algorithm...";
-  int rows = 32;
-  int slots = dim*rows;
   CKKSInstance *ptInst = CKKSInstance::get_new_plaintext_instance(slots);
   // Encode and encrypt the input
   CKKSCiphertext x_enc_pt;
-  ptInst->encrypt_col_vec(x, rows, x_enc_pt);
+  x_enc_pt = ptInst->encrypt(x);
   // Evaluate the function with the Plaintext evaluator,
   // and assign the result to x_enc_pt
   x_enc_pt = sigmoid(x_enc_pt, *ptInst->evaluator);
   // Compare the plaintext inside x_enc_pt to the expected result
   // getPlaintext() decodes the shadow plaintext
-  double errNorm = diff2Norm(exactResult, x_enc_pt.getPlaintext());
+  double errNorm = diff2Norm(exactResult, x_enc_pt.raw_pt.data());
   if(errNorm < 0.0001) {
     LOG(INFO) << "\tHomomorphic algorithm matches cleartext algorithm.";
   }
@@ -188,7 +199,6 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
     throw invalid_argument("Results from homomorphic and cleartext algorithms do not match!");
   }
   delete ptInst;
-
 
 
   // *********** Compute Multiplicative Depth ***********
@@ -213,7 +223,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
    * the DepthFinder evaluator, since the two evaluators are
    * independent.
    */
-  dfInst->encrypt_col_vec(x, rows, x_enc_df);
+  x_enc_df = dfInst->encrypt(x);
   // Evaluate the function with the DepthFinder evaluator,
   // and assign the result to x_enc_df
   x_enc_df = sigmoid(x_enc_df, *dfInst->evaluator);
@@ -247,7 +257,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   CKKSInstance *scaleInst = CKKSInstance::get_new_scaleestimator_instance(slots, multDepth);
   // Re-encrypt the input
   CKKSCiphertext x_enc_scale;
-  scaleInst->encrypt_col_vec(x, rows, x_enc_scale);
+  x_enc_scale = scaleInst->encrypt(x);
   // Evaluate the function with the ScaleEstimator evaluator,
   // and assign the result to x_enc_scale
   x_enc_scale = sigmoid(x_enc_scale, *scaleInst->evaluator);
@@ -265,7 +275,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   CKKSInstance *homomInst = try_load_instance(slots, multDepth, logScale, NORMAL);
   // Re-encrypt the input
   CKKSCiphertext x_enc_homom;
-  homomInst->encrypt_col_vec(x, rows, x_enc_homom);
+  x_enc_homom = homomInst->encrypt(x);
   // Evaluate the function with the Normal homomorphic evaluator,
   // and assign the result to x_enc_homom
   x_enc_homom = sigmoid(x_enc_homom, *homomInst->evaluator);
@@ -282,7 +292,6 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   delete homomInst;
 
 
-
   // *********** View Debug Output ***********
   /* If anything fails, or if you want to see more details about your
    * computation, use the debug evaluator. By defining environment variable 'GLOG_v=1', it provides verbose output
@@ -292,7 +301,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   CKKSInstance *debugInst = try_load_instance(slots, multDepth, logScale, DEBUG);
   // Re-encrypt the input
   CKKSCiphertext x_enc_debug;
-  debugInst->encrypt_col_vec(x, rows, x_enc_debug);
+  x_enc_debug = debugInst->encrypt(x);
   // Evaluate the function with the Normal homomorphic evaluator,
   // and assign the result to x_enc_debug
   x_enc_debug = sigmoid(x_enc_debug, *debugInst->evaluator);

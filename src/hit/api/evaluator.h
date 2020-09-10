@@ -247,7 +247,4 @@ namespace hit {
 
         const std::shared_ptr<seal::SEALContext> context;
     };
-
-    // ensure that metadata for two arguments matches
-    bool is_valid_args(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
 }  // namespace hit

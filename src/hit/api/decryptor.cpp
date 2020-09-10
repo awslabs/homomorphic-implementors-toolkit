@@ -3,9 +3,9 @@
 
 #include "decryptor.h"
 
-#include "../common.h"
-
 #include <glog/logging.h>
+
+#include "../common.h"
 
 using namespace std;
 using namespace seal;
@@ -25,7 +25,7 @@ namespace hit {
     vector<double> CKKSDecryptor::decrypt(const CKKSCiphertext &encrypted) {
         Plaintext temp;
 
-        int lvl = encrypted.getLevel(context);
+        int lvl = encrypted.he_level();
         if (lvl != 0) {
             LOG(WARNING) << "Decrypting a ciphertext that is not at level 0! Consider starting with a smaller modulus"
                          << " to improve performance!";
@@ -33,10 +33,9 @@ namespace hit {
 
         decryptor->decrypt(encrypted.seal_ct, temp);
 
-        vector<double> temp_vec;
-        encoder->decode(temp, temp_vec);
+        vector<double> decoded_output;
+        encoder->decode(temp, decoded_output);
 
-        return decodePlaintext(temp_vec, encrypted.encoding, encrypted.height, encrypted.width,
-                               encrypted.encoded_height, encrypted.encoded_width);
+        return decoded_output;
     }
 }  // namespace hit

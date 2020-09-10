@@ -4,6 +4,7 @@
 #include "common.h"
 
 #include <glog/logging.h>
+
 #include <iomanip>  // setprecision
 
 using namespace std;
@@ -54,35 +55,6 @@ namespace hit {
     void printElapsedTime(timepoint start) {
         timepoint end = chrono::steady_clock::now();
         LOG(INFO) << elapsedTimeToStr(start, end);
-    }
-
-    vector<double> decodePlaintext(const vector<double> &encoded_pt, CTEncoding encoding, int height, int width,
-                                   int encoded_height, int encoded_width) {
-        vector<double> dest;
-
-        if (encoding == COL_VEC && (width != 1 || height != encoded_width)) {
-            stringstream buffer;
-            buffer << "Invalid column vector encoding: real size= " << height << "x" << width
-                   << "; encoded size= " << encoded_height << "x" << encoded_width;
-            throw invalid_argument(buffer.str());
-        }
-        if (encoding == ROW_VEC && (height != 1 || width != encoded_height)) {
-            stringstream buffer;
-            buffer << "Invalid row vector encoding: real size= " << height << "x" << width
-                   << "; encoded size= " << encoded_height << "x" << encoded_width;
-            throw invalid_argument(buffer.str());
-        }
-
-        if (encoding == MATRIX || encoding == ROW_MAT || encoding == COL_MAT || encoding == COL_VEC) {
-            int size = height * width;
-            dest = vector<double>(encoded_pt.begin(), encoded_pt.begin() + size);
-        } else {  // encoding is a row vector, which becomes the columns of the matrix
-            for (int i = 0; i < width; i++) {
-                // puts the left column into the destination, which corresponds to the encoded row vector
-                dest.push_back(encoded_pt[i * encoded_width]);
-            }
-        }
-        return dest;
     }
 
     // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
@@ -226,75 +198,12 @@ namespace hit {
         return xmax;
     }
 
-    // generate a random vector of the given dimension, where each value is in the range [-maxNorm, maxNorm].
-    vector<double> randomVector(int dim, double maxNorm) {
-        vector<double> x;
-        x.reserve(dim);
-
-        for (int i = 0; i < dim; i++) {
-            // generate a random double between -maxNorm and maxNorm
-            double a = -maxNorm + ((static_cast<double>(random())) / (static_cast<double>(RAND_MAX))) * (2 * maxNorm);
-            x.push_back(a);
-        }
-        return x;
-    }
-
     uintmax_t streamSize(iostream &s) {
         streampos originalPos = s.tellp();
         s.seekp(0, ios::end);
         uintmax_t size = s.tellp();
         s.seekp(originalPos);
         return size;
-    }
-
-    // Extract the side-by-side plaintext from the ciphertext. Note that there is no decryption happening!
-    // This returns the "debug" plaintext.
-    Matrix ctPlaintextToMatrix(const CKKSCiphertext &ct) {
-        return Matrix(ct.height, ct.width, ct.getPlaintext());
-    }
-
-    // Extract the encrypted plaintext from the ciphertext. This actually decrypts and returns the output.
-    Matrix ctDecryptedToMatrix(CKKSInstance &inst, const CKKSCiphertext &ct) {
-        return Matrix(ct.height, ct.width, inst.decrypt(ct));
-    }
-
-    // Extract the debug plaintext from each ciphertext and concatenate the results side-by-side.
-    Matrix ctPlaintextToMatrix(const vector<CKKSCiphertext> &cts) {
-        vector<Matrix> mats;
-        mats.reserve(cts.size());
-        for (const auto &ct : cts) {
-            mats.push_back(ctPlaintextToMatrix(ct));
-        }
-        return matrixRowConcat(mats);
-    }
-
-    Vector ctPlaintextToVector(const vector<CKKSCiphertext> &cts) {
-        vector<double> stdvec;
-        for (const auto &ct : cts) {
-            vector<double> v = ct.getPlaintext();
-            stdvec.insert(stdvec.end(), v.begin(), v.end());
-        }
-        return fromStdVector(stdvec);
-    }
-
-    // Decrypt each ciphertext and concatenate the results side-by-side.
-    Matrix ctDecryptedToMatrix(CKKSInstance &inst, const vector<CKKSCiphertext> &cts) {
-        vector<Matrix> mats;
-        mats.reserve(cts.size());
-        for (const auto &ct : cts) {
-            mats.push_back(ctDecryptedToMatrix(inst, ct));
-        }
-
-        return matrixRowConcat(mats);
-    }
-
-    Vector ctDecryptedToVector(CKKSInstance &inst, const vector<CKKSCiphertext> &cts) {
-        vector<double> stdvec;
-        for (const auto &ct : cts) {
-            vector<double> v = inst.decrypt(ct);
-            stdvec.insert(stdvec.end(), v.begin(), v.end());
-        }
-        return fromStdVector(stdvec);
     }
 
 }  // namespace hit

@@ -4,6 +4,7 @@
 #include "opcount.h"
 
 #include <glog/logging.h>
+
 #include <iomanip>
 
 using namespace std;
@@ -108,26 +109,26 @@ namespace hit {
     }
 
     void OpCount::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
-        if (ct.he_level - target.he_level > 0) {
+        if (ct.he_level() - target.he_level() > 0) {
             modDowns++;
         }
-        modDownMuls += (ct.he_level - target.he_level);
+        modDownMuls += (ct.he_level() - target.he_level());
         dfEval->mod_down_to_inplace_internal(ct, target);
     }
 
     void OpCount::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
-        if (abs(ct1.he_level - ct2.he_level) > 0) {
+        if (abs(ct1.he_level() - ct2.he_level()) > 0) {
             modDowns++;
         }
-        modDownMuls += abs(ct1.he_level - ct2.he_level);
+        modDownMuls += abs(ct1.he_level() - ct2.he_level());
         dfEval->mod_down_to_min_inplace_internal(ct1, ct2);
     }
 
     void OpCount::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
-        if (ct.he_level - level > 0) {
+        if (ct.he_level() - level > 0) {
             modDowns++;
         }
-        modDownMuls += (ct.he_level - level);
+        modDownMuls += (ct.he_level() - level);
         dfEval->mod_down_to_level_inplace_internal(ct, level);
     }
 

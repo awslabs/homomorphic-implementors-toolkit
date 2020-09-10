@@ -4,6 +4,7 @@
 #include "scaleestimator.h"
 
 #include <glog/logging.h>
+
 #include <iomanip>
 
 #include "../../common.h"
@@ -47,7 +48,7 @@ namespace hit {
         if (!VLOG_IS_ON(LOG_VERBOSE)) {
             return;
         }
-        double exactPlaintextMaxVal = lInfNorm(ct.getPlaintext());
+        double exactPlaintextMaxVal = lInfNorm(ct.raw_pt.data());
         double logModulus = 0;
         auto context_data = getContextData(ct);
         for (const auto &prime : context_data->parms().coeff_modulus()) {
@@ -78,10 +79,10 @@ namespace hit {
                    << log2(baseScale);
             throw invalid_argument(buffer.str());
         }
-        if (scaleExp > ct.he_level) {
-            auto estimated_scale = (PLAINTEXT_LOG_MAX - log2(lInfNorm(ct.getPlaintext()))) / (scaleExp - ct.he_level);
+        if (scaleExp > ct.he_level()) {
+            auto estimated_scale = (PLAINTEXT_LOG_MAX - log2(lInfNorm(ct.raw_pt.data()))) / (scaleExp - ct.he_level());
             estimatedMaxLogScale = min(estimatedMaxLogScale, estimated_scale);
-        } else if (scaleExp == ct.he_level && log2(lInfNorm(ct.getPlaintext())) > PLAINTEXT_LOG_MAX) {
+        } else if (scaleExp == ct.he_level() && log2(lInfNorm(ct.raw_pt.data())) > PLAINTEXT_LOG_MAX) {
             stringstream buffer;
             buffer << "Plaintext exceeded " << PLAINTEXT_LOG_MAX
                    << " bits, which exceeds SEAL's capacity. Overflow is imminent.";
@@ -92,7 +93,6 @@ namespace hit {
     void ScaleEstimator::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
         dfEval->rotate_right_inplace_internal(ct, steps);
         ptEval->rotate_right_inplace_internal(ct, steps);
-
         print_stats(ct);
     }
 
@@ -180,7 +180,7 @@ namespace hit {
         ptEval->multiply_plain_inplace_internal(ct, plain);
 
         double plain_max = 0;
-        for (int i = 0; i < ct.height * ct.width; i++) {
+        for (int i = 0; i < ct.num_slots(); i++) {
             plain_max = max(plain_max, abs(plain[i]));
         }
         ct.scale *= ct.scale;
@@ -198,7 +198,7 @@ namespace hit {
     }
 
     void ScaleEstimator::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
-        if (ct.he_level == target.he_level && ct.scale != target.scale) {
+        if (ct.he_level() == target.he_level() && ct.scale != target.scale) {
             throw invalid_argument("modDownTo: levels match, but scales do not.");
         }
 
@@ -213,11 +213,11 @@ namespace hit {
     }
 
     void ScaleEstimator::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
-        if (ct1.he_level == ct2.he_level && ct1.scale != ct2.scale) {
+        if (ct1.he_level() == ct2.he_level() && ct1.scale != ct2.scale) {
             throw invalid_argument("modDownToMin: levels match, but scales do not.");
         }
 
-        if (ct1.he_level > ct2.he_level) {
+        if (ct1.he_level() > ct2.he_level()) {
             ct1.scale = ct2.scale;
         } else {
             ct2.scale = ct1.scale;
@@ -234,7 +234,7 @@ namespace hit {
     }
 
     void ScaleEstimator::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
-        int lvlDiff = ct.he_level - level;
+        int lvlDiff = ct.he_level() - level;
 
         if (level < 0) {
             throw invalid_argument("modDownToLevel: level must be >= 0.");
@@ -244,10 +244,10 @@ namespace hit {
         ptEval->mod_down_to_level_inplace_internal(ct, level);
 
         // reset he_level for dest
-        ct.he_level += lvlDiff;
-        while (ct.he_level > level) {
-            uint64_t p = getLastPrime(context, ct.he_level);
-            ct.he_level--;
+        ct.he_level() += lvlDiff;
+        while (ct.he_level() > level) {
+            uint64_t p = getLastPrime(context, ct.he_level());
+            ct.he_level()--;
             ct.scale = (ct.scale * ct.scale) / p;
         }
         // ct's level is now reset to level

@@ -1,7 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sealutils.h"
+
 #include <glog/logging.h>
+
 #include <iomanip>
 #include <iostream>
 
@@ -96,5 +99,12 @@ namespace hit {
             context_data = context_data->next_context_data();
         }
         throw std::invalid_argument("Fail to find target level " + std::to_string(heLevel));
+    }
+
+    /*
+    Helper function: Return the HE level of the SEAL ciphertext.
+    */
+    int get_SEAL_level(const std::shared_ptr<seal::SEALContext> &context, const CKKSCiphertext &ct) {
+        return context->get_context_data(ct.seal_ct.parms_id())->chain_index();
     }
 }  // namespace hit

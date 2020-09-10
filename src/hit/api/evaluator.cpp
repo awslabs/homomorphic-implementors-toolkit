@@ -8,6 +8,7 @@
 #include "evaluator.h"
 
 #include <glog/logging.h>
+
 #include <utility>
 
 #include "../common.h"
@@ -24,16 +25,6 @@ namespace hit {
 
     void CKKSEvaluator::reset() {
         reset_internal();
-    }
-
-    bool is_valid_args(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        if ((ct1.encoding == ct2.encoding) || (ct1.encoding == ROW_MAT && ct2.encoding == MATRIX) ||
-            (ct1.encoding == MATRIX && ct2.encoding == COL_MAT)) {
-            return ((ct1.encoded_height == ct2.encoded_height) && (ct1.encoded_width == ct2.encoded_width) &&
-                    (ct1.height == ct2.height) && (ct1.width == ct2.width));
-        }
-        return ((ct1.encoded_height == ct2.encoded_height) && (ct1.encoded_width == ct2.encoded_width) &&
-                (ct1.width == ct2.height));
     }
 
     CKKSCiphertext CKKSEvaluator::rotate_right(const CKKSCiphertext &ct, int steps) {
@@ -76,51 +67,10 @@ namespace hit {
     }
 
     CKKSCiphertext CKKSEvaluator::add(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        // it's a lot easier to validate combinations of args if they are in a canonical order. These two
-        // statements put row vectors in the first arg, and col vectors in the second arg, which mirrors how
-        // this would look on paper.
-        if (ct1.encoding == MATRIX && ct2.encoding == ROW_MAT) {
-            return add(ct2, ct1);
-        }
-        if (ct1.encoding == COL_MAT && ct2.encoding == MATRIX) {
-            return add(ct2, ct1);
-        }
-
         VLOG(LOG_VERBOSE) << "Add ciphertexts";
 
         CKKSCiphertext temp = ct1;
         add_inplace_internal(temp, ct2);
-
-        // combining a ROW_MAT and a MATRIX only makes sense in make-believe linear algebra, like the type used
-        // for PPLR training. It doesn't correspond to a real linear-algebra operation because we need this
-        // capability for the component-wise application of the sigmoid approximation to a vector.
-        if (ct1.encoding == ROW_MAT && ct2.encoding == MATRIX && is_valid_args(ct1, ct2)) {
-            temp.encoding = ROW_MAT;
-            temp.width = ct2.width;
-            temp.encoded_width = ct2.width;
-            temp.height = ct2.height;
-            temp.encoded_height = ct2.height;
-        } else if (ct1.encoding == MATRIX && ct2.encoding == COL_MAT && is_valid_args(ct1, ct2)) {
-            temp.encoding = COL_MAT;
-            temp.width = ct1.width;
-            temp.encoded_width = ct1.width;
-            temp.height = ct1.height;
-            temp.encoded_height = ct1.height;
-        }
-        // we can always add standard linear alegbra objects of the same type, like adding two matrices or vectors
-        // in this case, the dimensions don't change
-        // note that adding COL_MATs makes sense if we consider breaking a matrix into several vertical chunks,
-        // and the vector into corresponding pieces. Then instead of A*b, we view A as [A_1 | A_2] and b as <b_1 | b_2>.
-        // Then we can compute A*b=A_1*b_1+A_2*b_2, and similarly for ROW_MATs.
-        else if (ct1.encoding == ct2.encoding && is_valid_args(ct1, ct2)) {
-        } else {
-            LOG(INFO) << "Arg 1: Encoding(" << ct1.encoding << "), Dimensions: " << ct1.height << "x" << ct1.width
-                      << ", Embedded dimensions: " << ct1.encoded_height << "x" << ct1.encoded_width;
-            LOG(INFO) << "Arg 2: Encoding(" << ct2.encoding << "), Dimensions: " << ct2.height << "x" << ct2.width
-                      << ", Embedded dimensions: " << ct2.encoded_height << "x" << ct2.encoded_width;
-            throw invalid_argument("PPLR ERROR: cannot add arguments.");
-        }
-
         return temp;
     }
 
@@ -163,51 +113,10 @@ namespace hit {
     }
 
     CKKSCiphertext CKKSEvaluator::sub(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        // it's a lot easier to validate combinations of args if they are in a canonical order. These two
-        // statements put row vectors in the first arg, and col vectors in the second arg, which mirrors how
-        // this would look on paper.
-        if (ct1.encoding == MATRIX && ct2.encoding == ROW_MAT) {
-            return sub(ct2, ct1);
-        }
-        if (ct1.encoding == COL_MAT && ct2.encoding == MATRIX) {
-            return sub(ct2, ct1);
-        }
-
         VLOG(LOG_VERBOSE) << "Subtract ciphertexts";
 
         CKKSCiphertext temp = ct1;
         sub_inplace_internal(temp, ct2);
-
-        // combining a ROW_MAT and a MATRIX only makes sense in make-believe linear algebra, like the type used
-        // for PPLR training. It doesn't correspond to a real linear-algebra operation because we need this
-        // capability for the component-wise application of the sigmoid approximation to a vector.
-        if (ct1.encoding == ROW_MAT && ct2.encoding == MATRIX && is_valid_args(ct1, ct2)) {
-            temp.encoding = ROW_MAT;
-            temp.width = ct2.width;
-            temp.encoded_width = ct2.width;
-            temp.height = ct2.height;
-            temp.encoded_height = ct2.height;
-        } else if (ct1.encoding == MATRIX && ct2.encoding == COL_MAT && is_valid_args(ct1, ct2)) {
-            temp.encoding = COL_MAT;
-            temp.width = ct1.width;
-            temp.encoded_width = ct1.width;
-            temp.height = ct1.height;
-            temp.encoded_height = ct1.height;
-        }
-        // we can always subtract standard linear alegbra objects of the same type, like adding two matrices or vectors
-        // in this case, the dimensions don't change
-        // note that adding COL_MATs makes sense if we consider breaking a matrix into several vertical chunks,
-        // and the vector into corresponding pieces. Then instead of A*b, we view A as [A_1 | A_2] and b as <b_1 | b_2>.
-        // Then we can compute A*b=A_1*b_1+A_2*b_2, and similarly for ROW_MATs.
-        else if (ct1.encoding == ct2.encoding && is_valid_args(ct1, ct2)) {
-        } else {
-            LOG(INFO) << "Arg 1: Encoding(" << ct1.encoding << "), Dimensions: " << ct1.height << "x" << ct1.width
-                      << ", Embedded dimensions: " << ct1.encoded_height << "x" << ct1.encoded_width;
-            LOG(INFO) << "Arg 2: Encoding(" << ct2.encoding << "), Dimensions: " << ct2.height << "x" << ct2.width
-                      << ", Embedded dimensions: " << ct2.encoded_height << "x" << ct2.encoded_width;
-            throw invalid_argument("PPLR ERROR: cannot subtract arguments.");
-        }
-
         return temp;
     }
 
@@ -238,52 +147,10 @@ namespace hit {
     }
 
     CKKSCiphertext CKKSEvaluator::multiply(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        // it's a lot easier to validate combinations of args if they are in a canonical order. These two
-        // statements put row vectors in the first arg, and col vectors in the second arg, which mirrors how
-        // this would look on paper.
-        if ((ct1.encoding == ROW_MAT || ct1.encoding == MATRIX) && ct2.encoding == ROW_VEC) {
-            return multiply(ct2, ct1);
-        }
-        if (ct1.encoding == COL_VEC && (ct2.encoding == COL_MAT || ct2.encoding == MATRIX)) {
-            return multiply(ct2, ct1);
-        }
-
         VLOG(LOG_VERBOSE) << "Multiply ciphertexts";
 
         CKKSCiphertext temp = ct1;
         multiply_inplace_internal(temp, ct2);
-
-        // we can multiply a row vector by either a row matrix or a pure matrix. In the first case, this is
-        // \vec(a)*(\vec(b)*C), which is equivalent to (\vec(a)*\vec(b))*C, a row vector times a pure matrix. The second
-        // case is simply the first step in an HE row-matrix-times-vector-product. We want the output in either case to
-        // be a ROW_MAT with the same dimensions as the input matrix/row matrix
-        if (ct1.encoding == ROW_VEC && (ct2.encoding == ROW_MAT || ct2.encoding == MATRIX) && is_valid_args(ct1, ct2)) {
-            temp.encoding = ROW_MAT;
-            temp.width = ct2.width;
-            temp.encoded_width = ct2.width;
-            temp.height = ct2.height;
-            temp.encoded_height = ct2.height;
-        }
-        // similarly for column vectors/matrices: we can multiply a COL_MAT or a MATRIX times a column vector
-        else if ((ct1.encoding == COL_MAT || ct1.encoding == MATRIX) && ct2.encoding == COL_VEC &&
-                 is_valid_args(ct1, ct2)) {
-            temp.encoding = COL_MAT;
-            temp.width = ct1.width;
-            temp.encoded_width = ct1.width;
-            temp.height = ct1.height;
-            temp.encoded_height = ct1.height;
-        }
-        // we can always multiply vectors together (componentwise)
-        else if (ct1.encoding == COL_VEC && ct2.encoding == COL_VEC && is_valid_args(ct1, ct2)) {
-        } else if (ct1.encoding == ROW_VEC && ct2.encoding == ROW_VEC && is_valid_args(ct1, ct2)) {
-        } else {
-            LOG(INFO) << "Arg 1: Encoding(" << ct1.encoding << "), Dimensions: " << ct1.height << "x" << ct1.width
-                      << ", Embedded dimensions: " << ct1.encoded_height << "x" << ct1.encoded_width;
-            LOG(INFO) << "Arg 2: Encoding(" << ct2.encoding << "), Dimensions: " << ct2.height << "x" << ct2.width
-                      << ", Embedded dimensions: " << ct2.encoded_height << "x" << ct2.encoded_width;
-            throw invalid_argument("PPLR ERROR: cannot multiply arguments.");
-        }
-
         return temp;
     }
 
@@ -310,8 +177,10 @@ namespace hit {
 
     void CKKSEvaluator::multiply_plain_inplace(CKKSCiphertext &ct, const vector<double> &plain) {
         VLOG(LOG_VERBOSE) << "Multiply by plaintext";
-        if (ct.encoded_width * ct.encoded_height != plain.size()) {
-            throw invalid_argument("CKKSEvaluator::multiply_plain: encoded size does not match plaintext input");
+        if (ct.num_slots() != plain.size()) {
+            throw invalid_argument(
+                "CKKSEvaluator::multiply_plain: encoded size does not match plaintext input. Expected " +
+                to_string(ct.num_slots()) + ", got " + to_string(plain.size()));
         }
         return multiply_plain_inplace_internal(ct, plain);
     }
@@ -375,7 +244,7 @@ namespace hit {
         // but do not use the ciphertext itself! Use the he_level,
         // in case we are not doing ciphertext computations
         auto context_data = context->first_context_data();
-        while (context_data->chain_index() > ct.he_level) {
+        while (context_data->chain_index() > ct.he_level()) {
             // Step forward in the chain.
             context_data = context_data->next_context_data();
         }

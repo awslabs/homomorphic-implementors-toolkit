@@ -87,23 +87,9 @@ namespace hit {
 
         ~CKKSInstance();
 
-        void encrypt_matrix(const Matrix &mat, CKKSCiphertext &destination, int level = -1);
-
-        /* Encrypt a C++ vector representing a linear algebra column vector.
-         * We first encode the vector as a matrix
-         * where each row is `plain`; see pplr.cpp for details.
-         * This requires the target matrix height as a parameter.
-         */
-        void encrypt_col_vec(const std::vector<double> &plain, int matHeight, CKKSCiphertext &destination,
-                             int level = -1);
-
-        /* Encrypt a C++ vector representing a linear algebra row vector.
-         * We first encode the vector as a matrix
-         * where each column is `plain`; see pplr.cpp for details.
-         * This requires the target matrix width as a parameter.
-         */
-        void encrypt_row_vec(const std::vector<double> &plain, int matWidth, CKKSCiphertext &destination,
-                             int level = -1);
+        // Encrypt a (full-dimensional) vector of coefficients. If an encryption level (integer >= 0) is not specified,
+        // the ciphertext will be encrypted at the highest level allowed by the parameters.
+        CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1);
 
         // A warning will show in log if you decrypt when the ciphertext is not at level 0
         // Usually, decrypting a ciphertext not at level 0 indicates you are doing something
