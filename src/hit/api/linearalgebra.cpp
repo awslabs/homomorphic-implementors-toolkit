@@ -3,11 +3,10 @@
 
 #include "linearalgebra.h"
 
-#include "common.h"
-#ifdef HIT_USE_TBB
 #include <algorithm>
 #include <execution>
-#endif  // HIT_USE_TBB
+
+#include "common.h"
 
 using namespace std;
 
@@ -475,7 +474,6 @@ namespace hit {
 
         vector<vector<CKKSCiphertext>> cts_transpose(mat.num_horizontal_units());
 
-#ifdef HIT_USE_TBB
         vector<int> iterIdxs(mat.num_horizontal_units());
         for (int i = 0; i < mat.num_horizontal_units(); i++) {
             iterIdxs[i] = i;
@@ -488,11 +486,6 @@ namespace hit {
             std::for_each(execution::par, begin(iterIdxs), end(iterIdxs),
                           [&](int j) { cts_transpose[j] = matrix_rowvec_hadamard_mul_loop(vec, mat, j); });
         }
-#else   // !HIT_USE_TBB
-        for (int j = 0; j < mat.num_horizontal_units(); j++) {
-            cts_transpose[j] = matrix_rowvec_hadamard_mul_loop(vec, mat, j);
-        }
-#endif  // HIT_USE_TBB
 
         // Because we iterate over the *columns* of the encoding, the encoding units are transposed
         // We un-transpose them here.
@@ -528,7 +521,6 @@ namespace hit {
 
         vector<vector<CKKSCiphertext>> cts(mat.num_vertical_units());
 
-#ifdef HIT_USE_TBB
         vector<int> iterIdxs(mat.num_vertical_units());
         for (int i = 0; i < mat.num_vertical_units(); i++) {
             iterIdxs[i] = i;
@@ -541,11 +533,6 @@ namespace hit {
             std::for_each(execution::par, begin(iterIdxs), end(iterIdxs),
                           [&](int i) { cts[i] = matrix_colvec_hadamard_mul_loop(mat, vec, i); });
         }
-#else   // !HIT_USE_TBB
-        for (int i = 0; i < mat.num_vertical_units(); i++) {
-            cts[i] = matrix_colvec_hadamard_mul_loop(mat, vec, i);
-        }
-#endif  // HIT_USE_TBB
 
         return EncryptedMatrix(mat.height(), mat.width(), mat.encoding_unit(), cts);
     }
@@ -673,7 +660,6 @@ namespace hit {
         // then combine the results for each row to get the matrix product
         vector<EncryptedColVector> row_results(matrix_aTrans.width());
 
-#ifdef HIT_USE_TBB
         vector<int> iterIdxs(matrix_aTrans.width());
         for (int i = 0; i < matrix_aTrans.width(); i++) {
             iterIdxs[i] = i;
@@ -688,11 +674,6 @@ namespace hit {
                 row_results[k] = matrix_matrix_mul_loop(matrix_aTrans, matrix_b_leveled, scalar, k, transpose_unit);
             });
         }
-#else   // !HIT_USE_TBB
-        for (int k = 0; k < matrix_aTrans.width(); k++) {
-            row_results[k] = matrix_matrix_mul_loop(matrix_aTrans, matrix_b_leveled, scalar, k, transpose_unit);
-        }
-#endif  // HIT_USE_TBB
         return row_results;
     }
 
@@ -871,7 +852,6 @@ namespace hit {
     EncryptedRowVector LinearAlgebra::sum_cols(const EncryptedMatrix &mat, double scalar) {
         vector<CKKSCiphertext> cts(mat.num_vertical_units());
 
-#ifdef HIT_USE_TBB
         vector<int> iterIdxs(mat.num_vertical_units());
         for (int i = 0; i < mat.num_vertical_units(); i++) {
             iterIdxs[i] = i;
@@ -886,11 +866,6 @@ namespace hit {
                 cts[i] = sum_cols_core(eval.add_many(mat.cts[i]), mat.encoding_unit(), scalar);
             });
         }
-#else   // !HIT_USE_TBB
-        for (int i = 0; i < mat.num_vertical_units(); i++) {
-            cts[i] = sum_cols_core(eval.add_many(mat.cts[i]), mat.encoding_unit(), scalar);
-        }
-#endif  // HIT_USE_TBB
 
         return EncryptedRowVector(mat.height(), mat.encoding_unit(), cts);
     }
@@ -936,7 +911,6 @@ namespace hit {
     EncryptedColVector LinearAlgebra::sum_rows(const EncryptedMatrix &mat) {
         vector<CKKSCiphertext> cts(mat.num_horizontal_units());
 
-#ifdef HIT_USE_TBB
         vector<int> iterIdxs(mat.num_horizontal_units());
         for (int i = 0; i < mat.num_horizontal_units(); i++) {
             iterIdxs[i] = i;
@@ -949,11 +923,6 @@ namespace hit {
             std::for_each(execution::par, begin(iterIdxs), end(iterIdxs),
                           [&](int j) { cts[j] = sum_rows_loop(mat, j); });
         }
-#else   // !HIT_USE_TBB
-        for (int j = 0; j < mat.num_horizontal_units(); j++) {
-            cts[j] = sum_rows_loop(mat, j);
-        }
-#endif  // HIT_USE_TBB
         return EncryptedColVector(mat.width(), mat.encoding_unit(), cts);
     }
 
