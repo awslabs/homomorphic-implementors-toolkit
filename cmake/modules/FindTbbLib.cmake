@@ -1,7 +1,6 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-# https://github.com/google/glog/blob/master/cmake/INSTALL.md
 message(STATUS "Searching TBB lib.")
 find_package(TBB QUIET)
 if (TBB_FOUND)
