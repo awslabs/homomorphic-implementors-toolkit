@@ -127,7 +127,7 @@ namespace hit {
     }
 
     bool EncryptedMatrix::same_size(const EncryptedMatrix &mat) const {
-        return height_ != mat.height() || width_ != mat.width() || unit != mat.encoding_unit();
+        return height_ == mat.height() && width_ == mat.width() && unit == mat.encoding_unit();
     }
 
     template <>
@@ -237,7 +237,7 @@ namespace hit {
     }
 
     bool EncryptedRowVector::same_size(const EncryptedRowVector &vec) const {
-        return width_ != vec.width() || unit != vec.encoding_unit();
+        return width_ == vec.width() && unit == vec.encoding_unit();
     }
 
     EncryptedRowVector LinearAlgebra::encrypt_row_vector(const Vector &vec, const EncodingUnit &unit, int level) {
@@ -329,7 +329,7 @@ namespace hit {
     }
 
     bool EncryptedColVector::same_size(const EncryptedColVector &vec) const {
-        return height_ != vec.height() || unit != vec.encoding_unit();
+        return height_ == vec.height() && unit == vec.encoding_unit();
     }
 
     EncryptedColVector LinearAlgebra::encrypt_col_vector(const Vector &vec, const EncodingUnit &unit, int level) {
