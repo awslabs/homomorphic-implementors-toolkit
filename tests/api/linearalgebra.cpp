@@ -1199,7 +1199,7 @@ TEST(LinearAlgebraTest, SumRows) {
 }
 
 Vector sum_cols_plaintext(Matrix mat) {
-    vector<double> coeffs(mat.size2());
+    vector<double> coeffs(mat.size1());
 
     for (int i = 0; i < mat.size1(); i++) {
         double sum = 0;
