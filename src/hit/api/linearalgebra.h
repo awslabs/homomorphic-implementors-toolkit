@@ -247,7 +247,7 @@ namespace hit {
          */
         template <typename T>
         void add_inplace(T &arg1, const T &arg2) {
-            if (!arg1.initialized() || !arg2.initialized() || arg1.same_size(arg2)) {
+            if (!arg1.initialized() || !arg2.initialized() || !arg1.same_size(arg2)) {
                 throw std::invalid_argument("Arguments to LinearAlgebra::add_inplace do not have the same dimensions");
             }
             for (size_t i = 0; i < arg1.num_cts(); i++) {
