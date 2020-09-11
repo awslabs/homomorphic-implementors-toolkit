@@ -182,6 +182,19 @@ namespace hit {
          */
         Matrix decrypt(const EncryptedMatrix &mat) const;
 
+        /* Uniform encryption API, identical to encrypt_matrix
+         */
+        EncryptedMatrix encrypt(const Matrix &mat, const EncodingUnit &unit, int level = -1) {
+            return encrypt_matrix(mat, unit, level);
+        }
+
+        /* Uniform encryption API, defined for T=EncryptedRowVector and T=EncryptedColVector,
+         * exactly corresponding to `encrypt_row_vector` and `encrypt_col_vector`, respectively.
+         * Template parameter must be explicitly specified.
+         */
+        template<typename T>
+        T encrypt(const Vector&, const EncodingUnit&, int level = -1);
+
         /* Encrypt a vector representing a linear algebra row vector.
          * We first encode the vector as a matrix
          * where each column is `vec`; see the paper for details.
@@ -759,4 +772,5 @@ namespace hit {
 
     // Decode a column vector given its encoding as a sequence of encoding units
     Vector decode_col_vector(const std::vector<Matrix> &mats, int trim_length = -1);
+
 }  // namespace hit
