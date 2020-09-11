@@ -123,6 +123,7 @@ export(TARGETS aws-hit FILE ${HIT_TARGETS_FILENAME})
 
 # Build HIT test code if enabled.
 option(BUILD_HIT_TESTING "Build the unit tests." ON)
+option(AUTO_RUN_HIT_TESTS "Automatically run the unit tests on every build." ON)
 if (BUILD_HIT_TESTING)
     enable_testing()
     add_subdirectory(${HIT_TESTS_DIR})
