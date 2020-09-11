@@ -21,7 +21,6 @@ mkdir -p ${GLOG_log_dir}
 if [ -d build ]; then rm -Rf build; fi
 mkdir -p build && cd build
 cmake -GNinja -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_MODULE_PATH=/usr/share/cmake/Modules \
     -DBUILD_HIT_TESTING=ON -DCMake_RUN_CLANG_TIDY=ON \
     -DBUILD_HIT_EXAMPLES=ON ../
 ninja -j $(nproc)
