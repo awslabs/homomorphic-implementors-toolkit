@@ -5,6 +5,7 @@ message(STATUS "Searching TBB lib.")
 find_package(TBB QUIET)
 if (TBB_FOUND)
     message(STATUS "TBB is found. Skip downloading source code.")
+    set(TBB_IMPORTED_TARGETS tbb)
 else ()
     # https://github.com/oneapi-src/oneTBB/tree/tbb_2020/cmake#tutorials-tbb-integration-using-cmake
     message(STATUS "Downloading and installing TBB since it is not found.")
