@@ -130,11 +130,13 @@ namespace hit {
         return height_ != mat.height() || width_ != mat.width() || unit != mat.encoding_unit();
     }
 
-    template <> EncryptedRowVector LinearAlgebra::encrypt(const Vector &vec, const EncodingUnit &unit, int level) {
+    template <>
+    EncryptedRowVector LinearAlgebra::encrypt(const Vector &vec, const EncodingUnit &unit, int level) {
         return encrypt_row_vector(vec, unit, level);
     }
 
-    template <> EncryptedColVector LinearAlgebra::encrypt(const Vector &vec, const EncodingUnit &unit, int level) {
+    template <>
+    EncryptedColVector LinearAlgebra::encrypt(const Vector &vec, const EncodingUnit &unit, int level) {
         return encrypt_col_vector(vec, unit, level);
     }
 

@@ -192,8 +192,8 @@ namespace hit {
          * exactly corresponding to `encrypt_row_vector` and `encrypt_col_vector`, respectively.
          * Template parameter must be explicitly specified.
          */
-        template<typename T>
-        T encrypt(const Vector&, const EncodingUnit&, int level = -1);
+        template <typename T>
+        T encrypt(const Vector &, const EncodingUnit &, int level = -1);
 
         /* Encrypt a vector representing a linear algebra row vector.
          * We first encode the vector as a matrix
