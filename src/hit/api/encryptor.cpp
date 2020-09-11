@@ -47,8 +47,8 @@ namespace hit {
         }
 
         CKKSCiphertext destination;
-        destination.he_level() = lvl;
-        destination.scale = scale;
+        destination.he_level_ = lvl;
+        destination.scale_ = scale;
 
         // Only set the plaintext in Plaintext or Debug modes
         if (mode == ENC_PLAIN || mode == ENC_DEBUG) {

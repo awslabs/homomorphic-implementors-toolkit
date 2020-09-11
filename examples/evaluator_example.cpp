@@ -110,7 +110,7 @@ CKKSCiphertext sigmoid(const CKKSCiphertext &x1_encrypted, CKKSEvaluator &eval) 
    * We need to add these two terms together, but that requires them to be at the same
    * level. We solve this problem by multiplying coeff1_x1_encrypted by the scalar 1.
    */
-  eval.mod_down_to_inplace(coeff1_x1_encrypted, coeff3_x3_encrypted);
+  eval.mod_down_to_level_inplace(coeff1_x1_encrypted, coeff3_x3_encrypted.he_level());
 
   // add 0.5 and 0.15*x
   CKKSCiphertext result = eval.add_plain(coeff1_x1_encrypted, sigmoid_c0);
@@ -191,7 +191,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   x_enc_pt = sigmoid(x_enc_pt, *ptInst->evaluator);
   // Compare the plaintext inside x_enc_pt to the expected result
   // getPlaintext() decodes the shadow plaintext
-  double errNorm = diff2Norm(exactResult, x_enc_pt.raw_pt.data());
+  double errNorm = diff2Norm(exactResult, x_enc_pt.plaintext().data());
   if(errNorm < 0.0001) {
     LOG(INFO) << "\tHomomorphic algorithm matches cleartext algorithm.";
   }

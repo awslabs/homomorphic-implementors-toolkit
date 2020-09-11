@@ -100,27 +100,9 @@ namespace hit {
         print_stats(ct);
     }
 
-    void DepthFinder::mod_down_to_inplace_internal(CKKSCiphertext &ct, const CKKSCiphertext &target) {
-        if (ct.he_level() >= target.he_level()) {
-            ct.he_level() = target.he_level();
-        } else {
-            throw invalid_argument("ct level is below target level");
-        }
-        print_stats(ct);
-    }
-
-    void DepthFinder::mod_down_to_min_inplace_internal(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
-        int minLevel = min(ct1.he_level(), ct2.he_level());
-        ct1.he_level() = minLevel;
-        ct2.he_level() = minLevel;
-        // doesn't matter which input I print stats for since we only
-        // print the level, and both have the same level at this point.
-        print_stats(ct1);
-    }
-
     void DepthFinder::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
         if (ct.he_level() >= level) {
-            ct.he_level() = level;
+            ct.he_level_ = level;
         } else {
             throw invalid_argument("x level is below target level");
         }
@@ -129,7 +111,7 @@ namespace hit {
 
     void DepthFinder::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
         int topHELevel = context->first_context_data()->chain_index();
-        ct.he_level()--;
+        ct.he_level_--;
         /* The DepthFinder is always created as a "depth 0" evaluator, meaning that with
          * the current implementation in CKKSInstance, topHELevel is *always* 0.
          * There are two possible scenarios.
