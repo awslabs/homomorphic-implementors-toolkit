@@ -21,7 +21,7 @@ const int ZERO_MULTI_DEPTH = 0;
 const int ONE_MULTI_DEPTH = 1;
 const int TWO_MULTI_DEPTH = 2;
 const int THREE_MULTI_DEPTH = 3;
-const int LOG_SCALE = 40;
+const int LOG_SCALE = 45;
 
 Matrix random_mat(int height, int width) {
     return Matrix(height, width, randomVector(height * width, max_vec_norm));
