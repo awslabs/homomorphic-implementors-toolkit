@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # https://github.com/oneapi-src/oneTBB/tree/tbb_2020/cmake#tutorials-tbb-integration-using-cmake
-message(STATUS "Downloading and installing TBB since it is not found.")
+message(STATUS "Downloading and installing TBB.")
 download_external_project("tbb")
 set(TBB_CONTENT_DIR ${HIT_THIRD_PARTY_DIR}/tbb/src)
 set(TBB_BUILD_DIR ${HIT_THIRD_PARTY_DIR}/tbb/build)
