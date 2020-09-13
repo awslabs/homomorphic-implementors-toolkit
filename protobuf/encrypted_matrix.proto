@@ -1,0 +1,15 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto2";
+package hit.protobuf;
+
+import "encoding_unit.proto";
+import "ciphertext_vector.proto";
+
+message EncryptedMatrix {
+	required int32 height = 1; // height of the matrix.
+	required int32 width = 2; // width of the matrix.
+	required EncodingUnit unit = 3; // encoding unit.
+	repeated Ciphertext_Vector cts = 4; // a list of cipher texts.
+}

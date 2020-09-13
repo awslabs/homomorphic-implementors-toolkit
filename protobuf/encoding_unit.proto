@@ -1,0 +1,10 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto2";
+package hit.protobuf;
+
+message EncodingUnit {
+	required int32 encoding_height = 1; // height of the encoding unit.
+	required int32 encoding_width = 2; // width of the encoding unit.
+}
