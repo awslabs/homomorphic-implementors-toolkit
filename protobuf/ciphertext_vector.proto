@@ -6,6 +6,6 @@ package hit.protobuf;
 
 import "ciphertext.proto";
 
-message Ciphertext_Vector {
+message CiphertextVector {
 	repeated Ciphertext cts = 1; // A list of Ciphertext.
 }

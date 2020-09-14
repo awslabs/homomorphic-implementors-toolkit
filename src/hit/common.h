@@ -8,6 +8,7 @@
 #include "CKKSInstance.h"
 #include "api/ciphertext.h"
 #include "seal/seal.h"
+#include "hit/protobuf/ciphertext_vector.pb.h"
 
 #define LOG_VERBOSE 1
 
@@ -51,5 +52,22 @@ namespace hit {
     uintmax_t streamSize(std::iostream &s);
 
     std::string bytesToStr(uintmax_t sizeBytes);
+
+    inline protobuf::CiphertextVector *serialize(const std::vector<CKKSCiphertext> &ciphertext_vector) {
+        auto *proto_ciphertext_vector = new protobuf::CiphertextVector();
+        for (auto &ciphertext : ciphertext_vector) {
+            // https://developers.google.com/protocol-buffers/docs/reference/cpp-generated#repeatedmessage
+            auto *cts = proto_ciphertext_vector->add_cts();
+            cts = ciphertext.save();
+        }
+        return proto_ciphertext_vector;
+    }
+
+    inline void deserialize(const protobuf::CiphertextVector &proto_ciphertext_vector,
+            const std::vector<CKKSCiphertext> &ciphertext_vector) {
+        for (auto &proto_ciphertext : proto_ciphertext_vector) {
+            ciphertext_vector.push_back(CKKSCiphertext(proto_ciphertext));
+        }
+    }
 
 }  // namespace hit

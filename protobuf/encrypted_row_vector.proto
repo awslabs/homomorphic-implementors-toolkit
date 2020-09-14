@@ -11,6 +11,5 @@ import "ckksparams.proto";
 message EncryptedRowVector {
 	required int32 width = 1; // width of the matrix.
 	required EncodingUnit unit = 2; // encoding unit.
-	required CKKSParams ckks_params = 3; // CKKS parameters.
-	required Ciphertext_Vector cts = 4; // cipher texts.
+	required Ciphertext_Vector cts = 3; // cipher texts.
 }
