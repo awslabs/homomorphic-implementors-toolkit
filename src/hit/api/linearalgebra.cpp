@@ -11,11 +11,15 @@
 using namespace std;
 
 namespace hit {
+    // TODO: why initializing the members not in constructor body but initialization list? do we plan to make it const?
     EncodingUnit::EncodingUnit(int encoding_height, int encoding_width)
         : encoding_height_(encoding_height), encoding_width_(encoding_width) {
-        if (!initialized()) {
-            throw invalid_argument("Encoding unit dimensions must be a power of two.");
-        }
+        validateInit();
+    }
+
+    EncodingUnit::EncodingUnit(const protobuf::EncodingUnit &encoding_unit)
+        : encoding_height_(encoding_unit.encoding_height()), encoding_width_(encoding_unit.encoding_width()) {
+        validateInit();
     }
 
     bool operator==(const EncodingUnit &lhs, const EncodingUnit &rhs) {
@@ -34,8 +38,21 @@ namespace hit {
         return encoding_width_;
     }
 
+    protobuf::EncodingUnit *EncodingUnit::serialize() const {
+        protobuf::EncodingUnit encoding_unit;
+        encoding_unit.set_encoding_height(encoding_height_);
+        encoding_unit.set_encoding_width(encoding_width_);
+        return encoding_unit;
+    }
+
     bool EncodingUnit::initialized() const {
         return encoding_height_ > 0 && encoding_width_ > 0 && isPow2(encoding_height_) && isPow2(encoding_width_);
+    }
+
+    void EncodingUnit::validateInit() const {
+        if (!initialized()) {
+            throw invalid_argument("Encoding unit dimensions must be a power of two.");
+        }
     }
 
     EncodingUnit EncodingUnit::transpose() const {
@@ -53,6 +70,22 @@ namespace hit {
         if (!initialized()) {
             throw invalid_argument("Invalid cts to EncryptedMatrix.");
         }
+    }
+
+    // TODO: create validateInit to avoid duplicate.
+    EncryptedMatrix::EncryptedMatrix(const protobuf::EncryptedMatrix &encrypted_matrix)
+        : height_(encrypted_matrix.height()), width_(encrypted_matrix.width()), unit(encrypted_matrix.unit()), cts(encrypted_matrix.cts()) {
+        if (!initialized()) {
+            throw invalid_argument("Invalid cts to EncryptedMatrix.");
+        }
+    }
+
+    protobuf::EncryptedMatrix *EncryptedMatrix::serialize() const {
+        protobuf::EncryptedMatrix encrypted_matrix;
+        encrypted_matrix.set_height(height_);
+        encrypted_matrix.set_width(width_);
+        encrypted_matrix.set_unit(unit.serialize());
+        return encrypted_matrix;
     }
 
     EncodingUnit EncryptedMatrix::encoding_unit() const {

@@ -6,6 +6,10 @@
 #include "../CKKSInstance.h"
 #include "ciphertext.h"
 #include "evaluator.h"
+#include "hit/protobuf/encoding_unit.pb.h"  // NOLINT
+#include "hit/protobuf/encrypted_col_vector.pb.h"  // NOLINT
+#include "hit/protobuf/encrypted_row_vector.pb.h"  // NOLINT
+#include "hit/protobuf/encrypted_matrix.pb.h"  // NOLINT
 
 /* The LinearAlgebra API lifts the Evaluator API to linear algebra objects like row/column vectors and matrices.
  * It provides a simple API for performing many common linear algebra tasks, and automatic encoding and decoding
@@ -40,6 +44,10 @@ namespace hit {
      */
     struct EncodingUnit {
        public:
+        // Returns a EncodingUnit, which is deserialized from protobuf::EncodingUnit.
+        EncodingUnit(const protobuf::EncodingUnit &encoding_unit);
+        // Returns a protobuf::EncodingUnit, which is serialized from EncodingUnit.
+        protobuf::EncodingUnit *serialize() const;
         friend bool operator==(const EncodingUnit &lhs, const EncodingUnit &rhs);
         friend bool operator!=(const EncodingUnit &lhs, const EncodingUnit &rhs);
         // height of this encoding unit
@@ -58,6 +66,7 @@ namespace hit {
         // width of the encoding unit
         int encoding_width_ = 0;
         bool initialized() const;
+        void validateInit() const;
 
         friend class LinearAlgebra;
         friend struct EncryptedMatrix;
@@ -102,7 +111,10 @@ namespace hit {
        public:
         // use `encrypt_matrix` in `LinearAlgebra` to construct an encrypted matrix
         EncryptedMatrix() = default;
-
+        // Returns a EncryptedMatrix, which is deserialized from protobuf::EncryptedMatrix.
+        EncryptedMatrix(const protobuf::EncryptedMatrix &encrypted_matrix);
+        // Returns a protobuf::EncryptedMatrix, which is serialized from EncryptedMatrix.
+        protobuf::EncryptedMatrix *serialize() const;
         // height of the encrypted matrix
         int height() const;
         // width of the encrypted matrix
@@ -113,7 +125,6 @@ namespace hit {
         int num_horizontal_units() const;
         // encoding unit used to encode this matrix
         EncodingUnit encoding_unit() const;
-
         // number of plaintext slots in the CKKS parameters
         int num_slots() const override;
         // encryption level of this matrix
@@ -197,6 +208,11 @@ namespace hit {
         // use `encrypt_row_vector` in `LinearAlgebra` to construct an encrypted row vector
         EncryptedRowVector() = default;
 
+        // Returns a EncryptedRowVector, which is deserialized from protobuf::EncryptedRowVector.
+        EncryptedRowVector(const protobuf::EncryptedRowVector &encrypted_row_vector);
+        // Returns a protobuf::EncryptedRowVector, which is serialized from EncryptedRowVector.
+        protobuf::EncryptedRowVector *serialize() const;
+
         int width() const;
         int num_units() const;
         EncodingUnit encoding_unit() const;
@@ -269,6 +285,10 @@ namespace hit {
        public:
         // use `encrypt_row_vector` in `LinearAlgebra` to construct an encrypted row vector
         EncryptedColVector() = default;
+        // Returns a EncryptedColVector, which is deserialized from protobuf::EncryptedColVector.
+        EncryptedColVector(const protobuf::EncryptedColVector &encrypted_col_vector);
+        // Returns a protobuf::EncryptedColVector, which is serialized from EncryptedColVector.
+        protobuf::EncryptedColVector *serialize() const;
 
         int height() const;
         int num_units() const;
