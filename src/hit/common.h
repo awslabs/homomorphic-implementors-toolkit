@@ -56,18 +56,19 @@ namespace hit {
 
     inline protobuf::CiphertextVector *serializeVector(const std::vector<CKKSCiphertext> &ciphertext_vector) {
         auto *proto_ciphertext_vector = new protobuf::CiphertextVector();
-        for (auto &ciphertext : ciphertext_vector) {
+        for (const auto &ciphertext : ciphertext_vector) {
             // https://developers.google.com/protocol-buffers/docs/reference/cpp-generated#repeatedmessage
             proto_ciphertext_vector->mutable_cts()->AddAllocated(ciphertext.save());
         }
         return proto_ciphertext_vector;
     }
 
-    inline void deserializeVector(const protobuf::CiphertextVector &proto_ciphertext_vector,
-            std::vector<CKKSCiphertext> &ciphertext_vector) {
+    inline void deserializeVector(const std::shared_ptr<seal::SEALContext> &context,
+            const protobuf::CiphertextVector &proto_ciphertext_vector,
+            const std::vector<CKKSCiphertext> &ciphertext_vector) {
         for (int i = 0; i < proto_ciphertext_vector.cts_size(); i++) {
             protobuf::Ciphertext ciphertext = proto_ciphertext_vector.cts(i);
-            ciphertext_vector.push_back(CKKSCiphertext(ciphertext));
+            ciphertext_vector.push_back(CKKSCiphertext(context, ciphertext));
         }
     }
 

@@ -73,7 +73,8 @@ namespace hit {
     }
 
     // TODO(ubuntu): create validateInit to avoid duplicate.
-    EncryptedMatrix::EncryptedMatrix(const protobuf::EncryptedMatrix &encrypted_matrix)
+    EncryptedMatrix::EncryptedMatrix(const std::shared_ptr<seal::SEALContext> &context,
+            const protobuf::EncryptedMatrix &encrypted_matrix)
         : height_(encrypted_matrix.height()),
           width_(encrypted_matrix.width()),
           unit(encrypted_matrix.unit()) {
@@ -82,7 +83,7 @@ namespace hit {
             protobuf::CiphertextVector proto_ciphertext_vector = encrypted_matrix.cts(i);
             vector<CKKSCiphertext> ciphertext_vector;
             ciphertext_vector.reserve(proto_ciphertext_vector.cts_size());
-            deserializeVector(proto_ciphertext_vector, ciphertext_vector);
+            deserializeVector(context, proto_ciphertext_vector, ciphertext_vector);
             cts.push_back(ciphertext_vector);
         }
         if (!initialized()) {
@@ -268,11 +269,11 @@ namespace hit {
         }
     }
 
-    EncryptedRowVector::EncryptedRowVector(const protobuf::EncryptedRowVector &encrypted_row_vector)
+    EncryptedRowVector::EncryptedRowVector(const std::shared_ptr<seal::SEALContext> &context, const protobuf::EncryptedRowVector &encrypted_row_vector)
         : width_(encrypted_row_vector.width()),
           unit(encrypted_row_vector.unit()) {
         cts.reserve(encrypted_row_vector.cts().cts_size());
-        deserializeVector(encrypted_row_vector.cts(), cts);
+        deserializeVector(context, encrypted_row_vector.cts(), cts);
         if (!initialized()) {
             throw invalid_argument("Invalid cts to EncryptedRowVector.");
         }
@@ -404,11 +405,11 @@ namespace hit {
         }
     }
 
-    EncryptedColVector::EncryptedColVector(const protobuf::EncryptedColVector &encrypted_col_vector)
+    EncryptedColVector::EncryptedColVector(const std::shared_ptr<seal::SEALContext> &context, const protobuf::EncryptedColVector &encrypted_col_vector)
         : height_(encrypted_col_vector.height()),
           unit(encrypted_col_vector.unit()) {
         cts.reserve(encrypted_col_vector.cts().cts_size());
-        deserializeVector(encrypted_col_vector.cts(), cts);
+        deserializeVector(context, encrypted_col_vector.cts(), cts);
         if (!initialized()) {
             throw invalid_argument("Invalid cts to EncryptedColVector.");
         }

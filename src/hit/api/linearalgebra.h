@@ -6,6 +6,7 @@
 #include "../CKKSInstance.h"
 #include "ciphertext.h"
 #include "evaluator.h"
+#include "seal/seal.h"
 #include "hit/protobuf/encoding_unit.pb.h"  // NOLINT
 #include "hit/protobuf/encrypted_col_vector.pb.h"  // NOLINT
 #include "hit/protobuf/encrypted_row_vector.pb.h"  // NOLINT
@@ -112,7 +113,7 @@ namespace hit {
         // use `encrypt_matrix` in `LinearAlgebra` to construct an encrypted matrix
         EncryptedMatrix() = default;
         // Returns a EncryptedMatrix, which is deserialized from protobuf::EncryptedMatrix.
-        EncryptedMatrix(const protobuf::EncryptedMatrix &encrypted_matrix);
+        EncryptedMatrix(const std::shared_ptr<seal::SEALContext> &context, const protobuf::EncryptedMatrix &encrypted_matrix);
         // Returns a protobuf::EncryptedMatrix, which is serialized from EncryptedMatrix.
         protobuf::EncryptedMatrix *serialize() const;
         // height of the encrypted matrix
@@ -209,7 +210,7 @@ namespace hit {
         EncryptedRowVector() = default;
 
         // Returns a EncryptedRowVector, which is deserialized from protobuf::EncryptedRowVector.
-        EncryptedRowVector(const protobuf::EncryptedRowVector &encrypted_row_vector);
+        EncryptedRowVector(const std::shared_ptr<seal::SEALContext> &context, const protobuf::EncryptedRowVector &encrypted_row_vector);
         // Returns a protobuf::EncryptedRowVector, which is serialized from EncryptedRowVector.
         protobuf::EncryptedRowVector *serialize() const;
 
@@ -286,7 +287,7 @@ namespace hit {
         // use `encrypt_row_vector` in `LinearAlgebra` to construct an encrypted row vector
         EncryptedColVector() = default;
         // Returns a EncryptedColVector, which is deserialized from protobuf::EncryptedColVector.
-        EncryptedColVector(const protobuf::EncryptedColVector &encrypted_col_vector);
+        EncryptedColVector(const std::shared_ptr<seal::SEALContext> &context, const protobuf::EncryptedColVector &encrypted_col_vector);
         // Returns a protobuf::EncryptedColVector, which is serialized from EncryptedColVector.
         protobuf::EncryptedColVector *serialize() const;
 
