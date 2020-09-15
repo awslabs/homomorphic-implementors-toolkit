@@ -26,25 +26,51 @@ namespace hit {
         // only copy seal_ct if it is not null in src
         if (src.seal_ct != nullptr) {
             seal_ct = new Ciphertext();
-            *seal_ct = Ciphertext(*(src.seal_ct));
+            // deep copy
+            *seal_ct = *(src.seal_ct);
         }
+    }
+
+    CKKSCiphertext::CKKSCiphertext(CKKSCiphertext&& src) noexcept {
+        copyMetadataFrom(src);
+        seal_ct = src.seal_ct; // copy pointer only
+        src.seal_ct = nullptr;
     }
 
     CKKSCiphertext& CKKSCiphertext::operator=(const CKKSCiphertext &src) {
         // required to prevent corruption upon self-assignment
-        if (this != &src) {
-            // we can always copy metadata
-            copyMetadataFrom(src);
-            // only copy seal_ct if it is not null in src
-            if (src.seal_ct != nullptr) {
-                // we might be assigning to an already initialized ciphertext,
-                // so don't re-allocate seal_ct
-                if (seal_ct == nullptr) {
-                    seal_ct = new Ciphertext();
-                }
-                *seal_ct = Ciphertext(*(src.seal_ct));
-            }
+        if (this == &src) {
+            return *this;
         }
+
+        // delete seal_ct if we have one
+        delete seal_ct;
+
+        // we can always copy metadata
+        copyMetadataFrom(src);
+        // only copy seal_ct if it is not null in src
+        if (src.seal_ct != nullptr) {
+            seal_ct = new Ciphertext();
+            // deep copy
+            *seal_ct = *(src.seal_ct);
+        }
+        return *this;
+    }
+
+    CKKSCiphertext& CKKSCiphertext::operator=(CKKSCiphertext&& src) noexcept {
+        // required to prevent corruption upon self-assignment
+        if (this == &src) {
+            return *this;
+        }
+
+        // delete seal_ct if we have one
+        delete seal_ct;
+
+        // we can always copy metadata
+        copyMetadataFrom(src);
+        seal_ct = src.seal_ct; // copy pointer only
+        src.seal_ct = nullptr;
+
         return *this;
     }
 
@@ -99,10 +125,10 @@ namespace hit {
             ostringstream sealctBuf;
             seal_ct->save(sealctBuf);
             proto_ct->set_seal_ct(sealctBuf.str());
+        }
 
-            for (double i : raw_pt) {
-                proto_ct->add_raw_pt(i);
-            }
+        for (double i : raw_pt) {
+            proto_ct->add_raw_pt(i);
         }
     }
 

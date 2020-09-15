@@ -22,8 +22,14 @@ namespace hit {
         // copy constructor, resulting in a copy of the SEAL ciphertext (if present)
         CKKSCiphertext(const CKKSCiphertext &src);
 
+        // move constructor
+        CKKSCiphertext(CKKSCiphertext&& src) noexcept;
+
         // copy assignment operator. This copies the SEAL ciphertext
         CKKSCiphertext& operator=(const CKKSCiphertext &src);
+
+        // move assignment operator.
+        CKKSCiphertext& operator=(CKKSCiphertext&& src) noexcept;
 
         ~CKKSCiphertext() override;
 
