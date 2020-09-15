@@ -1417,3 +1417,255 @@ TEST(LinearAlgebraTest, HadamardMulColSquare) {
     test_hadamard_mul_col_square(laInst, 69, unit1);
     test_hadamard_mul_col_square(laInst, 128, unit1);
 }
+
+TEST(LinearAlgebraTest, ModDownToMin_Matrix) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+
+    int unit1_height = 64;  // a 64x64 encoding unit
+    EncodingUnit unit = laInst.make_unit(unit1_height);
+
+    Matrix mat1 = random_mat(128, 128);
+
+    EncryptedMatrix ct_mat1 = laInst.encrypt_matrix(mat1, unit);
+    EncryptedMatrix ct_mat2 = laInst.encrypt_matrix(mat1, unit, 0);
+    laInst.mod_down_to_min_inplace(ct_mat1, ct_mat2);
+    ASSERT_EQ(ct_mat1.he_level(), 0);
+
+    EncryptedMatrix ct_vec3 = laInst.encrypt_matrix(mat1, unit);
+    laInst.mod_down_to_min_inplace(ct_mat2, ct_vec3);
+    ASSERT_EQ(ct_vec3.he_level(), 0);
+}
+
+TEST(LinearAlgebraTest, ModDownToMin_ColVec) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+
+    int unit1_height = 64;  // a 64x64 encoding unit
+    EncodingUnit unit = laInst.make_unit(unit1_height);
+
+    Vector vec1 = random_vec(128);
+
+    EncryptedColVector ct_vec1 = laInst.encrypt_col_vector(vec1, unit);
+    EncryptedColVector ct_vec2 = laInst.encrypt_col_vector(vec1, unit, 0);
+    laInst.mod_down_to_min_inplace(ct_vec1, ct_vec2);
+    ASSERT_EQ(ct_vec1.he_level(), 0);
+
+    EncryptedColVector ct_vec3 = laInst.encrypt_col_vector(vec1, unit);
+    laInst.mod_down_to_min_inplace(ct_vec2, ct_vec3);
+    ASSERT_EQ(ct_vec3.he_level(), 0);
+}
+
+TEST(LinearAlgebraTest, ModDownToMin_RowVec) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+
+    int unit1_height = 64;  // a 64x64 encoding unit
+    EncodingUnit unit = laInst.make_unit(unit1_height);
+
+    Vector vec1 = random_vec(128);
+
+    EncryptedRowVector ct_vec1 = laInst.encrypt_row_vector(vec1, unit);
+    EncryptedRowVector ct_vec2 = laInst.encrypt_row_vector(vec1, unit, 0);
+    laInst.mod_down_to_min_inplace(ct_vec1, ct_vec2);
+    ASSERT_EQ(ct_vec1.he_level(), 0);
+
+    EncryptedRowVector ct_vec3 = laInst.encrypt_row_vector(vec1, unit);
+    laInst.mod_down_to_min_inplace(ct_vec2, ct_vec3);
+    ASSERT_EQ(ct_vec3.he_level(), 0);
+}
+
+TEST(LinearAlgebraTest, ModDownToLevel_Matrix) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+
+    int unit1_height = 64;  // a 64x64 encoding unit
+    EncodingUnit unit = laInst.make_unit(unit1_height);
+
+    Matrix mat1 = random_mat(128, 128);
+
+    EncryptedMatrix ct_mat1 = laInst.encrypt_matrix(mat1, unit);
+    EncryptedMatrix ct_mat2 = laInst.mod_down_to_level(ct_mat1, 0);
+    ASSERT_EQ(ct_mat2.he_level(), 0);
+}
+
+TEST(LinearAlgebraTest, ModDownToLevel_ColVec) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+
+    int unit1_height = 64;  // a 64x64 encoding unit
+    EncodingUnit unit = laInst.make_unit(unit1_height);
+
+    Vector vec1 = random_vec(128);
+
+    EncryptedColVector ct_vec1 = laInst.encrypt_col_vector(vec1, unit);
+    EncryptedColVector ct_vec2 = laInst.mod_down_to_level(ct_vec1, 0);
+    ASSERT_EQ(ct_vec2.he_level(), 0);
+}
+
+TEST(LinearAlgebraTest, ModDownToLevel_RowVec) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+
+    int unit1_height = 64;  // a 64x64 encoding unit
+    EncodingUnit unit = laInst.make_unit(unit1_height);
+
+    Vector vec1 = random_vec(128);
+
+    EncryptedRowVector ct_vec1 = laInst.encrypt_row_vector(vec1, unit);
+    EncryptedRowVector ct_vec2 = laInst.mod_down_to_level(ct_vec1, 0);
+    ASSERT_EQ(ct_vec2.he_level(), 0);
+}
+
+TEST(LinearAlgebraTest, RescaleToNext_Matrix) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+
+    int unit1_height = 64;  // a 64x64 encoding unit
+    EncodingUnit unit = laInst.make_unit(unit1_height);
+
+    Matrix mat1 = random_mat(128, 128);
+
+    EncryptedMatrix ct_mat1 = laInst.encrypt_matrix(mat1, unit);
+    ASSERT_EQ(ct_mat1.scale(), pow(2, LOG_SCALE));
+    laInst.multiply_inplace(ct_mat1, 2);
+    ASSERT_EQ(ct_mat1.scale(), pow(2, 2 * LOG_SCALE));
+    ASSERT_EQ(ct_mat1.he_level(), 1);
+    laInst.rescale_to_next_inplace(ct_mat1);
+    ASSERT_EQ(ct_mat1.he_level(), 0);
+    uint64_t prime = getLastPrime(ckksInstance->context, 1);
+    ASSERT_EQ(ct_mat1.scale(), pow(2, 2 * LOG_SCALE) / prime);
+}
+
+TEST(LinearAlgebraTest, RescaleToNext_ColVec) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+
+    int unit1_height = 64;  // a 64x64 encoding unit
+    EncodingUnit unit = laInst.make_unit(unit1_height);
+
+    Vector vec1 = random_vec(128);
+
+    EncryptedColVector ct_vec1 = laInst.encrypt_col_vector(vec1, unit);
+    ASSERT_EQ(ct_vec1.scale(), pow(2, LOG_SCALE));
+    laInst.multiply_inplace(ct_vec1, 2);
+    ASSERT_EQ(ct_vec1.scale(), pow(2, 2 * LOG_SCALE));
+    ASSERT_EQ(ct_vec1.he_level(), 1);
+    laInst.rescale_to_next_inplace(ct_vec1);
+    ASSERT_EQ(ct_vec1.he_level(), 0);
+    uint64_t prime = getLastPrime(ckksInstance->context, 1);
+    ASSERT_EQ(ct_vec1.scale(), pow(2, 2 * LOG_SCALE) / prime);
+}
+
+TEST(LinearAlgebraTest, RescaleToNext_RowVec) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+
+    int unit1_height = 64;  // a 64x64 encoding unit
+    EncodingUnit unit = laInst.make_unit(unit1_height);
+
+    Vector vec1 = random_vec(128);
+
+    EncryptedRowVector ct_vec1 = laInst.encrypt_row_vector(vec1, unit);
+    ASSERT_EQ(ct_vec1.scale(), pow(2, LOG_SCALE));
+    laInst.multiply_inplace(ct_vec1, 2);
+    ASSERT_EQ(ct_vec1.scale(), pow(2, 2 * LOG_SCALE));
+    ASSERT_EQ(ct_vec1.he_level(), 1);
+    laInst.rescale_to_next_inplace(ct_vec1);
+    ASSERT_EQ(ct_vec1.he_level(), 0);
+    uint64_t prime = getLastPrime(ckksInstance->context, 1);
+    ASSERT_EQ(ct_vec1.scale(), pow(2, 2 * LOG_SCALE) / prime);
+}
+
+Vector plaintextColSum(Matrix a) {
+    int height = a.size1();
+    int width = a.size2();
+    vector<double> output(height);
+    for(int i = 0; i < height; i++) {
+        double sum = 0;
+        for(int j = 0; j < width; j++) {
+            sum += a.data()[i*width+j];
+        }
+        output[i] = sum;
+    }
+    return Vector(output);
+}
+
+void test_colSum(LinearAlgebra lainst, EncodingUnit unit, int height, int width, double scalar) {
+
+    Matrix mat = random_mat(height, width);
+    EncryptedMatrix ct_mat = lainst->encrypt_matrix(mat, unit);
+    EncryptedRowVector ct_vec = lainst.sum_cols(ct_mat, scalar);
+
+    Vector actualResult = lainst.decrypt(ct_vec);
+    Vector expectedResult = plaintextColSum(mat);
+
+    ASSERT_LT(diff2Norm(actualResult.data(), expectedResult.data()), MAX_NORM);
+}
+
+TEST(LinearAlgebraTest, SumCols) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra lainst = LinearAlgebra(ckksInstance);
+
+    int unit1_height = 64;  // a 64x64 encoding unit
+    EncodingUnit unit = laInst.make_unit(unit1_height);
+
+    test_colSum(lainst, unit, 64, 64, 1);
+    test_colSum(lainst, unit, 64, 64, 3.14);
+    test_colSum(lainst, unit, 32, 64, 3.14);
+    test_colSum(lainst, unit, 64, 32, 3.14);
+    test_colSum(lainst, unit, 128, 32, 3.14);
+    test_colSum(lainst, unit, 128, 64, 3.14);
+    test_colSum(lainst, unit, 128, 65, 3.14);
+    test_colSum(lainst, unit, 128, 128, 3.14);
+    test_colSum(lainst, unit, 32, 128, 3.14);
+    test_colSum(lainst, unit, 64, 128, 3.14);
+    test_colSum(lainst, unit, 65, 128, 3.14);
+    test_colSum(lainst, unit, 65, 65, 3.14);
+}
+
+Vector plaintextRowSum(Matrix a) {
+  int height = a.size1();
+  int width = a.size2();
+  vector<double> output(width);
+  for(int j = 0; j < width; j++) {
+    double sum = 0;
+    for(int i = 0; i < height; i++) {
+      sum += a.data()[i*width+j];
+    }
+    output[j] = sum;
+  }
+  return Vector(output);
+}
+
+void test_rowSum(LinearAlgebra lainst, EncodingUnit unit, int height, int width) {
+
+    Matrix mat = random_mat(height, width);
+    EncryptedMatrix ct_mat = lainst->encrypt_matrix(mat, unit);
+    EncryptedColVector ct_vec = lainst.sum_rows(ct_mat);
+
+    Vector actualResult = lainst.decrypt(ct_vec);
+    Vector expectedResult = plaintextRowSum(mat);
+
+    ASSERT_LT(diff2Norm(actualResult.data(), expectedResult.data()), MAX_NORM);
+}
+
+TEST(LinearAlgebraTest, SumRows) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra lainst = LinearAlgebra(ckksInstance);
+
+    int unit1_height = 64;  // a 64x64 encoding unit
+    EncodingUnit unit = laInst.make_unit(unit1_height);
+
+    test_rowSum(lainst, unit, 64, 64);
+    test_rowSum(lainst, unit, 32, 64);
+    test_rowSum(lainst, unit, 64, 32);
+    test_rowSum(lainst, unit, 128, 32);
+    test_rowSum(lainst, unit, 128, 64);
+    test_rowSum(lainst, unit, 128, 65);
+    test_rowSum(lainst, unit, 128, 128);
+    test_rowSum(lainst, unit, 32, 128);
+    test_rowSum(lainst, unit, 64, 128);
+    test_rowSum(lainst, unit, 65, 128);
+    test_rowSum(lainst, unit, 65, 65);
+}
