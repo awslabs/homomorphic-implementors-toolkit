@@ -59,6 +59,7 @@ namespace hit {
             Plaintext temp;
             encoder->encode(coeffs, context_data->parms_id(), scale, temp);
             encryptor->encrypt(temp, destination.seal_ct);
+            destination.contains_seal_ct = true;
         }
 
         destination.num_slots_ = numSlots;

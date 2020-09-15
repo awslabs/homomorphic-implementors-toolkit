@@ -54,7 +54,7 @@ namespace hit {
 
         // flag indicating whether this CT has been initialized or not
         // CKKSCiphertexts are initialized upon encryption
-        bool initialized = false;
+        bool contains_seal_ct = false;
 
         // heLevel is used by the depthFinder
         int he_level_ = 0;

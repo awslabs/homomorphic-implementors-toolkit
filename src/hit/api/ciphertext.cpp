@@ -14,7 +14,7 @@ namespace hit {
 
     void CKKSCiphertext::copyMetadataFrom(const CKKSCiphertext &src) {
         raw_pt = src.raw_pt;
-        initialized = src.initialized;
+        contains_seal_ct = src.contains_seal_ct;
         he_level_ = src.he_level_;
         scale_ = src.scale_;
         num_slots_ = src.num_slots_;
@@ -25,12 +25,12 @@ namespace hit {
             throw invalid_argument("CKKSCiphertext serialization: Expected version 0");
         }
 
-        initialized = proto_ct.initialized();
+        contains_seal_ct = proto_ct.contains_seal_ct();
         scale_ = proto_ct.scale();
         he_level_ = proto_ct.he_level();
         num_slots_ = context->first_context_data()->parms().poly_modulus_degree() / 2;
 
-        if (initialized) {
+        if (contains_seal_ct) {
             int raw_pt_size = proto_ct.raw_pt_size();
             raw_pt = Vector(raw_pt_size);
             for (int i = 0; i < raw_pt_size; i++) {
@@ -55,11 +55,11 @@ namespace hit {
         }
 
         proto_ct->set_version(0);
-        proto_ct->set_initialized(initialized);
+        proto_ct->set_contains_seal_ct(contains_seal_ct);
         proto_ct->set_scale(scale_);
         proto_ct->set_he_level(he_level_);
 
-        if (initialized) {
+        if (contains_seal_ct) {
             ostringstream sealctBuf;
             seal_ct.save(sealctBuf);
             proto_ct->set_seal_ct(sealctBuf.str());
