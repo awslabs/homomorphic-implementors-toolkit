@@ -43,11 +43,11 @@ namespace hit {
                             static_cast<double>(context_data->parms().coeff_modulus().back().value());
             context_data = context_data->next_context_data();
         }
-        if (ct.seal_ct.scale() != expectedScale && ct.seal_ct.scale() != expectedScale * expectedScale) {
+        if (ct.seal_ct->scale() != expectedScale && ct.seal_ct->scale() != expectedScale * expectedScale) {
             throw invalid_argument("CHECK_SCALE: Expected " + to_string(expectedScale) + "^{1,2}, got " +
-                                   to_string(ct.seal_ct.scale()));
+                                   to_string(ct.seal_ct->scale()));
         }
-        if (ct.seal_ct.scale() != ct.scale()) {
+        if (ct.seal_ct->scale() != ct.scale()) {
             throw invalid_argument("HIT scale calculation does not match SEAL.");
         }
     }
@@ -61,10 +61,10 @@ namespace hit {
         vector<double> exactPlaintext = ct.raw_pt.data();
 
         norm = diff2Norm(exactPlaintext, homomPlaintext);
-        if (abs(log2(ct.scale()) - log2(ct.seal_ct.scale())) > 0.1) {
+        if (abs(log2(ct.scale()) - log2(ct.seal_ct->scale())) > 0.1) {
             stringstream buffer;
             buffer << "INTERNAL ERROR: SCALE COMPUTATION IS INCORRECT: " << log2(ct.scale())
-                   << " != " << ct.seal_ct.scale();
+                   << " != " << ct.seal_ct->scale();
             throw invalid_argument(buffer.str());
         }
 

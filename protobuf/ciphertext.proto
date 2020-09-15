@@ -6,7 +6,7 @@ package hit.protobuf;
 
 message Ciphertext {
 	required int32 version = 1;
-	required bool contains_seal_ct = 2; // does this object contain a valid SEAL ciphertext?
+	required bool initialized = 2; // has this ciphertext been initialized?
 	optional bytes seal_ct = 3;    // the underlying SEAL ciphertext
 	required int32 he_level = 4;   // level of this ciphertext
 	repeated double raw_pt = 5;    // raw (unscaled) plaintext encrypted in the ciphertext; only non-empty in debug modes

@@ -58,11 +58,12 @@ namespace hit {
         if (mode == ENC_NORMAL || mode == ENC_DEBUG) {
             Plaintext temp;
             encoder->encode(coeffs, context_data->parms_id(), scale, temp);
-            encryptor->encrypt(temp, destination.seal_ct);
-            destination.contains_seal_ct = true;
+            destination.seal_ct = new Ciphertext(); // this will be freed by the CKKSCiphertext destructor
+            encryptor->encrypt(temp, *destination.seal_ct);
         }
 
         destination.num_slots_ = numSlots;
+        destination.initialized = true;
 
         return destination;
     }

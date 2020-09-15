@@ -19,6 +19,14 @@ namespace hit {
         // Deserialize a ciphertext
         CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context, const hit::protobuf::Ciphertext &proto_ct);
 
+        // copy constructor, resulting in a copy of the SEAL ciphertext (if present)
+        CKKSCiphertext(const CKKSCiphertext &src);
+
+        // copy assignment operator. This copies the SEAL ciphertext
+        CKKSCiphertext& operator=(const CKKSCiphertext &src);
+
+        ~CKKSCiphertext() override;
+
         // Serialize a ciphertext
         hit::protobuf::Ciphertext *save() const;
         void save(hit::protobuf::Ciphertext *proto_ct) const;
@@ -41,20 +49,20 @@ namespace hit {
         // Copy all members except the ciphertext itself
         void copyMetadataFrom(const CKKSCiphertext &src);
 
+        // SEAL ciphertext
+        seal::Ciphertext *seal_ct = nullptr;
+
         // The raw plaintxt. This is used with some of the evaluators tha track ciphertext
         // metadata (e.g., DebugEval and PlaintextEval), but not by the Homomorphic evaluator.
         // This plaintext is not CKKS-encoded; in particular it is not scaled by the scale factor.
         Vector raw_pt;
-
-        // SEAL ciphertext
-        seal::Ciphertext seal_ct;
 
         // `scale` is used by the ScaleEstimator evaluator
         double scale_ = 0;
 
         // flag indicating whether this CT has been initialized or not
         // CKKSCiphertexts are initialized upon encryption
-        bool contains_seal_ct = false;
+        bool initialized = false;
 
         // heLevel is used by the depthFinder
         int he_level_ = 0;

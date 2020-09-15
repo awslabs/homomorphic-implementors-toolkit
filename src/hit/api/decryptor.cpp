@@ -31,7 +31,7 @@ namespace hit {
                          << " to improve performance!";
         }
 
-        decryptor->decrypt(encrypted.seal_ct, temp);
+        decryptor->decrypt(*encrypted.seal_ct, temp);
 
         vector<double> decoded_output;
         encoder->decode(temp, decoded_output);

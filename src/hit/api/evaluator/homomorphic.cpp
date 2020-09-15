@@ -43,20 +43,20 @@ namespace hit {
     }
 
     int HomomorphicEval::get_SEAL_level(const CKKSCiphertext &ct) const {
-        return context->get_context_data(ct.seal_ct.parms_id())->chain_index();
+        return context->get_context_data(ct.seal_ct->parms_id())->chain_index();
     }
 
     void HomomorphicEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
         CKKSCiphertext dest = ct;
-        evaluator.rotate_vector_inplace(ct.seal_ct, -steps, galois_keys);
+        evaluator.rotate_vector_inplace(*ct.seal_ct, -steps, galois_keys);
     }
 
     void HomomorphicEval::rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) {
-        evaluator.rotate_vector_inplace(ct.seal_ct, steps, galois_keys);
+        evaluator.rotate_vector_inplace(*ct.seal_ct, steps, galois_keys);
     }
 
     void HomomorphicEval::negate_inplace_internal(CKKSCiphertext &ct) {
-        evaluator.negate_inplace(ct.seal_ct);
+        evaluator.negate_inplace(*ct.seal_ct);
     }
 
     void HomomorphicEval::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
@@ -67,13 +67,13 @@ namespace hit {
                    << " != " << get_SEAL_level(ct2);
             throw invalid_argument(buffer.str());
         }
-        evaluator.add_inplace(ct1.seal_ct, ct2.seal_ct);
+        evaluator.add_inplace(*ct1.seal_ct, *ct2.seal_ct);
     }
 
     void HomomorphicEval::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         Plaintext encoded_plain;
-        encoder.encode(scalar, ct.seal_ct.parms_id(), ct.seal_ct.scale(), encoded_plain);
-        evaluator.add_plain_inplace(ct.seal_ct, encoded_plain);
+        encoder.encode(scalar, ct.seal_ct->parms_id(), ct.seal_ct->scale(), encoded_plain);
+        evaluator.add_plain_inplace(*ct.seal_ct, encoded_plain);
     }
 
     void HomomorphicEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
@@ -82,8 +82,8 @@ namespace hit {
                 "Error in HomomorphicEval::add_plain_internal: plaintext size does not match ciphertext size");
         }
         Plaintext temp;
-        encoder.encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
-        evaluator.add_plain_inplace(ct.seal_ct, temp);
+        encoder.encode(plain, ct.seal_ct->parms_id(), ct.seal_ct->scale(), temp);
+        evaluator.add_plain_inplace(*ct.seal_ct, temp);
     }
 
     void HomomorphicEval::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
@@ -94,13 +94,13 @@ namespace hit {
                    << " != " << get_SEAL_level(ct2);
             throw invalid_argument(buffer.str());
         }
-        evaluator.sub_inplace(ct1.seal_ct, ct2.seal_ct);
+        evaluator.sub_inplace(*ct1.seal_ct, *ct2.seal_ct);
     }
 
     void HomomorphicEval::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         Plaintext encoded_plain;
-        encoder.encode(scalar, ct.seal_ct.parms_id(), ct.seal_ct.scale(), encoded_plain);
-        evaluator.sub_plain_inplace(ct.seal_ct, encoded_plain);
+        encoder.encode(scalar, ct.seal_ct->parms_id(), ct.seal_ct->scale(), encoded_plain);
+        evaluator.sub_plain_inplace(*ct.seal_ct, encoded_plain);
     }
 
     void HomomorphicEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
@@ -109,8 +109,8 @@ namespace hit {
                 "Error in HomomorphicEval::sub_plain_internal: plaintext size does not match ciphertext size");
         }
         Plaintext temp;
-        encoder.encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
-        evaluator.sub_plain_inplace(ct.seal_ct, temp);
+        encoder.encode(plain, ct.seal_ct->parms_id(), ct.seal_ct->scale(), temp);
+        evaluator.sub_plain_inplace(*ct.seal_ct, temp);
     }
 
     void HomomorphicEval::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
@@ -121,7 +121,7 @@ namespace hit {
                    << " != " << get_SEAL_level(ct2);
             throw invalid_argument(buffer.str());
         }
-        evaluator.multiply_inplace(ct1.seal_ct, ct2.seal_ct);
+        evaluator.multiply_inplace(*ct1.seal_ct, *ct2.seal_ct);
         if (update_metadata) {
             ct1.scale_ *= ct2.scale();
         }
@@ -132,14 +132,14 @@ namespace hit {
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         if (scalar != double{0}) {
             Plaintext encoded_plain;
-            encoder.encode(scalar, ct.seal_ct.parms_id(), ct.seal_ct.scale(), encoded_plain);
-            evaluator.multiply_plain_inplace(ct.seal_ct, encoded_plain);
+            encoder.encode(scalar, ct.seal_ct->parms_id(), ct.seal_ct->scale(), encoded_plain);
+            evaluator.multiply_plain_inplace(*ct.seal_ct, encoded_plain);
         } else {
-            double previous_scale = ct.seal_ct.scale();
-            encryptor.encrypt_zero(ct.seal_ct.parms_id(), ct.seal_ct);
+            double previous_scale = ct.seal_ct->scale();
+            encryptor.encrypt_zero(ct.seal_ct->parms_id(), *ct.seal_ct);
             // seal sets the scale to be 1, but our the debug evaluator always ensures that the SEAL scale is consistent
             // with our mirror calculation
-            ct.seal_ct.scale() = previous_scale * previous_scale;
+            ct.seal_ct->scale() = previous_scale * previous_scale;
         }
         if (update_metadata) {
             ct.scale_ *= ct.scale();
@@ -153,15 +153,15 @@ namespace hit {
                 "size");
         }
         Plaintext temp;
-        encoder.encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
-        evaluator.multiply_plain_inplace(ct.seal_ct, temp);
+        encoder.encode(plain, ct.seal_ct->parms_id(), ct.seal_ct->scale(), temp);
+        evaluator.multiply_plain_inplace(*ct.seal_ct, temp);
         if (update_metadata) {
             ct.scale_ *= ct.scale();
         }
     }
 
     void HomomorphicEval::square_inplace_internal(CKKSCiphertext &ct) {
-        evaluator.square_inplace(ct.seal_ct);
+        evaluator.square_inplace(*ct.seal_ct);
         if (update_metadata) {
             ct.scale_ *= ct.scale();
         }
@@ -181,7 +181,7 @@ namespace hit {
     }
 
     void HomomorphicEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        evaluator.rescale_to_next_inplace(ct.seal_ct);
+        evaluator.rescale_to_next_inplace(*ct.seal_ct);
 
         if (update_metadata) {
             // we have to get the last prime *before* reducing the HE level,
@@ -194,6 +194,6 @@ namespace hit {
     }
 
     void HomomorphicEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
-        evaluator.relinearize_inplace(ct.seal_ct, relin_keys);
+        evaluator.relinearize_inplace(*ct.seal_ct, relin_keys);
     }
 }  // namespace hit

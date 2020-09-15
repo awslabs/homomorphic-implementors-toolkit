@@ -20,7 +20,7 @@ const int LOG_SCALE = 40;
 
 // encrypt a random message, serialize it, deserialize it, and decrypt.
 // ensure that the decrypted message is the same as the original plaintext.
-TEST(SerializationTest, CKKSCiphertext) {
+TEST(SerializationTest, Homomorphic_CKKSCiphertext) {
 	CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
 
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
