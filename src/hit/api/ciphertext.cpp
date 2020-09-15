@@ -40,6 +40,26 @@ namespace hit {
         }
     }
 
+    CKKSCiphertext::CKKSCiphertext(const protobuf::Ciphertext &proto_ct) {
+        if (proto_ct.version() != 0) {
+            throw invalid_argument("CKKSCiphertext serialization: Expected version 0");
+        }
+
+        initialized = proto_ct.initialized();
+        scale_ = proto_ct.scale();
+        he_level_ = proto_ct.he_level();
+
+        if (initialized) {
+            int raw_pt_size = proto_ct.raw_pt_size();
+            raw_pt = Vector(raw_pt_size);
+            for (int i = 0; i < raw_pt_size; i++) {
+                raw_pt[i] = proto_ct.raw_pt(i);
+            }
+
+            istringstream ctstream(proto_ct.seal_ct());
+        }
+    }
+
     protobuf::Ciphertext *CKKSCiphertext::save() const {
         auto *proto_ct = new protobuf::Ciphertext();
         save(*proto_ct);

@@ -18,6 +18,7 @@ namespace hit {
 
         // Deserialize a ciphertext
         CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context, const hit::protobuf::Ciphertext &proto_ct);
+        CKKSCiphertext(const hit::protobuf::Ciphertext &proto_ct);
 
         // Serialize a ciphertext
         hit::protobuf::Ciphertext *save() const;

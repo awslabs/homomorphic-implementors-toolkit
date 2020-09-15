@@ -77,16 +77,14 @@ namespace hit {
         : height_(encrypted_matrix.height()),
           width_(encrypted_matrix.width()),
           unit(encrypted_matrix.unit()) {
-        vector<vector<CKKSCiphertext>> local_cts;
-        local_cts.reserve(encrypted_matrix.cts_size());
+        cts.reserve(encrypted_matrix.cts_size());
         for (int i = 0; i < encrypted_matrix.cts_size(); i++) {
             protobuf::CiphertextVector proto_ciphertext_vector = encrypted_matrix.cts(i);
             vector<CKKSCiphertext> ciphertext_vector;
             ciphertext_vector.reserve(proto_ciphertext_vector.cts_size());
-            deserialize(proto_ciphertext_vector, ciphertext_vector);
-            local_cts.push_back(ciphertext_vector);
+            deserializeVector(proto_ciphertext_vector, ciphertext_vector);
+            cts.push_back(ciphertext_vector);
         }
-        cts = local_cts;
         if (!initialized()) {
             throw invalid_argument("Invalid cts to EncryptedMatrix.");
         }
@@ -98,8 +96,7 @@ namespace hit {
         encrypted_matrix->set_width(width_);
         encrypted_matrix->set_allocated_unit(unit.serialize());
         for (auto &ciphertext_vector : cts) {
-            auto *proto_vector = encrypted_matrix->add_cts();
-            proto_vector = serialize(ciphertext_vector);
+            encrypted_matrix->mutable_cts()->AddAllocated(serializeVector(ciphertext_vector));
         }
         return encrypted_matrix;
     }
@@ -274,9 +271,8 @@ namespace hit {
     EncryptedRowVector::EncryptedRowVector(const protobuf::EncryptedRowVector &encrypted_row_vector)
         : width_(encrypted_row_vector.width()),
           unit(encrypted_row_vector.unit()) {
-        cts = vector<CKKSCiphertext>();
-        cts.reserve(encrypted_row_vector.cts_size());
-        deserialize(encrypted_row_vector, cts);
+        cts.reserve(encrypted_row_vector.cts().cts_size());
+        deserializeVector(encrypted_row_vector.cts(), cts);
         if (!initialized()) {
             throw invalid_argument("Invalid cts to EncryptedRowVector.");
         }
@@ -286,7 +282,7 @@ namespace hit {
         auto *encrypted_row_vector = new protobuf::EncryptedRowVector();
         encrypted_row_vector->set_width(width_);
         encrypted_row_vector->set_allocated_unit(unit.serialize());
-        encrypted_row_vector->set_allocated_cts(serialize(cts));
+        encrypted_row_vector->set_allocated_cts(serializeVector(cts));
         return encrypted_row_vector;
     }
 
@@ -411,9 +407,8 @@ namespace hit {
     EncryptedColVector::EncryptedColVector(const protobuf::EncryptedColVector &encrypted_col_vector)
         : height_(encrypted_col_vector.height()),
           unit(encrypted_col_vector.unit()) {
-        cts = vector<CKKSCiphertext>();
-        cts.reserve(encrypted_row_vector.cts_size());
-        deserialize(encrypted_row_vector, cts);
+        cts.reserve(encrypted_col_vector.cts().cts_size());
+        deserializeVector(encrypted_col_vector.cts(), cts);
         if (!initialized()) {
             throw invalid_argument("Invalid cts to EncryptedColVector.");
         }
@@ -422,8 +417,8 @@ namespace hit {
     protobuf::EncryptedColVector *EncryptedColVector::serialize() const {
         auto *encrypted_col_vector = new protobuf::EncryptedColVector();
         encrypted_col_vector->set_height(height_);
-        *encrypted_col_vector->set_allocated_unit(unit.serialize());
-        encrypted_row_vector->set_allocated_cts(serialize(cts));
+        encrypted_col_vector->set_allocated_unit(unit.serialize());
+        encrypted_col_vector->set_allocated_cts(serializeVector(cts));
         return encrypted_col_vector;
     }
 

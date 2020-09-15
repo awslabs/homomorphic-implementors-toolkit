@@ -6,11 +6,10 @@ package hit.protobuf;
 
 import "encoding_unit.proto";
 import "ciphertext_vector.proto";
-import "ckksparams.proto";
 
 message EncryptedMatrix {
 	required int32 height = 1; // height of the matrix.
 	required int32 width = 2; // width of the matrix.
 	required EncodingUnit unit = 3; // encoding unit.
-	repeated Ciphertext_Vector cts = 5; // a list of cipher texts.
+	repeated CiphertextVector cts = 5; // a list of cipher texts.
 }

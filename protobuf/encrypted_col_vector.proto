@@ -6,7 +6,6 @@ package hit.protobuf;
 
 import "encoding_unit.proto";
 import "ciphertext_vector.proto";
-import "ckksparams.proto";
 
 message EncryptedColVector {
 	required int32 height = 1; // height of the matrix.
