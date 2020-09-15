@@ -25,8 +25,9 @@ namespace hit {
         EncodingUnit() = default;
         friend bool operator==(const EncodingUnit &lhs, const EncodingUnit &rhs);
         friend bool operator!=(const EncodingUnit &lhs, const EncodingUnit &rhs);
-        int encoding_height() const;  // height of this encoding unit
-        int encoding_width() const;   // width of this encoding unit
+        int encoding_height() const;     // height of this encoding unit
+        int encoding_width() const;      // width of this encoding unit
+        EncodingUnit transpose() const;  // transpose of this unit
        private:
         EncodingUnit(int encoding_height, int encoding_width);
         int encoding_height_ = 0;  // height of the encoding unit
@@ -60,7 +61,8 @@ namespace hit {
         Matrix plaintext() const override;
 
        private:
-        EncryptedMatrix(int height, int width, const EncodingUnit &unit, std::vector<std::vector<CKKSCiphertext>> &cts);
+        EncryptedMatrix(int height, int width, const EncodingUnit &unit,
+                        const std::vector<std::vector<CKKSCiphertext>> &cts);
 
         bool initialized() const;
 
@@ -484,6 +486,9 @@ namespace hit {
         EncryptedMatrix multiply(const EncryptedMatrix &matrix_aTrans, const EncryptedMatrix &matrix_b,
                                  double scalar = 1);
 
+        // TODO(Eric): Comment
+        hit::EncryptedMatrix unit_transpose(const hit::EncryptedMatrix &mat);
+
         /* Special case of a standard matrix product.
          * Inputs: A t-by-s matrix A^T and t-by-u matrix B, both encoded with the same n-times-m unit,
          *         where t,m <= n and s,u <= m. An optional scalar which defaults to 1.
@@ -682,6 +687,8 @@ namespace hit {
          */
         EncryptedColVector sum_rows(const EncryptedMatrix &mat);
 
+        CKKSEvaluator &eval;
+
        private:
         /* Algorithm 3 in HHCP'18; see the paper for details.
          * sum the columns of a matrix packed into a single ciphertext
@@ -752,7 +759,6 @@ namespace hit {
         EncryptedRowVector extractRow(const EncryptedMatrix &aTrans, int row);
 
         CKKSInstance &inst;
-        CKKSEvaluator &eval;
     };
 
     // Encode a matrix as a sequence of plaintext matrices which encode the matrix

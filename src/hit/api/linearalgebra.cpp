@@ -38,9 +38,13 @@ namespace hit {
         return encoding_height_ > 0 && encoding_width_ > 0 && isPow2(encoding_height_) && isPow2(encoding_width_);
     }
 
+    EncodingUnit EncodingUnit::transpose() const {
+        return EncodingUnit(encoding_width_, encoding_height_);
+    }
+
     EncryptedMatrix::EncryptedMatrix(int height, int width, const EncodingUnit &unit,
-                                     vector<vector<CKKSCiphertext>> &cts)
-        : height_(height), width_(width), unit(unit), cts(cts) {
+                                     const vector<vector<CKKSCiphertext>> &cts)
+        : height_(height), width_(width), unit(unit), cts(move(cts)) {
         if (!initialized()) {
             throw invalid_argument("Invalid cts to EncryptedMatrix.");
         }
@@ -357,7 +361,7 @@ namespace hit {
         return decode_col_vector(mat_pieces, vec.height());
     }
 
-    LinearAlgebra::LinearAlgebra(CKKSInstance &inst) : inst(inst), eval(*(inst.evaluator)) {
+    LinearAlgebra::LinearAlgebra(CKKSInstance &inst) : eval(*(inst.evaluator)), inst(inst) {
     }
 
     // explicit template instantiation
@@ -546,6 +550,38 @@ namespace hit {
                                                double scalar) {
         EncryptedMatrix hadmard_prod = hadamard_multiply(mat, vec);
         return sum_cols(hadmard_prod, scalar);
+    }
+
+    EncryptedMatrix LinearAlgebra::unit_transpose(  // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
+        const EncryptedMatrix &mat) {
+        if (!mat.initialized()) {
+            throw invalid_argument("unit_transpose: matrix is not initialized");
+        }
+        // if (mat.unit.encoding_height() > mat.unit.encoding_width()) {
+        //     throw invalid_argument("You can only transpose a matrix whose unit is wider than it is tall.");
+        // }
+        // if (mat.height > mat.unit.encoding_height() || mat.width > mat.unit.encoding_height()) {
+        //     throw invalid_argument("You can only transpose a matrix which is smaller than mxm for a mxn encoding
+        //     unit.");
+        // }
+
+        // TODO(Eric): Add additional safety measures
+
+        if (  // landscape unit
+            mat.unit.encoding_height() <= mat.unit.encoding_width() &&
+            // sub-square matrix in a single unit
+            mat.height_ <= mat.unit.encoding_height() && mat.width_ <= mat.unit.encoding_height()) {
+            return EncryptedMatrix(mat.unit.encoding_width(), mat.width_, mat.unit.transpose(), mat.cts);
+        }
+
+        if (  // portrait unit
+            mat.unit.encoding_height() >= mat.unit.encoding_width() &&
+            // matrix fits in one unit
+            mat.height_ <= mat.unit.encoding_height() && mat.width_ <= mat.unit.encoding_width()) {
+            return EncryptedMatrix(mat.width_, mat.height_, mat.unit.transpose(), mat.cts);
+        }
+
+        throw invalid_argument("Invalid arguments to unit_transpose");
     }
 
     /* Computes (the encoding of) the k^th row of A, given A^T */
