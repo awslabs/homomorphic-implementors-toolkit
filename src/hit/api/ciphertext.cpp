@@ -21,22 +21,20 @@ namespace hit {
     }
 
     CKKSCiphertext::CKKSCiphertext(const shared_ptr<SEALContext> &context, const protobuf::Ciphertext &proto_ct) {
-        if (proto_ct.version() != 0) {
-            throw invalid_argument("CKKSCiphertext serialization: Expected version 0");
-        }
-
         initialized = proto_ct.initialized();
         scale_ = proto_ct.scale();
         he_level_ = proto_ct.he_level();
         num_slots_ = context->first_context_data()->parms().poly_modulus_degree() / 2;
 
-        if (initialized) {
-            int raw_pt_size = proto_ct.raw_pt_size();
+        int raw_pt_size = proto_ct.raw_pt_size();
+        if (raw_pt_size > 0) {
             raw_pt = Vector(raw_pt_size);
             for (int i = 0; i < raw_pt_size; i++) {
                 raw_pt[i] = proto_ct.raw_pt(i);
             }
+        }
 
+        if (proto_ct.has_seal_ct()) {
             istringstream ctstream(proto_ct.seal_ct());
             seal_ct.load(context, ctstream);
         }
@@ -44,29 +42,29 @@ namespace hit {
 
     protobuf::Ciphertext *CKKSCiphertext::save() const {
         auto *proto_ct = new protobuf::Ciphertext();
-        save(proto_ct);
+        save(*proto_ct);
         return proto_ct;
     }
 
-    void CKKSCiphertext::save(protobuf::Ciphertext *proto_ct) const {
+    void CKKSCiphertext::save(protobuf::Ciphertext &proto_ct) const {
         if (!raw_pt.empty()) {
             LOG(WARNING) << "Serializing ciphertext with plaintext data attached! Use the homomorphic evaluator "
                             "instead for secure computation.";
         }
 
-        proto_ct->set_version(0);
-        proto_ct->set_initialized(initialized);
-        proto_ct->set_scale(scale_);
-        proto_ct->set_he_level(he_level_);
+        proto_ct.set_initialized(initialized);
+        proto_ct.set_scale(scale_);
+        proto_ct.set_he_level(he_level_);
 
-        if (initialized) {
+        for (double i : raw_pt) {
+            proto_ct.add_raw_pt(i);
+        }
+
+        // if the seal_ct is initialized, serialize it
+        if (seal_ct.parms_id() != parms_id_zero) {
             ostringstream sealctBuf;
             seal_ct.save(sealctBuf);
-            proto_ct->set_seal_ct(sealctBuf.str());
-
-            for (double i : raw_pt) {
-                proto_ct->add_raw_pt(i);
-            }
+            proto_ct.set_seal_ct(sealctBuf.str());
         }
     }
 
