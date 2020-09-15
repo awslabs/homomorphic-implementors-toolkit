@@ -21,7 +21,7 @@ namespace hit {
 
         // Serialize a ciphertext
         hit::protobuf::Ciphertext *save() const;
-        void save(hit::protobuf::Ciphertext *proto_ct) const;
+        void save(hit::protobuf::Ciphertext &proto_ct) const;
 
         // Ciphertext metadata
         int num_slots() const override;

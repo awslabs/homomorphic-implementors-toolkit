@@ -62,6 +62,7 @@ namespace hit {
         }
 
         destination.num_slots_ = numSlots;
+        destination.initialized = true;
 
         return destination;
     }
