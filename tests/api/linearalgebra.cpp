@@ -39,6 +39,23 @@ void test_encrypt_matrix(LinearAlgebra &laInst, int mat_height, int mat_width, E
     ASSERT_LT(diff2Norm(plaintext.data(), output.data()), MAX_NORM);
 }
 
+TEST(LinearAlgebraTest, EncodingUnit_Serialization) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    int unit1_height = 64;
+    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    EncodingUnit unit1 = laInst.make_unit(unit1_height);
+    ASSERT_EQ(EncodingUnit(unit1.serialize()), unit1);
+}
+
+TEST(LinearAlgebraTest, EncryptMatrix_Serialization) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    EncodingUnit unit1 = laInst.make_unit(64);
+    Matrix plaintext = random_mat(64, 64);
+    EncryptedMatrix ciphertext = laInst.encrypt_matrix(plaintext, unit1);
+    ASSERT_EQ(EncryptedMatrix(ciphertext.serialize()), ciphertext);
+}
+
 TEST(LinearAlgebraTest, EncryptMatrix) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
