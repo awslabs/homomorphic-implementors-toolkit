@@ -382,6 +382,12 @@ namespace hit {
     template EncryptedMatrix LinearAlgebra::hadamard_square(const EncryptedMatrix &);
     template EncryptedMatrix LinearAlgebra::hadamard_multiply(const EncryptedMatrix &, const EncryptedMatrix &);
     template void LinearAlgebra::hadamard_multiply_inplace(EncryptedMatrix &, const EncryptedMatrix &);
+    template EncryptedMatrix LinearAlgebra::mod_down_to(const EncryptedMatrix &, const EncryptedMatrix &);
+    template EncryptedMatrix LinearAlgebra::mod_down_to(const EncryptedMatrix &, const EncryptedRowVector &);
+    template EncryptedMatrix LinearAlgebra::mod_down_to(const EncryptedMatrix &, const EncryptedColVector &);
+    template void LinearAlgebra::mod_down_to_inplace(EncryptedMatrix &, const EncryptedMatrix &);
+    template void LinearAlgebra::mod_down_to_inplace(EncryptedMatrix &, const EncryptedRowVector &);
+    template void LinearAlgebra::mod_down_to_inplace(EncryptedMatrix &, const EncryptedColVector &);
 
     // explicit template instantiation
     template EncryptedRowVector LinearAlgebra::add(const EncryptedRowVector &, const EncryptedRowVector &);
@@ -402,6 +408,12 @@ namespace hit {
     template EncryptedRowVector LinearAlgebra::hadamard_multiply(const EncryptedRowVector &,
                                                                  const EncryptedRowVector &);
     template void LinearAlgebra::hadamard_multiply_inplace(EncryptedRowVector &, const EncryptedRowVector &);
+    template EncryptedRowVector LinearAlgebra::mod_down_to(const EncryptedRowVector &, const EncryptedMatrix &);
+    template EncryptedRowVector LinearAlgebra::mod_down_to(const EncryptedRowVector &, const EncryptedRowVector &);
+    template EncryptedRowVector LinearAlgebra::mod_down_to(const EncryptedRowVector &, const EncryptedColVector &);
+    template void LinearAlgebra::mod_down_to_inplace(EncryptedRowVector &, const EncryptedMatrix &);
+    template void LinearAlgebra::mod_down_to_inplace(EncryptedRowVector &, const EncryptedRowVector &);
+    template void LinearAlgebra::mod_down_to_inplace(EncryptedRowVector &, const EncryptedColVector &);
 
     // explicit template instantiation
     template EncryptedColVector LinearAlgebra::add(const EncryptedColVector &, const EncryptedColVector &);
@@ -422,6 +434,12 @@ namespace hit {
     template EncryptedColVector LinearAlgebra::hadamard_multiply(const EncryptedColVector &,
                                                                  const EncryptedColVector &);
     template void LinearAlgebra::hadamard_multiply_inplace(EncryptedColVector &, const EncryptedColVector &);
+    template EncryptedColVector LinearAlgebra::mod_down_to(const EncryptedColVector &, const EncryptedMatrix &);
+    template EncryptedColVector LinearAlgebra::mod_down_to(const EncryptedColVector &, const EncryptedRowVector &);
+    template EncryptedColVector LinearAlgebra::mod_down_to(const EncryptedColVector &, const EncryptedColVector &);
+    template void LinearAlgebra::mod_down_to_inplace(EncryptedColVector &, const EncryptedMatrix &);
+    template void LinearAlgebra::mod_down_to_inplace(EncryptedColVector &, const EncryptedRowVector &);
+    template void LinearAlgebra::mod_down_to_inplace(EncryptedColVector &, const EncryptedColVector &);
 
     void LinearAlgebra::add_inplace(EncryptedMatrix &mat1, const Matrix &mat2) {
         if (!mat1.initialized() || mat1.height() != mat2.size1() || mat1.width() != mat2.size2()) {

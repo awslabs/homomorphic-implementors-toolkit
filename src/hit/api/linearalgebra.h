@@ -521,6 +521,50 @@ namespace hit {
          */
         EncryptedRowVector multiply(const EncryptedMatrix &mat, const EncryptedColVector &vec, double scalar = 1);
 
+        /* Reduce the HE level of the first argument to level of the second argument.
+         * Inputs: One of the following options
+         *   - EncryptedMatrix, EncryptedMatrix
+         *   - EncryptedMatrix, EncryptedRowVector
+         *   - EncryptedMatrix, EncryptedColVector
+         *   - EncryptedRowVector, EncryptedMatrix
+         *   - EncryptedRowVector, EncryptedRowVector
+         *   - EncryptedRowVector, EncryptedColVector
+         *   - EncryptedColVector, EncryptedMatrix
+         *   - EncryptedColVector, EncryptedRowVector
+         *   - EncryptedColVector, EncryptedColVector
+         * Inputs must be linear and not in need of a rescale.
+         * Output: A ciphertext encrypting the same value as the input, but at the level of the second argument.
+         *
+         * Notes: This function repeatedly multiplies by the constant 1 and then rescales. The output is
+         * a linear ciphertext which does not need to be rescaled.
+         */
+        template <typename T1, typename T2>
+        T1 mod_down_to(const T1 &arg1, const T2 &arg2) {
+            return mod_down_to_level(arg1, arg2.he_level());
+        }
+
+        /* Reduce the HE level of the first argument to level of the second argument, inplace.
+         * Inputs: One of the following options
+         *   - EncryptedMatrix, EncryptedMatrix
+         *   - EncryptedMatrix, EncryptedRowVector
+         *   - EncryptedMatrix, EncryptedColVector
+         *   - EncryptedRowVector, EncryptedMatrix
+         *   - EncryptedRowVector, EncryptedRowVector
+         *   - EncryptedRowVector, EncryptedColVector
+         *   - EncryptedColVector, EncryptedMatrix
+         *   - EncryptedColVector, EncryptedRowVector
+         *   - EncryptedColVector, EncryptedColVector
+         * Inputs must be linear and not in need of a rescale.
+         * Output: None.
+         *
+         * Notes: This function repeatedly multiplies by the constant 1 and then rescales. The output is
+         * a linear ciphertext which does not need to be rescaled.
+         */
+        template <typename T1, typename T2>
+        void mod_down_to_inplace(T1 &arg1, const T2 &arg2) {
+            mod_down_to_level_inplace(arg1, arg2.he_level());
+        }
+
         /* Reduce the HE level of both inputs to the lower of the two levels. This can modify at most one of the inputs.
          * Inputs: One of the following options
          *   - EncryptedMatrix, EncryptedMatrix
