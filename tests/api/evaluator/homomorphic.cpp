@@ -8,6 +8,7 @@
 #include "hit/CKKSInstance.h"
 #include "hit/api/ciphertext.h"
 #include "hit/common.h"
+#include "hit/sealutils.h"
 
 using namespace std;
 using namespace hit;
@@ -35,8 +36,11 @@ TEST(HomomorphicTest, RotateLeft) {
     vector2.push_back(vector1[0]);
     ciphertext1 = ckksInstance->encrypt(vector1);
     ciphertext2 = ckksInstance->evaluator->rotate_left(ciphertext1, STEPS);
-    vector<double> vector3 = ckksInstance->decrypt(ciphertext2);
+    // Check scale and he_level.
+    ASSERT_EQ(ciphertext2.he_level(), ZERO_MULTI_DEPTH);
+    ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE));
     // Expect vector is rotated.
+    vector<double> vector3 = ckksInstance->decrypt(ciphertext2);
     double diff = diff2Norm(vector2, vector3);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
@@ -63,8 +67,11 @@ TEST(HomomorphicTest, RotateRight) {
     }
     ciphertext1 = ckksInstance->encrypt(vector1);
     ciphertext2 = ckksInstance->evaluator->rotate_right(ciphertext1, STEPS);
-    vector<double> vector3 = ckksInstance->decrypt(ciphertext2);
+    // Check scale and he_level.
+    ASSERT_EQ(ciphertext2.he_level(), ZERO_MULTI_DEPTH);
+    ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE));
     // Expect vector is rotated.
+    vector<double> vector3 = ckksInstance->decrypt(ciphertext2);
     double diff = diff2Norm(vector2, vector3);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
@@ -87,8 +94,11 @@ TEST(HomomorphicTest, Negate) {
     vector<double> vector2(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), negate<>());
     ciphertext3 = ckksInstance->evaluator->negate(ciphertext1);
-    vector<double> vector3 = ckksInstance->decrypt(ciphertext3);
+    // Check scale and he_level.
+    ASSERT_EQ(ciphertext3.he_level(), ZERO_MULTI_DEPTH);
+    ASSERT_EQ(ciphertext3.scale(), pow(2, LOG_SCALE));
     // Check vector values.
+    vector<double> vector3 = ckksInstance->decrypt(ciphertext3);
     double diff = diff2Norm(vector2, vector3);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
@@ -104,8 +114,11 @@ TEST(HomomorphicTest, Add_Two) {
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), plus<>());
     ciphertext3 = ckksInstance->evaluator->add(ciphertext1, ciphertext2);
-    vector<double> vector4 = ckksInstance->decrypt(ciphertext3);
+    // Check scale and he_level.
+    ASSERT_EQ(ciphertext3.he_level(), ZERO_MULTI_DEPTH);
+    ASSERT_EQ(ciphertext3.scale(), pow(2, LOG_SCALE));
     // Check vector values.
+    vector<double> vector4 = ckksInstance->decrypt(ciphertext3);
     double diff = diff2Norm(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
@@ -121,8 +134,11 @@ TEST(HomomorphicTest, AddPlainScalar) {
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), plus<>());
     ciphertext2 = ckksInstance->evaluator->add_plain(ciphertext1, plaintext);
-    vector<double> vector4 = ckksInstance->decrypt(ciphertext2);
+    // Check scale and he_level.
+    ASSERT_EQ(ciphertext2.he_level(), ZERO_MULTI_DEPTH);
+    ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE));
     // Check vector values.
+    vector<double> vector4 = ckksInstance->decrypt(ciphertext2);
     double diff = diff2Norm(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
@@ -137,8 +153,11 @@ TEST(HomomorphicTest, AddPlaintext) {
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), plus<>());
     ciphertext2 = ckksInstance->evaluator->add_plain(ciphertext1, vector2);
-    vector<double> vector4 = ckksInstance->decrypt(ciphertext2);
+    // Check scale and he_level.
+    ASSERT_EQ(ciphertext2.he_level(), ZERO_MULTI_DEPTH);
+    ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE));
     // Check vector values.
+    vector<double> vector4 = ckksInstance->decrypt(ciphertext2);
     double diff = diff2Norm(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
@@ -154,8 +173,11 @@ TEST(HomomorphicTest, Sub_Two) {
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), minus<>());
     ciphertext3 = ckksInstance->evaluator->sub(ciphertext1, ciphertext2);
-    vector<double> vector4 = ckksInstance->decrypt(ciphertext3);
+    // Check scale and he_level.
+    ASSERT_EQ(ciphertext3.he_level(), ZERO_MULTI_DEPTH);
+    ASSERT_EQ(ciphertext3.scale(), pow(2, LOG_SCALE));
     // Check vector values.
+    vector<double> vector4 = ckksInstance->decrypt(ciphertext3);
     double diff = diff2Norm(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
@@ -171,8 +193,11 @@ TEST(HomomorphicTest, SubPlainScalar) {
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), minus<>());
     ciphertext2 = ckksInstance->evaluator->sub_plain(ciphertext1, plaintext);
-    vector<double> vector4 = ckksInstance->decrypt(ciphertext2);
+    // Check scale and he_level.
+    ASSERT_EQ(ciphertext2.he_level(), ZERO_MULTI_DEPTH);
+    ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE));
     // Check vector values.
+    vector<double> vector4 = ckksInstance->decrypt(ciphertext2);
     double diff = diff2Norm(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
@@ -187,8 +212,11 @@ TEST(HomomorphicTest, SubPlaintext) {
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), minus<>());
     ciphertext2 = ckksInstance->evaluator->sub_plain(ciphertext1, vector2);
-    vector<double> vector4 = ckksInstance->decrypt(ciphertext2);
+    // Check scale and he_level.
+    ASSERT_EQ(ciphertext2.he_level(), ZERO_MULTI_DEPTH);
+    ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE));
     // Check vector values.
+    vector<double> vector4 = ckksInstance->decrypt(ciphertext2);
     double diff = diff2Norm(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
@@ -204,8 +232,11 @@ TEST(HomomorphicTest, MultiplyPlainScalar) {
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), multiplies<>());
     ciphertext2 = ckksInstance->evaluator->multiply_plain(ciphertext1, plaintext);
-    vector<double> vector4 = ckksInstance->decrypt(ciphertext2);
+    // Check scale and he_level.
+    ASSERT_EQ(ciphertext2.he_level(), ONE_MULTI_DEPTH);
+    ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE * 2));
     // Check vector values.
+    vector<double> vector4 = ckksInstance->decrypt(ciphertext2);
     double diff = diff2Norm(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
@@ -220,8 +251,11 @@ TEST(HomomorphicTest, MultiplyPlainMattrix) {
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), multiplies<>());
     ciphertext2 = ckksInstance->evaluator->multiply_plain(ciphertext1, vector2);
-    vector<double> vector4 = ckksInstance->decrypt(ciphertext2);
+    // Check scale and he_level.
+    ASSERT_EQ(ciphertext2.he_level(), ONE_MULTI_DEPTH);
+    ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE * 2));
     // Check vector values.
+    vector<double> vector4 = ckksInstance->decrypt(ciphertext2);
     double diff = diff2Norm(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
@@ -248,8 +282,11 @@ TEST(HomomorphicTest, Multiply) {
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), multiplies<>());
     ciphertext3 = ckksInstance->evaluator->multiply(ciphertext1, ciphertext2);
-    vector<double> vector4 = ckksInstance->decrypt(ciphertext3);
+    // Check scale and he_level.
+    ASSERT_EQ(ciphertext3.he_level(), ONE_MULTI_DEPTH);
+    ASSERT_EQ(ciphertext3.scale(), pow(2, LOG_SCALE * 2));
     // Check vector values.
+    vector<double> vector4 = ckksInstance->decrypt(ciphertext3);
     double diff = diff2Norm(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
@@ -270,8 +307,11 @@ TEST(HomomorphicTest, Square) {
     vector<double> vector2(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector1.begin(), vector2.begin(), multiplies<>());
     ciphertext2 = ckksInstance->evaluator->square(ciphertext1);
-    vector<double> vector3 = ckksInstance->decrypt(ciphertext2);
+    // Check scale and he_level.
+    ASSERT_EQ(ciphertext2.he_level(), ONE_MULTI_DEPTH);
+    ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE * 2));
     // Check vector values.
+    vector<double> vector3 = ckksInstance->decrypt(ciphertext2);
     double diff = diff2Norm(vector2, vector3);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
@@ -283,6 +323,10 @@ TEST(HomomorphicTest, ModDownToLevel) {
     vector<double> vector1 = randomVector(NUM_OF_SLOTS, RANGE);
     ciphertext1 = ckksInstance->encrypt(vector1);
     ciphertext2 = ckksInstance->evaluator->mod_down_to_level(ciphertext1, ZERO_MULTI_DEPTH);
+    // Check scale and he_level.
+    ASSERT_EQ(ciphertext2.he_level(), ZERO_MULTI_DEPTH);
+    uint64_t prime = getLastPrime(ckksInstance->context, ONE_MULTI_DEPTH);
+    ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE * 2) / prime);
     // Check vector values.
     vector<double> vector2 = ckksInstance->decrypt(ciphertext2);
     double diff = diff2Norm(vector1, vector2);
@@ -309,6 +353,10 @@ TEST(HomomorphicTest, ModDownToMin) {
     ciphertext2 = ckksInstance->evaluator->mod_down_to_level(ciphertext1, ZERO_MULTI_DEPTH);
     ckksInstance->evaluator->mod_down_to_min_inplace(ciphertext1, ciphertext2);
     ckksInstance->evaluator->mod_down_to_min_inplace(ciphertext2, ciphertext3);
+    // Check scale and he_level.
+    ASSERT_EQ(ciphertext3.he_level(), ZERO_MULTI_DEPTH);
+    uint64_t prime = getLastPrime(ckksInstance->context, ONE_MULTI_DEPTH);
+    ASSERT_EQ(ciphertext3.scale(), pow(2, LOG_SCALE * 2) / prime);
     // Check vector values.
     vector<double> vector2 = ckksInstance->decrypt(ciphertext1);
     double diff1 = diff2Norm(vector1, vector2);
@@ -330,6 +378,10 @@ TEST(HomomorphicTest, RescaleToNextInPlace) {
     ciphertext2 = ckksInstance->evaluator->square(ciphertext1);
     ckksInstance->evaluator->relinearize_inplace(ciphertext2);
     ckksInstance->evaluator->rescale_to_next_inplace(ciphertext2);
+    // Check scale and he_level.
+    ASSERT_EQ(ciphertext2.he_level(), ZERO_MULTI_DEPTH);
+    uint64_t prime = getLastPrime(ckksInstance->context, ONE_MULTI_DEPTH);
+    ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE * 2) / prime);
     // Check vector values.
     vector<double> vector3 = ckksInstance->decrypt(ciphertext2);
     double diff = diff2Norm(vector2, vector3);
