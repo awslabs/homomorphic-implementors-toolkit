@@ -442,29 +442,6 @@ namespace hit {
          */
         EncryptedMatrix hadamard_multiply(const EncryptedMatrix &mat, const EncryptedColVector &vec);
 
-
-        /* Hadamard product of a row vector with each column of a matrix, where the output's encoding unit is the
-         * transpose of the input units.
-         * Inputs: A f-dimensional row vector and a f-by-g matrix, both at the same HE level and
-         * encoded with respect to the same m-by-n encoding unit, where f <= m and g,m <= n.
-         * Output: An encrypted matrix where each row is the hadamard product of the (encoded) column vector
-         *         and the corresponding row of the input matrix, encoded with an m-by-n unit.
-         *
-         * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
-         * at the same level as the input, so it needs to be relinearized and rescaled.
-         */
-        EncryptedMatrix hadamard_multiply_mixed_unit(const EncryptedRowVector &vec, const EncryptedMatrix &mat);
-
-        /* Hadamard product of a column vector with each row of a matrix, where the inputs have different encoding units.
-         * Inputs: A f-by g matrix encoded with an m-by-n unit and a g-dimensional column vector encoded with an n-by-m unit,
-         *         both at the same HE level, where f <= m and g,m <= n.
-         * Output: TODO: Describe output (with warning)
-         *
-         * Notes: This function has multiplicative depth two and returns a quadratic ciphertext
-         * one level below the inputs, so it needs to be relinearized and rescaled.
-         */
-        EncryptedMatrix hadamard_multiply_mixed_unit(const EncryptedMatrix &mat, const EncryptedColVector &vec);
-
         /* Scale an encrypted object by a constant.
          * Inputs: One of the following options
          *   - EncryptedMatrix, double
@@ -513,45 +490,6 @@ namespace hit {
          */
         EncryptedMatrix multiply(const EncryptedMatrix &matrix_aTrans, const EncryptedMatrix &matrix_b,
                                  double scalar = 1);
-
-        /* Special case of a standard matrix product.
-         * Inputs: A t-by-s matrix A^T and t-by-u matrix B, both encoded with the same n-times-m unit,
-         *         where t,m <= n and s,u <= m. An optional scalar which defaults to 1.
-         * Output: scalar*A*B, encoded with a *transposed* (i.e., m-by-n) unit
-         *
-         * Notes: This function has multiplicative depth three, meaning A^T must be at least level 3.
-         * The matrix B must be encrypted at at least level 2. The output is two levels below the level of A^T,
-         * but is a linear ciphertext with squared scale, so it needs to be rescaled but *not* relinearized.
-         */
-        EncryptedMatrix multiply_mixed_unit(const EncryptedMatrix &mat, const EncryptedMatrix &vec,
-                                            double scalar = 1);
-
-        /* Special case of a standard matrix/column vector product.
-         * Inputs: A f-by-g matrix `A` encoded with an m-by-n unit,
-         *         and g-dimensional column vector `v` encoded with an n-by-m unit,
-         *         where f,g <= m and g,m <= n. An optional scalar which defaults to 1.
-         * Output: scalar*A*v, encoded with a m-by-n unit
-         *
-         * Notes: This function has multiplicative depth two. `A` and `v` must be at the same level >= 2.
-         * The output is one level below the inputs and is linear ciphertext with squared scale,
-         * so it needs to be rescaled but *not* relinearized.
-         */
-        EncryptedRowVector multiply_mixed_unit(const EncryptedMatrix &mat, const EncryptedColVector &vec,
-                                            double scalar = 1);
-
-        /* Special case of a standard row-vector/matrix product.
-         * Inputs: A f-by-g matrix `A` and f-dimensional row vector `v^T`, both encoded with an m-by-n unit,
-         *         where f,g <= m and g,m <= n.
-         * Output: scalar*v^T*A, encoded with a n-by-m unit
-         *
-         * Notes: This function has multiplicative depth one. `A` and `v` must be at the same level >= 1.
-         * The output is at the same level of the input and is linear ciphertext with squared scale,
-         * so it needs to be rescaled but *not* relinearized.
-         */
-        EncryptedColVector multiply_mixed_unit(const EncryptedRowVector &vec, const EncryptedMatrix &mat);
-
-        // TODO(Eric): docs
-        EncryptedMatrix unit_transpose(const EncryptedMatrix &mat);
 
         /* Computes a standard row vector/matrix product.
          * Inputs: Row vector and Matrix, both encoded with the same unit

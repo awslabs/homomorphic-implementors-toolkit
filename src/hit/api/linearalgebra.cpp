@@ -585,124 +585,6 @@ namespace hit {
         return EncryptedMatrix(mat.height(), mat.width(), mat.encoding_unit(), cts);
     }
 
-    /* Hadamard product of a row vector with each column of a matrix, where the output's encoding unit is the
-     * transpose of the input units.
-     * Inputs: A f-dimensional row vector and a f-by-g matrix, both at the same HE level and
-     * encoded with respect to the same m-by-n encoding unit, where f, g <= m and g,m <= n.
-     * Output: An encrypted matrix with respect to an n-by-m (transposed) unit, where each column is the hadamard product
-     *         of the (encoded) row vector and the corresponding column of the input matrix.
-     *
-     * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
-     * at the same level as the input, so it needs to be relinearized and rescaled.
-     */
-    EncryptedMatrix LinearAlgebra::hadamard_multiply_mixed_unit(const EncryptedRowVector &vec, const EncryptedMatrix &mat) {
-        if (!vec.initialized() || !mat.initialized()) {
-            throw std::invalid_argument("LinearAlgebra::hadamard_multiply_mixed_unit: arguments not initialized.");
-        }
-        if (vec.width() != mat.height() ||
-            vec.encoding_unit() != mat.encoding_unit() ||
-            mat.height() > mat.encoding_unit().encoding_height() ||
-            mat.width() > mat.encoding_unit().encoding_width() ||
-            mat.encoding_unit().encoding_height() > mat.encoding_unit().encoding_width()) {
-            throw invalid_argument(
-                "Arguments to LinearAlgebra::hadamard_multiply_mixed_unit do not have compatible dimensions: " + dim_string(vec) + " " + dim_string(mat));
-        }
-
-        // first, do a standard hadamard_multiply with an m-by-n unit
-        EncryptedMatrix hprod = hadamard_multiply(vec, mat);
-
-        /* Return the product, but with a transposed unit.
-         * `hprod` has an m-by-n unit, which looks like [A | 0] where A is an f-by-g matrix corresponding to the
-         * hadamard product of each column of `mat` with `vec`.
-         * If we transpose the unit of `hprod`, we get
-         *  ------------m--------
-         *  --------g--------
-         * [-------a_0-------0000]   |  |
-         * [000000000000000000000]   |  |
-         * [000000000000000000000]   |  |
-         *           ...             |  |
-         * [000000000000000000000]   |  |
-         * [-------a_1-------0000]   |  |
-         * [000000000000000000000]   |  |
-         * [000000000000000000000] n*f/m|
-         *           ...             |  |
-         * [000000000000000000000]   |  |
-         *           ...             |  |
-         *           ...             |  n
-         * [-------a_{f-1}---0000]   |  |
-         * [000000000000000000000]   |  |
-         * [000000000000000000000]   |  |
-         *           ...             |  |
-         * [000000000000000000000]   |  |
-         * [000000000000000000000]      |
-         * [000000000000000000000]      |
-         *           ...                |
-         * [000000000000000000000]      |
-         *
-         * If we sum the rows of this result, we get a valid encoding of a g-dimensional column vector
-         */
-
-        return EncryptedMatrix(hprod.height(), hprod.width(), hprod.encoding_unit().transpose(), hprod.cts);
-    }
-
-    /* Hadamard product of a column vector with each row of a matrix, where the inputs have different encoding units.
-     * Inputs: A f-by g matrix encoded with an m-by-n unit and a g-dimensional column vector encoded with an n-by-m unit,
-     *         both at the same HE level, where f, g <= m and g,m <= n.
-     * Output: An encrypted matrix where each row is the hadamard product of the (encoded) column vector
-     *         and the corresponding row of the input matrix, encoded with an m-by-n unit.
-     *
-     * Notes: This function has multiplicative depth two and returns a quadratic ciphertext
-     * one level below the inputs, so it needs to be relinearized and rescaled.
-     */
-    EncryptedMatrix LinearAlgebra::hadamard_multiply_mixed_unit(const EncryptedMatrix &mat, const EncryptedColVector &vec) {
-        if (!mat.initialized() || !vec.initialized()) {
-            throw std::invalid_argument("Arguments to LinearAlgebra::hadamard_multiply_mixed_unit are not initialized");
-        }
-        if (mat.width() != vec.height() ||
-            mat.encoding_unit() != vec.encoding_unit().transpose() ||
-            mat.height() > mat.encoding_unit().encoding_height() ||
-            mat.width() > mat.encoding_unit().encoding_width() ||
-            mat.encoding_unit().encoding_height() > mat.encoding_unit().encoding_width()) {
-            throw invalid_argument(
-                "Arguments to LinearAlgebra::hadamard_multiply_mixed_unit do not have compatible dimensions: " + dim_string(mat) + " vs " + dim_string(vec));
-        }
-
-        /* First, transpose the vector.
-         * The vector is an g-dimensional column vector (g <= m) encoded as the rows of a single nxm unit.
-         *
-         *  -------m--------
-         *  -----g----
-         * [----v-----000000 ]   |
-         * [----v-----000000 ]   |
-         *       .               |
-         *       .               n
-         *       .               |
-         * [----v-----000000 ]   |
-         * [----v-----000000 ]   |
-         *
-         * If we instead view this same plaintext with respect to an m-by-n unit, it becomes
-         *
-         *  ---------------------------n----...----------------
-         *  -------m--------
-         *  -----g----
-         * [----v-----000000----v-----000000...----v-----000000 ] |
-         * [----v-----000000----v-----000000...----v-----000000 ] |
-         *                              .                         |
-         *                              .                         m
-         *                              .                         |
-         * [----v-----000000----v-----000000...----v-----000000 ] |
-         * [----v-----000000----v-----000000...----v-----000000 ] |
-         *
-         * However, multiplying it by a properly-encoded f-by-g matrix (with m-by-n unit) yields a valid
-         * encoding of the expected result with respect to an m-by-n unit.
-         */
-        vector<CKKSCiphertext> cts_copy = vec.cts;
-        EncryptedColVector vec_trans = EncryptedColVector(vec.height(), mat.encoding_unit(), cts_copy);
-
-        // Next, do a standard (mxn) hadamard product
-        return hadamard_multiply(mat, vec);
-    }
-
     EncryptedColVector LinearAlgebra::multiply(const EncryptedRowVector &vec, const EncryptedMatrix &mat) {
         EncryptedMatrix hadmard_prod = hadamard_multiply(vec, mat);
         // rotation requires a linear ciphertext, but does not require rescaling
@@ -716,53 +598,6 @@ namespace hit {
         relinearize_inplace(hadmard_prod);
         rescale_to_next_inplace(hadmard_prod);
         return sum_cols(hadmard_prod, scalar);
-    }
-
-    EncryptedColVector LinearAlgebra::multiply_mixed_unit(const EncryptedRowVector &vec, const EncryptedMatrix &mat) {
-        EncryptedMatrix hadmard_prod = hadamard_multiply_mixed_unit(vec, mat);
-        // rotation requires a linear ciphertext, but does not require rescaling
-        relinearize_inplace(hadmard_prod);
-        return sum_rows(hadmard_prod);
-    }
-
-    EncryptedRowVector LinearAlgebra::multiply_mixed_unit(const EncryptedMatrix &mat, const EncryptedColVector &vec,
-                                               double scalar) {
-        EncryptedMatrix hadmard_prod = hadamard_multiply_mixed_unit(mat, vec);
-        relinearize_inplace(hadmard_prod);
-        rescale_to_next_inplace(hadmard_prod);
-        return sum_cols(hadmard_prod, scalar);
-    }
-
-    EncryptedMatrix LinearAlgebra::unit_transpose(  // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
-        const EncryptedMatrix &mat) {
-        if (!mat.initialized()) {
-            throw invalid_argument("unit_transpose: matrix is not initialized");
-        }
-        // if (mat.unit.encoding_height() > mat.unit.encoding_width()) {
-        //     throw invalid_argument("You can only transpose a matrix whose unit is wider than it is tall.");
-        // }
-        // if (mat.height > mat.unit.encoding_height() || mat.width > mat.unit.encoding_height()) {
-        //     throw invalid_argument("You can only transpose a matrix which is smaller than mxm for a mxn encoding
-        //     unit.");
-        // }
-
-        // TODO(Eric): Add additional safety measures
-
-        if (  // landscape unit
-            mat.unit.encoding_height() <= mat.unit.encoding_width() &&
-            // sub-square matrix in a single unit
-            mat.height_ <= mat.unit.encoding_height() && mat.width_ <= mat.unit.encoding_height()) {
-            return EncryptedMatrix(mat.height_, mat.width_, mat.unit.transpose(), mat.cts);
-        }
-
-        if (  // portrait unit
-            mat.unit.encoding_height() >= mat.unit.encoding_width() &&
-            // matrix fits in one unit
-            mat.height_ <= mat.unit.encoding_height() && mat.width_ <= mat.unit.encoding_width()) {
-            return EncryptedMatrix(mat.height_, mat.width_, mat.unit.transpose(), mat.cts);
-        }
-
-        throw invalid_argument("Invalid arguments to unit_transpose");
     }
 
     /* Computes (the encoding of) the k^th row of A, given A^T */
@@ -932,48 +767,6 @@ namespace hit {
         return EncryptedMatrix(matrix_aTrans.width(), matrix_b.width(), matrix_aTrans.encoding_unit(), matrix_cts);
     }
 
-    EncryptedMatrix LinearAlgebra::multiply_mixed_unit(const EncryptedMatrix &matrix_aTrans,
-                                                           const EncryptedMatrix &matrix_b, double scalar) {
-        /* Inputs: A t-by-s matrix A^T and t-by-u matrix B, both encoded with the same n-times-m unit,
-         *         where t,m <= n and s,u <= m.
-         * m -> matrix_b.unit.encoding_width
-         * n -> matrix_b.unit.encoding_height
-         * t -> matrix_b.height, matrix_aTrans.height
-         * s -> matrix_aTrans.width
-         * u -> matrix_b.width
-         */
-        if (!matrix_aTrans.initialized() || !matrix_b.initialized()) {
-            throw std::invalid_argument("Arguments to LinearAlgebra::hadamard_multiply_mixed_unit are not initialized");
-        }
-        if (matrix_aTrans.height() != matrix_b.height() ||
-            matrix_aTrans.encoding_unit() != matrix_b.encoding_unit() ||
-            matrix_b.height() > matrix_b.encoding_unit().encoding_height() ||
-            matrix_b.encoding_unit().encoding_width() > matrix_b.encoding_unit().encoding_height() ||
-            matrix_aTrans.width() > matrix_b.encoding_unit().encoding_width() ||
-            matrix_b.width() > matrix_b.encoding_unit().encoding_width()) {
-            throw invalid_argument(
-                "Arguments to LinearAlgebra::multiply_mixed_unit do not have compatible dimensions: " + dim_string(matrix_aTrans) + " vs " + dim_string(matrix_b));
-        }
-
-        vector<EncryptedColVector> row_results = multiply_common(matrix_aTrans, matrix_b, scalar, true);
-
-        // row_results[i] contains a *single* row (inside a *single* encoding unit)
-        // containing the i^th row of A times the matrix B
-        // The next step is to add unit.encoding_height of these together to make a single unit
-        // There will be exactly one ciphertext in the output matrix
-        EncryptedColVector matrix_ct = row_results[0];
-
-        for (int i = 1; i < matrix_aTrans.width(); i++) {
-            add_inplace(matrix_ct, row_results[i]);
-        }
-
-        EncodingUnit tranposeUnit =
-            EncodingUnit(matrix_b.encoding_unit().encoding_width(), matrix_b.encoding_unit().encoding_height());
-        vector<vector<CKKSCiphertext>> matrix_cts{matrix_ct.cts};
-
-        return EncryptedMatrix(matrix_aTrans.width(), matrix_b.width(), tranposeUnit, matrix_cts);
-    }
-
     /* Generic helper for summing or replicating the rows or columns of an encoded matrix
      *
      * To sum columns, set `max` to the width of the matrix (must be a power of two), `stride` to 1, and rotateLeft=true
@@ -1112,7 +905,7 @@ namespace hit {
             }
         }
 
-        int synthetic_width = concat_cts[0].size()*mats[0].encoding_unit().encoding_width();
+        size_t synthetic_width = concat_cts[0].size()*mats[0].encoding_unit().encoding_width();
 
         return sum_cols(EncryptedMatrix(mats[0].height(), synthetic_width, mats[0].encoding_unit(), concat_cts), scalar);
     }
@@ -1128,7 +921,7 @@ namespace hit {
             }
         }
 
-        int synthetic_height = concat_cts.size()*mats[0].encoding_unit().encoding_height();
+        size_t synthetic_height = concat_cts.size()*mats[0].encoding_unit().encoding_height();
 
         return sum_rows(EncryptedMatrix(synthetic_height, mats[0].width(), mats[0].encoding_unit(), concat_cts));
     }
