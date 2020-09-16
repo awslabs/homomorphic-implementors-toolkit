@@ -65,7 +65,7 @@ namespace hit {
 
     inline void deserializeVector(const std::shared_ptr<seal::SEALContext> &context,
             const protobuf::CiphertextVector &proto_ciphertext_vector,
-            const std::vector<CKKSCiphertext> &ciphertext_vector) {
+            std::vector<CKKSCiphertext> &ciphertext_vector) {
         for (int i = 0; i < proto_ciphertext_vector.cts_size(); i++) {
             protobuf::Ciphertext ciphertext = proto_ciphertext_vector.cts(i);
             ciphertext_vector.push_back(CKKSCiphertext(context, ciphertext));

@@ -140,6 +140,7 @@ namespace hit {
                         const std::vector<std::vector<CKKSCiphertext>> &cts);
 
         bool initialized() const;
+        void validateInit() const;
 
         // height of the encoded matrix
         int height_ = 0;
@@ -231,6 +232,7 @@ namespace hit {
         EncryptedRowVector(int width, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts);
 
         bool initialized() const;
+        void validateInit() const;
 
         // width of the encoded matrix
         int width_ = 0;
@@ -308,6 +310,7 @@ namespace hit {
         EncryptedColVector(int height, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts);
 
         bool initialized() const;
+        void validateInit() const;
 
         // height of the encoded vector
         int height_ = 0;

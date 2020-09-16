@@ -11,14 +11,14 @@
 using namespace std;
 
 namespace hit {
-    // TODO(ubuntu): why initializing the members not in constructor body but initialization list? do we plan to make it const?
     EncodingUnit::EncodingUnit(int encoding_height, int encoding_width)
         : encoding_height_(encoding_height), encoding_width_(encoding_width) {
         validateInit();
     }
 
-    EncodingUnit::EncodingUnit(const protobuf::EncodingUnit &encoding_unit)
-        : encoding_height_(encoding_unit.encoding_height()), encoding_width_(encoding_unit.encoding_width()) {
+    EncodingUnit::EncodingUnit(const protobuf::EncodingUnit &encoding_unit) {
+        encoding_height_ = encoding_unit.encoding_height();
+        encoding_width_ = encoding_unit.encoding_width();
         validateInit();
     }
 
@@ -67,9 +67,7 @@ namespace hit {
     EncryptedMatrix::EncryptedMatrix(int height, int width, const EncodingUnit &unit,
                                      const vector<vector<CKKSCiphertext>> &cts)
         : height_(height), width_(width), unit(unit), cts(move(cts)) {
-        if (!initialized()) {
-            throw invalid_argument("Invalid cts to EncryptedMatrix.");
-        }
+        validateInit();
     }
 
     // TODO(ubuntu): create validateInit to avoid duplicate.
@@ -86,9 +84,7 @@ namespace hit {
             deserializeVector(context, proto_ciphertext_vector, ciphertext_vector);
             cts.push_back(ciphertext_vector);
         }
-        if (!initialized()) {
-            throw invalid_argument("Invalid cts to EncryptedMatrix.");
-        }
+        validateInit();
     }
 
     protobuf::EncryptedMatrix *EncryptedMatrix::serialize() const {
@@ -195,6 +191,12 @@ namespace hit {
         return unit.initialized() && num_vertical_units() == cts.size() && num_horizontal_units() == cts[0].size();
     }
 
+    void EncryptedMatrix::validateInit() const {
+        if (!initialized()) {
+            throw invalid_argument("Invalid cts to EncryptedMatrix.");
+        }
+    }
+
     size_t EncryptedMatrix::num_cts() const {
         return cts.size() * cts[0].size();
     }
@@ -264,9 +266,7 @@ namespace hit {
 
     EncryptedRowVector::EncryptedRowVector(int width, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts)
         : width_(width), unit(unit), cts(cts) {
-        if (!initialized()) {
-            throw invalid_argument("Invalid cts to EncryptedRowVector.");
-        }
+        validateInit();
     }
 
     EncryptedRowVector::EncryptedRowVector(const std::shared_ptr<seal::SEALContext> &context, const protobuf::EncryptedRowVector &encrypted_row_vector)
@@ -274,9 +274,7 @@ namespace hit {
           unit(encrypted_row_vector.unit()) {
         cts.reserve(encrypted_row_vector.cts().cts_size());
         deserializeVector(context, encrypted_row_vector.cts(), cts);
-        if (!initialized()) {
-            throw invalid_argument("Invalid cts to EncryptedRowVector.");
-        }
+        validateInit();
     }
 
     protobuf::EncryptedRowVector *EncryptedRowVector::serialize() const {
@@ -355,6 +353,12 @@ namespace hit {
         return unit.initialized() && num_units() == cts.size();
     }
 
+    void EncryptedRowVector::validateInit() const {
+        if (!initialized()) {
+            throw invalid_argument("Invalid cts to EncryptedRowVector.");
+        }
+    }
+
     size_t EncryptedRowVector::num_cts() const {
         return cts.size();
     }
@@ -400,9 +404,7 @@ namespace hit {
 
     EncryptedColVector::EncryptedColVector(int height, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts)
         : height_(height), unit(unit), cts(cts) {
-        if (!initialized()) {
-            throw invalid_argument("Invalid cts to EncryptedColVector.");
-        }
+        validateInit();
     }
 
     EncryptedColVector::EncryptedColVector(const std::shared_ptr<seal::SEALContext> &context, const protobuf::EncryptedColVector &encrypted_col_vector)
@@ -410,9 +412,7 @@ namespace hit {
           unit(encrypted_col_vector.unit()) {
         cts.reserve(encrypted_col_vector.cts().cts_size());
         deserializeVector(context, encrypted_col_vector.cts(), cts);
-        if (!initialized()) {
-            throw invalid_argument("Invalid cts to EncryptedColVector.");
-        }
+        validateInit();
     }
 
     protobuf::EncryptedColVector *EncryptedColVector::serialize() const {
@@ -489,6 +489,12 @@ namespace hit {
          *   - all cts hav ethe same he_level
          */
         return unit.initialized() && num_units() == cts.size();
+    }
+
+    void EncryptedColVector::validateInit() const {
+        if (!initialized()) {
+            throw invalid_argument("Invalid cts to EncryptedColVector.");
+        }
     }
 
     size_t EncryptedColVector::num_cts() const {

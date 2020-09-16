@@ -42,18 +42,50 @@ void test_encrypt_matrix(LinearAlgebra &laInst, int mat_height, int mat_width, E
 TEST(LinearAlgebraTest, EncodingUnit_Serialization) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     int unit1_height = 64;
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    auto laInst = LinearAlgebra(*ckksInstance);
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
-    ASSERT_EQ(EncodingUnit(unit1.serialize()), unit1);
+    EncodingUnit unit2 = EncodingUnit(*unit1.serialize());
+    ASSERT_EQ(unit1, unit2);
 }
 
 TEST(LinearAlgebraTest, EncryptMatrix_Serialization) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    auto laInst = LinearAlgebra(*ckksInstance);
     EncodingUnit unit1 = laInst.make_unit(64);
     Matrix plaintext = random_mat(64, 64);
-    EncryptedMatrix ciphertext = laInst.encrypt_matrix(plaintext, unit1);
-    ASSERT_EQ(EncryptedMatrix(ciphertext.serialize()), ciphertext);
+    EncryptedMatrix ct1 = laInst.encrypt_matrix(plaintext, unit1);
+    EncryptedMatrix ct2 = EncryptedMatrix(ckksInstance->context, *ct1.serialize());
+    ASSERT_EQ(ct1.height(), ct2.height());
+    ASSERT_EQ(ct1.width(), ct2.width());
+    ASSERT_EQ(ct1.encoding_unit(), ct2.encoding_unit());
+    Matrix output = laInst.decrypt(ct2);
+    ASSERT_LT(diff2Norm(plaintext.data(), output.data()), MAX_NORM);
+}
+
+TEST(LinearAlgebraTest, EncryptedColVector_Serialization) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    auto laInst = LinearAlgebra(*ckksInstance);
+    EncodingUnit unit1 = laInst.make_unit(64);
+    Vector plaintext = random_vec(64);
+    EncryptedColVector ct1 = laInst.encrypt_col_vector(plaintext, unit1);
+    EncryptedColVector ct2 = EncryptedColVector(ckksInstance->context, *ct1.serialize());
+    ASSERT_EQ(ct1.height(), ct2.height());
+    ASSERT_EQ(ct1.encoding_unit(), ct2.encoding_unit());
+    Vector output = laInst.decrypt(ct2);
+    ASSERT_LT(diff2Norm(plaintext.data(), output.data()), MAX_NORM);
+}
+
+TEST(LinearAlgebraTest, EncryptedRowVector_Serialization) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    auto laInst = LinearAlgebra(*ckksInstance);
+    EncodingUnit unit1 = laInst.make_unit(64);
+    Vector plaintext = random_vec(64);
+    EncryptedRowVector ct1 = laInst.encrypt_row_vector(plaintext, unit1);
+    EncryptedRowVector ct2 = EncryptedRowVector(ckksInstance->context, *ct1.serialize());
+    ASSERT_EQ(ct1.width(), ct2.width());
+    ASSERT_EQ(ct1.encoding_unit(), ct2.encoding_unit());
+    Vector output = laInst.decrypt(ct2);
+    ASSERT_LT(diff2Norm(plaintext.data(), output.data()), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, EncryptMatrix) {
