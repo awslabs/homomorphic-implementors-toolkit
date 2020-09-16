@@ -17,5 +17,5 @@ target_include_directories(aws_hit_obj PUBLIC
         $<INSTALL_INTERFACE:${HIT_INCLUDES_INSTALL_DIR}>
     PRIVATE ${HIT_SOURCE_DIR}
     )
-target_link_libraries(aws_hit_obj PUBLIC aws_hit_proto PRIVATE seal glog::glog ${TBB_IMPORTED_TARGETS})
+target_link_libraries(aws_hit_obj PUBLIC aws_hit_proto PRIVATE seal glog::glog)
 set_common_flags(aws_hit_obj)
