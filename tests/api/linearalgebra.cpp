@@ -1053,7 +1053,7 @@ void test_sum_rows(LinearAlgebra &laInst, int height, int width, EncodingUnit &u
 }
 
 TEST(LinearAlgebraTest, SumRows) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
 
     int unit1_height = 64;  // a 64x64 encoding unit
@@ -1068,6 +1068,38 @@ TEST(LinearAlgebraTest, SumRows) {
     test_sum_rows(laInst, 128, 64, unit1);
     test_sum_rows(laInst, 64, 128, unit1);
     test_sum_rows(laInst, 128, 128, unit1);
+}
+
+void test_sum_rows_many(LinearAlgebra &laInst, int height1, int width1, int height2, int width2, EncodingUnit &unit) {
+    Matrix mat1 = random_mat(height1, width1);
+    Matrix mat2 = random_mat(height2, width2);
+
+    EncryptedMatrix ct_mat1 = laInst.encrypt_matrix(mat1, unit);
+    EncryptedMatrix ct_mat2 = laInst.encrypt_matrix(mat2, unit);
+    EncryptedColVector ct_vec = laInst.sum_rows_many({ct_mat1, ct_mat2});
+    Vector actual_output = laInst.decrypt(ct_vec);
+
+    Vector expected_output = sum_rows_plaintext(mat1) + sum_rows_plaintext(mat2);
+    ASSERT_LT(diff2Norm(actual_output.data(), expected_output.data()), MAX_NORM);
+}
+
+TEST(LinearAlgebraTest, SumRowsMany) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+
+    int unit1_height = 64;  // a 64x64 encoding unit
+    EncodingUnit unit1 = laInst.make_unit(unit1_height);
+
+    test_sum_rows_many(laInst, 64, 64, 64, 64, unit1);
+    test_sum_rows_many(laInst, 64, 64, 65, 64, unit1);
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because widths do not match.
+        test_sum_rows_many(laInst, 64, 64, 64, 65, unit1), invalid_argument);
+
+    test_sum_rows_many(laInst, 64, 64, 128, 64, unit1);
+    test_sum_rows_many(laInst, 32, 64, 128, 64, unit1);
+    test_sum_rows_many(laInst, 128, 64, 128, 64, unit1);
+    test_sum_rows_many(laInst, 128, 128, 129, 128, unit1);
 }
 
 Vector sum_cols_plaintext(Matrix mat) {
@@ -1110,6 +1142,38 @@ TEST(LinearAlgebraTest, SumCols) {
     test_sum_cols(laInst, 128, 64, PI, unit1);
     test_sum_cols(laInst, 64, 128, PI, unit1);
     test_sum_cols(laInst, 128, 128, PI, unit1);
+}
+
+void test_sum_cols_many(LinearAlgebra &laInst, int height1, int width1, int height2, int width2, EncodingUnit &unit) {
+    Matrix mat1 = random_mat(height1, width1);
+    Matrix mat2 = random_mat(height2, width2);
+
+    EncryptedMatrix ct_mat1 = laInst.encrypt_matrix(mat1, unit);
+    EncryptedMatrix ct_mat2 = laInst.encrypt_matrix(mat2, unit);
+    EncryptedRowVector ct_vec = laInst.sum_cols_many({ct_mat1, ct_mat2});
+    Vector actual_output = laInst.decrypt(ct_vec);
+
+    Vector expected_output = sum_cols_plaintext(mat1) + sum_cols_plaintext(mat2);
+    ASSERT_LT(diff2Norm(actual_output.data(), expected_output.data()), MAX_NORM);
+}
+
+TEST(LinearAlgebraTest, SumColsMany) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+
+    int unit1_height = 64;  // a 64x64 encoding unit
+    EncodingUnit unit1 = laInst.make_unit(unit1_height);
+
+    test_sum_cols_many(laInst, 64, 64, 64, 64, unit1);
+    test_sum_cols_many(laInst, 64, 64, 64, 65, unit1);
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because heights do not match.
+        test_sum_cols_many(laInst, 64, 64, 65, 64, unit1), invalid_argument);
+
+    test_sum_cols_many(laInst, 64, 64, 64, 128, unit1);
+    test_sum_cols_many(laInst, 64, 32, 64, 128, unit1);
+    test_sum_cols_many(laInst, 64, 128, 64, 128, unit1);
+    test_sum_cols_many(laInst, 128, 128, 128, 129, unit1);
 }
 
 void test_hadamard_mul_matrix_matrix(LinearAlgebra &laInst, int height, int width, EncodingUnit &unit) {

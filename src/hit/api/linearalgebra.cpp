@@ -888,7 +888,7 @@ namespace hit {
     // we just horizontally concatenate the matrices, then call sum_cols
     EncryptedRowVector LinearAlgebra::sum_cols_many(const vector<EncryptedMatrix> &mats, double scalar) {
 
-        vector<vector<CKKSCiphertext>> concat_cts;
+        vector<vector<CKKSCiphertext>> concat_cts(mats[0].num_vertical_units());
 
         for(int i = 0; i < mats[0].num_vertical_units(); i++) {
             for(int k = 0; k < mats.size(); k++) {
@@ -915,9 +915,15 @@ namespace hit {
 
         vector<vector<CKKSCiphertext>> concat_cts;
 
-        for(int k = 0; k < mats.size(); k++) {
-            for(int i = 0; i < mats[0].num_vertical_units(); i++) {
-                concat_cts.push_back(mats[k].cts[i]);
+        for(const auto & mat : mats) {
+            if (mat.encoding_unit() != mats[0].encoding_unit()) {
+                throw invalid_argument("sum_rows_many args must have the same encoding unit.");
+            }
+            if (mat.width() != mats[0].width()) {
+                throw invalid_argument("sum_rows_many args must have the same width");
+            }
+            for(int i = 0; i < mat.num_vertical_units(); i++) {
+                concat_cts.push_back(mat.cts[i]);
             }
         }
 
