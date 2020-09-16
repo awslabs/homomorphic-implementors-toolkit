@@ -731,11 +731,11 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrix) {
     test_multiply_matrix_matrix(laInst, 300, 27, 29, PI, unit1);
 }
 
-TEST(LinearAlgebraTest, MultiplyMatrixMatrixUnitTranspose_InvalidCase) {
+TEST(LinearAlgebraTest, MultiplyMatrixMatrixMixedUnit_InvalidCase) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(8192, THREE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
 
-    // both of these units are valid for multiply_unit_transpose
+    // both of these units are valid for multiply_mixed_unit
     int unit1_height = 256;  // a 256x32 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
     int unit2_height = 128;  // a 128x64 encoding unit
@@ -749,13 +749,13 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrixUnitTranspose_InvalidCase) {
 
     ASSERT_THROW(
         // Expect invalid_argument is thrown because inner dimensions do not match.
-        (laInst.multiply_unit_transpose(ciphertext1, ciphertext2)), invalid_argument);
+        (laInst.multiply_mixed_unit(ciphertext1, ciphertext2)), invalid_argument);
     ASSERT_THROW(
         // Expect invalid_argument is thrown because encoding units do not match.
-        (laInst.multiply_unit_transpose(ciphertext1, ciphertext3)), invalid_argument);
+        (laInst.multiply_mixed_unit(ciphertext1, ciphertext3)), invalid_argument);
 
     // Everything above here is copied from the normal matrix invalid test
-    // multiply_unit_transpose has several additional invalid cases:
+    // multiply_mixed_unit has several additional invalid cases:
     // 1. n-by-m unit where m > n
     // 2. s > m
     // 3. u > m
@@ -767,7 +767,7 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrixUnitTranspose_InvalidCase) {
     EncryptedMatrix ciphertext5 = laInst.encrypt_matrix(mat2, unit3);
     ASSERT_THROW(
         // Expect invalid_argument is thrown because unit3 is invalid: m > n
-        (laInst.multiply_unit_transpose(ciphertext4, ciphertext5)), invalid_argument);
+        (laInst.multiply_mixed_unit(ciphertext4, ciphertext5)), invalid_argument);
 
     Matrix mat3 = random_mat(64, 64);
     Matrix mat4 = random_mat(64, 32);
@@ -775,21 +775,21 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrixUnitTranspose_InvalidCase) {
     EncryptedMatrix ciphertext7 = laInst.encrypt_matrix(mat4, unit1);
     ASSERT_THROW(
         // Expect invalid_argument is thrown because mat3 is t-by-s=64x64, so s=64>m=32
-        (laInst.multiply_unit_transpose(ciphertext6, ciphertext7)), invalid_argument);
+        (laInst.multiply_mixed_unit(ciphertext6, ciphertext7)), invalid_argument);
 
     ASSERT_THROW(
         // Expect invalid_argument is thrown because mat3 is t-by-u=64x64, so u=64>m=32
-        (laInst.multiply_unit_transpose(ciphertext7, ciphertext6)), invalid_argument);
+        (laInst.multiply_mixed_unit(ciphertext7, ciphertext6)), invalid_argument);
 
     Matrix mat5 = random_mat(129, 32);
     EncryptedMatrix ciphertext8 = laInst.encrypt_matrix(mat5, unit2);
     ASSERT_THROW(
         // Expect invalid_argument is thrown because mat5 is t-by-u=129x32, so t=129>n=128
-        (laInst.multiply_unit_transpose(ciphertext8, ciphertext8)), invalid_argument);
+        (laInst.multiply_mixed_unit(ciphertext8, ciphertext8)), invalid_argument);
 }
 
-void test_multiply_matrix_matrix_unit_transpose(LinearAlgebra &laInst, int left_dim, int inner_dim, int right_dim,
-                                                double scalar, EncodingUnit &unit) {
+void test_multiply_matrix_matrix_mixed_unit(LinearAlgebra &laInst, int left_dim, int inner_dim, int right_dim,
+                                            double scalar, EncodingUnit &unit) {
     // matrix-matrix mutliplication takes A^T and B as inputs and computes c*A*B for a scalar c and matrices A, B with
     // compatible dimensions Matrix A is left_dim x inner_dim, so A^T is the reverse
     Matrix matrix_a_transpose = random_mat(inner_dim, left_dim);
@@ -798,7 +798,7 @@ void test_multiply_matrix_matrix_unit_transpose(LinearAlgebra &laInst, int left_
 
     EncryptedMatrix ct_a_transpose = laInst.encrypt_matrix(matrix_a_transpose, unit);
     EncryptedMatrix ct_b = laInst.encrypt_matrix(matrix_b, unit, ct_a_transpose.he_level() - 1);
-    EncryptedMatrix ct_c_times_A_times_B = laInst.multiply_unit_transpose(ct_a_transpose, ct_b, scalar);
+    EncryptedMatrix ct_c_times_A_times_B = laInst.multiply_mixed_unit(ct_a_transpose, ct_b, scalar);
     Matrix actual_output = laInst.decrypt(ct_c_times_A_times_B);
 
     // Transpose of A^T is A
@@ -810,7 +810,7 @@ void test_multiply_matrix_matrix_unit_transpose(LinearAlgebra &laInst, int left_
     ASSERT_EQ(unit.encoding_width(), ct_c_times_A_times_B.encoding_unit().encoding_height());
 }
 
-TEST(LinearAlgebraTest, MultiplyMatrixMatrixUnitTranspose) {
+TEST(LinearAlgebraTest, MultiplyMatrixMatrixMixedUnit) {
     CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(8192, THREE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
 
@@ -822,17 +822,17 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrixUnitTranspose) {
     int unit1_width = 8192 / unit1_height;
 
     // both matrices are exactly the size of the encoding unit
-    test_multiply_matrix_matrix_unit_transpose(laInst, unit1_width, unit1_height, unit1_width, 1.0, unit1);
-    test_multiply_matrix_matrix_unit_transpose(laInst, unit1_width, unit1_height, unit1_width, PI, unit1);
+    test_multiply_matrix_matrix_mixed_unit(laInst, unit1_width, unit1_height, unit1_width, 1.0, unit1);
+    test_multiply_matrix_matrix_mixed_unit(laInst, unit1_width, unit1_height, unit1_width, PI, unit1);
 
     // one or more matrices are smaller than the encoding unit
-    test_multiply_matrix_matrix_unit_transpose(laInst, unit1_width - 9, unit1_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_unit_transpose(laInst, unit1_width, unit1_height - 9, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_unit_transpose(laInst, unit1_width, unit1_height, unit1_width - 9, PI, unit1);
-    test_multiply_matrix_matrix_unit_transpose(laInst, unit1_width - 9, unit1_height, unit1_width - 11, PI, unit1);
-    test_multiply_matrix_matrix_unit_transpose(laInst, unit1_width - 9, unit1_height - 11, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_unit_transpose(laInst, unit1_width, unit1_height - 9, unit1_width - 11, PI, unit1);
-    test_multiply_matrix_matrix_unit_transpose(laInst, unit1_width - 13, unit1_height - 9, unit1_width - 11, PI, unit1);
+    test_multiply_matrix_matrix_mixed_unit(laInst, unit1_width - 9, unit1_height, unit1_width, PI, unit1);
+    test_multiply_matrix_matrix_mixed_unit(laInst, unit1_width, unit1_height - 9, unit1_width, PI, unit1);
+    test_multiply_matrix_matrix_mixed_unit(laInst, unit1_width, unit1_height, unit1_width - 9, PI, unit1);
+    test_multiply_matrix_matrix_mixed_unit(laInst, unit1_width - 9, unit1_height, unit1_width - 11, PI, unit1);
+    test_multiply_matrix_matrix_mixed_unit(laInst, unit1_width - 9, unit1_height - 11, unit1_width, PI, unit1);
+    test_multiply_matrix_matrix_mixed_unit(laInst, unit1_width, unit1_height - 9, unit1_width - 11, PI, unit1);
+    test_multiply_matrix_matrix_mixed_unit(laInst, unit1_width - 13, unit1_height - 9, unit1_width - 11, PI, unit1);
 }
 
 TEST(LinearAlgebraTest, MultiplyRowMatrix_InvalidCase) {

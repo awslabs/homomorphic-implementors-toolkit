@@ -249,8 +249,11 @@ namespace hit {
          */
         template <typename T>
         void add_inplace(T &arg1, const T &arg2) {
-            if (!arg1.initialized() || !arg2.initialized() || !arg1.same_size(arg2)) {
-                throw std::invalid_argument("Arguments to LinearAlgebra::add_inplace do not have the same dimensions");
+            if (!arg1.initialized() || !arg2.initialized()) {
+                throw std::invalid_argument("Arguments to LinearAlgebra::add_inplace are not initialized");
+            }
+            if (!arg1.same_size(arg2)) {
+                throw std::invalid_argument("Arguments to LinearAlgebra::add_inplace do not have the same dimensions: " + dim_string(arg1) + " " + dim_string(arg2));
             }
             for (size_t i = 0; i < arg1.num_cts(); i++) {
                 eval.add_inplace(arg1[i], arg2[i]);
@@ -365,10 +368,12 @@ namespace hit {
          */
         template <typename T>
         void hadamard_multiply_inplace(T &arg1, const T &arg2) {
-            if (!arg1.initialized() || !arg2.initialized() || !arg1.same_size(arg2)) {
+            if (!arg1.initialized() || !arg2.initialized()) {
                 throw std::invalid_argument("LinearAlgebra::hadamard_multiply: arguments not initialized.");
             }
-
+            if (!arg1.same_size(arg2)) {
+                throw std::invalid_argument("Arguments to LinearAlgebra::hadamard_multiply do not have the same dimensions: " + dim_string(arg1) + " " + dim_string(arg2));
+            }
             for (size_t i = 0; i < arg1.num_cts(); i++) {
                 eval.multiply_inplace(arg1[i], arg2[i]);
             }
@@ -437,6 +442,29 @@ namespace hit {
          */
         EncryptedMatrix hadamard_multiply(const EncryptedMatrix &mat, const EncryptedColVector &vec);
 
+
+        /* Hadamard product of a row vector with each column of a matrix, where the output's encoding unit is the
+         * transpose of the input units.
+         * Inputs: A f-dimensional row vector and a f-by-g matrix, both at the same HE level and
+         * encoded with respect to the same m-by-n encoding unit, where f <= m and g,m <= n.
+         * Output: An encrypted matrix where each row is the hadamard product of the (encoded) column vector
+         *         and the corresponding row of the input matrix, encoded with an m-by-n unit.
+         *
+         * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
+         * at the same level as the input, so it needs to be relinearized and rescaled.
+         */
+        EncryptedMatrix hadamard_multiply_mixed_unit(const EncryptedRowVector &vec, const EncryptedMatrix &mat);
+
+        /* Hadamard product of a column vector with each row of a matrix, where the inputs have different encoding units.
+         * Inputs: A f-by g matrix encoded with an m-by-n unit and a g-dimensional column vector encoded with an n-by-m unit,
+         *         both at the same HE level, where f <= m and g,m <= n.
+         * Output: TODO: Describe output (with warning)
+         *
+         * Notes: This function has multiplicative depth two and returns a quadratic ciphertext
+         * one level below the inputs, so it needs to be relinearized and rescaled.
+         */
+        EncryptedMatrix hadamard_multiply_mixed_unit(const EncryptedMatrix &mat, const EncryptedColVector &vec);
+
         /* Scale an encrypted object by a constant.
          * Inputs: One of the following options
          *   - EncryptedMatrix, double
@@ -486,9 +514,6 @@ namespace hit {
         EncryptedMatrix multiply(const EncryptedMatrix &matrix_aTrans, const EncryptedMatrix &matrix_b,
                                  double scalar = 1);
 
-        // TODO(Eric): Comment
-        hit::EncryptedMatrix unit_transpose(const hit::EncryptedMatrix &mat);
-
         /* Special case of a standard matrix product.
          * Inputs: A t-by-s matrix A^T and t-by-u matrix B, both encoded with the same n-times-m unit,
          *         where t,m <= n and s,u <= m. An optional scalar which defaults to 1.
@@ -498,8 +523,35 @@ namespace hit {
          * The matrix B must be encrypted at at least level 2. The output is two levels below the level of A^T,
          * but is a linear ciphertext with squared scale, so it needs to be rescaled but *not* relinearized.
          */
-        EncryptedMatrix multiply_unit_transpose(const EncryptedMatrix &matrix_aTrans, const EncryptedMatrix &matrix_b,
-                                                double scalar = 1);
+        EncryptedMatrix multiply_mixed_unit(const EncryptedMatrix &mat, const EncryptedMatrix &vec,
+                                            double scalar = 1);
+
+        /* Special case of a standard matrix/column vector product.
+         * Inputs: A f-by-g matrix `A` encoded with an m-by-n unit,
+         *         and g-dimensional column vector `v` encoded with an n-by-m unit,
+         *         where f,g <= m and g,m <= n. An optional scalar which defaults to 1.
+         * Output: scalar*A*v, encoded with a m-by-n unit
+         *
+         * Notes: This function has multiplicative depth two. `A` and `v` must be at the same level >= 2.
+         * The output is one level below the inputs and is linear ciphertext with squared scale,
+         * so it needs to be rescaled but *not* relinearized.
+         */
+        EncryptedRowVector multiply_mixed_unit(const EncryptedMatrix &mat, const EncryptedColVector &vec,
+                                            double scalar = 1);
+
+        /* Special case of a standard row-vector/matrix product.
+         * Inputs: A f-by-g matrix `A` and f-dimensional row vector `v^T`, both encoded with an m-by-n unit,
+         *         where f,g <= m and g,m <= n.
+         * Output: scalar*v^T*A, encoded with a n-by-m unit
+         *
+         * Notes: This function has multiplicative depth one. `A` and `v` must be at the same level >= 1.
+         * The output is at the same level of the input and is linear ciphertext with squared scale,
+         * so it needs to be rescaled but *not* relinearized.
+         */
+        EncryptedColVector multiply_mixed_unit(const EncryptedRowVector &vec, const EncryptedMatrix &mat);
+
+        // TODO(Eric): docs
+        EncryptedMatrix unit_transpose(const EncryptedMatrix &mat);
 
         /* Computes a standard row vector/matrix product.
          * Inputs: Row vector and Matrix, both encoded with the same unit
@@ -731,9 +783,29 @@ namespace hit {
          */
         EncryptedColVector sum_rows(const EncryptedMatrix &mat);
 
+        /* This function enables the use of the sum_cols homomorphism across matrices of incompatibile dimensions.
+         * If A is f-by-g1 and B is f-by-g2, then sum_cols(A) + sum_cols(B) is a f-dimensional row vector.
+         * This function returns the same result, but without invoking sum_cols multiple times.
+         * Inputs: A vector of matrices, each with the same encoding unit and the same height `f`.
+         * Ouptut: An f-dimensional row vector which is sum_cols(A)+sum_cols(B)
+         */
+        EncryptedRowVector sum_cols_many(const std::vector<EncryptedMatrix> &mats, double scalar = 1);
+
+        /* This function enables the use of the sum_rows homomorphism across matrices of incompatibile dimensions.
+         * If A is f1-by-g and B is f2-by-g, then sum_rows(A) + sum_rows(B) is a g-dimensional column vector.
+         * This function returns the same result, but without invoking sum_rows multiple times.
+         * Inputs: A vector of matrices, each with the same encoding unit and the same width `g`.
+         * Ouptut: An g-dimensional column vector which is sum_rows(A)+sum_rows(B)
+         */
+        EncryptedColVector sum_rows_many(const std::vector<EncryptedMatrix> &mats);
+
         CKKSEvaluator &eval;
 
        private:
+
+        template<typename T>
+        std::string dim_string(const T &arg);
+
         /* Algorithm 3 in HHCP'18; see the paper for details.
          * sum the columns of a matrix packed into a single ciphertext
          * The plaintext is a vector representing the row-major format of a matrix with `width` columns.
