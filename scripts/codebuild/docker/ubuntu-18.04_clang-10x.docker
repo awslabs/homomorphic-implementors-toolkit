@@ -1,13 +1,15 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-FROM ubuntu-18.04:base
+# for clang to be able to use the <execution> header for STL Parallelism,
+# we need a modern gcc
+FROM ubuntu-18.04:gcc-9x
 
 SHELL ["/bin/bash", "-c"]
 
 RUN set -ex && \
     apt-get update && \
-    apt-get -y --no-install-recommends install libtbb2 clang clang-10 clang-tidy-10 && \
+    apt-get -y --no-install-recommends install clang clang-10 clang-tidy-10 && \
     update-alternatives --install /usr/bin/clang clang /usr/bin/clang-10 90 --slave /usr/bin/clang++ clang++ /usr/bin/clang-cpp-10 --slave /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-10 && \
     apt-get autoremove --purge -y && \
     apt-get clean && \
