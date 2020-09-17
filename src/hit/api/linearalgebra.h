@@ -19,6 +19,25 @@
 
 namespace hit {
 
+    /* An EncodingUnit determines how linear algebra objects are encoded as one or more CKKS plaintexts.
+     * Recall that a CKKS plaintext is a list of real numbers, where the length of the list is exactly
+     * the number of slots determined by the CKKS parameters.
+     * You can view an encoding unit as a rectangular "tile" with which we cover the linear algebra object.
+     * Any extra space after tiling is filled with zeros. For fixed CKKS paramters, there are many possible valid
+     * tiles, but any valid tile must satisfy tile_height*tile_width = num_CKKS_slots. In particular, this means
+     * that encoding units are always powers of two in both dimensions. After dividing a plaintext object into
+     * one or more encoding units, we encode each tile in row-major order to get a CKKS plaintext; see the example
+     * below.
+     *
+     * Assume CKKS parameters have eight slots. The the encoding unit
+     * [ 1 2 3 4 ]
+     * [ 5 6 7 8 ]
+     * becomes the CKKS plaintext [1 2 3 4 5 6 7 8].
+     *
+     * As the programmer, you don't have to worry about think about how the encoding works, but carefully choosing
+     * an encoding unit can affect the efficiency of the implementation. See the comments above EncryptedMatrix,
+     * EncryptedColVector, and EncryptedRowVector for details on how these objects are encoded.
+     */
     struct EncodingUnit {
        public:
         // use `makeUnit` in `LinearAlgebra` to construct an encoding unit
@@ -40,6 +59,39 @@ namespace hit {
         friend struct EncryptedColVector;
     };
 
+    /* One or more ciphertexts which encrypts a plaintext matrix.
+     * Matrices are divided into plaintexts by tiling the matrix with the encoding unit.
+     * If the matrix dimensions do not exactly divide into encoding units, extra space is
+     * padded with zeros. For example, consider the plaintext matrix A where
+     *
+     * A = [ a b c d e ]
+     *     [ f g h i j ]
+     *     [ k l m n o ]
+     *     [ p q r s t ]
+     *
+     * We can tile A with a 2x4 unit to get four plaintext units, and
+     * therefore four ciphertexts:
+     *
+     *   cts[0][0]    cts[0][1]
+     *  [ a b c d ]  [ e 0 0 0 ]
+     *  [ f g h i ]  [ j 0 0 0 ]
+     *
+     *   cts[1][0]    cts[1][1]
+     *  [ k l m n ]  [ o 0 0 0 ]
+     *  [ p q r s ]  [ t 0 0 0 ]
+     *
+     * If we instead use a 4x2 unit, we divide A into three plaintext units,
+     * and therefore three ciphertexts:
+     *
+     *  cts[0][0]  cts[0][1]  cts[0][2]
+     *  [ a b ]    [ c d ]    [ e 0 ]
+     *  [ f g ]    [ h i ]    [ j 0 ]
+     *  [ k l ]    [ m n ]    [ k 0 ]
+     *  [ p q ]    [ r s ]    [ t 0 ]
+     *
+     * The encoding unit can affect the efficiency of homomorphic operations,
+     * but does not affect their multiplicative depth.
+     */
     struct EncryptedMatrix : CiphertextMetadata<Matrix> {
        public:
         // use `encrypt_matrix` in `LinearAlgebra` to construct an encrypted matrix
@@ -84,6 +136,48 @@ namespace hit {
         friend class LinearAlgebra;
     };
 
+    /* One or more ciphertexts which encrypts a plaintext row vector.
+     * Row vectors are encoded as the *columns* of an encoding unit,
+     * where each column is identical.
+     * If the vector dimensions do not exactly divide the height of the encoding unit,
+     * extra space is padded with zeros. For example,
+     * consider the plaintext row vector v where
+     *
+     * v = [ a b c d e ]
+     *
+     * We can tile v with a 2x4 unit to get three plaintext units, and
+     * therefore three ciphertexts:
+     *
+     *     cts[0]
+     *  [ a a a a ]
+     *  [ b b b b ]
+     *
+     *     cts[1]
+     *  [ c c c c ]
+     *  [ d d d d ]
+     *
+     *     cts[2]
+     *  [ e e e e ]
+     *  [ 0 0 0 0 ]
+     *
+     * If we instead use a 4x2 unit, we divide v into two plaintext units,
+     * and therefore two ciphertexts:
+     *
+     *   cts[0]
+     *  [ a a ]
+     *  [ b b ]
+     *  [ c c ]
+     *  [ d d ]
+     *
+     *   cts[1]
+     *  [ e e ]
+     *  [ 0 0 ]
+     *  [ 0 0 ]
+     *  [ 0 0 ]
+     *
+     * The encoding unit can affect the efficiency of homomorphic operations,
+     * but does not affect their multiplicative depth.
+     */
     struct EncryptedRowVector : CiphertextMetadata<Vector> {
        public:
         // use `encrypt_row_vector` in `LinearAlgebra` to construct an encrypted row vector
@@ -122,6 +216,38 @@ namespace hit {
         friend class LinearAlgebra;
     };
 
+    /* One or more ciphertexts which encrypts a plaintext column vector.
+     * Column vectors are encoded as the *rows* of an encoding unit,
+     * where each row is identical.
+     * If the vector dimensions do not exactly divide the width of the encoding unit,
+     * extra space is padded with zeros. For example,
+     * consider the plaintext column vector v where
+     *
+     *     [ a ]
+     *     [ b ]
+     * v = [ c ]
+     *     [ d ]
+     *     [ e ]
+     *
+     * We can tile v with a 2x4 unit to get two plaintext units, and
+     * therefore two ciphertexts:
+     *
+     *     cts[0]       cts[1]
+     *  [ a b c d ]  [ e 0 0 0 ]
+     *  [ a b c d ]  [ e 0 0 0 ]
+     *
+     * If we instead use a 4x2 unit, we divide v into three plaintext units,
+     * and therefore three ciphertexts:
+     *
+     *   cts[0]     cts[1]     cts[2]
+     *  [ a b ]    [ c d ]    [ e 0 ]
+     *  [ a b ]    [ c d ]    [ e 0 ]
+     *  [ a b ]    [ c d ]    [ e 0 ]
+     *  [ a b ]    [ c d ]    [ e 0 ]
+     *
+     * The encoding unit can affect the efficiency of homomorphic operations,
+     * but does not affect their multiplicative depth.
+     */
     struct EncryptedColVector : CiphertextMetadata<Vector> {
        public:
         // use `encrypt_row_vector` in `LinearAlgebra` to construct an encrypted row vector
@@ -253,7 +379,9 @@ namespace hit {
                 throw std::invalid_argument("Arguments to LinearAlgebra::add_inplace are not initialized");
             }
             if (!arg1.same_size(arg2)) {
-                throw std::invalid_argument("Arguments to LinearAlgebra::add_inplace do not have the same dimensions: " + dim_string(arg1) + " " + dim_string(arg2));
+                throw std::invalid_argument(
+                    "Arguments to LinearAlgebra::add_inplace do not have the same dimensions: " + dim_string(arg1) +
+                    " " + dim_string(arg2));
             }
             for (size_t i = 0; i < arg1.num_cts(); i++) {
                 eval.add_inplace(arg1[i], arg2[i]);
@@ -372,7 +500,9 @@ namespace hit {
                 throw std::invalid_argument("LinearAlgebra::hadamard_multiply: arguments not initialized.");
             }
             if (!arg1.same_size(arg2)) {
-                throw std::invalid_argument("Arguments to LinearAlgebra::hadamard_multiply do not have the same dimensions: " + dim_string(arg1) + " " + dim_string(arg2));
+                throw std::invalid_argument(
+                    "Arguments to LinearAlgebra::hadamard_multiply do not have the same dimensions: " +
+                    dim_string(arg1) + " " + dim_string(arg2));
             }
             for (size_t i = 0; i < arg1.num_cts(); i++) {
                 eval.multiply_inplace(arg1[i], arg2[i]);
@@ -740,8 +870,7 @@ namespace hit {
         CKKSEvaluator &eval;
 
        private:
-
-        template<typename T>
+        template <typename T>
         std::string dim_string(const T &arg);
 
         /* Algorithm 3 in HHCP'18; see the paper for details.

@@ -42,7 +42,8 @@ namespace hit {
         return EncodingUnit(encoding_width_, encoding_height_);
     }
 
-    template <> string LinearAlgebra::dim_string(const EncodingUnit &arg) {
+    template <>
+    string LinearAlgebra::dim_string(const EncodingUnit &arg) {
         return "unit " + to_string(arg.encoding_height()) + "x" + to_string(arg.encoding_width());
     }
 
@@ -141,7 +142,8 @@ namespace hit {
         return height_ == mat.height() && width_ == mat.width() && unit == mat.encoding_unit();
     }
 
-    template <> string LinearAlgebra::dim_string(const EncryptedMatrix &arg) {
+    template <>
+    string LinearAlgebra::dim_string(const EncryptedMatrix &arg) {
         return "matrix " + to_string(arg.height()) + "x" + to_string(arg.width()) + " (" + dim_string(arg.unit) + ")";
     }
 
@@ -258,7 +260,8 @@ namespace hit {
         return width_ == vec.width() && unit == vec.encoding_unit();
     }
 
-    template <> string LinearAlgebra::dim_string(const EncryptedRowVector &arg) {
+    template <>
+    string LinearAlgebra::dim_string(const EncryptedRowVector &arg) {
         return "row " + to_string(arg.width()) + " (" + dim_string(arg.unit) + ")";
     }
 
@@ -357,7 +360,8 @@ namespace hit {
         return height_ == vec.height() && unit == vec.encoding_unit();
     }
 
-    template <> string LinearAlgebra::dim_string(const EncryptedColVector &arg) {
+    template <>
+    string LinearAlgebra::dim_string(const EncryptedColVector &arg) {
         return "col " + to_string(arg.height()) + " (" + dim_string(arg.unit) + ")";
     }
 
@@ -517,7 +521,8 @@ namespace hit {
             throw std::invalid_argument("LinearAlgebra::hadamard_multiply: arguments not initialized.");
         }
         if (mat.height() != vec.width() || mat.encoding_unit() != vec.encoding_unit()) {
-            throw invalid_argument("Dimension mismatch in LinearAlgebra::hadamard_multiply: " + dim_string(mat) + " vs " + dim_string(vec));
+            throw invalid_argument("Dimension mismatch in LinearAlgebra::hadamard_multiply: " + dim_string(mat) +
+                                   " vs " + dim_string(vec));
         }
 
         vector<vector<CKKSCiphertext>> cts_transpose(mat.num_horizontal_units());
@@ -564,7 +569,8 @@ namespace hit {
             throw std::invalid_argument("LinearAlgebra::hadamard_multiply: arguments not initialized.");
         }
         if (mat.width() != vec.height() || mat.encoding_unit() != vec.encoding_unit()) {
-            throw invalid_argument("Dimension mismatch in LinearAlgebra::hadamard_multiply: " + dim_string(mat) + " vs " + dim_string(vec));
+            throw invalid_argument("Dimension mismatch in LinearAlgebra::hadamard_multiply: " + dim_string(mat) +
+                                   " vs " + dim_string(vec));
         }
 
         vector<vector<CKKSCiphertext>> cts(mat.num_vertical_units());
@@ -735,7 +741,8 @@ namespace hit {
             throw std::invalid_argument("Arguments to LinearAlgebra::multiply are not initialized");
         }
         if (matrix_aTrans.height() != matrix_b.height() || matrix_aTrans.encoding_unit() != matrix_b.encoding_unit()) {
-            throw invalid_argument("Arguments to LinearAlgebra::multiply do not have compatible dimensions: " + dim_string(matrix_aTrans) + " vs " + dim_string(matrix_b));
+            throw invalid_argument("Arguments to LinearAlgebra::multiply do not have compatible dimensions: " +
+                                   dim_string(matrix_aTrans) + " vs " + dim_string(matrix_b));
         }
 
         vector<EncryptedColVector> row_results = multiply_common(matrix_aTrans, matrix_b, scalar, false);
@@ -887,11 +894,10 @@ namespace hit {
 
     // we just horizontally concatenate the matrices, then call sum_cols
     EncryptedRowVector LinearAlgebra::sum_cols_many(const vector<EncryptedMatrix> &mats, double scalar) {
-
         vector<vector<CKKSCiphertext>> concat_cts(mats[0].num_vertical_units());
 
-        for(int i = 0; i < mats[0].num_vertical_units(); i++) {
-            for(int k = 0; k < mats.size(); k++) {
+        for (int i = 0; i < mats[0].num_vertical_units(); i++) {
+            for (int k = 0; k < mats.size(); k++) {
                 if (mats[k].encoding_unit() != mats[0].encoding_unit()) {
                     throw invalid_argument("sum_cols_many args must have the same encoding unit.");
                 }
@@ -899,35 +905,35 @@ namespace hit {
                     throw invalid_argument("sum_cols_many args must have the same height");
                 }
 
-                for(int j = 0; j < mats[k].cts[i].size(); j++) {
+                for (int j = 0; j < mats[k].cts[i].size(); j++) {
                     concat_cts[i].push_back(mats[k].cts[i][j]);
                 }
             }
         }
 
-        size_t synthetic_width = concat_cts[0].size()*mats[0].encoding_unit().encoding_width();
+        size_t synthetic_width = concat_cts[0].size() * mats[0].encoding_unit().encoding_width();
 
-        return sum_cols(EncryptedMatrix(mats[0].height(), synthetic_width, mats[0].encoding_unit(), concat_cts), scalar);
+        return sum_cols(EncryptedMatrix(mats[0].height(), synthetic_width, mats[0].encoding_unit(), concat_cts),
+                        scalar);
     }
 
     // we just vertically concatenate the matrices, then call sum_rows
     EncryptedColVector LinearAlgebra::sum_rows_many(const vector<EncryptedMatrix> &mats) {
-
         vector<vector<CKKSCiphertext>> concat_cts;
 
-        for(const auto & mat : mats) {
+        for (const auto &mat : mats) {
             if (mat.encoding_unit() != mats[0].encoding_unit()) {
                 throw invalid_argument("sum_rows_many args must have the same encoding unit.");
             }
             if (mat.width() != mats[0].width()) {
                 throw invalid_argument("sum_rows_many args must have the same width");
             }
-            for(int i = 0; i < mat.num_vertical_units(); i++) {
+            for (int i = 0; i < mat.num_vertical_units(); i++) {
                 concat_cts.push_back(mat.cts[i]);
             }
         }
 
-        size_t synthetic_height = concat_cts.size()*mats[0].encoding_unit().encoding_height();
+        size_t synthetic_height = concat_cts.size() * mats[0].encoding_unit().encoding_height();
 
         return sum_rows(EncryptedMatrix(synthetic_height, mats[0].width(), mats[0].encoding_unit(), concat_cts));
     }
