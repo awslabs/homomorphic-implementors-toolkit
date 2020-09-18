@@ -17,7 +17,6 @@ set_common_flags(hit-unit-test)
 
 add_test(NAME hit-unit-test COMMAND hit-unit-test)
 
-if (AUTO_RUN_HIT_TESTS)
 add_custom_command(
         TARGET hit-unit-test
         COMMENT "Run unit tests in ${CMAKE_BINARY_DIR}"
@@ -25,4 +24,3 @@ add_custom_command(
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -R "^hit-unit-test$" --output-on-failures
 )
-endif ()

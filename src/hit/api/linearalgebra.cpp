@@ -672,7 +672,7 @@ namespace hit {
     }
 
     /* Computes (the encoding of) the k^th row of A, given A^T */
-    EncryptedRowVector LinearAlgebra::extractRow(const EncryptedMatrix &enc_mat_a_trans, int row) {
+    EncryptedRowVector LinearAlgebra::extract_row(const EncryptedMatrix &enc_mat_a_trans, int row) {
         EncodingUnit unit = enc_mat_a_trans.encoding_unit();
 
         // create a mask for the k^th column of A^T, which is the k^th row of A
@@ -719,7 +719,7 @@ namespace hit {
     EncryptedColVector LinearAlgebra::matrix_matrix_mul_loop(const EncryptedMatrix &enc_mat_a_trans,
                                                              const EncryptedMatrix &enc_mat_b, const double scalar,
                                                              int k, bool transpose_unit) {
-        EncryptedRowVector kth_row_A = extractRow(enc_mat_a_trans, k);
+        EncryptedRowVector kth_row_A = extract_row(enc_mat_a_trans, k);
         EncryptedColVector kth_row_A_times_BT = multiply(kth_row_A, enc_mat_b);
         rescale_to_next_inplace(kth_row_A_times_BT);
 
@@ -850,11 +850,11 @@ namespace hit {
      * rotateLeft=true To replicate columns, set `max` to the width of the matrix (must be a power of two), `stride` to
      * 1, and rotateLeft=false
      */
-    void LinearAlgebra::rot(CKKSCiphertext &t1, int max, int stride, bool rotateLeft) {
+    void LinearAlgebra::rot(CKKSCiphertext &t1, int max, int stride, bool rotate_left) {
         // serial implementation
         for (int i = 1; i < max; i <<= 1) {
             CKKSCiphertext t2;
-            if (rotateLeft) {
+            if (rotate_left) {
                 t2 = eval.rotate_left(t1, i * stride);
             } else {
                 t2 = eval.rotate_right(t1, i * stride);

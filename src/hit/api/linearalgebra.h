@@ -937,7 +937,7 @@ namespace hit {
 
         // helper function for sum_rows and sum_cols which repeatedly shifts by increasing powers of two, adding the
         // results
-        void rot(CKKSCiphertext &t1, int max, int stride, bool rotateLeft);
+        void rot(CKKSCiphertext &t1, int max, int stride, bool rotate_left);
 
         // inner loop for matrix/row vector hadamard multiplication
         std::vector<CKKSCiphertext> matrix_rowvec_hadamard_mul_loop(const EncryptedRowVector &enc_vec,
@@ -961,7 +961,7 @@ namespace hit {
                                                         bool transpose_unit);
 
         // helper function for matrix/matrix multiplication which extracts a single row of A (given the encoding of A^T)
-        EncryptedRowVector extractRow(const EncryptedMatrix &enc_mat_a_trans, int row);
+        EncryptedRowVector extract_row(const EncryptedMatrix &enc_mat_a_trans, int row);
 
         CKKSInstance &inst;
     };
