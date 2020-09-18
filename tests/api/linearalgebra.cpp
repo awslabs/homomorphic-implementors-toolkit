@@ -22,6 +22,7 @@ const int ONE_MULTI_DEPTH = 1;
 const int TWO_MULTI_DEPTH = 2;
 const int THREE_MULTI_DEPTH = 3;
 const int LOG_SCALE = 45;
+const double PI = 3.14;
 
 Matrix random_mat(int height, int width) {
     return Matrix(height, width, randomVector(height * width, max_vec_norm));
@@ -38,9 +39,13 @@ void test_encrypt_matrix(LinearAlgebra &laInst, int mat_height, int mat_width, E
     ASSERT_LT(diff2Norm(plaintext.data(), output.data()), MAX_NORM);
 }
 
+LinearAlgebra get_la_inst(int depth) {
+    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, depth, LOG_SCALE);
+    return LinearAlgebra(*ckksInstance);
+}
+
 TEST(LinearAlgebraTest, EncryptMatrix) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -82,8 +87,7 @@ void test_encrypt_row_vector(LinearAlgebra &laInst, int vec_width, EncodingUnit 
 }
 
 TEST(LinearAlgebraTest, EncryptRowVector) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -110,8 +114,7 @@ void test_encrypt_col_vector(LinearAlgebra &laInst, int vec_height, EncodingUnit
 }
 
 TEST(LinearAlgebraTest, EncryptColVector) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -131,8 +134,7 @@ TEST(LinearAlgebraTest, EncryptColVector) {
 }
 
 TEST(LinearAlgebraTest, AddMatrixMatrix_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -159,8 +161,7 @@ TEST(LinearAlgebraTest, AddMatrixMatrix_InvalidCase) {
 }
 
 TEST(LinearAlgebraTest, AddMatrixMatrix) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -179,8 +180,7 @@ TEST(LinearAlgebraTest, AddMatrixMatrix) {
 }
 
 TEST(LinearAlgebraTest, AddRowRow_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -202,8 +202,7 @@ TEST(LinearAlgebraTest, AddRowRow_InvalidCase) {
 }
 
 TEST(LinearAlgebraTest, AddRowRow) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -221,8 +220,7 @@ TEST(LinearAlgebraTest, AddRowRow) {
 }
 
 TEST(LinearAlgebraTest, AddColCol_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -244,8 +242,7 @@ TEST(LinearAlgebraTest, AddColCol_InvalidCase) {
 }
 
 TEST(LinearAlgebraTest, AddColCol) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -263,8 +260,7 @@ TEST(LinearAlgebraTest, AddColCol) {
 }
 
 TEST(LinearAlgebraTest, AddMatrixPlaintextMatrix_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -283,8 +279,7 @@ TEST(LinearAlgebraTest, AddMatrixPlaintextMatrix_InvalidCase) {
 }
 
 TEST(LinearAlgebraTest, AddMatrixPlaintextMatrix) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -302,8 +297,7 @@ TEST(LinearAlgebraTest, AddMatrixPlaintextMatrix) {
 }
 
 TEST(LinearAlgebraTest, AddRowPlaintextRow_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -318,8 +312,7 @@ TEST(LinearAlgebraTest, AddRowPlaintextRow_InvalidCase) {
 }
 
 TEST(LinearAlgebraTest, AddRowPlaintextRow) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -336,8 +329,7 @@ TEST(LinearAlgebraTest, AddRowPlaintextRow) {
 }
 
 TEST(LinearAlgebraTest, AddColPlaintextCol_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -352,8 +344,7 @@ TEST(LinearAlgebraTest, AddColPlaintextCol_InvalidCase) {
 }
 
 TEST(LinearAlgebraTest, AddColPlaintextCol) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -370,8 +361,7 @@ TEST(LinearAlgebraTest, AddColPlaintextCol) {
 }
 
 TEST(LinearAlgebraTest, AddMatrixScalar) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -390,8 +380,7 @@ TEST(LinearAlgebraTest, AddMatrixScalar) {
 }
 
 TEST(LinearAlgebraTest, AddRowScalar) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -409,8 +398,7 @@ TEST(LinearAlgebraTest, AddRowScalar) {
 }
 
 TEST(LinearAlgebraTest, AddColScalar) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -428,8 +416,7 @@ TEST(LinearAlgebraTest, AddColScalar) {
 }
 
 TEST(LinearAlgebraTest, AddMultipleMatrix_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -460,8 +447,7 @@ TEST(LinearAlgebraTest, AddMultipleMatrix_InvalidCase) {
 }
 
 TEST(LinearAlgebraTest, AddMultipleMatrix) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -483,8 +469,7 @@ TEST(LinearAlgebraTest, AddMultipleMatrix) {
 }
 
 TEST(LinearAlgebraTest, AddMultipleRow_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -509,8 +494,7 @@ TEST(LinearAlgebraTest, AddMultipleRow_InvalidCase) {
 }
 
 TEST(LinearAlgebraTest, AddMultipleRow) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -531,8 +515,7 @@ TEST(LinearAlgebraTest, AddMultipleRow) {
 }
 
 TEST(LinearAlgebraTest, AddMultipleCol_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -557,8 +540,7 @@ TEST(LinearAlgebraTest, AddMultipleCol_InvalidCase) {
 }
 
 TEST(LinearAlgebraTest, AddMultipleCol) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -579,8 +561,7 @@ TEST(LinearAlgebraTest, AddMultipleCol) {
 }
 
 TEST(LinearAlgebraTest, MultiplyMatrixScalar) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -598,8 +579,7 @@ TEST(LinearAlgebraTest, MultiplyMatrixScalar) {
 }
 
 TEST(LinearAlgebraTest, MultiplyRowScalar) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -616,8 +596,7 @@ TEST(LinearAlgebraTest, MultiplyRowScalar) {
 }
 
 TEST(LinearAlgebraTest, MultiplyColScalar) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -634,8 +613,7 @@ TEST(LinearAlgebraTest, MultiplyColScalar) {
 }
 
 TEST(LinearAlgebraTest, MultiplyMatrixMatrix_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(8192, THREE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(THREE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x128 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -677,13 +655,10 @@ void test_multiply_matrix_matrix(LinearAlgebra &laInst, int left_dim, int inner_
 }
 
 TEST(LinearAlgebraTest, MultiplyMatrixMatrix) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(8192, THREE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(THREE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x128 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
-
-    double PI = 3.14;
 
     int unit1_width = 8192 / unit1_height;
 
@@ -748,8 +723,7 @@ void test_multiply_row_matrix(LinearAlgebra &laInst, int left_dim, int right_dim
 
 // this test also covers EncryptedMatrix hadamard_multiply(const EncryptedMatrix &mat, const EncryptedColVector &vec);
 TEST(LinearAlgebraTest, MultiplyRowMatrix) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -788,8 +762,7 @@ TEST(LinearAlgebraTest, MultiplyRowMatrix) {
 }
 
 TEST(LinearAlgebraTest, MultiplyMatrixCol_InvalidCase) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -828,15 +801,12 @@ void test_multiply_matrix_col(LinearAlgebra &laInst, int left_dim, int right_dim
 
 // this test also covers EncryptedMatrix hadamard_multiply(const EncryptedRowVector &vec, const EncryptedMatrix &mat);
 TEST(LinearAlgebraTest, MultiplyMatrixCol) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(8192, TWO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(TWO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
 
     int unit1_width = 8192 / unit1_height;
-
-    double PI = 3.14;
 
     // both matrices are exactly the size of the encoding unit
     test_multiply_matrix_col(laInst, unit1_width, unit1_height, 1.0, unit1);
@@ -871,8 +841,7 @@ TEST(LinearAlgebraTest, MultiplyMatrixCol) {
 }
 
 TEST(LinearAlgebraTest, ModDownToMinMatrix) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -893,8 +862,7 @@ TEST(LinearAlgebraTest, ModDownToMinMatrix) {
 }
 
 TEST(LinearAlgebraTest, ModDownToMinRow) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -915,8 +883,7 @@ TEST(LinearAlgebraTest, ModDownToMinRow) {
 }
 
 TEST(LinearAlgebraTest, ModDownToMinCol) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -937,8 +904,7 @@ TEST(LinearAlgebraTest, ModDownToMinCol) {
 }
 
 TEST(LinearAlgebraTest, ModDownToLevelMatrix) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -951,8 +917,7 @@ TEST(LinearAlgebraTest, ModDownToLevelMatrix) {
 }
 
 TEST(LinearAlgebraTest, ModDownToLevelRow) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -965,8 +930,7 @@ TEST(LinearAlgebraTest, ModDownToLevelRow) {
 }
 
 TEST(LinearAlgebraTest, ModDownToLevelCol) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -979,8 +943,7 @@ TEST(LinearAlgebraTest, ModDownToLevelCol) {
 }
 
 TEST(LinearAlgebraTest, RescaleToNextMatrix) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -996,8 +959,7 @@ TEST(LinearAlgebraTest, RescaleToNextMatrix) {
 }
 
 TEST(LinearAlgebraTest, RescaleToNextRow) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -1013,8 +975,7 @@ TEST(LinearAlgebraTest, RescaleToNextRow) {
 }
 
 TEST(LinearAlgebraTest, RescaleToNextCol) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -1053,8 +1014,7 @@ void test_sum_rows(LinearAlgebra &laInst, int height, int width, EncodingUnit &u
 }
 
 TEST(LinearAlgebraTest, SumRows) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -1084,8 +1044,7 @@ void test_sum_rows_many(LinearAlgebra &laInst, int height1, int width1, int heig
 }
 
 TEST(LinearAlgebraTest, SumRowsMany) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ZERO_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -1126,12 +1085,10 @@ void test_sum_cols(LinearAlgebra &laInst, int height, int width, double scalar, 
 }
 
 TEST(LinearAlgebraTest, SumCols) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
-    double PI = 3.14;
     test_sum_cols(laInst, 39, 37, PI, unit1);
     test_sum_cols(laInst, 35, 64, PI, unit1);
     test_sum_cols(laInst, 64, 64, 1, unit1);
@@ -1158,8 +1115,7 @@ void test_sum_cols_many(LinearAlgebra &laInst, int height1, int width1, int heig
 }
 
 TEST(LinearAlgebraTest, SumColsMany) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -1194,8 +1150,7 @@ void test_hadamard_mul_matrix_matrix(LinearAlgebra &laInst, int height, int widt
 }
 
 TEST(LinearAlgebraTest, HadamardMulMatrixMatrix) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -1229,8 +1184,7 @@ void test_hadamard_mul_row_row(LinearAlgebra &laInst, int width, EncodingUnit &u
 }
 
 TEST(LinearAlgebraTest, HadamardMulRowRow) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -1258,8 +1212,7 @@ void test_hadamard_mul_col_col(LinearAlgebra &laInst, int height, EncodingUnit &
 }
 
 TEST(LinearAlgebraTest, HadamardMulColCol) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -1284,8 +1237,7 @@ void test_hadamard_mul_matrix_square(LinearAlgebra &laInst, int height, int widt
 }
 
 TEST(LinearAlgebraTest, HadamardMulMatrixSquare) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -1316,8 +1268,7 @@ void test_hadamard_mul_row_square(LinearAlgebra &laInst, int width, EncodingUnit
 }
 
 TEST(LinearAlgebraTest, HadamardMulRowSquare) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -1343,8 +1294,7 @@ void test_hadamard_mul_col_square(LinearAlgebra &laInst, int height, EncodingUni
 }
 
 TEST(LinearAlgebraTest, HadamardMulColSquare) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit1 = laInst.make_unit(unit1_height);
@@ -1355,8 +1305,7 @@ TEST(LinearAlgebraTest, HadamardMulColSquare) {
 }
 
 TEST(LinearAlgebraTest, ModDownToMin_Matrix) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit = laInst.make_unit(unit1_height);
@@ -1374,8 +1323,7 @@ TEST(LinearAlgebraTest, ModDownToMin_Matrix) {
 }
 
 TEST(LinearAlgebraTest, ModDownToMin_ColVec) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit = laInst.make_unit(unit1_height);
@@ -1393,8 +1341,7 @@ TEST(LinearAlgebraTest, ModDownToMin_ColVec) {
 }
 
 TEST(LinearAlgebraTest, ModDownToMin_RowVec) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit = laInst.make_unit(unit1_height);
@@ -1412,8 +1359,7 @@ TEST(LinearAlgebraTest, ModDownToMin_RowVec) {
 }
 
 TEST(LinearAlgebraTest, ModDownToLevel_Matrix) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit = laInst.make_unit(unit1_height);
@@ -1426,8 +1372,7 @@ TEST(LinearAlgebraTest, ModDownToLevel_Matrix) {
 }
 
 TEST(LinearAlgebraTest, ModDownToLevel_ColVec) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit = laInst.make_unit(unit1_height);
@@ -1440,8 +1385,7 @@ TEST(LinearAlgebraTest, ModDownToLevel_ColVec) {
 }
 
 TEST(LinearAlgebraTest, ModDownToLevel_RowVec) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit = laInst.make_unit(unit1_height);
@@ -1454,8 +1398,7 @@ TEST(LinearAlgebraTest, ModDownToLevel_RowVec) {
 }
 
 TEST(LinearAlgebraTest, RescaleToNext_Matrix) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit = laInst.make_unit(unit1_height);
@@ -1474,8 +1417,7 @@ TEST(LinearAlgebraTest, RescaleToNext_Matrix) {
 }
 
 TEST(LinearAlgebraTest, RescaleToNext_ColVec) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit = laInst.make_unit(unit1_height);
@@ -1494,8 +1436,7 @@ TEST(LinearAlgebraTest, RescaleToNext_ColVec) {
 }
 
 TEST(LinearAlgebraTest, RescaleToNext_RowVec) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra laInst = LinearAlgebra(*ckksInstance);
+    LinearAlgebra laInst = get_la_inst(ONE_MULTI_DEPTH);
 
     int unit1_height = 64;  // a 64x64 encoding unit
     EncodingUnit unit = laInst.make_unit(unit1_height);
