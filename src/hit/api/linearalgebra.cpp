@@ -676,6 +676,8 @@ namespace hit {
         EncodingUnit unit = enc_mat_a_trans.encoding_unit();
 
         // create a mask for the k^th column of A^T, which is the k^th row of A
+        // col_mask is a single encoding unit, which will be replicated for every
+        // vertical unit of the encoding of A^T
         vector<double> col_mask(enc_mat_a_trans.num_slots());
 
         // compute which unit column the desired row is in
@@ -683,6 +685,7 @@ namespace hit {
         // col_in_unit is the column within the encoding unit that contains the masked column
         int col_in_unit = row % unit.encoding_width();
 
+        // create the column mask encoding unit
         for (size_t i = 0; i < enc_mat_a_trans.num_slots(); i++) {
             if (i % unit.encoding_width() == col_in_unit) {
                 col_mask[i] = 1;
