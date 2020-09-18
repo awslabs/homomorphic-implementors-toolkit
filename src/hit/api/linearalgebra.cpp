@@ -70,7 +70,6 @@ namespace hit {
         validateInit();
     }
 
-    // TODO(ubuntu): create validateInit to avoid duplicate.
     EncryptedMatrix::EncryptedMatrix(const std::shared_ptr<seal::SEALContext> &context,
             const protobuf::EncryptedMatrix &encrypted_matrix)
         : height_(encrypted_matrix.height()),
@@ -78,7 +77,7 @@ namespace hit {
           unit(encrypted_matrix.unit()) {
         cts.reserve(encrypted_matrix.cts_size());
         for (int i = 0; i < encrypted_matrix.cts_size(); i++) {
-            protobuf::CiphertextVector proto_ciphertext_vector = encrypted_matrix.cts(i);
+            const protobuf::CiphertextVector &proto_ciphertext_vector = encrypted_matrix.cts(i);
             vector<CKKSCiphertext> ciphertext_vector;
             ciphertext_vector.reserve(proto_ciphertext_vector.cts_size());
             deserializeVector(context, proto_ciphertext_vector, ciphertext_vector);

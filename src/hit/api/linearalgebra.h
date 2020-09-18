@@ -46,7 +46,7 @@ namespace hit {
     struct EncodingUnit {
        public:
         // Returns a EncodingUnit, which is deserialized from protobuf::EncodingUnit.
-        EncodingUnit(const protobuf::EncodingUnit &encoding_unit);
+        explicit EncodingUnit(const protobuf::EncodingUnit &encoding_unit);
         // Returns a protobuf::EncodingUnit, which is serialized from EncodingUnit.
         protobuf::EncodingUnit *serialize() const;
         friend bool operator==(const EncodingUnit &lhs, const EncodingUnit &rhs);
@@ -902,7 +902,7 @@ namespace hit {
          * of matrices, each with the same encoding unit and the same height `f`. Ouptut: An f-dimensional row vector
          * which is sum_cols(A, scalar)+sum_cols(B, scalar)
          */
-        EncryptedRowVector sum_cols_many(const std::vector<EncryptedMatrix> &mats, double scalar = 1);
+        EncryptedRowVector sum_cols_many(const std::vector<EncryptedMatrix> &enc_mats, double scalar = 1);
 
         /* This function enables the use of the sum_rows homomorphism across matrices of incompatibile dimensions.
          * If A is f1-by-g and B is f2-by-g, then sum_rows(A) + sum_rows(B) is a g-dimensional column vector.
@@ -910,7 +910,7 @@ namespace hit {
          * Inputs: A vector of matrices, each with the same encoding unit and the same width `g`.
          * Ouptut: An g-dimensional column vector which is sum_rows(A)+sum_rows(B)
          */
-        EncryptedColVector sum_rows_many(const std::vector<EncryptedMatrix> &mats);
+        EncryptedColVector sum_rows_many(const std::vector<EncryptedMatrix> &enc_mats);
 
         CKKSEvaluator &eval;
 

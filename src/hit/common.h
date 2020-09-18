@@ -67,8 +67,8 @@ namespace hit {
             const protobuf::CiphertextVector &proto_ciphertext_vector,
             std::vector<CKKSCiphertext> &ciphertext_vector) {
         for (int i = 0; i < proto_ciphertext_vector.cts_size(); i++) {
-            protobuf::Ciphertext ciphertext = proto_ciphertext_vector.cts(i);
-            ciphertext_vector.push_back(CKKSCiphertext(context, ciphertext));
+            const protobuf::Ciphertext &ciphertext = proto_ciphertext_vector.cts(i);
+            ciphertext_vector.emplace_back(CKKSCiphertext(context, ciphertext));
         }
     }
 
