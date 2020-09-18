@@ -7,9 +7,9 @@
 
 #include "CKKSInstance.h"
 #include "api/ciphertext.h"
-#include "seal/seal.h"
 #include "hit/protobuf/ciphertext.pb.h"
 #include "hit/protobuf/ciphertext_vector.pb.h"
+#include "seal/seal.h"
 
 #define LOG_VERBOSE 1
 
@@ -64,8 +64,8 @@ namespace hit {
     }
 
     inline void deserializeVector(const std::shared_ptr<seal::SEALContext> &context,
-            const protobuf::CiphertextVector &proto_ciphertext_vector,
-            std::vector<CKKSCiphertext> &ciphertext_vector) {
+                                  const protobuf::CiphertextVector &proto_ciphertext_vector,
+                                  std::vector<CKKSCiphertext> &ciphertext_vector) {
         for (int i = 0; i < proto_ciphertext_vector.cts_size(); i++) {
             const protobuf::Ciphertext &ciphertext = proto_ciphertext_vector.cts(i);
             ciphertext_vector.emplace_back(CKKSCiphertext(context, ciphertext));

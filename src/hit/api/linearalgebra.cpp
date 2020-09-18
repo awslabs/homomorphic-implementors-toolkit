@@ -71,10 +71,8 @@ namespace hit {
     }
 
     EncryptedMatrix::EncryptedMatrix(const std::shared_ptr<seal::SEALContext> &context,
-            const protobuf::EncryptedMatrix &encrypted_matrix)
-        : height_(encrypted_matrix.height()),
-          width_(encrypted_matrix.width()),
-          unit(encrypted_matrix.unit()) {
+                                     const protobuf::EncryptedMatrix &encrypted_matrix)
+        : height_(encrypted_matrix.height()), width_(encrypted_matrix.width()), unit(encrypted_matrix.unit()) {
         cts.reserve(encrypted_matrix.cts_size());
         for (int i = 0; i < encrypted_matrix.cts_size(); i++) {
             const protobuf::CiphertextVector &proto_ciphertext_vector = encrypted_matrix.cts(i);
@@ -268,9 +266,9 @@ namespace hit {
         validateInit();
     }
 
-    EncryptedRowVector::EncryptedRowVector(const std::shared_ptr<seal::SEALContext> &context, const protobuf::EncryptedRowVector &encrypted_row_vector)
-        : width_(encrypted_row_vector.width()),
-          unit(encrypted_row_vector.unit()) {
+    EncryptedRowVector::EncryptedRowVector(const std::shared_ptr<seal::SEALContext> &context,
+                                           const protobuf::EncryptedRowVector &encrypted_row_vector)
+        : width_(encrypted_row_vector.width()), unit(encrypted_row_vector.unit()) {
         cts.reserve(encrypted_row_vector.cts().cts_size());
         deserializeVector(context, encrypted_row_vector.cts(), cts);
         validateInit();
@@ -406,9 +404,9 @@ namespace hit {
         validateInit();
     }
 
-    EncryptedColVector::EncryptedColVector(const std::shared_ptr<seal::SEALContext> &context, const protobuf::EncryptedColVector &encrypted_col_vector)
-        : height_(encrypted_col_vector.height()),
-          unit(encrypted_col_vector.unit()) {
+    EncryptedColVector::EncryptedColVector(const std::shared_ptr<seal::SEALContext> &context,
+                                           const protobuf::EncryptedColVector &encrypted_col_vector)
+        : height_(encrypted_col_vector.height()), unit(encrypted_col_vector.unit()) {
         cts.reserve(encrypted_col_vector.cts().cts_size());
         deserializeVector(context, encrypted_col_vector.cts(), cts);
         validateInit();
