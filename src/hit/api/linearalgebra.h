@@ -40,8 +40,6 @@ namespace hit {
      */
     struct EncodingUnit {
        public:
-        // use `makeUnit` in `LinearAlgebra` to construct an encoding unit
-        EncodingUnit() = default;
         friend bool operator==(const EncodingUnit &lhs, const EncodingUnit &rhs);
         friend bool operator!=(const EncodingUnit &lhs, const EncodingUnit &rhs);
         // height of this encoding unit
@@ -52,6 +50,8 @@ namespace hit {
         EncodingUnit transpose() const;
 
        private:
+        // use `make_unit` in `LinearAlgebra` to construct an encoding unit
+        EncodingUnit() = default;
         EncodingUnit(int encoding_height, int encoding_width);
         // height of the encoding unit
         int encoding_height_ = 0;
