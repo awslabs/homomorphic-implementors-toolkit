@@ -6,6 +6,11 @@
 #include "../CKKSInstance.h"
 #include "ciphertext.h"
 #include "evaluator.h"
+#include "hit/protobuf/encoding_unit.pb.h"
+#include "hit/protobuf/encrypted_col_vector.pb.h"
+#include "hit/protobuf/encrypted_matrix.pb.h"
+#include "hit/protobuf/encrypted_row_vector.pb.h"
+#include "seal/seal.h"
 
 /* The LinearAlgebra API lifts the Evaluator API to linear algebra objects like row/column vectors and matrices.
  * It provides a simple API for performing many common linear algebra tasks, and automatic encoding and decoding
@@ -40,6 +45,10 @@ namespace hit {
      */
     struct EncodingUnit {
        public:
+        // Returns a EncodingUnit, which is deserialized from protobuf::EncodingUnit.
+        explicit EncodingUnit(const protobuf::EncodingUnit &encoding_unit);
+        // Returns a protobuf::EncodingUnit, which is serialized from EncodingUnit.
+        protobuf::EncodingUnit *serialize() const;
         friend bool operator==(const EncodingUnit &lhs, const EncodingUnit &rhs);
         friend bool operator!=(const EncodingUnit &lhs, const EncodingUnit &rhs);
         // height of this encoding unit
@@ -58,6 +67,7 @@ namespace hit {
         // width of the encoding unit
         int encoding_width_ = 0;
         bool initialized() const;
+        void validateInit() const;
 
         friend class LinearAlgebra;
         friend struct EncryptedMatrix;
@@ -102,7 +112,11 @@ namespace hit {
        public:
         // use `encrypt_matrix` in `LinearAlgebra` to construct an encrypted matrix
         EncryptedMatrix() = default;
-
+        // Returns a EncryptedMatrix, which is deserialized from protobuf::EncryptedMatrix.
+        EncryptedMatrix(const std::shared_ptr<seal::SEALContext> &context,
+                        const protobuf::EncryptedMatrix &encrypted_matrix);
+        // Returns a protobuf::EncryptedMatrix, which is serialized from EncryptedMatrix.
+        protobuf::EncryptedMatrix *serialize() const;
         // height of the encrypted matrix
         int height() const;
         // width of the encrypted matrix
@@ -113,7 +127,6 @@ namespace hit {
         int num_horizontal_units() const;
         // encoding unit used to encode this matrix
         EncodingUnit encoding_unit() const;
-
         // number of plaintext slots in the CKKS parameters
         int num_slots() const override;
         // encryption level of this matrix
@@ -128,6 +141,7 @@ namespace hit {
                         const std::vector<std::vector<CKKSCiphertext>> &cts);
 
         bool initialized() const;
+        void validateInit() const;
 
         // height of the encoded matrix
         int height_ = 0;
@@ -197,6 +211,12 @@ namespace hit {
         // use `encrypt_row_vector` in `LinearAlgebra` to construct an encrypted row vector
         EncryptedRowVector() = default;
 
+        // Returns a EncryptedRowVector, which is deserialized from protobuf::EncryptedRowVector.
+        EncryptedRowVector(const std::shared_ptr<seal::SEALContext> &context,
+                           const protobuf::EncryptedRowVector &encrypted_row_vector);
+        // Returns a protobuf::EncryptedRowVector, which is serialized from EncryptedRowVector.
+        protobuf::EncryptedRowVector *serialize() const;
+
         int width() const;
         int num_units() const;
         EncodingUnit encoding_unit() const;
@@ -214,6 +234,7 @@ namespace hit {
         EncryptedRowVector(int width, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts);
 
         bool initialized() const;
+        void validateInit() const;
 
         // width of the encoded matrix
         int width_ = 0;
@@ -269,6 +290,11 @@ namespace hit {
        public:
         // use `encrypt_row_vector` in `LinearAlgebra` to construct an encrypted row vector
         EncryptedColVector() = default;
+        // Returns a EncryptedColVector, which is deserialized from protobuf::EncryptedColVector.
+        EncryptedColVector(const std::shared_ptr<seal::SEALContext> &context,
+                           const protobuf::EncryptedColVector &encrypted_col_vector);
+        // Returns a protobuf::EncryptedColVector, which is serialized from EncryptedColVector.
+        protobuf::EncryptedColVector *serialize() const;
 
         int height() const;
         int num_units() const;
@@ -287,6 +313,7 @@ namespace hit {
         EncryptedColVector(int height, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts);
 
         bool initialized() const;
+        void validateInit() const;
 
         // height of the encoded vector
         int height_ = 0;
@@ -878,7 +905,7 @@ namespace hit {
          * of matrices, each with the same encoding unit and the same height `f`. Ouptut: An f-dimensional row vector
          * which is sum_cols(A, scalar)+sum_cols(B, scalar)
          */
-        EncryptedRowVector sum_cols_many(const std::vector<EncryptedMatrix> &mats, double scalar = 1);
+        EncryptedRowVector sum_cols_many(const std::vector<EncryptedMatrix> &enc_mats, double scalar = 1);
 
         /* This function enables the use of the sum_rows homomorphism across matrices of incompatibile dimensions.
          * If A is f1-by-g and B is f2-by-g, then sum_rows(A) + sum_rows(B) is a g-dimensional column vector.
@@ -886,7 +913,7 @@ namespace hit {
          * Inputs: A vector of matrices, each with the same encoding unit and the same width `g`.
          * Ouptut: An g-dimensional column vector which is sum_rows(A)+sum_rows(B)
          */
-        EncryptedColVector sum_rows_many(const std::vector<EncryptedMatrix> &mats);
+        EncryptedColVector sum_rows_many(const std::vector<EncryptedMatrix> &enc_mats);
 
         CKKSEvaluator &eval;
 

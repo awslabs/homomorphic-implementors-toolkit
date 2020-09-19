@@ -13,9 +13,13 @@ using namespace std;
 namespace hit {
     EncodingUnit::EncodingUnit(int encoding_height, int encoding_width)
         : encoding_height_(encoding_height), encoding_width_(encoding_width) {
-        if (!initialized()) {
-            throw invalid_argument("Encoding unit dimensions must be a power of two.");
-        }
+        validateInit();
+    }
+
+    EncodingUnit::EncodingUnit(const protobuf::EncodingUnit &encoding_unit) {
+        encoding_height_ = encoding_unit.encoding_height();
+        encoding_width_ = encoding_unit.encoding_width();
+        validateInit();
     }
 
     bool operator==(const EncodingUnit &lhs, const EncodingUnit &rhs) {
@@ -34,8 +38,21 @@ namespace hit {
         return encoding_width_;
     }
 
+    protobuf::EncodingUnit *EncodingUnit::serialize() const {
+        auto *encoding_unit = new protobuf::EncodingUnit();
+        encoding_unit->set_encoding_height(encoding_height_);
+        encoding_unit->set_encoding_width(encoding_width_);
+        return encoding_unit;
+    }
+
     bool EncodingUnit::initialized() const {
         return encoding_height_ > 0 && encoding_width_ > 0 && isPow2(encoding_height_) && isPow2(encoding_width_);
+    }
+
+    void EncodingUnit::validateInit() const {
+        if (!initialized()) {
+            throw invalid_argument("Encoding unit dimensions must be a power of two.");
+        }
     }
 
     EncodingUnit EncodingUnit::transpose() const {
@@ -50,9 +67,32 @@ namespace hit {
     EncryptedMatrix::EncryptedMatrix(int height, int width, const EncodingUnit &unit,
                                      const vector<vector<CKKSCiphertext>> &cts)
         : height_(height), width_(width), unit(unit), cts(move(cts)) {
-        if (!initialized()) {
-            throw invalid_argument("Invalid cts to EncryptedMatrix.");
+        validateInit();
+    }
+
+    EncryptedMatrix::EncryptedMatrix(const std::shared_ptr<seal::SEALContext> &context,
+                                     const protobuf::EncryptedMatrix &encrypted_matrix)
+        : height_(encrypted_matrix.height()), width_(encrypted_matrix.width()), unit(encrypted_matrix.unit()) {
+        cts.reserve(encrypted_matrix.cts_size());
+        for (int i = 0; i < encrypted_matrix.cts_size(); i++) {
+            const protobuf::CiphertextVector &proto_ciphertext_vector = encrypted_matrix.cts(i);
+            vector<CKKSCiphertext> ciphertext_vector;
+            ciphertext_vector.reserve(proto_ciphertext_vector.cts_size());
+            deserializeVector(context, proto_ciphertext_vector, ciphertext_vector);
+            cts.push_back(ciphertext_vector);
         }
+        validateInit();
+    }
+
+    protobuf::EncryptedMatrix *EncryptedMatrix::serialize() const {
+        auto *encrypted_matrix = new protobuf::EncryptedMatrix();
+        encrypted_matrix->set_height(height_);
+        encrypted_matrix->set_width(width_);
+        encrypted_matrix->set_allocated_unit(unit.serialize());
+        for (const auto &ciphertext_vector : cts) {
+            encrypted_matrix->mutable_cts()->AddAllocated(serializeVector(ciphertext_vector));
+        }
+        return encrypted_matrix;
     }
 
     EncodingUnit EncryptedMatrix::encoding_unit() const {
@@ -148,6 +188,12 @@ namespace hit {
         return unit.initialized() && num_vertical_units() == cts.size() && num_horizontal_units() == cts[0].size();
     }
 
+    void EncryptedMatrix::validateInit() const {
+        if (!initialized()) {
+            throw invalid_argument("Invalid cts to EncryptedMatrix.");
+        }
+    }
+
     size_t EncryptedMatrix::num_cts() const {
         return cts.size() * cts[0].size();
     }
@@ -217,9 +263,23 @@ namespace hit {
 
     EncryptedRowVector::EncryptedRowVector(int width, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts)
         : width_(width), unit(unit), cts(cts) {
-        if (!initialized()) {
-            throw invalid_argument("Invalid cts to EncryptedRowVector.");
-        }
+        validateInit();
+    }
+
+    EncryptedRowVector::EncryptedRowVector(const std::shared_ptr<seal::SEALContext> &context,
+                                           const protobuf::EncryptedRowVector &encrypted_row_vector)
+        : width_(encrypted_row_vector.width()), unit(encrypted_row_vector.unit()) {
+        cts.reserve(encrypted_row_vector.cts().cts_size());
+        deserializeVector(context, encrypted_row_vector.cts(), cts);
+        validateInit();
+    }
+
+    protobuf::EncryptedRowVector *EncryptedRowVector::serialize() const {
+        auto *encrypted_row_vector = new protobuf::EncryptedRowVector();
+        encrypted_row_vector->set_width(width_);
+        encrypted_row_vector->set_allocated_unit(unit.serialize());
+        encrypted_row_vector->set_allocated_cts(serializeVector(cts));
+        return encrypted_row_vector;
     }
 
     int EncryptedRowVector::width() const {
@@ -290,6 +350,12 @@ namespace hit {
         return unit.initialized() && num_units() == cts.size();
     }
 
+    void EncryptedRowVector::validateInit() const {
+        if (!initialized()) {
+            throw invalid_argument("Invalid cts to EncryptedRowVector.");
+        }
+    }
+
     size_t EncryptedRowVector::num_cts() const {
         return cts.size();
     }
@@ -335,9 +401,23 @@ namespace hit {
 
     EncryptedColVector::EncryptedColVector(int height, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts)
         : height_(height), unit(unit), cts(cts) {
-        if (!initialized()) {
-            throw invalid_argument("Invalid cts to EncryptedColVector.");
-        }
+        validateInit();
+    }
+
+    EncryptedColVector::EncryptedColVector(const std::shared_ptr<seal::SEALContext> &context,
+                                           const protobuf::EncryptedColVector &encrypted_col_vector)
+        : height_(encrypted_col_vector.height()), unit(encrypted_col_vector.unit()) {
+        cts.reserve(encrypted_col_vector.cts().cts_size());
+        deserializeVector(context, encrypted_col_vector.cts(), cts);
+        validateInit();
+    }
+
+    protobuf::EncryptedColVector *EncryptedColVector::serialize() const {
+        auto *encrypted_col_vector = new protobuf::EncryptedColVector();
+        encrypted_col_vector->set_height(height_);
+        encrypted_col_vector->set_allocated_unit(unit.serialize());
+        encrypted_col_vector->set_allocated_cts(serializeVector(cts));
+        return encrypted_col_vector;
     }
 
     EncodingUnit EncryptedColVector::encoding_unit() const {
@@ -406,6 +486,12 @@ namespace hit {
          *   - all cts hav ethe same he_level
          */
         return unit.initialized() && num_units() == cts.size();
+    }
+
+    void EncryptedColVector::validateInit() const {
+        if (!initialized()) {
+            throw invalid_argument("Invalid cts to EncryptedColVector.");
+        }
     }
 
     size_t EncryptedColVector::num_cts() const {
