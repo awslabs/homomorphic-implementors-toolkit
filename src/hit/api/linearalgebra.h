@@ -6,10 +6,10 @@
 #include "../CKKSInstance.h"
 #include "ciphertext.h"
 #include "evaluator.h"
-#include "hit/protobuf/encoding_unit.pb.h"         // NOLINT
-#include "hit/protobuf/encrypted_col_vector.pb.h"  // NOLINT
-#include "hit/protobuf/encrypted_matrix.pb.h"      // NOLINT
-#include "hit/protobuf/encrypted_row_vector.pb.h"  // NOLINT
+#include "hit/protobuf/encoding_unit.pb.h"
+#include "hit/protobuf/encrypted_col_vector.pb.h"
+#include "hit/protobuf/encrypted_matrix.pb.h"
+#include "hit/protobuf/encrypted_row_vector.pb.h"
 #include "seal/seal.h"
 
 /* The LinearAlgebra API lifts the Evaluator API to linear algebra objects like row/column vectors and matrices.
