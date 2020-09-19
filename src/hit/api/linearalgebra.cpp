@@ -89,7 +89,7 @@ namespace hit {
         encrypted_matrix->set_height(height_);
         encrypted_matrix->set_width(width_);
         encrypted_matrix->set_allocated_unit(unit.serialize());
-        for (auto &ciphertext_vector : cts) {
+        for (const auto &ciphertext_vector : cts) {
             encrypted_matrix->mutable_cts()->AddAllocated(serializeVector(ciphertext_vector));
         }
         return encrypted_matrix;
