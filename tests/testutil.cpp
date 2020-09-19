@@ -2,6 +2,7 @@
 #include "testutil.h"
 
 using namespace std;
+using namespace hit;
 
 uint32_t createRandomPositiveInt(const int mod) {
     srand(time(nullptr));
@@ -19,4 +20,14 @@ vector<double> randomVector(int dim, double maxNorm) {
         x.push_back(a);
     }
     return x;
+}
+
+const int max_vec_norm = 10;
+
+Vector random_vec(int size) {
+    return Vector(randomVector(size, max_vec_norm));
+}
+
+Matrix random_mat(int height, int width) {
+    return Matrix(height, width, randomVector(height * width, max_vec_norm));
 }

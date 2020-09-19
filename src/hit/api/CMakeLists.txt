@@ -7,7 +7,6 @@ target_sources(aws_hit_obj
         ${CMAKE_CURRENT_LIST_DIR}/decryptor.cpp
         ${CMAKE_CURRENT_LIST_DIR}/encryptor.cpp
         ${CMAKE_CURRENT_LIST_DIR}/evaluator.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/linearalgebra.cpp
 )
 
 install(
@@ -16,10 +15,10 @@ install(
         ${CMAKE_CURRENT_LIST_DIR}/decryptor.h
         ${CMAKE_CURRENT_LIST_DIR}/encryptor.h
         ${CMAKE_CURRENT_LIST_DIR}/evaluator.h
-        ${CMAKE_CURRENT_LIST_DIR}/linearalgebra.h
         ${CMAKE_CURRENT_LIST_DIR}/metadata.h
     DESTINATION
         ${HIT_INCLUDES_INSTALL_DIR}/api
 )
 
 add_subdirectory(evaluator)
+add_subdirectory(linearalgebra)
