@@ -1,11 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hit/api/linearalgebra.h"
+#include "hit/api/linearalgebra/linearalgebra.h"
 
 #include <iostream>
 
-#include "../testutil.h"
+#include "../../testutil.h"
 #include "gtest/gtest.h"
 #include "hit/CKKSInstance.h"
 #include "hit/api/ciphertext.h"
@@ -15,7 +15,6 @@
 using namespace std;
 using namespace hit;
 
-const int max_vec_norm = 10;
 const int NUM_OF_SLOTS = 4096;
 const int ZERO_MULTI_DEPTH = 0;
 const int ONE_MULTI_DEPTH = 1;
@@ -24,67 +23,10 @@ const int THREE_MULTI_DEPTH = 3;
 const int LOG_SCALE = 45;
 const double PI = 3.14;
 
-Matrix random_mat(int height, int width) {
-    return Matrix(height, width, randomVector(height * width, max_vec_norm));
-}
-
-Vector random_vec(int size) {
-    return Vector(randomVector(size, max_vec_norm));
-}
-
 void test_encrypt_matrix(LinearAlgebra &laInst, int mat_height, int mat_width, EncodingUnit &unit) {
     Matrix plaintext = random_mat(mat_height, mat_width);
     EncryptedMatrix ciphertext = laInst.encrypt_matrix(plaintext, unit);
     Matrix output = laInst.decrypt(ciphertext);
-    ASSERT_LT(diff2Norm(plaintext.data(), output.data()), MAX_NORM);
-}
-
-TEST(LinearAlgebraTest, EncodingUnit_Serialization) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    int unit1_height = 64;
-    auto laInst = LinearAlgebra(*ckksInstance);
-    EncodingUnit unit1 = laInst.make_unit(unit1_height);
-    EncodingUnit unit2 = EncodingUnit(*unit1.serialize());
-    ASSERT_EQ(unit1, unit2);
-}
-
-TEST(LinearAlgebraTest, EncryptMatrix_Serialization) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    auto laInst = LinearAlgebra(*ckksInstance);
-    EncodingUnit unit1 = laInst.make_unit(64);
-    Matrix plaintext = random_mat(64, 64);
-    EncryptedMatrix ct1 = laInst.encrypt_matrix(plaintext, unit1);
-    EncryptedMatrix ct2 = EncryptedMatrix(ckksInstance->context, *ct1.serialize());
-    ASSERT_EQ(ct1.height(), ct2.height());
-    ASSERT_EQ(ct1.width(), ct2.width());
-    ASSERT_EQ(ct1.encoding_unit(), ct2.encoding_unit());
-    Matrix output = laInst.decrypt(ct2);
-    ASSERT_LT(diff2Norm(plaintext.data(), output.data()), MAX_NORM);
-}
-
-TEST(LinearAlgebraTest, EncryptedColVector_Serialization) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    auto laInst = LinearAlgebra(*ckksInstance);
-    EncodingUnit unit1 = laInst.make_unit(64);
-    Vector plaintext = random_vec(64);
-    EncryptedColVector ct1 = laInst.encrypt_col_vector(plaintext, unit1);
-    EncryptedColVector ct2 = EncryptedColVector(ckksInstance->context, *ct1.serialize());
-    ASSERT_EQ(ct1.height(), ct2.height());
-    ASSERT_EQ(ct1.encoding_unit(), ct2.encoding_unit());
-    Vector output = laInst.decrypt(ct2);
-    ASSERT_LT(diff2Norm(plaintext.data(), output.data()), MAX_NORM);
-}
-
-TEST(LinearAlgebraTest, EncryptedRowVector_Serialization) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    auto laInst = LinearAlgebra(*ckksInstance);
-    EncodingUnit unit1 = laInst.make_unit(64);
-    Vector plaintext = random_vec(64);
-    EncryptedRowVector ct1 = laInst.encrypt_row_vector(plaintext, unit1);
-    EncryptedRowVector ct2 = EncryptedRowVector(ckksInstance->context, *ct1.serialize());
-    ASSERT_EQ(ct1.width(), ct2.width());
-    ASSERT_EQ(ct1.encoding_unit(), ct2.encoding_unit());
-    Vector output = laInst.decrypt(ct2);
     ASSERT_LT(diff2Norm(plaintext.data(), output.data()), MAX_NORM);
 }
 
