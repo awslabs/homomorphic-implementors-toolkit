@@ -72,11 +72,11 @@ add_subdirectory(protobuf)
 
 # Enable tooling.
 # clang-tidy and clang-format are used to provide some warnings for developer reference during development.
-option(CMake_RUN_HIT_CODE_FORMAT "Run clang-format in place." OFF)
+option(HIT_RUN_CLANG_FORMAT "Run clang-format and apply changes to source code." OFF)
 if (CMake_RUN_HIT_CODE_FORMAT)
     enable_hit_code_format()
 endif ()
-option(CMake_RUN_CLANG_TIDY "Run clang-tidy with the compiler." OFF)
+option(HIT_RUN_CLANG_TIDY "Run clang-tidy with the compiler." OFF)
 if (CMake_RUN_CLANG_TIDY)
     enable_clang_tidy()
 endif ()
@@ -122,8 +122,8 @@ export(TARGETS aws-hit FILE ${HIT_TARGETS_FILENAME})
 #########
 
 # Build HIT test code if enabled.
-option(BUILD_HIT_TESTING "Build the unit tests." ON)
-if (BUILD_HIT_TESTING)
+option(HIT_BUILD_TESTS "Build the unit tests." OFF)
+if (HIT_BUILD_TESTS)
     enable_testing()
     add_subdirectory(${HIT_TESTS_DIR})
 endif ()
@@ -133,7 +133,7 @@ endif ()
 ###############
 
 # Build code in the `examples` directory if enabled.
-option(BUILD_HIT_EXAMPLES "Build HIT example/demo code." OFF)
-if (BUILD_HIT_EXAMPLES)
+option(HIT_BUILD_EXAMPLES "Build HIT example/demo code." OFF)
+if (HIT_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif ()

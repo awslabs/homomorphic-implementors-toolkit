@@ -4,5 +4,5 @@
 
 if [ -d build ]; then rm -Rf build; fi
 mkdir -p build && cd build
-cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DCMake_RUN_HIT_CODE_FORMAT=ON ../
+cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DHIT_RUN_CLANG_FORMAT=ON -DHIT_BUILD_TESTS=ON../
 ninja -j $(nproc)

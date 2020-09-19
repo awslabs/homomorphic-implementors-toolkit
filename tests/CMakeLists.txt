@@ -15,11 +15,11 @@ add_executable(hit-unit-test ${HIT_TEST_FILES})
 target_link_libraries(hit-unit-test PUBLIC aws-hit gtest gtest_main)
 set_common_flags(hit-unit-test)
 
-add_test(NAME hit-unit-test COMMAND hit-unit-test)
-add_custom_command(
-        TARGET hit-unit-test
-        COMMENT "Run unit tests in ${CMAKE_BINARY_DIR}"
-        POST_BUILD
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIGURATION> -R "^hit-unit-test$" --output-on-failures
-)
+add_custom_target(NAME hit-unit-test COMMAND hit-unit-test)
+
+add_custom_target(
+  run_hit_tests
+  COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/hit-unit-test
+  WORKING_DIRECTORY ${HELR_ROOT_DIR}
+  DEPENDS hit-unit-test
+  USES_TERMINAL)
