@@ -85,9 +85,9 @@ namespace hit {
 
         void print_stats(const CKKSCiphertext &ct);
         void update_max_log_scale(const CKKSCiphertext &ct);
-        double estimatedMaxLogScale;
         const double baseScale;
-        int poly_deg;
+        const int poly_deg;
+        double estimatedMaxLogScale;
 
         friend class DebugEval;
     };

@@ -20,17 +20,20 @@ namespace hit {
     }
 
     void OpCount::reset_internal() {
-        multiplies = 0;
-        additions = 0;
-        negations = 0;
-        rotations = 0;
-        modDowns = 0;
-        modDownMuls = 0;
-
+        {
+            scoped_lock lock(mutex_);
+            multiplies = 0;
+            additions = 0;
+            negations = 0;
+            rotations = 0;
+            modDowns = 0;
+            modDownMuls = 0;
+        }
         dfEval->reset_internal();
     }
 
     void OpCount::print_op_count() const {
+        shared_lock lock(mutex_);
         LOG(INFO) << "Multiplications: " << multiplies;
         LOG(INFO) << "ModDownMuls: " << modDownMuls;
         LOG(INFO) << "Additions: " << additions;
@@ -44,75 +47,81 @@ namespace hit {
     }
 
     void OpCount::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
-        rotations++;
+        count_rotation_ops();
         dfEval->rotate_right_inplace_internal(ct, steps);
     }
 
     void OpCount::rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) {
-        rotations++;
+        count_rotation_ops();
         dfEval->rotate_left_inplace_internal(ct, steps);
     }
 
     void OpCount::negate_inplace_internal(CKKSCiphertext &ct) {
-        negations++;
+        {
+            scoped_lock lock(mutex_);
+            negations++;
+        }
         dfEval->negate_inplace_internal(ct);
     }
 
     void OpCount::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        additions++;
+        count_addition_ops();
         dfEval->add_inplace_internal(ct1, ct2);
     }
 
     void OpCount::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        additions++;
+        count_addition_ops();
         dfEval->add_plain_inplace_internal(ct, scalar);
     }
 
     void OpCount::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        additions++;
+        count_addition_ops();
         dfEval->add_plain_inplace_internal(ct, plain);
     }
 
     void OpCount::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        additions++;
+        count_addition_ops();
         dfEval->sub_inplace_internal(ct1, ct2);
     }
 
     void OpCount::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        additions++;
+        count_addition_ops();
         dfEval->sub_plain_inplace_internal(ct, scalar);
     }
 
     void OpCount::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        additions++;
+        count_addition_ops();
         dfEval->sub_plain_inplace_internal(ct, plain);
     }
 
     void OpCount::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        multiplies++;
+        count_multiple_ops();
         dfEval->multiply_inplace_internal(ct1, ct2);
     }
 
     void OpCount::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        multiplies++;
+        count_multiple_ops();
         dfEval->multiply_plain_inplace_internal(ct, scalar);
     }
 
     void OpCount::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        multiplies++;
+        count_multiple_ops();
         dfEval->multiply_plain_inplace_internal(ct, plain);
     }
 
     void OpCount::square_inplace_internal(CKKSCiphertext &ct) {
-        multiplies++;
+        count_multiple_ops();
         dfEval->square_inplace_internal(ct);
     }
 
     void OpCount::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
-        if (ct.he_level() - level > 0) {
-            modDowns++;
+        {
+            scoped_lock lock(mutex_);
+            if (ct.he_level() - level > 0) {
+                modDowns++;
+            }
+            modDownMuls += (ct.he_level() - level);
         }
-        modDownMuls += (ct.he_level() - level);
         dfEval->mod_down_to_level_inplace_internal(ct, level);
     }
 

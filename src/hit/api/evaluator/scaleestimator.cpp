@@ -34,10 +34,13 @@ namespace hit {
     }
 
     void ScaleEstimator::reset_internal() {
-        estimatedMaxLogScale = PLAINTEXT_LOG_MAX - 60;
-        auto context_data = context->first_context_data();
-        for (const auto &prime : context_data->parms().coeff_modulus()) {
-            estimatedMaxLogScale += log2(prime.value());
+        {
+            scoped_lock lock(mutex_);
+            estimatedMaxLogScale = PLAINTEXT_LOG_MAX - 60;
+            auto context_data = context->first_context_data();
+            for (const auto &prime : context_data->parms().coeff_modulus()) {
+                estimatedMaxLogScale += log2(prime.value());
+            }
         }
         ptEval->reset_internal();
         dfEval->reset_internal();
@@ -81,7 +84,10 @@ namespace hit {
         }
         if (scaleExp > ct.he_level()) {
             auto estimated_scale = (PLAINTEXT_LOG_MAX - log2(lInfNorm(ct.raw_pt.data()))) / (scaleExp - ct.he_level());
-            estimatedMaxLogScale = min(estimatedMaxLogScale, estimated_scale);
+            {
+                scoped_lock lock(mutex_);
+                estimatedMaxLogScale = min(estimatedMaxLogScale, estimated_scale);
+            }
         } else if (scaleExp == ct.he_level() && log2(lInfNorm(ct.raw_pt.data())) > PLAINTEXT_LOG_MAX) {
             stringstream buffer;
             buffer << "Plaintext exceeded " << PLAINTEXT_LOG_MAX
@@ -247,7 +253,10 @@ namespace hit {
         // and if the scale is ~2^60, encoding will (rightly) fail
         int topHELevel = context->first_context_data()->chain_index();
         if (topHELevel == 0) {
-            estimatedMaxLogScale = min(estimatedMaxLogScale, PLAINTEXT_LOG_MAX - log2(x));
+            {
+                scoped_lock lock(mutex_);
+                estimatedMaxLogScale = min(estimatedMaxLogScale, PLAINTEXT_LOG_MAX - log2(x));
+            }
         }
     }
 
@@ -269,7 +278,11 @@ namespace hit {
         int maxModBits = polyDegreeToMaxModBits(poly_deg);
         int topHELevel = context->first_context_data()->chain_index();
 
-        double estimated_log_scale = min(static_cast<double>(PLAINTEXT_LOG_MAX), estimatedMaxLogScale);
+        auto estimated_log_scale = static_cast<double>(PLAINTEXT_LOG_MAX);
+        {
+            shared_lock lock(mutex_);
+            estimated_log_scale = min(estimated_log_scale, estimatedMaxLogScale);
+        }
         if (topHELevel > 0) {
             return min(estimated_log_scale, (maxModBits - 120) / static_cast<double>(topHELevel));
         }

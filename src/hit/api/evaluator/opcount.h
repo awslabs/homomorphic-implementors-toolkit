@@ -73,6 +73,21 @@ namespace hit {
         int modDowns = 0;
         int modDownMuls = 0;
 
+        inline void count_multiple_ops() {
+            std::scoped_lock lock(mutex_);
+            multiplies++;
+        }
+
+        inline void count_addition_ops() {
+            std::scoped_lock lock(mutex_);
+            additions++;
+        }
+
+        inline void count_rotation_ops() {
+            std::scoped_lock lock(mutex_);
+            rotations++;
+        }
+
         DepthFinder *dfEval;
     };
 }  // namespace hit

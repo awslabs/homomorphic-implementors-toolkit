@@ -18,7 +18,10 @@ namespace hit {
     DepthFinder::~DepthFinder() = default;
 
     void DepthFinder::reset_internal() {
-        multiplicativeDepth = 0;
+        {
+            scoped_lock lock(mutex_);
+            multiplicativeDepth = 0;
+        }
     }
 
     // print some debug info
@@ -124,7 +127,10 @@ namespace hit {
          *     0-positive is never larger than the base multiplicativeDepth of 0. Instead,
          *     we use the outer `max` to account for explicitly-leveled ciphertexts.
          */
-        multiplicativeDepth = max(max(multiplicativeDepth, topHELevel - ct.he_level()), ct.he_level() + 1);
+        {
+            scoped_lock lock(mutex_);
+            multiplicativeDepth = max(max(multiplicativeDepth, topHELevel - ct.he_level()), ct.he_level() + 1);
+        }
         print_stats(ct);
     }
 
@@ -132,6 +138,7 @@ namespace hit {
     }
 
     int DepthFinder::get_multiplicative_depth() const {
+        shared_lock lock(mutex_);
         return multiplicativeDepth;
     }
 }  // namespace hit
