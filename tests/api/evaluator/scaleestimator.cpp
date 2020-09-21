@@ -26,187 +26,187 @@ const int STEPS = 1;
 const vector<double> VECTOR_1(NUM_OF_SLOTS, VALUE);
 
 TEST(ScaleEstimatorTest, RotateLeft) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
+    CKKSInstance *ckks_instance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
-    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
-    double estimatedMaxLogScale = ckksInstance->get_estimated_max_log_scale();
-    ciphertext2 = ckksInstance->evaluator->rotate_left(ciphertext1, STEPS);
+    ciphertext1 = ckks_instance->encrypt(VECTOR_1);
+    double estimatedMaxLogScale = ckks_instance->get_estimated_max_log_scale();
+    ciphertext2 = ckks_instance->evaluator->rotate_left(ciphertext1, STEPS);
     // Expect estimatedMaxLogScale does not change.
-    ASSERT_EQ(estimatedMaxLogScale, ckksInstance->get_estimated_max_log_scale());
+    ASSERT_EQ(estimatedMaxLogScale, ckks_instance->get_estimated_max_log_scale());
     ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext2.he_level());
     ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE), ciphertext2.scale());
 }
 
 TEST(ScaleEstimatorTest, RotateRight) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
+    CKKSInstance *ckks_instance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
-    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
-    double estimatedMaxLogScale = ckksInstance->get_estimated_max_log_scale();
-    ciphertext2 = ckksInstance->evaluator->rotate_right(ciphertext1, STEPS);
+    ciphertext1 = ckks_instance->encrypt(VECTOR_1);
+    double estimatedMaxLogScale = ckks_instance->get_estimated_max_log_scale();
+    ciphertext2 = ckks_instance->evaluator->rotate_right(ciphertext1, STEPS);
     // Expect estimatedMaxLogScale does not change.
-    ASSERT_EQ(estimatedMaxLogScale, ckksInstance->get_estimated_max_log_scale());
+    ASSERT_EQ(estimatedMaxLogScale, ckks_instance->get_estimated_max_log_scale());
     ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext2.he_level());
     ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE), ciphertext2.scale());
 }
 
 TEST(ScaleEstimatorTest, Negate) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
+    CKKSInstance *ckks_instance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
-    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
-    double estimatedMaxLogScale = ckksInstance->get_estimated_max_log_scale();
-    ciphertext2 = ckksInstance->evaluator->negate(ciphertext1);
+    ciphertext1 = ckks_instance->encrypt(VECTOR_1);
+    double estimatedMaxLogScale = ckks_instance->get_estimated_max_log_scale();
+    ciphertext2 = ckks_instance->evaluator->negate(ciphertext1);
     // Expect estimatedMaxLogScale does not change.
-    ASSERT_EQ(estimatedMaxLogScale, ckksInstance->get_estimated_max_log_scale());
+    ASSERT_EQ(estimatedMaxLogScale, ckks_instance->get_estimated_max_log_scale());
     ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext2.he_level());
     ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE), ciphertext2.scale());
 }
 
 TEST(ScaleEstimatorTest, AddPlaintext) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
+    CKKSInstance *ckks_instance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
-    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
-    ciphertext2 = ckksInstance->evaluator->add_plain(ciphertext1, VECTOR_1);
+    ciphertext1 = ckks_instance->encrypt(VECTOR_1);
+    ciphertext2 = ckks_instance->evaluator->add_plain(ciphertext1, VECTOR_1);
     // Expect estimatedMaxLogScale is changed.
-    double estimatedMaxLogScale = PLAINTEXT_LOG_MAX - log2(VALUE + lInfNorm(VECTOR_1));
-    ASSERT_EQ(estimatedMaxLogScale, ckksInstance->get_estimated_max_log_scale());
+    double estimatedMaxLogScale = PLAINTEXT_LOG_MAX - log2(VALUE + l_inf_norm(VECTOR_1));
+    ASSERT_EQ(estimatedMaxLogScale, ckks_instance->get_estimated_max_log_scale());
     ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext2.he_level());
     ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE), ciphertext2.scale());
 }
 
 TEST(ScaleEstimatorTest, AddPlainScalar) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
+    CKKSInstance *ckks_instance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
-    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
-    ciphertext2 = ckksInstance->evaluator->add_plain(ciphertext1, PLAIN_TEXT);
+    ciphertext1 = ckks_instance->encrypt(VECTOR_1);
+    ciphertext2 = ckks_instance->evaluator->add_plain(ciphertext1, PLAIN_TEXT);
     // Expect estimatedMaxLogScale is changed.
     double estimatedMaxLogScale = PLAINTEXT_LOG_MAX - log2(VALUE + PLAIN_TEXT);
-    ASSERT_EQ(estimatedMaxLogScale, ckksInstance->get_estimated_max_log_scale());
+    ASSERT_EQ(estimatedMaxLogScale, ckks_instance->get_estimated_max_log_scale());
     ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext2.he_level());
     ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE), ciphertext2.scale());
 }
 
 TEST(ScaleEstimatorTest, Add) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
+    CKKSInstance *ckks_instance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
-    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
-    ciphertext2 = ckksInstance->encrypt(VECTOR_1);
-    ciphertext3 = ckksInstance->evaluator->add(ciphertext1, ciphertext2);
+    ciphertext1 = ckks_instance->encrypt(VECTOR_1);
+    ciphertext2 = ckks_instance->encrypt(VECTOR_1);
+    ciphertext3 = ckks_instance->evaluator->add(ciphertext1, ciphertext2);
     // Expect estimatedMaxLogScale is changed.
     double estimatedMaxLogScale = PLAINTEXT_LOG_MAX - log2(VALUE + VALUE);
-    ASSERT_EQ(estimatedMaxLogScale, ckksInstance->get_estimated_max_log_scale());
+    ASSERT_EQ(estimatedMaxLogScale, ckks_instance->get_estimated_max_log_scale());
     ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext2.he_level());
     ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE), ciphertext2.scale());
 }
 
 TEST(ScaleEstimatorTest, SubPlaintext) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
-    vector<double> randomVector1 = randomVector(NUM_OF_SLOTS, VALUE);
-    vector<double> randomVector2 = randomVector(NUM_OF_SLOTS, VALUE);
+    CKKSInstance *ckks_instance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
+    vector<double> randomVector1 = random_vector(NUM_OF_SLOTS, VALUE);
+    vector<double> randomVector2 = random_vector(NUM_OF_SLOTS, VALUE);
     CKKSCiphertext ciphertext1, ciphertext2;
-    ciphertext1 = ckksInstance->encrypt(randomVector1);
-    ciphertext2 = ckksInstance->evaluator->sub_plain(ciphertext1, randomVector2);
+    ciphertext1 = ckks_instance->encrypt(randomVector1);
+    ciphertext2 = ckks_instance->evaluator->sub_plain(ciphertext1, randomVector2);
     // Expect estimatedMaxLogScale is changed.
     vector<double> result(NUM_OF_SLOTS);
     transform(randomVector1.begin(), randomVector1.end(), randomVector2.begin(), result.begin(), minus<>());
-    double maxlInf = max(lInfNorm(result), lInfNorm(randomVector1));
+    double maxlInf = max(l_inf_norm(result), l_inf_norm(randomVector1));
     double estimatedMaxLogScale = PLAINTEXT_LOG_MAX - log2(maxlInf);
-    ASSERT_EQ(estimatedMaxLogScale, ckksInstance->get_estimated_max_log_scale());
+    ASSERT_EQ(estimatedMaxLogScale, ckks_instance->get_estimated_max_log_scale());
     ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext2.he_level());
     ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE), ciphertext2.scale());
 }
 
 TEST(ScaleEstimatorTest, SubPlainScalar) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
-    vector<double> randomVector1 = randomVector(NUM_OF_SLOTS, VALUE);
+    CKKSInstance *ckks_instance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
+    vector<double> randomVector1 = random_vector(NUM_OF_SLOTS, VALUE);
     CKKSCiphertext ciphertext1, ciphertext2;
-    ciphertext1 = ckksInstance->encrypt(randomVector1);
-    ciphertext2 = ckksInstance->evaluator->sub_plain(ciphertext1, VALUE);
+    ciphertext1 = ckks_instance->encrypt(randomVector1);
+    ciphertext2 = ckks_instance->evaluator->sub_plain(ciphertext1, VALUE);
     vector<double> result(NUM_OF_SLOTS);
     transform(randomVector1.begin(), randomVector1.end(), VECTOR_1.begin(), result.begin(), minus<>());
     // Expect estimatedMaxLogScale is changed.
-    double maxlInf = max(lInfNorm(result), lInfNorm(randomVector1));
+    double maxlInf = max(l_inf_norm(result), l_inf_norm(randomVector1));
     double estimatedMaxLogScale = PLAINTEXT_LOG_MAX - log2(maxlInf);
-    ASSERT_EQ(estimatedMaxLogScale, ckksInstance->get_estimated_max_log_scale());
+    ASSERT_EQ(estimatedMaxLogScale, ckks_instance->get_estimated_max_log_scale());
     ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext2.he_level());
     ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE), ciphertext2.scale());
 }
 
 TEST(ScaleEstimatorTest, Sub) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
-    vector<double> randomVector1 = randomVector(NUM_OF_SLOTS, VALUE);
-    vector<double> randomVector2 = randomVector(NUM_OF_SLOTS, VALUE);
+    CKKSInstance *ckks_instance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH);
+    vector<double> randomVector1 = random_vector(NUM_OF_SLOTS, VALUE);
+    vector<double> randomVector2 = random_vector(NUM_OF_SLOTS, VALUE);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
-    ciphertext1 = ckksInstance->encrypt(randomVector1);
-    ciphertext2 = ckksInstance->encrypt(randomVector2);
-    ciphertext3 = ckksInstance->evaluator->sub(ciphertext1, ciphertext2);
+    ciphertext1 = ckks_instance->encrypt(randomVector1);
+    ciphertext2 = ckks_instance->encrypt(randomVector2);
+    ciphertext3 = ckks_instance->evaluator->sub(ciphertext1, ciphertext2);
     vector<double> result(NUM_OF_SLOTS);
     transform(randomVector1.begin(), randomVector1.end(), randomVector2.begin(), result.begin(), minus<>());
     // Expect estimatedMaxLogScale is changed.
-    double maxlInf = max(max(lInfNorm(result), lInfNorm(randomVector1)), lInfNorm(randomVector2));
+    double maxlInf = max(max(l_inf_norm(result), l_inf_norm(randomVector1)), l_inf_norm(randomVector2));
     double estimatedMaxLogScale = PLAINTEXT_LOG_MAX - log2(maxlInf);
-    ASSERT_EQ(estimatedMaxLogScale, ckksInstance->get_estimated_max_log_scale());
+    ASSERT_EQ(estimatedMaxLogScale, ckks_instance->get_estimated_max_log_scale());
     ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext2.he_level());
     ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE), ciphertext2.scale());
 }
 
 TEST(ScaleEstimatorTest, MultiplyPlainScalar) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
+    CKKSInstance *ckks_instance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
-    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
-    ciphertext2 = ckksInstance->evaluator->multiply_plain(ciphertext1, PLAIN_TEXT);
+    ciphertext1 = ckks_instance->encrypt(VECTOR_1);
+    ciphertext2 = ckks_instance->evaluator->multiply_plain(ciphertext1, PLAIN_TEXT);
     // Expect estimatedMaxLogScale is changed.
     double estimatedMaxLogScale = PLAINTEXT_LOG_MAX - log2(VALUE * PLAIN_TEXT);
-    ASSERT_EQ(estimatedMaxLogScale, ckksInstance->get_estimated_max_log_scale());
+    ASSERT_EQ(estimatedMaxLogScale, ckks_instance->get_estimated_max_log_scale());
     ASSERT_EQ(ONE_MULTI_DEPTH, ciphertext2.he_level());
     ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2), ciphertext2.scale());
 }
 
 TEST(ScaleEstimatorTest, MultiplyPlainMattrix) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
+    CKKSInstance *ckks_instance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
-    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
-    ciphertext2 = ckksInstance->evaluator->multiply_plain(ciphertext1, VECTOR_1);
+    ciphertext1 = ckks_instance->encrypt(VECTOR_1);
+    ciphertext2 = ckks_instance->evaluator->multiply_plain(ciphertext1, VECTOR_1);
     // Expect estimatedMaxLogScale is changed.
     double estimatedMaxLogScale = PLAINTEXT_LOG_MAX - log2(VALUE * VALUE);
-    ASSERT_EQ(estimatedMaxLogScale, ckksInstance->get_estimated_max_log_scale());
+    ASSERT_EQ(estimatedMaxLogScale, ckks_instance->get_estimated_max_log_scale());
     ASSERT_EQ(ONE_MULTI_DEPTH, ciphertext2.he_level());
     ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2), ciphertext2.scale());
 }
 
 TEST(ScaleEstimatorTest, Multiply) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
+    CKKSInstance *ckks_instance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
-    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
-    ciphertext2 = ckksInstance->encrypt(VECTOR_1);
-    ciphertext3 = ckksInstance->evaluator->multiply(ciphertext1, ciphertext2);
+    ciphertext1 = ckks_instance->encrypt(VECTOR_1);
+    ciphertext2 = ckks_instance->encrypt(VECTOR_1);
+    ciphertext3 = ckks_instance->evaluator->multiply(ciphertext1, ciphertext2);
     // Expect estimatedMaxLogScale is changed.
     double estimatedMaxLogScale = PLAINTEXT_LOG_MAX - log2(VALUE * VALUE);
-    ASSERT_EQ(estimatedMaxLogScale, ckksInstance->get_estimated_max_log_scale());
+    ASSERT_EQ(estimatedMaxLogScale, ckks_instance->get_estimated_max_log_scale());
     ASSERT_EQ(ONE_MULTI_DEPTH, ciphertext3.he_level());
     ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2), ciphertext3.scale());
 }
 
 TEST(ScaleEstimatorTest, Square) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
+    CKKSInstance *ckks_instance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
-    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
-    ciphertext2 = ckksInstance->evaluator->square(ciphertext1);
+    ciphertext1 = ckks_instance->encrypt(VECTOR_1);
+    ciphertext2 = ckks_instance->evaluator->square(ciphertext1);
     // Expect estimatedMaxLogScale is changed.
     double estimatedMaxLogScale = PLAINTEXT_LOG_MAX - log2(VALUE * VALUE);
-    ASSERT_EQ(estimatedMaxLogScale, ckksInstance->get_estimated_max_log_scale());
+    ASSERT_EQ(estimatedMaxLogScale, ckks_instance->get_estimated_max_log_scale());
     ASSERT_EQ(ONE_MULTI_DEPTH, ciphertext2.he_level());
     ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2), ciphertext2.scale());
 }
 
 TEST(ScaleEstimatorTest, ModDownToLevel) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
+    CKKSInstance *ckks_instance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
-    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
-    uint64_t prime = getLastPrime(ckksInstance->context, ciphertext1.he_level());
-    ciphertext2 = ckksInstance->evaluator->mod_down_to_level(ciphertext1, ZERO_MULTI_DEPTH);
+    ciphertext1 = ckks_instance->encrypt(VECTOR_1);
+    uint64_t prime = get_last_prime(ckks_instance->context, ciphertext1.he_level());
+    ciphertext2 = ckks_instance->evaluator->mod_down_to_level(ciphertext1, ZERO_MULTI_DEPTH);
     // Check estimatedMaxLogScale.
     double estimatedMaxLogScale = PLAINTEXT_LOG_MAX - log2(VALUE);
-    ASSERT_EQ(estimatedMaxLogScale, ckksInstance->get_estimated_max_log_scale());
+    ASSERT_EQ(estimatedMaxLogScale, ckks_instance->get_estimated_max_log_scale());
     // Expect he_level is decreased.
     ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext2.he_level());
     // Check scale.
@@ -215,11 +215,11 @@ TEST(ScaleEstimatorTest, ModDownToLevel) {
 
 // TODO: investigate why previous impl can still pass this test.
 TEST(ScaleEstimatorTest, ModDownToLevel_MultiDepthIsTwo) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, TWO_MULTI_DEPTH);
+    CKKSInstance *ckks_instance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, TWO_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
-    ciphertext1 = ckksInstance->encrypt(VECTOR_1, TWO_MULTI_DEPTH);
-    ciphertext3 = ckksInstance->encrypt(VECTOR_1, ZERO_MULTI_DEPTH);
-    ciphertext2 = ckksInstance->evaluator->mod_down_to_level(ciphertext1, ZERO_MULTI_DEPTH);
+    ciphertext1 = ckks_instance->encrypt(VECTOR_1, TWO_MULTI_DEPTH);
+    ciphertext3 = ckks_instance->encrypt(VECTOR_1, ZERO_MULTI_DEPTH);
+    ciphertext2 = ckks_instance->evaluator->mod_down_to_level(ciphertext1, ZERO_MULTI_DEPTH);
     // Expect he_level is decreased.
     ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext2.he_level());
     // Check scale.
@@ -227,24 +227,24 @@ TEST(ScaleEstimatorTest, ModDownToLevel_MultiDepthIsTwo) {
 }
 
 TEST(ScaleEstimatorTest, ModDownToMin) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
+    CKKSInstance *ckks_instance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
-    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
+    ciphertext1 = ckks_instance->encrypt(VECTOR_1);
     ciphertext3 = ciphertext1;
-    uint64_t prime = getLastPrime(ckksInstance->context, ciphertext1.he_level());
-    ciphertext2 = ckksInstance->evaluator->mod_down_to_level(ciphertext1, ZERO_MULTI_DEPTH);
-    ckksInstance->evaluator->mod_down_to_min_inplace(ciphertext1, ciphertext2);
+    uint64_t prime = get_last_prime(ckks_instance->context, ciphertext1.he_level());
+    ciphertext2 = ckks_instance->evaluator->mod_down_to_level(ciphertext1, ZERO_MULTI_DEPTH);
+    ckks_instance->evaluator->mod_down_to_min_inplace(ciphertext1, ciphertext2);
     // Check estimatedMaxLogScale.
     double estimatedMaxLogScale = PLAINTEXT_LOG_MAX - log2(VALUE);
-    ASSERT_EQ(estimatedMaxLogScale, ckksInstance->get_estimated_max_log_scale());
+    ASSERT_EQ(estimatedMaxLogScale, ckks_instance->get_estimated_max_log_scale());
     // Expect he_level is decreased.
     ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext1.he_level());
     // Check scale.
     ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2) / prime, ciphertext1.scale());
     // Test mod_down_to_min_inplace symmetric.
-    ckksInstance->evaluator->mod_down_to_min_inplace(ciphertext2, ciphertext3);
+    ckks_instance->evaluator->mod_down_to_min_inplace(ciphertext2, ciphertext3);
     // Check estimatedMaxLogScale.
-    ASSERT_EQ(estimatedMaxLogScale, ckksInstance->get_estimated_max_log_scale());
+    ASSERT_EQ(estimatedMaxLogScale, ckks_instance->get_estimated_max_log_scale());
     // Expect he_level is decreased.
     ASSERT_EQ(ZERO_MULTI_DEPTH, ciphertext3.he_level());
     // Check scale.
@@ -252,16 +252,16 @@ TEST(ScaleEstimatorTest, ModDownToMin) {
 }
 
 TEST(ScaleEstimatorTest, RescaleToNextInPlace) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
+    CKKSInstance *ckks_instance = CKKSInstance::get_new_scaleestimator_instance(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
-    ciphertext1 = ckksInstance->encrypt(VECTOR_1);
-    ciphertext2 = ckksInstance->evaluator->square(ciphertext1);
-    uint64_t prime = getLastPrime(ckksInstance->context, ciphertext2.he_level());
+    ciphertext1 = ckks_instance->encrypt(VECTOR_1);
+    ciphertext2 = ckks_instance->evaluator->square(ciphertext1);
+    uint64_t prime = get_last_prime(ckks_instance->context, ciphertext2.he_level());
     ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2), ciphertext2.scale());
-    ckksInstance->evaluator->rescale_to_next_inplace(ciphertext2);
+    ckks_instance->evaluator->rescale_to_next_inplace(ciphertext2);
     // Check scale.
     ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE * 2) / prime, ciphertext2.scale());
     // Expect estimatedMaxLogScale is changed.
     double estimatedMaxLogScale = PLAINTEXT_LOG_MAX - log2(VALUE * VALUE);
-    ASSERT_EQ(estimatedMaxLogScale, ckksInstance->get_estimated_max_log_scale());
+    ASSERT_EQ(estimatedMaxLogScale, ckks_instance->get_estimated_max_log_scale());
 }

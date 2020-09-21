@@ -88,16 +88,16 @@ namespace hit {
     }
 
     /*
-    Helper function: Fetch the last prime given SEALContext and heLevel.
+    Helper function: Fetch the last prime given SEALContext and he_level.
     */
-    std::uint64_t getLastPrime(const std::shared_ptr<seal::SEALContext> &context, int heLevel) {
+    std::uint64_t get_last_prime(const std::shared_ptr<seal::SEALContext> &context, int he_level) {
         auto context_data = context->first_context_data();
-        while (context_data->chain_index() >= heLevel) {
-            if (context_data->chain_index() == heLevel) {
+        while (context_data->chain_index() >= he_level) {
+            if (context_data->chain_index() == he_level) {
                 return context_data->parms().coeff_modulus().back().value();
             }
             context_data = context_data->next_context_data();
         }
-        throw std::invalid_argument("Fail to find target level " + std::to_string(heLevel));
+        throw std::invalid_argument("Fail to find target level " + std::to_string(he_level));
     }
 }  // namespace hit

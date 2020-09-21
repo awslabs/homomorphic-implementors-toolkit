@@ -7,9 +7,9 @@
 #include <vector>
 #include "hit/matrix.h"
 
-uint32_t createRandomPositiveInt(const int mod = 100);
+uint32_t create_random_positive_int(const int mod = 100);
 
-std::vector<double> randomVector(int dim, double maxNorm);
+std::vector<double> random_vector(int dim, double max_norm);
 
 hit::Vector random_vec(int size);
 

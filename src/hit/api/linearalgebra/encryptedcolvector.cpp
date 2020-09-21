@@ -13,22 +13,22 @@ using namespace std;
 namespace hit {
     EncryptedColVector::EncryptedColVector(int height, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts)
         : height_(height), unit(unit), cts(cts) {
-        validateInit();
+        validate_init();
     }
 
     EncryptedColVector::EncryptedColVector(const std::shared_ptr<seal::SEALContext> &context,
                                            const protobuf::EncryptedColVector &encrypted_col_vector)
         : height_(encrypted_col_vector.height()), unit(encrypted_col_vector.unit()) {
         cts.reserve(encrypted_col_vector.cts().cts_size());
-        deserializeVector(context, encrypted_col_vector.cts(), cts);
-        validateInit();
+        deserialize_vector(context, encrypted_col_vector.cts(), cts);
+        validate_init();
     }
 
     protobuf::EncryptedColVector *EncryptedColVector::serialize() const {
         auto *encrypted_col_vector = new protobuf::EncryptedColVector();
         encrypted_col_vector->set_height(height_);
         encrypted_col_vector->set_allocated_unit(unit.serialize());
-        encrypted_col_vector->set_allocated_cts(serializeVector(cts));
+        encrypted_col_vector->set_allocated_cts(serialize_vector(cts));
         return encrypted_col_vector;
     }
 
@@ -100,7 +100,7 @@ namespace hit {
         return unit.initialized() && num_units() == cts.size();
     }
 
-    void EncryptedColVector::validateInit() const {
+    void EncryptedColVector::validate_init() const {
         if (!initialized()) {
             throw invalid_argument("Invalid cts to EncryptedColVector.");
         }

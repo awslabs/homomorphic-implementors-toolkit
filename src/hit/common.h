@@ -29,32 +29,32 @@ namespace hit {
 
     enum TimeScale { TS_MS, TS_SEC, TS_MIN, TS_DYNAMIC };
 
-    uint64_t elapsedTimeMs(timepoint start, timepoint end);
-    std::string elapsedTimeToStr(timepoint start, timepoint end, TimeScale = TS_DYNAMIC);
-    void printElapsedTime(timepoint start);
+    uint64_t elapsed_time_in_ms(timepoint start, timepoint end);
+    std::string elapsed_time_to_str(timepoint start, timepoint end, TimeScale = TS_DYNAMIC);
+    void print_elapsed_time(timepoint start);
 
     // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
-    double diff2Norm(const std::vector<double> &expected, const std::vector<double> &actual);
+    double diff2_norm(const std::vector<double> &expected, const std::vector<double> &actual);
 
     // tests if x is a power of two or not
-    bool isPow2(int x);
+    bool is_pow2(int x);
 
     /* For each poly_modulus_degree (a power of two between 1024 and 32768,
      * inclusive), SEAL limits the size of the total modulus. This function
      * returns that limit (in bits).
      */
-    int polyDegreeToMaxModBits(int poly_modulus_degree);
+    int poly_degree_to_max_mod_bits(int poly_modulus_degree);
 
-    int modulusToPolyDegree(int modBits);
+    int modulus_to_poly_degree(int mod_bits);
 
     // the L-infinity norm
-    double lInfNorm(const std::vector<double> &x);
+    double l_inf_norm(const std::vector<double> &x);
 
-    uintmax_t streamSize(std::iostream &s);
+    uintmax_t stream_size(std::iostream &s);
 
-    std::string bytesToStr(uintmax_t sizeBytes);
+    std::string bytes_to_str(uintmax_t size_bytes);
 
-    inline protobuf::CiphertextVector *serializeVector(const std::vector<CKKSCiphertext> &ciphertext_vector) {
+    inline protobuf::CiphertextVector *serialize_vector(const std::vector<CKKSCiphertext> &ciphertext_vector) {
         auto *proto_ciphertext_vector = new protobuf::CiphertextVector();
         for (const auto &ciphertext : ciphertext_vector) {
             // https://developers.google.com/protocol-buffers/docs/reference/cpp-generated#repeatedmessage
@@ -63,7 +63,7 @@ namespace hit {
         return proto_ciphertext_vector;
     }
 
-    inline void deserializeVector(const std::shared_ptr<seal::SEALContext> &context,
+    inline void deserialize_vector(const std::shared_ptr<seal::SEALContext> &context,
                                   const protobuf::CiphertextVector &proto_ciphertext_vector,
                                   std::vector<CKKSCiphertext> &ciphertext_vector) {
         for (int i = 0; i < proto_ciphertext_vector.cts_size(); i++) {

@@ -15,10 +15,10 @@ using namespace seal;
 namespace hit {
 
     // This is an approximation of -infity, since infNorm(x) >= 0 = 2^-infinity
-    double initialPtMaxLog = -100;
+    const double INITIAL_PLAIN_TEXT_MAX_LOG = -100;
 
     PlaintextEval::PlaintextEval(const shared_ptr<SEALContext> &context)
-        : CKKSEvaluator(context), ptMaxLog(initialPtMaxLog) {
+        : CKKSEvaluator(context), plaintext_max_log_(INITIAL_PLAIN_TEXT_MAX_LOG) {
     }
 
     PlaintextEval::~PlaintextEval() = default;
@@ -26,7 +26,7 @@ namespace hit {
     void PlaintextEval::reset_internal() {
         {
             scoped_lock lock(mutex_);
-            ptMaxLog = initialPtMaxLog;
+            plaintext_max_log_ = INITIAL_PLAIN_TEXT_MAX_LOG;
         }
     }
 
@@ -37,19 +37,19 @@ namespace hit {
             return;
         }
         // extract just the elements we care about from the real plaintext
-        vector<double> exactPlaintext = ct.plaintext().data();
-        double exactPlaintextMaxVal = lInfNorm(exactPlaintext);
+        vector<double> exact_plaintext = ct.plaintext().data();
+        double exact_plaintext_max_val = l_inf_norm(exact_plaintext);
         VLOG(LOG_VERBOSE) << "    + Scale: " << setprecision(4) << log2(ct.scale()) << " bits";
-        VLOG(LOG_VERBOSE) << "    + Exact plaintext logmax: " << log2(exactPlaintextMaxVal)
-                          << " bits (scaled: " << log2(ct.scale()) + log2(exactPlaintextMaxVal) << " bits)";
+        VLOG(LOG_VERBOSE) << "    + Exact plaintext logmax: " << log2(exact_plaintext_max_val)
+                          << " bits (scaled: " << log2(ct.scale()) + log2(exact_plaintext_max_val) << " bits)";
 
-        int maxPrintSize = 8;
+        int max_print_size = 8;
         stringstream exact_plaintext_info;
         exact_plaintext_info << "    + Exact plaintext: < ";
-        for (int j = 0; j < min(maxPrintSize, static_cast<int>(exactPlaintext.size())); j++) {
-            exact_plaintext_info << setprecision(8) << exactPlaintext[j] << ", ";
+        for (int j = 0; j < min(max_print_size, static_cast<int>(exact_plaintext.size())); j++) {
+            exact_plaintext_info << setprecision(8) << exact_plaintext[j] << ", ";
         }
-        if (exactPlaintext.size() > maxPrintSize) {
+        if (exact_plaintext.size() > max_print_size) {
             exact_plaintext_info << "... ";
         }
         exact_plaintext_info << ">";
@@ -57,10 +57,10 @@ namespace hit {
     }
 
     void PlaintextEval::update_max_log_plain_val(const CKKSCiphertext &ct) {
-        double exactPlaintextMaxVal = lInfNorm(ct.plaintext().data());
+        double exact_plaintext_max_val = l_inf_norm(ct.plaintext().data());
         {
             scoped_lock lock(mutex_);
-            ptMaxLog = max(ptMaxLog, log2(exactPlaintextMaxVal));
+            plaintext_max_log_ = max(plaintext_max_log_, log2(exact_plaintext_max_val));
         }
     }
 
@@ -68,7 +68,7 @@ namespace hit {
         {
             scoped_lock lock(mutex_);
             // takes the actual max value, we need to set the log of it
-            ptMaxLog = max(ptMaxLog, log2(x));
+            plaintext_max_log_ = max(plaintext_max_log_, log2(x));
         }
     }
 
@@ -89,7 +89,7 @@ namespace hit {
         }
 
         ct.raw_pt = rot_temp;
-        // does not change ptMaxLog
+        // does not change plaintext_max_log_
         print_stats(ct);
     }
 
@@ -108,7 +108,7 @@ namespace hit {
         }
 
         ct.raw_pt = rot_temp;
-        // does not change ptMaxLog
+        // does not change plaintext_max_log_
         print_stats(ct);
     }
 
@@ -214,22 +214,22 @@ namespace hit {
     }
 
     void PlaintextEval::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int) {
-        // does not change ptMaxLog
+        // does not change plaintext_max_log_
         print_stats(ct);
     }
 
     void PlaintextEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        // does not change ptMaxLog
+        // does not change plaintext_max_log_
         print_stats(ct);
     }
 
     void PlaintextEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
-        // does not change ptMaxLog
+        // does not change plaintext_max_log_
         print_stats(ct);
     }
 
     double PlaintextEval::get_exact_max_log_plain_val() const {
         shared_lock lock(mutex_);
-        return ptMaxLog;
+        return plaintext_max_log_;
     }
 }  // namespace hit

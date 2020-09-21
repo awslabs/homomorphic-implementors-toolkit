@@ -25,7 +25,7 @@ namespace hit {
         // constructor for Meta and Plaintext mode
         // Ciphertexts include basic metadata like dimensions.
         // If `includePlaintext`, then ciphertexts additionally include padded plaintext.
-        CKKSEncryptor(const std::shared_ptr<seal::SEALContext> &context, int numSlots, bool includePlaintext);
+        CKKSEncryptor(const std::shared_ptr<seal::SEALContext> &context, int num_slots, bool include_plaintext);
 
         // constructor for Homomorphic and Debug modes
         CKKSEncryptor(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder *encoder,
@@ -46,11 +46,11 @@ namespace hit {
         // ENC_DEBUG sets all the metadata from ENC_PLAIN but additionally encrypts
         //   the plaintext.
         enum EncryptMode { ENC_META, ENC_PLAIN, ENC_NORMAL, ENC_DEBUG };
-        EncryptMode mode;
+        EncryptMode mode_;
 
         seal::CKKSEncoder *encoder;
         seal::Encryptor *encryptor;
         const std::shared_ptr<seal::SEALContext> context;
-        int numSlots;
+        int num_slots_;
     };
 }  // namespace hit

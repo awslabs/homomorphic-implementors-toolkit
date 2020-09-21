@@ -13,22 +13,22 @@ using namespace std;
 namespace hit {
     EncryptedRowVector::EncryptedRowVector(int width, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts)
         : width_(width), unit(unit), cts(cts) {
-        validateInit();
+        validate_init();
     }
 
     EncryptedRowVector::EncryptedRowVector(const std::shared_ptr<seal::SEALContext> &context,
                                            const protobuf::EncryptedRowVector &encrypted_row_vector)
         : width_(encrypted_row_vector.width()), unit(encrypted_row_vector.unit()) {
         cts.reserve(encrypted_row_vector.cts().cts_size());
-        deserializeVector(context, encrypted_row_vector.cts(), cts);
-        validateInit();
+        deserialize_vector(context, encrypted_row_vector.cts(), cts);
+        validate_init();
     }
 
     protobuf::EncryptedRowVector *EncryptedRowVector::serialize() const {
         auto *encrypted_row_vector = new protobuf::EncryptedRowVector();
         encrypted_row_vector->set_width(width_);
         encrypted_row_vector->set_allocated_unit(unit.serialize());
-        encrypted_row_vector->set_allocated_cts(serializeVector(cts));
+        encrypted_row_vector->set_allocated_cts(serialize_vector(cts));
         return encrypted_row_vector;
     }
 
@@ -100,7 +100,7 @@ namespace hit {
         return unit.initialized() && num_units() == cts.size();
     }
 
-    void EncryptedRowVector::validateInit() const {
+    void EncryptedRowVector::validate_init() const {
         if (!initialized()) {
             throw invalid_argument("Invalid cts to EncryptedRowVector.");
         }

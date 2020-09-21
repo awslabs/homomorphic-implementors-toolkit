@@ -8,7 +8,7 @@ using namespace std;
 namespace hit {
 
     // create a matrix where each column is the input vector
-    Matrix rowVecToMatrix(const vector<double> &x, int width) {
+    Matrix row_vec_to_matrix(const vector<double> &x, int width) {
         vector<double> y;
         y.reserve(width * x.size());
         for (double value : x) {
@@ -22,7 +22,7 @@ namespace hit {
     }
 
     // create a matrix where each row is the input vector
-    Matrix colVecToMatrix(const vector<double> &x, int height) {
+    Matrix col_vec_to_matrix(const vector<double> &x, int height) {
         vector<double> y;
         y.reserve(height * x.size());
         for (int i = 0; i < height; i++) {
@@ -35,17 +35,17 @@ namespace hit {
         return temp;
     }
 
-    Matrix matrixRowConcat(const vector<Matrix> &xs) {
+    Matrix matrix_row_concat(const vector<Matrix> &xs) {
         if (xs.empty()) {
-            throw invalid_argument("matrixRowConcat: xs cannot be empty");
+            throw invalid_argument("matrix_row_concat: xs cannot be empty");
         }
         int h = xs[0].size1();
 
-        int totalWidth = xs[0].size2();
+        int total_width = xs[0].size2();
         for (int i = 1; i < xs.size(); i++) {
-            totalWidth += xs[i].size2();
+            total_width += xs[i].size2();
             if (xs[i].size1() != h) {
-                throw invalid_argument("matrixRowConcat: all xs must have the same height");
+                throw invalid_argument("matrix_row_concat: all xs must have the same height");
             }
         }
 
@@ -58,7 +58,7 @@ namespace hit {
                 }
             }
         }
-        Matrix temp(h, totalWidth);
+        Matrix temp(h, total_width);
         temp.data() = cmatdata;
         return temp;
     }
@@ -84,7 +84,7 @@ namespace hit {
         return temp;
     }
 
-    Vector fromStdVector(const vector<double> &v) {
+    Vector from_std_vector(const vector<double> &v) {
         Vector temp(v.size());
         temp.data() = v;
         return temp;

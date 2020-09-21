@@ -18,7 +18,7 @@ namespace hit {
      */
     class ScaleEstimator : public CKKSEvaluator {
        public:
-        ScaleEstimator(const std::shared_ptr<seal::SEALContext> &context, int poly_deg, double baseScale);
+        ScaleEstimator(const std::shared_ptr<seal::SEALContext> &context, int poly_deg, double base_scale);
 
         /* For documentation on the API, see ../evaluator.h */
         ~ScaleEstimator() override;
@@ -80,14 +80,15 @@ namespace hit {
         void reset_internal() override;
 
        private:
-        PlaintextEval *ptEval;
-        DepthFinder *dfEval;
+        PlaintextEval *plaintext_eval;
+        DepthFinder *depth_finder;
+
+        const double base_scale_;
+        const int poly_deg_;
+        double estimated_max_log_scale_;
 
         void print_stats(const CKKSCiphertext &ct);
         void update_max_log_scale(const CKKSCiphertext &ct);
-        const double baseScale;
-        const int poly_deg;
-        double estimatedMaxLogScale;
 
         friend class DebugEval;
     };

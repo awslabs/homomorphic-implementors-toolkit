@@ -84,10 +84,10 @@ namespace hit {
         void reset_internal() override;
 
        private:
-        HomomorphicEval *heEval;
-        ScaleEstimator *seEval;
+        HomomorphicEval *homomorphic_eval;
+        ScaleEstimator *scale_estimator;
         CKKSDecryptor &decryptor;
-        const double initScale;
+        const double init_state_;
 
         void print_stats(const CKKSCiphertext &ct) const;
         void check_scale(const CKKSCiphertext &ct) const;

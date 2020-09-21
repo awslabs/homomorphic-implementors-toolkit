@@ -11,67 +11,67 @@ using namespace std;
 
 namespace hit {
 
-    uint64_t elapsedTimeMs(timepoint start, timepoint end) {
+    uint64_t elapsed_time_in_ms(timepoint start, timepoint end) {
         return chrono::duration_cast<chrono::milliseconds>(end - start).count();
     }
 
-    string elapsedTimeToStr(timepoint start, timepoint end, TimeScale ts) {
-        auto elapsedMs = static_cast<double>(elapsedTimeMs(start, end));
+    string elapsed_time_to_str(timepoint start, timepoint end, TimeScale ts) {
+        auto elapsed_ms = static_cast<double>(elapsed_time_in_ms(start, end));
         stringstream buffer;
-        double msPerSec = 1000;
-        double msPerMin = 60 * msPerSec;
-        double msPerHour = 60 * msPerMin;
-        if (ts == TS_MS || (ts == TS_DYNAMIC && elapsedMs < msPerSec)) {
-            buffer << setprecision(3) << elapsedMs << " ms";
-        } else if (ts == TS_SEC || (ts == TS_DYNAMIC && elapsedMs < msPerMin)) {
-            buffer << setprecision(3) << elapsedMs / msPerSec << " seconds";
-        } else if (ts == TS_MIN || (ts == TS_DYNAMIC && elapsedMs < msPerHour)) {
-            buffer << setprecision(3) << elapsedMs / msPerMin << " minutes";
+        double ms_per_sec = 1000;
+        double ms_per_min = 60 * ms_per_sec;
+        double ms_per_hour = 60 * ms_per_min;
+        if (ts == TS_MS || (ts == TS_DYNAMIC && elapsed_ms < ms_per_sec)) {
+            buffer << setprecision(3) << elapsed_ms << " ms";
+        } else if (ts == TS_SEC || (ts == TS_DYNAMIC && elapsed_ms < ms_per_min)) {
+            buffer << setprecision(3) << elapsed_ms / ms_per_sec << " seconds";
+        } else if (ts == TS_MIN || (ts == TS_DYNAMIC && elapsed_ms < ms_per_hour)) {
+            buffer << setprecision(3) << elapsed_ms / ms_per_min << " minutes";
         } else {
-            buffer << setprecision(3) << elapsedMs / msPerHour << " hours";
+            buffer << setprecision(3) << elapsed_ms / ms_per_hour << " hours";
         }
         return buffer.str();
     }
 
-    string bytesToStr(uintmax_t sizeBytes) {
-        double unitMultiplier = 1000;
-        double bytesPerKB = unitMultiplier;
-        double bytesPerMB = bytesPerKB * unitMultiplier;
-        double bytesPerGB = bytesPerMB * unitMultiplier;
+    string bytes_to_str(uintmax_t size_bytes) {
+        double unit_multiplier = 1000;
+        double bytes_per_kb = unit_multiplier;
+        double bytes_per_mb = bytes_per_kb * unit_multiplier;
+        double bytes_per_gb = bytes_per_mb * unit_multiplier;
         stringstream buffer;
 
-        if (sizeBytes < bytesPerKB) {
-            buffer << sizeBytes << " bytes";
-        } else if (sizeBytes < bytesPerMB) {
-            buffer << (sizeBytes / bytesPerKB) << " KB";
-        } else if (sizeBytes < bytesPerGB) {
-            buffer << (sizeBytes / bytesPerMB) << " MB";
+        if (size_bytes < bytes_per_kb) {
+            buffer << size_bytes << " bytes";
+        } else if (size_bytes < bytes_per_mb) {
+            buffer << (size_bytes / bytes_per_kb) << " KB";
+        } else if (size_bytes < bytes_per_gb) {
+            buffer << (size_bytes / bytes_per_mb) << " MB";
         } else {
-            buffer << (sizeBytes / bytesPerGB) << " GB";
+            buffer << (size_bytes / bytes_per_gb) << " GB";
         }
         return buffer.str();
     }
 
-    void printElapsedTime(timepoint start) {
+    void print_elapsed_time(timepoint start) {
         timepoint end = chrono::steady_clock::now();
-        LOG(INFO) << elapsedTimeToStr(start, end);
+        LOG(INFO) << elapsed_time_to_str(start, end);
     }
 
     // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
-    double diff2Norm(const vector<double> &expected, const vector<double> &actual) {
+    double diff2_norm(const vector<double> &expected, const vector<double> &actual) {
         int len = expected.size();
         if (len != actual.size()) {
             stringstream buffer;
-            buffer << "diff2Norm inputs do not have the same size: " << len << " != " << actual.size();
+            buffer << "diff2_norm inputs do not have the same size: " << len << " != " << actual.size();
             throw invalid_argument(buffer.str());
         }
 
-        Vector expectedVec = fromStdVector(expected);
-        Vector actualVec = fromStdVector(actual);
-        Vector diffVec = expectedVec - actualVec;
-        double expectedL2Norm = norm_2(expectedVec);
-        double actualL2Norm = norm_2(actualVec);
-        double diffL2Norm = norm_2(diffVec);
+        Vector expected_vec = from_std_vector(expected);
+        Vector actual_vec = from_std_vector(actual);
+        Vector diff_vec = expected_vec - actual_vec;
+        double expected_l2_norm = norm_2(expected_vec);
+        double actual_l2_norm = norm_2(actual_vec);
+        double diff_l2_norm = norm_2(diff_vec);
 
         // if the expected result is the zero vector, we can't reasonably compare norms.
         // We also can't just test if the expected vector norm is exactly 0 due to
@@ -86,23 +86,23 @@ namespace hit {
         // we instead fuzz the norm test: if the expected vector norm is "small enough"
         // we skip the comparison altogether. The magic constant below seems to work
         // well in practice.
-        int logNormLimit = 11;
-        double maxAllowedL2Norm = pow(2, -logNormLimit);
-        if (expectedL2Norm <= maxAllowedL2Norm && actualL2Norm <= maxAllowedL2Norm) {
+        int log_norm_limit = 11;
+        double max_allowed_l2_norm = pow(2, -log_norm_limit);
+        if (expected_l2_norm <= max_allowed_l2_norm && actual_l2_norm <= max_allowed_l2_norm) {
             return -1;
         }
 
-        if (expectedL2Norm <= maxAllowedL2Norm) {
-            LOG(INFO) << "WEIRD NORM SITUATION: " << expectedL2Norm << "\t" << actualL2Norm;
+        if (expected_l2_norm <= max_allowed_l2_norm) {
+            LOG(INFO) << "WEIRD NORM SITUATION: " << expected_l2_norm << "\t" << actual_l2_norm;
         }
-        if (diffL2Norm > MAX_NORM) {
-            LOG(INFO) << "LogL2Norm: " << setprecision(8) << log2(expectedL2Norm);
+        if (diff_l2_norm > MAX_NORM) {
+            LOG(INFO) << "LogL2Norm: " << setprecision(8) << log2(expected_l2_norm);
         }
-        return diffL2Norm;
+        return diff_l2_norm;
     }
 
     // true if x is a power of 2, false otherwise.
-    bool isPow2(int x) {
+    bool is_pow2(int x) {
         if (x < 1) {
             return false;
         } else if (x == 1) {  // NOLINT(readability-else-after-return)
@@ -112,11 +112,11 @@ namespace hit {
         else if (x % 2 == 1) {
             return false;
         } else {
-            return isPow2(x >> 1);
+            return is_pow2(x >> 1);
         }
     }
 
-    int polyDegreeToMaxModBits(int poly_modulus_degree) {
+    int poly_degree_to_max_mod_bits(int poly_modulus_degree) {
         switch (poly_modulus_degree) {
             case 1024:
                 return 27;
@@ -144,7 +144,7 @@ namespace hit {
         }
     }
 
-    int modulusToPolyDegree(int modBits) {
+    int modulus_to_poly_degree(int mod_bits) {
         // When determining what dimension to use, we must first determine how many
         // primes need to be in our modulus (more on this below). Then we must
         // consult the following table to determine the smallest possible dimension.
@@ -162,35 +162,35 @@ namespace hit {
         //     | 16384               | 438                          |
         //     | 32768               | 881                          |
         //     +---------------------+------------------------------+
-        if (modBits <= 27) {
+        if (mod_bits <= 27) {
             return 1024;
             // NOLINTNEXTLINE(readability-else-after-return)
-        } else if (modBits <= 54) {
+        } else if (mod_bits <= 54) {
             return 2048;
-        } else if (modBits <= 109) {
+        } else if (mod_bits <= 109) {
             return 4096;
-        } else if (modBits <= 218) {
+        } else if (mod_bits <= 218) {
             return 8192;
-        } else if (modBits <= 438) {
+        } else if (mod_bits <= 438) {
             return 16384;
-        } else if (modBits <= 881) {
+        } else if (mod_bits <= 881) {
             return 32768;
-        } else if (modBits <= 1761) {
+        } else if (mod_bits <= 1761) {
             return 65536;
         }
         // SEAL will throw an exception when poly degree is 131072 or larger
         // (which corresponds to the 262144th cyclotomic ring)
-        // else if(modBits <= 3524) { return 131072; }
-        // else if(modBits <= 7050) { return 262144; }
+        // else if(mod_bits <= 3524) { return 131072; }
+        // else if(mod_bits <= 7050) { return 262144; }
         else {
             stringstream buffer;
             buffer << "This computation is too big to handle right now: cannot determine a valid ring size for a "
-                   << modBits << "-bit modulus";
+                   << mod_bits << "-bit modulus";
             throw invalid_argument(buffer.str());
         }
     }
 
-    double lInfNorm(const vector<double> &x) {
+    double l_inf_norm(const vector<double> &x) {
         double xmax = 0;
         for (double i : x) {
             xmax = max(xmax, abs(i));
@@ -198,11 +198,11 @@ namespace hit {
         return xmax;
     }
 
-    uintmax_t streamSize(iostream &s) {
-        streampos originalPos = s.tellp();
+    uintmax_t stream_size(iostream &s) {
+        streampos original_pos = s.tellp();
         s.seekp(0, ios::end);
         uintmax_t size = s.tellp();
-        s.seekp(originalPos);
+        s.seekp(original_pos);
         return size;
     }
 

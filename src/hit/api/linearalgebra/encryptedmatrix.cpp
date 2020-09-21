@@ -14,7 +14,7 @@ namespace hit {
     EncryptedMatrix::EncryptedMatrix(int height, int width, const EncodingUnit &unit,
                                      const vector<vector<CKKSCiphertext>> &cts)
         : height_(height), width_(width), unit(unit), cts(move(cts)) {
-        validateInit();
+        validate_init();
     }
 
     EncryptedMatrix::EncryptedMatrix(const std::shared_ptr<seal::SEALContext> &context,
@@ -25,10 +25,10 @@ namespace hit {
             const protobuf::CiphertextVector &proto_ciphertext_vector = encrypted_matrix.cts(i);
             vector<CKKSCiphertext> ciphertext_vector;
             ciphertext_vector.reserve(proto_ciphertext_vector.cts_size());
-            deserializeVector(context, proto_ciphertext_vector, ciphertext_vector);
+            deserialize_vector(context, proto_ciphertext_vector, ciphertext_vector);
             cts.push_back(ciphertext_vector);
         }
-        validateInit();
+        validate_init();
     }
 
     protobuf::EncryptedMatrix *EncryptedMatrix::serialize() const {
@@ -37,7 +37,7 @@ namespace hit {
         encrypted_matrix->set_width(width_);
         encrypted_matrix->set_allocated_unit(unit.serialize());
         for (const auto &ciphertext_vector : cts) {
-            encrypted_matrix->mutable_cts()->AddAllocated(serializeVector(ciphertext_vector));
+            encrypted_matrix->mutable_cts()->AddAllocated(serialize_vector(ciphertext_vector));
         }
         return encrypted_matrix;
     }
@@ -135,7 +135,7 @@ namespace hit {
         return unit.initialized() && num_vertical_units() == cts.size() && num_horizontal_units() == cts[0].size();
     }
 
-    void EncryptedMatrix::validateInit() const {
+    void EncryptedMatrix::validate_init() const {
         if (!initialized()) {
             throw invalid_argument("Invalid cts to EncryptedMatrix.");
         }

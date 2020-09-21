@@ -27,5 +27,5 @@ namespace hit {
     /*
     Helper function: Fetch the last prime given SEALContext and heLevel.
     */
-    std::uint64_t getLastPrime(const std::shared_ptr<seal::SEALContext> &context, int heLevel);
+    std::uint64_t get_last_prime(const std::shared_ptr<seal::SEALContext> &context, int he_level);
 }  // namespace hit

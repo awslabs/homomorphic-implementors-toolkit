@@ -68,7 +68,7 @@ namespace hit {
         void reset_internal() override;
 
        private:
-        int multiplicativeDepth;
+        int multiplicative_depth_;
 
         void print_stats(const CKKSCiphertext &ct) const;
 

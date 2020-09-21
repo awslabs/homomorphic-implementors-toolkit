@@ -73,7 +73,7 @@ namespace hit {
 
         void print_stats(const CKKSCiphertext &ct) const;
 
-        double ptMaxLog;
+        double plaintext_max_log_;
 
         friend class ScaleEstimator;
     };
