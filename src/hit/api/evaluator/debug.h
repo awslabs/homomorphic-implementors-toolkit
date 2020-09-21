@@ -86,11 +86,11 @@ namespace hit {
        private:
         HomomorphicEval *heEval;
         ScaleEstimator *seEval;
+        CKKSDecryptor &decryptor;
+        const double initScale;
 
         void print_stats(const CKKSCiphertext &ct) const;
-
-        CKKSDecryptor &decryptor;
         void check_scale(const CKKSCiphertext &ct) const;
-        double initScale;
+
     };
 }  // namespace hit

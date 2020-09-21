@@ -4,6 +4,7 @@
 #pragma once
 
 #include <future>
+#include <shared_mutex>
 
 #include "ciphertext.h"
 #include "seal/context.h"
@@ -246,5 +247,6 @@ namespace hit {
         ContextDataPtr getContextData(const CKKSCiphertext &ct);
 
         const std::shared_ptr<seal::SEALContext> context;
+        mutable std::shared_mutex mutex_;
     };
 }  // namespace hit

@@ -24,7 +24,10 @@ namespace hit {
     PlaintextEval::~PlaintextEval() = default;
 
     void PlaintextEval::reset_internal() {
-        ptMaxLog = initialPtMaxLog;
+        {
+            scoped_lock lock(mutex_);
+            ptMaxLog = initialPtMaxLog;
+        }
     }
 
     // print some debug info
@@ -55,13 +58,18 @@ namespace hit {
 
     void PlaintextEval::update_max_log_plain_val(const CKKSCiphertext &ct) {
         double exactPlaintextMaxVal = lInfNorm(ct.plaintext().data());
-
-        ptMaxLog = max(ptMaxLog, log2(exactPlaintextMaxVal));
+        {
+            scoped_lock lock(mutex_);
+            ptMaxLog = max(ptMaxLog, log2(exactPlaintextMaxVal));
+        }
     }
 
     void PlaintextEval::update_plaintext_max_val(double x) {
-        // takes the actual max value, we need to set the log of it
-        ptMaxLog = max(ptMaxLog, log2(x));
+        {
+            scoped_lock lock(mutex_);
+            // takes the actual max value, we need to set the log of it
+            ptMaxLog = max(ptMaxLog, log2(x));
+        }
     }
 
     void PlaintextEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
@@ -221,6 +229,7 @@ namespace hit {
     }
 
     double PlaintextEval::get_exact_max_log_plain_val() const {
+        shared_lock lock(mutex_);
         return ptMaxLog;
     }
 }  // namespace hit
