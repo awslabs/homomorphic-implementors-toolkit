@@ -18,7 +18,7 @@ namespace hit {
     DebugEval::DebugEval(const shared_ptr<SEALContext> &context, CKKSEncoder &encoder, Encryptor &encryptor,
                          const GaloisKeys &galois_keys, const RelinKeys &relin_keys, double scale,
                          CKKSDecryptor &decryptor)
-        : CKKSEvaluator(context), decryptor(decryptor), init_state_(scale) {
+        : CKKSEvaluator(context), decryptor(decryptor), init_scale_(scale) {
         homomorphic_eval = new HomomorphicEval(context, encoder, encryptor, galois_keys, relin_keys, false);
         scale_estimator = new ScaleEstimator(context, static_cast<int>(2 * encoder.slot_count()), scale);
     }
@@ -37,7 +37,7 @@ namespace hit {
     // or is at the square of its expected scale.
     void DebugEval::check_scale(const CKKSCiphertext &ct) const {
         auto context_data = context->first_context_data();
-        double expected_scale = init_state_;
+        double expected_scale = init_scale_;
         while (context_data->chain_index() > ct.he_level()) {
             expected_scale = (expected_scale * expected_scale) /
                             static_cast<double>(context_data->parms().coeff_modulus().back().value());
