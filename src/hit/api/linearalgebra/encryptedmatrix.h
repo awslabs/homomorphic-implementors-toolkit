@@ -75,7 +75,7 @@ namespace hit {
                         const std::vector<std::vector<CKKSCiphertext>> &cts);
 
         bool initialized() const;
-        void validateInit() const;
+        void validate_init() const;
 
         // height of the encoded matrix
         int height_ = 0;

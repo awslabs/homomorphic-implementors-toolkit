@@ -51,7 +51,7 @@ namespace hit {
         // width of the encoding unit
         int encoding_width_ = 0;
         bool initialized() const;
-        void validateInit() const;
+        void validate_init() const;
 
         friend class LinearAlgebra;
         friend struct EncryptedMatrix;

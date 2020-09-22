@@ -551,7 +551,7 @@ namespace hit {
     // This function returns the encoding of the *transpose* of that column vector,
     // which is a *row* vector.
     CKKSCiphertext LinearAlgebra::sum_cols_core(const CKKSCiphertext &ct, const EncodingUnit &unit, double scalar) {
-        // if(!isPow2(ct.width)) {
+        // if(!is_pow2(ct.width)) {
         //   stringstream buffer;
         //   buffer << "sum_cols called with a non-power-2 width: " << ct.width;
         //   throw invalid_argument(buffer.str());

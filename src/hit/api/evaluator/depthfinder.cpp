@@ -12,7 +12,7 @@ using namespace seal;
 
 namespace hit {
 
-    DepthFinder::DepthFinder(const shared_ptr<SEALContext> &context) : CKKSEvaluator(context), multiplicativeDepth(0) {
+    DepthFinder::DepthFinder(const shared_ptr<SEALContext> &context) : CKKSEvaluator(context), multiplicative_depth_(0) {
     }
 
     DepthFinder::~DepthFinder() = default;
@@ -20,7 +20,7 @@ namespace hit {
     void DepthFinder::reset_internal() {
         {
             scoped_lock lock(mutex_);
-            multiplicativeDepth = 0;
+            multiplicative_depth_ = 0;
         }
     }
 
@@ -124,12 +124,12 @@ namespace hit {
          *     tracks the computation depth.
          *  2. Alternatively, some calls to encrypt may set explicit encryption levels.
          *     In this case, ciphertexts are encrypted with a positive level, meaning
-         *     0-positive is never larger than the base multiplicativeDepth of 0. Instead,
+         *     0-positive is never larger than the base multiplicative_depth_ of 0. Instead,
          *     we use the outer `max` to account for explicitly-leveled ciphertexts.
          */
         {
             scoped_lock lock(mutex_);
-            multiplicativeDepth = max(max(multiplicativeDepth, topHELevel - ct.he_level()), ct.he_level() + 1);
+            multiplicative_depth_ = max(max(multiplicative_depth_, topHELevel - ct.he_level()), ct.he_level() + 1);
         }
         print_stats(ct);
     }
@@ -139,6 +139,6 @@ namespace hit {
 
     int DepthFinder::get_multiplicative_depth() const {
         shared_lock lock(mutex_);
-        return multiplicativeDepth;
+        return multiplicative_depth_;
     }
 }  // namespace hit

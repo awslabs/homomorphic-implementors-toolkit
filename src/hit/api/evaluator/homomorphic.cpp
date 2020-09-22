@@ -33,7 +33,7 @@ namespace hit {
           encryptor(encryptor),
           galois_keys(galois_keys),
           relin_keys(relin_keys),
-          update_metadata(update_metadata) {
+          update_metadata_(update_metadata) {
         evalPolicy = launch::async;
     }
 
@@ -122,7 +122,7 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
         evaluator.multiply_inplace(ct1.seal_ct, ct2.seal_ct);
-        if (update_metadata) {
+        if (update_metadata_) {
             ct1.scale_ *= ct2.scale();
         }
     }
@@ -141,7 +141,7 @@ namespace hit {
             // with our mirror calculation
             ct.seal_ct.scale() = previous_scale * previous_scale;
         }
-        if (update_metadata) {
+        if (update_metadata_) {
             ct.scale_ *= ct.scale();
         }
     }
@@ -155,14 +155,14 @@ namespace hit {
         Plaintext temp;
         encoder.encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
         evaluator.multiply_plain_inplace(ct.seal_ct, temp);
-        if (update_metadata) {
+        if (update_metadata_) {
             ct.scale_ *= ct.scale();
         }
     }
 
     void HomomorphicEval::square_inplace_internal(CKKSCiphertext &ct) {
         evaluator.square_inplace(ct.seal_ct);
-        if (update_metadata) {
+        if (update_metadata_) {
             ct.scale_ *= ct.scale();
         }
     }
@@ -183,7 +183,7 @@ namespace hit {
     void HomomorphicEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
         evaluator.rescale_to_next_inplace(ct.seal_ct);
 
-        if (update_metadata) {
+        if (update_metadata_) {
             // we have to get the last prime *before* reducing the HE level,
             // since the "last prime" is level-dependent
             auto context_data = getContextData(ct);

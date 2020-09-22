@@ -119,7 +119,7 @@ CKKSCiphertext sigmoid(const CKKSCiphertext &x1_encrypted, CKKSEvaluator &eval) 
   return eval.add(result, coeff3_x3_encrypted);;
 }
 
-vector<double> randomVector(int dim, double maxNorm) {
+vector<double> random_vector(int dim, double maxNorm) {
     vector<double> x;
     x.reserve(dim);
 
@@ -145,7 +145,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   srand(time(nullptr));
   int slots = 4096;
   LOG(INFO) << "Generating random input vector of length " << slots << "...";
-  vector<double> x = randomVector(slots, approxRange);
+  vector<double> x = random_vector(slots, approxRange);
 
   // *********** Generate Expected Result ***********
   LOG(INFO) << "Generating expected result...";
@@ -191,7 +191,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   x_enc_pt = sigmoid(x_enc_pt, *ptInst->evaluator);
   // Compare the plaintext inside x_enc_pt to the expected result
   // getPlaintext() decodes the shadow plaintext
-  double errNorm = diff2Norm(exactResult, x_enc_pt.plaintext().data());
+  double errNorm = diff2_norm(exactResult, x_enc_pt.plaintext().data());
   if(errNorm < 0.0001) {
     LOG(INFO) << "\tHomomorphic algorithm matches cleartext algorithm.";
   }
@@ -282,7 +282,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   // Decrypt the result
   vector<double> homom_result = homomInst->decrypt(x_enc_homom);
   // See if the test passed
-  double errNorm_homom = diff2Norm(exactResult, homom_result);
+  double errNorm_homom = diff2_norm(exactResult, homom_result);
   if(errNorm_homom < 0.0001) {
     LOG(INFO) << "\tHomomorphic result matches cleartext result.";
   }

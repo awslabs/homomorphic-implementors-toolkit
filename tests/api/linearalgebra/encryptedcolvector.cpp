@@ -20,14 +20,14 @@ const int ZERO_MULTI_DEPTH = 0;
 const int LOG_SCALE = 45;
 
 TEST(EncryptedColVectorTest, Serialization) {
-    CKKSInstance *ckksInstance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    auto laInst = LinearAlgebra(*ckksInstance);
+    CKKSInstance *ckks_instance = CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    auto laInst = LinearAlgebra(*ckks_instance);
     EncodingUnit unit1 = laInst.make_unit(64);
     Vector plaintext = random_vec(64);
     EncryptedColVector ct1 = laInst.encrypt_col_vector(plaintext, unit1);
-    EncryptedColVector ct2 = EncryptedColVector(ckksInstance->context, *ct1.serialize());
+    EncryptedColVector ct2 = EncryptedColVector(ckks_instance->context, *ct1.serialize());
     ASSERT_EQ(ct1.height(), ct2.height());
     ASSERT_EQ(ct1.encoding_unit(), ct2.encoding_unit());
     Vector output = laInst.decrypt(ct2);
-    ASSERT_LT(diff2Norm(plaintext.data(), output.data()), MAX_NORM);
+    ASSERT_LT(diff2_norm(plaintext.data(), output.data()), MAX_NORM);
 }

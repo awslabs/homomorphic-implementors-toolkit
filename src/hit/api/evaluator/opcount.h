@@ -66,28 +66,28 @@ namespace hit {
         void reset_internal() override;
 
        private:
-        int multiplies = 0;
-        int additions = 0;
-        int negations = 0;
-        int rotations = 0;
-        int modDowns = 0;
-        int modDownMuls = 0;
+        int multiplies_ = 0;
+        int additions_ = 0;
+        int negations_ = 0;
+        int rotations_ = 0;
+        int mod_downs_ = 0;
+        int mod_down_multi_levels_ = 0;
 
         inline void count_multiple_ops() {
             std::scoped_lock lock(mutex_);
-            multiplies++;
+            multiplies_++;
         }
 
         inline void count_addition_ops() {
             std::scoped_lock lock(mutex_);
-            additions++;
+            additions_++;
         }
 
         inline void count_rotation_ops() {
             std::scoped_lock lock(mutex_);
-            rotations++;
+            rotations_++;
         }
 
-        DepthFinder *dfEval;
+        DepthFinder *depth_finder;
     };
 }  // namespace hit

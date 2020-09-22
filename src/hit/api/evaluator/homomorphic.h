@@ -95,7 +95,7 @@ namespace hit {
         const seal::GaloisKeys &galois_keys;
         const seal::RelinKeys &relin_keys;
 
-        const bool update_metadata;
+        const bool update_metadata_;
 
         friend class DebugEval;
     };

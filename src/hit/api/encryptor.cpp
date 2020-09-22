@@ -12,27 +12,27 @@ using namespace seal;
 
 namespace hit {
 
-    CKKSEncryptor::CKKSEncryptor(const shared_ptr<SEALContext> &context, int numSlots, bool includePlaintext)
-        : encoder(nullptr), encryptor(nullptr), context(move(context)), numSlots(numSlots) {
-        mode = includePlaintext ? ENC_PLAIN : ENC_META;
+    CKKSEncryptor::CKKSEncryptor(const shared_ptr<SEALContext> &context, int num_slots, bool include_plaintext)
+        : encoder(nullptr), encryptor(nullptr), context(move(context)), num_slots_(num_slots) {
+        mode_ = include_plaintext ? ENC_PLAIN : ENC_META;
     }
 
     CKKSEncryptor::CKKSEncryptor(const shared_ptr<SEALContext> &context, CKKSEncoder *encoder, Encryptor *encryptor,
                                  bool debug)
-        : encoder(encoder), encryptor(encryptor), context(move(context)), numSlots(encoder->slot_count()) {
-        mode = debug ? ENC_DEBUG : ENC_NORMAL;
+        : encoder(encoder), encryptor(encryptor), context(move(context)), num_slots_(encoder->slot_count()) {
+        mode_ = debug ? ENC_DEBUG : ENC_NORMAL;
     }
 
     CKKSCiphertext CKKSEncryptor::encrypt(const vector<double> &coeffs, double scale, int lvl) {
-        // in ENC_META, CKKSInstance sets numSlots to 4096 and doesn't actually attempt to calcuate the correct value.
+        // in ENC_META, CKKSInstance sets num_slots_ to 4096 and doesn't actually attempt to calcuate the correct value.
         // We have to ignore that case here. Otherwise, input size should exactly equal the number of slots.
-        if (mode != ENC_META && coeffs.size() != numSlots) {
+        if (mode_ != ENC_META && coeffs.size() != num_slots_) {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
             throw invalid_argument(
                 "You can only encrypt vectors which have exactly as many coefficients as the number of plaintext "
                 "slots: Expected " +
-                to_string(numSlots) + ", got " + to_string(coeffs.size()));
+                to_string(num_slots_) + ", got " + to_string(coeffs.size()));
         }
 
         if (lvl == -1) {
@@ -51,17 +51,17 @@ namespace hit {
         destination.scale_ = scale;
 
         // Only set the plaintext in Plaintext or Debug modes
-        if (mode == ENC_PLAIN || mode == ENC_DEBUG) {
+        if (mode_ == ENC_PLAIN || mode_ == ENC_DEBUG) {
             destination.raw_pt = coeffs;
         }
         // Only set the ciphertext in Normal or Debug modes
-        if (mode == ENC_NORMAL || mode == ENC_DEBUG) {
+        if (mode_ == ENC_NORMAL || mode_ == ENC_DEBUG) {
             Plaintext temp;
             encoder->encode(coeffs, context_data->parms_id(), scale, temp);
             encryptor->encrypt(temp, destination.seal_ct);
         }
 
-        destination.num_slots_ = numSlots;
+        destination.num_slots_ = num_slots_;
         destination.initialized = true;
 
         return destination;
