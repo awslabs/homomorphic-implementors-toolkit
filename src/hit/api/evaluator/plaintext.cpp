@@ -15,10 +15,10 @@ using namespace seal;
 namespace hit {
 
     // This is an approximation of -infity, since infNorm(x) >= 0 = 2^-infinity
-    const double INITIAL_PLAIN_TEXT_MAX_LOG = -100;
+    const double INITIAL_PLAINTEXT_MAX_LOG = -100;
 
     PlaintextEval::PlaintextEval(const shared_ptr<SEALContext> &context)
-        : CKKSEvaluator(context), plaintext_max_log_(INITIAL_PLAIN_TEXT_MAX_LOG) {
+        : CKKSEvaluator(context), plaintext_max_log_(INITIAL_PLAINTEXT_MAX_LOG) {
     }
 
     PlaintextEval::~PlaintextEval() = default;
@@ -26,7 +26,7 @@ namespace hit {
     void PlaintextEval::reset_internal() {
         {
             scoped_lock lock(mutex_);
-            plaintext_max_log_ = INITIAL_PLAIN_TEXT_MAX_LOG;
+            plaintext_max_log_ = INITIAL_PLAINTEXT_MAX_LOG;
         }
     }
 
