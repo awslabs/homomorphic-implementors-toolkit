@@ -40,32 +40,30 @@ namespace hit {
         }
     }
 
-    protobuf::Ciphertext *CKKSCiphertext::save() const {
+    protobuf::Ciphertext *CKKSCiphertext::serialize() const {
         auto *proto_ct = new protobuf::Ciphertext();
-        save(*proto_ct);
-        return proto_ct;
-    }
 
-    void CKKSCiphertext::save(protobuf::Ciphertext &proto_ct) const {
         if (!raw_pt.empty()) {
             LOG(WARNING) << "Serializing ciphertext with plaintext data attached! Use the homomorphic evaluator "
                             "instead for secure computation.";
         }
 
-        proto_ct.set_initialized(initialized);
-        proto_ct.set_scale(scale_);
-        proto_ct.set_he_level(he_level_);
+        proto_ct->set_initialized(initialized);
+        proto_ct->set_scale(scale_);
+        proto_ct->set_he_level(he_level_);
 
         for (double i : raw_pt) {
-            proto_ct.add_raw_pt(i);
+            proto_ct->add_raw_pt(i);
         }
 
         // if the seal_ct is initialized, serialize it
         if (seal_ct.parms_id() != parms_id_zero) {
             ostringstream sealctBuf;
             seal_ct.save(sealctBuf);
-            proto_ct.set_seal_ct(sealctBuf.str());
+            proto_ct->set_seal_ct(sealctBuf.str());
         }
+
+        return proto_ct;
     }
 
     // Metadata interface functions

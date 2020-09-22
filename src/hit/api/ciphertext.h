@@ -20,8 +20,7 @@ namespace hit {
         CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context, const hit::protobuf::Ciphertext &proto_ct);
 
         // Serialize a ciphertext
-        hit::protobuf::Ciphertext *save() const;
-        void save(hit::protobuf::Ciphertext &proto_ct) const;
+        hit::protobuf::Ciphertext *serialize() const;
 
         // Ciphertext metadata
         int num_slots() const override;

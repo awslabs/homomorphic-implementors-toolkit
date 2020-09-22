@@ -26,7 +26,7 @@ TEST(SerializationTest, CKKSCiphertext) {
 
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     CKKSCiphertext ciphertext1 = ckks_instance->encrypt(vector1);
-    hit::protobuf::Ciphertext *ciphertext1_proto = ciphertext1.save();
+    hit::protobuf::Ciphertext *ciphertext1_proto = ciphertext1.serialize();
 
     CKKSCiphertext ciphertext2(ckks_instance->context, *ciphertext1_proto);
     vector<double> vector2 = ckks_instance->decrypt(ciphertext2);
