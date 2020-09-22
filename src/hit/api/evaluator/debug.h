@@ -87,7 +87,7 @@ namespace hit {
         HomomorphicEval *homomorphic_eval;
         ScaleEstimator *scale_estimator;
         CKKSDecryptor &decryptor;
-        const double init_state_;
+        const double init_scale_;
 
         void print_stats(const CKKSCiphertext &ct) const;
         void check_scale(const CKKSCiphertext &ct) const;
