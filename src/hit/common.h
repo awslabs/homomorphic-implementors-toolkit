@@ -58,7 +58,7 @@ namespace hit {
         auto *proto_ciphertext_vector = new protobuf::CiphertextVector();
         for (const auto &ciphertext : ciphertext_vector) {
             // https://developers.google.com/protocol-buffers/docs/reference/cpp-generated#repeatedmessage
-            proto_ciphertext_vector->mutable_cts()->AddAllocated(ciphertext.save());
+            proto_ciphertext_vector->mutable_cts()->AddAllocated(ciphertext.serialize());
         }
         return proto_ciphertext_vector;
     }
