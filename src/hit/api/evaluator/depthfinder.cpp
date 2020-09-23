@@ -12,16 +12,29 @@ using namespace seal;
 
 namespace hit {
 
-    DepthFinder::DepthFinder(const shared_ptr<SEALContext> &context) : CKKSEvaluator(context), multiplicative_depth_(0) {
+    DepthFinder::DepthFinder(const shared_ptr<SEALContext> &context) : top_he_level_(context->first_context_data()->chain_index()) {
     }
 
-    DepthFinder::~DepthFinder() = default;
-
     void DepthFinder::reset_internal() {
-        {
-            scoped_lock lock(mutex_);
-            multiplicative_depth_ = 0;
+        scoped_lock lock(mutex_);
+        multiplicative_depth_ = 0;
+    }
+
+    CKKSCiphertext DepthFinder::encrypt(const std::vector<double>&, int level) {
+        if (level == -1) {
+            level = top_he_level_;
         }
+
+        CKKSCiphertext destination;
+        destination.he_level_ = level;
+        destination.num_slots_ = 4096; // TODO: problematic if the depth of the function depends on the number of slots
+        destination.initialized = true;
+
+        return destination;
+    }
+
+    std::vector<double> DepthFinder::decrypt(const CKKSCiphertext&) const {
+        throw invalid_argument("CKKSInstance: You cannot call decrypt with the DepthFinder evaluator!");
     }
 
     // print some debug info
@@ -113,10 +126,9 @@ namespace hit {
     }
 
     void DepthFinder::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        int topHELevel = context->first_context_data()->chain_index();
         ct.he_level_--;
         /* The DepthFinder is always created as a "depth 0" evaluator, meaning that with
-         * the current implementation in CKKSInstance, topHELevel is *always* 0.
+         * the current implementation in CKKSInstance, top_he_level_ is *always* 0.
          * There are two possible scenarios.
          *  1. All calls to encrypt*() use an implicit level.
          *     In this case, all CTs are have he_level = 0, so reducing the level
@@ -129,7 +141,7 @@ namespace hit {
          */
         {
             scoped_lock lock(mutex_);
-            multiplicative_depth_ = max(max(multiplicative_depth_, topHELevel - ct.he_level()), ct.he_level() + 1);
+            multiplicative_depth_ = max(max(multiplicative_depth_, top_he_level_ - ct.he_level()), ct.he_level() + 1);
         }
         print_stats(ct);
     }

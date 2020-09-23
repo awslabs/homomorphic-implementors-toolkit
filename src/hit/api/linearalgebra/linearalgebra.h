@@ -32,7 +32,7 @@ namespace hit {
        public:
         /* Wraps a CKKSInstance to create a high-level API for linear algebra encoding, encryption, and operations
          */
-        explicit LinearAlgebra(CKKSInstance &inst);
+        explicit LinearAlgebra(CKKSEvaluator &eval);
 
         /* Creates a valid encoding unit for this instance, i.e., one which holds exactly as many
          * coefficients as there are plaintext slots.
@@ -683,8 +683,6 @@ namespace hit {
 
         // helper function for matrix/matrix multiplication which extracts a single row of A (given the encoding of A^T)
         EncryptedRowVector extract_row(const EncryptedMatrix &enc_mat_a_trans, int row);
-
-        CKKSInstance &inst;
     };
 
 }  // namespace hit

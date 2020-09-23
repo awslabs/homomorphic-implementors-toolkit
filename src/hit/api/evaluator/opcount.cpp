@@ -11,8 +11,8 @@ using namespace std;
 using namespace seal;
 namespace hit {
 
-    OpCount::OpCount(const shared_ptr<SEALContext> &context) : CKKSEvaluator(context) {
-        depth_finder = new DepthFinder(context);
+    OpCount::OpCount() : CKKSEvaluator() {
+        depth_finder = new DepthFinder();
     }
 
     OpCount::~OpCount() {
@@ -28,8 +28,29 @@ namespace hit {
             rotations_ = 0;
             mod_downs_ = 0;
             mod_down_multi_levels_ = 0;
+            encryptions_ = 0;
         }
         depth_finder->reset_internal();
+    }
+
+    CKKSCiphertext OpCount::encrypt(const std::vector<double>&, int level) {
+        {
+            scoped_lock lock(mutex_);
+            encryptions_++;
+        }
+        if (level == -1) {
+            level = context->first_context_data()->chain_index();
+        }
+
+        CKKSCiphertext destination;
+        destination.he_level_ = level;
+        destination.num_slots_ = 4096;
+        destination.initialized = true;
+        return destination;
+    }
+
+    std::vector<double> OpCount::decrypt(const CKKSCiphertext&) const {
+        throw invalid_argument("CKKSInstance: You cannot call decrypt with the OpCount evaluator!");
     }
 
     void OpCount::print_op_count() const {
@@ -40,10 +61,7 @@ namespace hit {
         LOG(INFO) << "Negations: " << negations_;
         LOG(INFO) << "Rotations: " << rotations_;
         LOG(INFO) << "ModDownTos: " << mod_downs_;
-    }
-
-    int OpCount::get_multiplicative_depth() const {
-        return depth_finder->get_multiplicative_depth();
+        LOG(INFO) << "Encryptions: " << encryption_count_;
     }
 
     void OpCount::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {

@@ -9,6 +9,7 @@
 #include "ciphertext.h"
 #include "seal/context.h"
 #include "seal/seal.h"
+#include "../CKKSInstance.h"
 
 /* An abstract class with an evaluator API.
  * All evaluators should extend this class.
@@ -21,7 +22,7 @@
 
 namespace hit {
 
-    class CKKSEvaluator {
+    class CKKSEvaluator : public CKKSInstance {
        public:
         /* Since the intended usage of this class is for applications to take a
          * `CKKSEvaluator` which is instantiated using a subclass, this class
@@ -30,7 +31,7 @@ namespace hit {
          * behavior.
          * https://www.geeksforgeeks.org/virtual-destructor/
          */
-        virtual ~CKKSEvaluator();
+        virtual ~CKKSEvaluator() = default;
 
         CKKSEvaluator(const CKKSEvaluator &) = delete;
         CKKSEvaluator &operator=(const CKKSEvaluator &) = delete;
@@ -242,11 +243,10 @@ namespace hit {
         virtual void relinearize_inplace_internal(CKKSCiphertext &ct) = 0;
         virtual void reset_internal() = 0;
 
-        explicit CKKSEvaluator(std::shared_ptr<seal::SEALContext> context);
+        CKKSEvaluator() = default;
 
         ContextDataPtr getContextData(const CKKSCiphertext &ct);
 
-        const std::shared_ptr<seal::SEALContext> context;
         mutable std::shared_mutex mutex_;
     };
 }  // namespace hit

@@ -28,9 +28,12 @@ namespace hit {
          * When HomomorphicEval is used as a sub-evaluator (e.g., as a component of the Debug evaluator) where
          * other sub-evaluators compute the metadata, then update_metadata should be false.
          */
-        HomomorphicEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder,
-                        seal::Encryptor &encryptor, const seal::GaloisKeys &galois_keys,
-                        const seal::RelinKeys &relin_keys, bool update_metadata);
+        // HomomorphicEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder,
+        //                 seal::Encryptor &encryptor, const seal::GaloisKeys &galois_keys,
+        //                 const seal::RelinKeys &relin_keys, bool update_metadata);
+
+        HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params = true,
+                        const std::vector<int> &galois_steps = std::vector<int>());
 
         /* For documentation on the API, see ../evaluator.h */
         ~HomomorphicEval() override;
@@ -39,6 +42,10 @@ namespace hit {
         HomomorphicEval &operator=(const HomomorphicEval &) = delete;
         HomomorphicEval(HomomorphicEval &&) = delete;
         HomomorphicEval &operator=(HomomorphicEval &&) = delete;
+
+        CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1) override;
+
+        std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
 
        protected:
         void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) override;
@@ -82,18 +89,6 @@ namespace hit {
         /* Helper function: Return the HE level of the SEAL ciphertext.
          */
         int get_SEAL_level(const CKKSCiphertext &ct) const;
-
-        seal::Evaluator evaluator;
-        seal::CKKSEncoder &encoder;
-        seal::Encryptor &encryptor;
-        // It would be nice to mark these `const`. However, I'm using
-        // "move" semantics in CKKSInstance.cpp where they are generated to avoid
-        // having two copies of the keys. This doesn't work if I have `const` types
-        // involved because the copy constructor is invoked rather than the `move`
-        // constructor. Someone with more C++ knowledge may be able to improve
-        // the situation.
-        const seal::GaloisKeys &galois_keys;
-        const seal::RelinKeys &relin_keys;
 
         const bool update_metadata_;
 
