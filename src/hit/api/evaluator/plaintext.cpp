@@ -20,8 +20,6 @@ namespace hit {
     PlaintextEval::PlaintextEval(int num_slots) : num_slots_(num_slots) {
     }
 
-    PlaintextEval::~PlaintextEval() = default;
-
     void PlaintextEval::reset_internal() {
         {
             scoped_lock lock(mutex_);

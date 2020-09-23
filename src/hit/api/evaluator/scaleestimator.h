@@ -84,11 +84,11 @@ namespace hit {
 
        private:
         ScaleEstimator(int num_slots, int multiplicative_depth, const HomomorphicEval &homom_eval);
+        bool has_shared_params_ = false;
 
         PlaintextEval *plaintext_eval;
         DepthFinder *depth_finder;
 
-        const double base_scale_;
         double estimated_max_log_scale_;
 
         void print_stats(const CKKSCiphertext &ct);

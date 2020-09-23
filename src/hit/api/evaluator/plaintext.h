@@ -24,7 +24,7 @@ namespace hit {
         PlaintextEval(int num_slots);
 
         /* For documentation on the API, see ../evaluator.h */
-        ~PlaintextEval() override;
+        ~PlaintextEval() override = default;
 
         PlaintextEval(const PlaintextEval &) = delete;
         PlaintextEval &operator=(const PlaintextEval &) = delete;

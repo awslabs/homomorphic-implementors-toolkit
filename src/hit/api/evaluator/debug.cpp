@@ -149,7 +149,7 @@ namespace hit {
     // or is at the square of its expected scale.
     void DebugEval::check_scale(const CKKSCiphertext &ct) const {
         auto context_data = context->first_context_data();
-        double expected_scale = log_scale_;
+        double expected_scale = pow(2,log_scale_);
         while (context_data->chain_index() > ct.he_level()) {
             expected_scale = (expected_scale * expected_scale) /
                             static_cast<double>(context_data->parms().coeff_modulus().back().value());
@@ -199,7 +199,7 @@ namespace hit {
         if (norm > MAX_NORM) {
             stringstream buffer;
             buffer << "DebugEvaluator: plaintext and ciphertext divergence: " << norm << " > " << MAX_NORM
-                   << ". Scale is " << log2(scale_estimator->base_scale_) << ".";
+                   << ". Scale is " << log_scale_ << " bits.";
 
             max_print_size = 32;
             stringstream expect_debug_result;
@@ -231,7 +231,7 @@ namespace hit {
             LOG(INFO) << actual_debug_result.str();
 
             Plaintext encoded_plain;
-            homomorphic_eval->encoder->encode(ct.raw_pt.data(), scale_estimator->base_scale_, encoded_plain);
+            homomorphic_eval->encoder->encode(ct.raw_pt.data(), pow(2,log_scale_), encoded_plain);
 
             vector<double> decoded_plain;
             homomorphic_eval->encoder->decode(encoded_plain, decoded_plain);
