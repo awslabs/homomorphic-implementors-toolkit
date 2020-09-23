@@ -200,7 +200,7 @@ namespace hit {
         }
 
         auto context_data = context->first_context_data();
-        double scale = (double)log_scale_;
+        double scale = (double)pow(2, log_scale_);
         while (context_data->chain_index() > level) {
             // order of operations is very important: floating point arithmetic is not associative
             scale = (scale * scale) / static_cast<double>(context_data->parms().coeff_modulus().back().value());

@@ -19,7 +19,7 @@ const int NUM_OF_SLOTS = 4096;
 const double INVALID_NORM = -1;
 const int STEPS = 1;
 
-TEST(PlainTextTest, RotateLeft) {
+TEST(PlaintextTest, RotateLeft) {
     PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
@@ -40,7 +40,7 @@ TEST(PlainTextTest, RotateLeft) {
     ASSERT_LE(diff, MAX_NORM);
 }
 
-TEST(PlainTextTest, RotateRight) {
+TEST(PlaintextTest, RotateRight) {
     PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
@@ -61,7 +61,7 @@ TEST(PlainTextTest, RotateRight) {
     ASSERT_LE(diff, MAX_NORM);
 }
 
-TEST(PlainTextTest, Negate) {
+TEST(PlaintextTest, Negate) {
     PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
@@ -78,7 +78,7 @@ TEST(PlainTextTest, Negate) {
     ASSERT_LE(diff, MAX_NORM);
 }
 
-TEST(PlainTextTest, Add) {
+TEST(PlaintextTest, Add) {
     PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
@@ -97,7 +97,7 @@ TEST(PlainTextTest, Add) {
     ASSERT_LE(diff, MAX_NORM);
 }
 
-TEST(PlainTextTest, AddPlaintext) {
+TEST(PlaintextTest, AddPlaintext) {
     PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
@@ -115,7 +115,7 @@ TEST(PlainTextTest, AddPlaintext) {
     ASSERT_LE(diff, MAX_NORM);
 }
 
-TEST(PlainTextTest, AddPlainScalar) {
+TEST(PlaintextTest, AddPlainScalar) {
     double plaintext = (double)create_random_positive_int();
     PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
@@ -134,7 +134,7 @@ TEST(PlainTextTest, AddPlainScalar) {
     ASSERT_LE(diff, MAX_NORM);
 }
 
-TEST(PlainTextTest, Sub) {
+TEST(PlaintextTest, Sub) {
     PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
@@ -153,7 +153,7 @@ TEST(PlainTextTest, Sub) {
     ASSERT_LE(diff, MAX_NORM);
 }
 
-TEST(PlainTextTest, SubPlaintext) {
+TEST(PlaintextTest, SubPlaintext) {
     PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
@@ -171,7 +171,7 @@ TEST(PlainTextTest, SubPlaintext) {
     ASSERT_LE(diff, MAX_NORM);
 }
 
-TEST(PlainTextTest, SubPlainScalar) {
+TEST(PlaintextTest, SubPlainScalar) {
     double plaintext = (double)create_random_positive_int();
     PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
@@ -190,7 +190,7 @@ TEST(PlainTextTest, SubPlainScalar) {
     ASSERT_LE(diff, MAX_NORM);
 }
 
-TEST(PlainTextTest, MultiplyPlainScalar) {
+TEST(PlaintextTest, MultiplyPlainScalar) {
     double plaintext = (double)create_random_positive_int();
     PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
@@ -209,7 +209,7 @@ TEST(PlainTextTest, MultiplyPlainScalar) {
     ASSERT_LE(diff, MAX_NORM);
 }
 
-TEST(PlainTextTest, MultiplyPlainMattrix) {
+TEST(PlaintextTest, MultiplyPlainMattrix) {
     PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
@@ -227,7 +227,7 @@ TEST(PlainTextTest, MultiplyPlainMattrix) {
     ASSERT_LE(diff, MAX_NORM);
 }
 
-TEST(PlainTextTest, Multiply) {
+TEST(PlaintextTest, Multiply) {
     PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
@@ -246,7 +246,7 @@ TEST(PlainTextTest, Multiply) {
     ASSERT_LE(diff, MAX_NORM);
 }
 
-TEST(PlainTextTest, Square) {
+TEST(PlaintextTest, Square) {
     PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);

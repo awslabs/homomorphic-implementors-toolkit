@@ -216,7 +216,7 @@ namespace hit {
         for (int i = 0; i < ct.num_slots(); i++) {
             ct.raw_pt[i] = ct.raw_pt[i] * plain[i];
         }
-        // update_max_log_plain_val(ct);
+        update_max_log_plain_val(ct);
         print_stats(ct);
     }
 
@@ -224,7 +224,7 @@ namespace hit {
         for (auto &coeff : ct.raw_pt) {
             coeff *= coeff;
         }
-        // update_max_log_plain_val(ct);
+        update_max_log_plain_val(ct);
         print_stats(ct);
     }
 
