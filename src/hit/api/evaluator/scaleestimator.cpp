@@ -325,10 +325,6 @@ namespace hit {
         }
     }
 
-    // double ScaleEstimator::get_exact_max_log_plain_val() const {
-    //     return plaintext_eval->get_exact_max_log_plain_val();
-    // }
-
     double ScaleEstimator::get_estimated_max_log_scale() const {
         /* During the evaluation, update_max_log_scale computed the maximum scale
          * implied by the "correctness" constraint (to prevent the computation

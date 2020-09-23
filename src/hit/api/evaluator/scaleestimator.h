@@ -38,10 +38,6 @@ namespace hit {
         ScaleEstimator(ScaleEstimator &&) = delete;
         ScaleEstimator &operator=(ScaleEstimator &&) = delete;
 
-        // return the base-2 log of the maximum plaintext value in the computation
-        // this is useful for putting an upper bound on the scale parameter
-        // double get_exact_max_log_plain_val() const;
-
         // return the base-2 log of the maximum scale that can be used for this
         // computation. Using a scale larger than this will result in the plaintext
         // exceeding SEAL's maximum size, and using a scale smaller than this value
