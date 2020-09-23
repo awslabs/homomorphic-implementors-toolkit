@@ -15,7 +15,7 @@ using namespace seal;
 namespace hit {
 
     // This is an approximation of -infity, since infNorm(x) >= 0 = 2^-infinity
-    // const double INITIAL_PLAINTEXT_MAX_LOG = -100;
+    const double INITIAL_PLAINTEXT_MAX_LOG = -100;
 
     PlaintextEval::PlaintextEval(int num_slots) : num_slots_(num_slots) {
     }
@@ -25,7 +25,7 @@ namespace hit {
     void PlaintextEval::reset_internal() {
         {
             scoped_lock lock(mutex_);
-            // plaintext_max_log_ = INITIAL_PLAINTEXT_MAX_LOG;
+            plaintext_max_log_ = INITIAL_PLAINTEXT_MAX_LOG;
         }
     }
 
@@ -37,6 +37,12 @@ namespace hit {
                 "You can only encrypt vectors which have exactly as many coefficients as the number of plaintext "
                 "slots: Expected " +
                 to_string(num_slots_) + ", got " + to_string(coeffs.size()));
+        }
+
+        {
+            scoped_lock lock(mutex_);
+            // takes the actual max value, we need to set the log of it
+            plaintext_max_log_ = max(plaintext_max_log_, log2(l_inf_norm(coeffs)));
         }
 
         CKKSCiphertext destination;
@@ -73,21 +79,13 @@ namespace hit {
         VLOG(LOG_VERBOSE) << exact_plaintext_info.str();
     }
 
-    // void PlaintextEval::update_max_log_plain_val(const CKKSCiphertext &ct) {
-    //     double exact_plaintext_max_val = l_inf_norm(ct.plaintext().data());
-    //     {
-    //         scoped_lock lock(mutex_);
-    //         plaintext_max_log_ = max(plaintext_max_log_, log2(exact_plaintext_max_val));
-    //     }
-    // }
-
-    // void PlaintextEval::update_plaintext_max_val(double x) {
-    //     {
-    //         scoped_lock lock(mutex_);
-    //         // takes the actual max value, we need to set the log of it
-    //         plaintext_max_log_ = max(plaintext_max_log_, log2(x));
-    //     }
-    // }
+    void PlaintextEval::update_max_log_plain_val(const CKKSCiphertext &ct) {
+        double exact_plaintext_max_val = l_inf_norm(ct.plaintext().data());
+        {
+            scoped_lock lock(mutex_);
+            plaintext_max_log_ = max(plaintext_max_log_, log2(exact_plaintext_max_val));
+        }
+    }
 
     void PlaintextEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
         vector<double> rot_temp;
@@ -138,14 +136,14 @@ namespace hit {
 
     void PlaintextEval::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         ct1.raw_pt = ct1.plaintext() + ct2.plaintext();
-        // update_max_log_plain_val(ct1);
+        update_max_log_plain_val(ct1);
         print_stats(ct1);
     }
 
     void PlaintextEval::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         Vector coeffVec(ct.num_slots(), scalar);
         ct.raw_pt = ct.plaintext() + coeffVec;
-        // update_max_log_plain_val(ct);
+        update_max_log_plain_val(ct);
         print_stats(ct);
     }
 
@@ -159,20 +157,20 @@ namespace hit {
 
         Vector coeffVec(ct.num_slots(), plain);
         ct.raw_pt = ct.plaintext() + coeffVec;
-        // update_max_log_plain_val(ct);
+        update_max_log_plain_val(ct);
         print_stats(ct);
     }
 
     void PlaintextEval::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         ct1.raw_pt = ct1.plaintext() - ct2.plaintext();
-        // update_max_log_plain_val(ct1);
+        update_max_log_plain_val(ct1);
         print_stats(ct1);
     }
 
     void PlaintextEval::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         Vector coeffVec(ct.num_slots(), scalar);
         ct.raw_pt = ct.plaintext() - coeffVec;
-        // update_max_log_plain_val(ct);
+        update_max_log_plain_val(ct);
         print_stats(ct);
     }
 
@@ -186,7 +184,7 @@ namespace hit {
 
         Vector coeffVec(ct.num_slots(), plain);
         ct.raw_pt = ct.plaintext() - coeffVec;
-        // update_max_log_plain_val(ct);
+        update_max_log_plain_val(ct);
         print_stats(ct);
     }
 
@@ -197,13 +195,13 @@ namespace hit {
         for (int i = 0; i < ct1.plaintext().size(); i++) {
             ct1.raw_pt[i] = ct1.raw_pt[i] * ct2.raw_pt[i];
         }
-        // update_max_log_plain_val(ct1);
+        update_max_log_plain_val(ct1);
         print_stats(ct1);
     }
 
     void PlaintextEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         ct.raw_pt = scalar * ct.plaintext();
-        // update_max_log_plain_val(ct);
+        update_max_log_plain_val(ct);
         print_stats(ct);
     }
 
@@ -245,8 +243,8 @@ namespace hit {
         print_stats(ct);
     }
 
-    // double PlaintextEval::get_exact_max_log_plain_val() const {
-    //     shared_lock lock(mutex_);
-    //     return plaintext_max_log_;
-    // }
+    double PlaintextEval::get_exact_max_log_plain_val() const {
+        shared_lock lock(mutex_);
+        return plaintext_max_log_;
+    }
 }  // namespace hit

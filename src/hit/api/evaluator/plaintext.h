@@ -33,7 +33,7 @@ namespace hit {
 
         // return the base-2 log of the maximum plaintext value in the computation
         // this is useful for putting an upper bound on the scale parameter
-        // double get_exact_max_log_plain_val() const;
+        double get_exact_max_log_plain_val() const;
 
         // primarily used to indicate the maximum value for each *input* to the function.
         // For circuits which are a no-op, this function is the only way the evaluator
@@ -81,7 +81,7 @@ namespace hit {
        private:
         int num_slots_ = 0;
 
-        // void update_max_log_plain_val(const CKKSCiphertext &ct);
+        void update_max_log_plain_val(const CKKSCiphertext &ct);
 
         void print_stats(const CKKSCiphertext &ct) const;
 
