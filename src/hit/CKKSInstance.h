@@ -65,13 +65,4 @@ namespace hit {
     };
 
     uint64_t estimate_key_size(int num_galois_shift, int plaintext_slots, int depth);
-
-    // This function tries to load a prevously-generated instance from disk. Instances are parameterized by
-    // the number of plaintext slots (num_slots), the multiplicative depth (multiplicative_depth), and the CKKS scale parameter
-    // (log_scale). `mode` can be `NORMAL`, `DEBUG`, or `NONEVALUATION`. `NORMAL` results in a standard homomorphic
-    // evaluator, while `DEBUG` loads a debug evaluator. `NONEVALUATION` is useful for cliend-side computation which
-    // don't need to perform any evaluation. A `NONEVALUATION` instance can *ONLY* be used for encryption and
-    // decryption.
-    CKKSInstance *try_load_instance(int num_slots, int multiplicative_depth, int log_scale, Mode mode,
-                                    const std::vector<int> &galois_steps = std::vector<int>());
 }  // namespace hit
