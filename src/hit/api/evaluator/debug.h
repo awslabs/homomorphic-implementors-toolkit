@@ -20,9 +20,12 @@ namespace hit {
 
     class DebugEval : public CKKSEvaluator {
        public:
-        DebugEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder,
-                  seal::Encryptor &encryptor, const seal::GaloisKeys &galois_keys, const seal::RelinKeys &relin_keys,
-                  double scale, CKKSDecryptor &decryptor);
+        // DebugEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder,
+        //           seal::Encryptor &encryptor, const seal::GaloisKeys &galois_keys, const seal::RelinKeys &relin_keys,
+        //           double scale, CKKSDecryptor &decryptor);
+
+        DebugEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params = true,
+                  const std::vector<int> &galois_steps = std::vector<int>());
 
         /* For documentation on the API, see ../evaluator.h */
         ~DebugEval() override;
@@ -32,20 +35,24 @@ namespace hit {
         DebugEval(DebugEval &&) = delete;
         DebugEval &operator=(DebugEval &&) = delete;
 
+        CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1) override;
+
+        std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
+
         // primarily used to indicate the maximum value for each *input* to the function.
         // For functions which are a no-op, this function is the only way the evaluator
         // can learn the maximum plaintext values, and thereby appropriately restrict the scale.
-        void update_plaintext_max_val(double x);
+        // void update_plaintext_max_val(double x);
 
         // return the base-2 log of the maximum plaintext value in the computation
         // this is useful for putting an upper bound on the scale parameter
-        double get_exact_max_log_plain_val() const;
+        // double get_exact_max_log_plain_val() const;
 
         // return the base-2 log of the maximum scale that can be used for this
         // computation. Using a scale larger than this will result in the plaintext
         // exceeding SEAL's maximum size, and using a scale smaller than this value
         // will unnecessarily reduce precision of the computation.
-        double get_estimated_max_log_scale() const;
+        // double get_estimated_max_log_scale() const;
 
        protected:
         void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) override;
@@ -86,11 +93,8 @@ namespace hit {
        private:
         HomomorphicEval *homomorphic_eval;
         ScaleEstimator *scale_estimator;
-        CKKSDecryptor &decryptor;
-        const double init_scale_;
 
         void print_stats(const CKKSCiphertext &ct) const;
         void check_scale(const CKKSCiphertext &ct) const;
-
     };
 }  // namespace hit

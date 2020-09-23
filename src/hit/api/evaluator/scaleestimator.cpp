@@ -15,10 +15,49 @@ using namespace seal;
 
 namespace hit {
 
-    ScaleEstimator::ScaleEstimator(const shared_ptr<SEALContext> &context, int poly_deg, double base_scale)
-        : CKKSEvaluator(context), base_scale_(base_scale), poly_deg_(poly_deg) {
-        plaintext_eval = new PlaintextEval(context);
-        depth_finder = new DepthFinder(context);
+    // ScaleEstimator::ScaleEstimator(const shared_ptr<SEALContext> &context, int poly_deg, double base_scale)
+    //     : CKKSEvaluator(context), base_scale_(base_scale), poly_deg_(poly_deg) {
+    //     plaintext_eval = new PlaintextEval(context);
+    //     depth_finder = new DepthFinder(context);
+
+    //     // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
+    //     estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
+    //     auto context_data = context->first_context_data();
+    //     for (const auto &prime : context_data->parms().coeff_modulus()) {
+    //         estimated_max_log_scale_ += log2(prime.value());
+    //     }
+    // }
+
+    // it turns out that the lossiness of encoding/decoding strongly depends on
+    // this value. For evaluators that don't really use SEAL, but do use CKKS
+    // encoding/decoding, this should be set to as high as possible.
+    int defaultScaleBits = 30;
+
+    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth): base_scale_(defaultScaleBits) {
+        plaintext_eval = new PlaintextEval(num_slots);
+        depth_finder = new DepthFinder();
+        depth_finder->top_he_level_ = multiplicative_depth;
+
+        shared_param_init(num_slots, multiplicative_depth, defaultScaleBits, false);
+
+        // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
+        estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
+        auto context_data = context->first_context_data();
+        for (const auto &prime : context_data->parms().coeff_modulus()) {
+            estimated_max_log_scale_ += log2(prime.value());
+        }
+    }
+
+    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth, const HomomorphicEval &homom_eval): base_scale_(defaultScaleBits) {
+        plaintext_eval = new PlaintextEval(num_slots);
+        depth_finder = new DepthFinder();
+        depth_finder->top_he_level_ = multiplicative_depth;
+
+        // instead of calling shared_param_init to create a new instance, use the instance provided
+        params = homom_eval.params;
+        encoder = homom_eval.encoder;
+        context = homom_eval.context;
+        log_scale_ = homom_eval.log_scale_;
 
         // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
@@ -31,6 +70,49 @@ namespace hit {
     ScaleEstimator::~ScaleEstimator() {
         delete depth_finder;
         delete plaintext_eval;
+        delete params;
+        delete encoder;
+    }
+
+    CKKSCiphertext ScaleEstimator::encrypt(const std::vector<double> &coeffs, int level) {
+        update_plaintext_max_val(coeffs);
+
+        int num_slots_ = encoder->slot_count();
+        // in ENC_META, CKKSInstance sets num_slots_ to 4096 and doesn't actually attempt to calcuate the correct value.
+        // We have to ignore that case here. Otherwise, input size should exactly equal the number of slots.
+        if (coeffs.size() != num_slots_) {
+            // bad things can happen if you don't plan for your input to be smaller than the ciphertext
+            // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
+            throw invalid_argument(
+                "You can only encrypt vectors which have exactly as many coefficients as the number of plaintext "
+                "slots: Expected " +
+                to_string(num_slots_) + ", got " + to_string(coeffs.size()));
+        }
+
+        if (level == -1) {
+            level = context->first_context_data()->chain_index();
+        }
+
+        auto context_data = context->first_context_data();
+        double scale = pow(2, base_scale_);
+        while (context_data->chain_index() > level) {
+            // order of operations is very important: floating point arithmetic is not associative
+            scale = (scale * scale) / static_cast<double>(context_data->parms().coeff_modulus().back().value());
+            context_data = context_data->next_context_data();
+        }
+
+        CKKSCiphertext destination;
+        destination.he_level_ = level;
+        destination.scale_ = scale;
+        destination.raw_pt = coeffs;
+        destination.num_slots_ = num_slots_;
+        destination.initialized = true;
+
+        return destination;
+    }
+
+    std::vector<double> ScaleEstimator::decrypt(const CKKSCiphertext&) const {
+        throw invalid_argument("CKKSInstance: You cannot call decrypt with the ScaleEstimator evaluator!");
     }
 
     void ScaleEstimator::reset_internal() {
@@ -245,8 +327,9 @@ namespace hit {
     void ScaleEstimator::relinearize_inplace_internal(CKKSCiphertext &) {
     }
 
-    void ScaleEstimator::update_plaintext_max_val(double x) {
-        // account for a freshly-ct ciphertext
+    void ScaleEstimator::update_plaintext_max_val(const std::vector<double> &coeffs) {
+        double x = l_inf_norm(coeffs);
+        // account for a freshly-encrypted ciphertext
         // if this is a depth-0 computation *AND* the parameters are such that it is a no-op,
         // this is the only way we can account for the values in the input. We have to encrypt them,
         // and if the scale is ~2^60, encoding will (rightly) fail
@@ -259,9 +342,9 @@ namespace hit {
         }
     }
 
-    double ScaleEstimator::get_exact_max_log_plain_val() const {
-        return plaintext_eval->get_exact_max_log_plain_val();
-    }
+    // double ScaleEstimator::get_exact_max_log_plain_val() const {
+    //     return plaintext_eval->get_exact_max_log_plain_val();
+    // }
 
     double ScaleEstimator::get_estimated_max_log_scale() const {
         /* During the evaluation, update_max_log_scale computed the maximum scale
@@ -274,7 +357,7 @@ namespace hit {
          * log2(p_1)=log2(p_k)=60 and log2(p_i)=s=log(scale). Thus s must be less
          * than (maxModBits-120)/(k-2)
          */
-        int max_mod_bits = poly_degree_to_max_mod_bits(poly_deg_);
+        int max_mod_bits = poly_degree_to_max_mod_bits(2*encoder->slot_count());
         auto estimated_log_scale = static_cast<double>(PLAINTEXT_LOG_MAX);
         {
             shared_lock lock(mutex_);

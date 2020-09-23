@@ -12,18 +12,28 @@ namespace hit {
 
     /* This evaluator's sole purpose is to compute the
      * multiplicative depth of a computation.
+     *
+     * There is an implicit assumption that the multiplicative depth
+     * does not depend on the homomorphic parameters.
      */
     class DepthFinder : public CKKSEvaluator {
        public:
+
+        DepthFinder() = default;
+
         explicit DepthFinder(const std::shared_ptr<seal::SEALContext> &context);
 
         /* For documentation on the API, see ../evaluator.h */
-        ~DepthFinder() override;
+        ~DepthFinder() override = default;
 
         DepthFinder(const DepthFinder &) = delete;
         DepthFinder &operator=(const DepthFinder &) = delete;
         DepthFinder(DepthFinder &&) = delete;
         DepthFinder &operator=(DepthFinder &&) = delete;
+
+        CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1) override;
+
+        std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
 
         /* Return the multiplicative depth of this computation.
          * Must be called after performing the target computation.
@@ -68,7 +78,10 @@ namespace hit {
         void reset_internal() override;
 
        private:
-        int multiplicative_depth_;
+        int multiplicative_depth_ = 0;
+        // this is always 0 when used as a standalone evaluator,
+        // but derived evaluators may change this value
+        int top_he_level_ = 0;
 
         void print_stats(const CKKSCiphertext &ct) const;
 

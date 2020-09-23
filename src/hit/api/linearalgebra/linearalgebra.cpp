@@ -27,7 +27,7 @@ namespace hit {
         for (int i = 0; i < mat_pieces.size(); i++) {
             vector<CKKSCiphertext> row_cts(mat_pieces[0].size());
             for (int j = 0; j < mat_pieces[0].size(); j++) {
-                row_cts[j] = inst.encrypt(mat_pieces[i][j].data(), level);
+                row_cts[j] = eval.encrypt(mat_pieces[i][j].data(), level);
             }
             mat_cts[i] = row_cts;
         }
@@ -44,7 +44,7 @@ namespace hit {
             vector<Matrix> row_pieces(enc_mat.cts[0].size());
             for (int j = 0; j < enc_mat.cts[0].size(); j++) {
                 row_pieces[j] = Matrix(enc_mat.encoding_unit().encoding_height(),
-                                       enc_mat.encoding_unit().encoding_width(), inst.decrypt(enc_mat.cts[i][j]));
+                                       enc_mat.encoding_unit().encoding_width(), eval.decrypt(enc_mat.cts[i][j]));
             }
             mat_pieces[i] = row_pieces;
         }
@@ -70,7 +70,7 @@ namespace hit {
         vector<Matrix> mat_pieces = encode_row_vector(vec, unit);
         vector<CKKSCiphertext> mat_cts(mat_pieces.size());
         for (int i = 0; i < mat_pieces.size(); i++) {
-            mat_cts[i] = inst.encrypt(mat_pieces[i].data(), level);
+            mat_cts[i] = eval.encrypt(mat_pieces[i].data(), level);
         }
         return EncryptedRowVector(vec.size(), unit, mat_cts);
     }
@@ -83,7 +83,7 @@ namespace hit {
         vector<Matrix> mat_pieces(enc_vec.cts.size());
         for (int i = 0; i < enc_vec.cts.size(); i++) {
             mat_pieces[i] = Matrix(enc_vec.encoding_unit().encoding_height(), enc_vec.encoding_unit().encoding_width(),
-                                   inst.decrypt(enc_vec.cts[i]));
+                                   eval.decrypt(enc_vec.cts[i]));
         }
         return decode_row_vector(mat_pieces, enc_vec.width());
     }
@@ -97,13 +97,13 @@ namespace hit {
         vector<Matrix> mat_pieces = encode_col_vector(vec, unit);
         vector<CKKSCiphertext> mat_cts(mat_pieces.size());
         for (int i = 0; i < mat_pieces.size(); i++) {
-            mat_cts[i] = inst.encrypt(mat_pieces[i].data(), level);
+            mat_cts[i] = eval.encrypt(mat_pieces[i].data(), level);
         }
         return EncryptedColVector(vec.size(), unit, mat_cts);
     }
 
     EncodingUnit LinearAlgebra::make_unit(int encoding_height) const {
-        return EncodingUnit(encoding_height, inst.plaintext_dim() / encoding_height);
+        return EncodingUnit(encoding_height, eval.plaintext_dim() / encoding_height);
     }
 
     Vector LinearAlgebra::decrypt(const EncryptedColVector &enc_vec) const {
@@ -114,12 +114,12 @@ namespace hit {
         vector<Matrix> mat_pieces(enc_vec.cts.size());
         for (int i = 0; i < enc_vec.cts.size(); i++) {
             mat_pieces[i] = Matrix(enc_vec.encoding_unit().encoding_height(), enc_vec.encoding_unit().encoding_width(),
-                                   inst.decrypt(enc_vec.cts[i]));
+                                   eval.decrypt(enc_vec.cts[i]));
         }
         return decode_col_vector(mat_pieces, enc_vec.height());
     }
 
-    LinearAlgebra::LinearAlgebra(CKKSInstance &inst) : eval(*(inst.evaluator)), inst(inst) {
+    LinearAlgebra::LinearAlgebra(CKKSEvaluator &eval) : eval(eval) {
     }
 
     // explicit template instantiation

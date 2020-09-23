@@ -5,7 +5,6 @@
 
 #include "api/decryptor.h"
 #include "api/encryptor.h"
-#include "api/evaluator.h"
 #include "hit/protobuf/ckksparams.pb.h"  // NOLINT
 #include "seal/context.h"
 #include "seal/seal.h"
@@ -24,11 +23,13 @@ namespace hit {
 
     class CKKSInstance {
        public:
+        CKKSInstance() = default;
+
         // only for finding the depth of a computation
-        static CKKSInstance *get_new_depthfinder_instance();
+        // static CKKSInstance *get_new_depthfinder_instance();
 
         // only for counting the number of operations in the computation
-        static CKKSInstance *get_new_opcount_instance();
+        // static CKKSInstance *get_new_opcount_instance();
 
         /* only for doing plaintext computation
          * The number of slots is a proxy for the dimension of the underlying cyclotomic ring.
@@ -42,7 +43,7 @@ namespace hit {
          * `use_seal_params` to false allows you to set parameters which may not achieve 128-bits
          * of security.
          */
-        static CKKSInstance *get_new_plaintext_instance(int num_slots, bool use_seal_params = true);
+        // static CKKSInstance *get_new_plaintext_instance(int num_slots, bool use_seal_params = true);
 
         /* only for scale estimation
          * See the previous constuctor for an explanation of `num_slots`.
@@ -50,75 +51,78 @@ namespace hit {
          * using the DepthFinder evaluator.
          * See `get_new_plaintext_instance` for description of `use_seal_params`.
          */
-        static CKKSInstance *get_new_scaleestimator_instance(int num_slots, int multiplicative_depth, bool use_seal_params = true);
+        // static CKKSInstance *get_new_scaleestimator_instance(int num_slots, int multiplicative_depth, bool use_seal_params = true);
 
         /* Generate a CKKSInstance targeting the desired number of slots, multiplicative
          * depth and log(scale) value.
          * See `get_new_plaintext_instance` for description of `use_seal_params`.
          */
-        static CKKSInstance *get_new_homomorphic_instance(int num_slots, int multiplicative_depth, int log_scale,
-                                                          bool use_seal_params = true,
-                                                          const std::vector<int> &galois_steps = std::vector<int>());
+        // static CKKSInstance *get_new_homomorphic_instance(int num_slots, int multiplicative_depth, int log_scale,
+        //                                                   bool use_seal_params = true,
+        //                                                   const std::vector<int> &galois_steps = std::vector<int>());
 
-        static CKKSInstance *load_homomorphic_instance(std::istream &params_stream, std::istream &galois_key_stream,
-                                                       std::istream &relin_key_stream, std::istream &secret_key_stream);
+        // static CKKSInstance *load_homomorphic_instance(std::istream &params_stream, std::istream &galois_key_stream,
+        //                                                std::istream &relin_key_stream, std::istream &secret_key_stream);
 
-        void save(std::ostream *params_stream, std::ostream *galois_key_stream, std::ostream *relin_key_stream,
-                  std::ostream *secret_key_stream);
+        // void save(std::ostream *params_stream, std::ostream *galois_key_stream, std::ostream *relin_key_stream,
+        //           std::ostream *secret_key_stream);
 
         /* Same as `get_new_homomorphic_instance`, except with verbose meta-data output and internal
          * tracking of relevant values to the computation
          * See `get_new_plaintext_instance` for description of `use_seal_params`.
          */
-        static CKKSInstance *get_new_debug_instance(int num_slots, int multiplicative_depth, int log_scale,
-                                                    bool use_seal_params = true,
-                                                    const std::vector<int> &galois_steps = std::vector<int>());
+        // static CKKSInstance *get_new_debug_instance(int num_slots, int multiplicative_depth, int log_scale,
+        //                                             bool use_seal_params = true,
+        //                                             const std::vector<int> &galois_steps = std::vector<int>());
 
         /* Create a new debug instance from the provided parameters and keys */
-        static CKKSInstance *load_debug_instance(std::istream &params_stream, std::istream &galois_key_stream,
-                                                 std::istream &relin_key_stream, std::istream &secret_key_stream);
+        // static CKKSInstance *load_debug_instance(std::istream &params_stream, std::istream &galois_key_stream,
+        //                                          std::istream &relin_key_stream, std::istream &secret_key_stream);
 
         /* For evaluation only. Decryption is not available. */
-        static CKKSInstance *load_eval_instance(std::istream &params_stream, std::istream &galois_key_stream,
-                                                std::istream &relin_key_stream);
+        // static CKKSInstance *load_eval_instance(std::istream &params_stream, std::istream &galois_key_stream,
+        //                                         std::istream &relin_key_stream);
 
         /* For encryption and decryption only. Evaluation is not available. */
-        static CKKSInstance *load_noneval_instance(std::istream &params_stream, std::istream &secret_key_stream);
+        // static CKKSInstance *load_noneval_instance(std::istream &params_stream, std::istream &secret_key_stream);
 
         ~CKKSInstance();
 
         // Encrypt a (full-dimensional) vector of coefficients. If an encryption level (integer >= 0) is not specified,
         // the ciphertext will be encrypted at the highest level allowed by the parameters.
-        CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1);
+        virtual CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level) = 0;
 
         // A warning will show in log if you decrypt when the ciphertext is not at level 0
         // Usually, decrypting a ciphertext not at level 0 indicates you are doing something
         // inefficient. However for testing purposes, it may be useful, so you will want to
         // suppress the warning.
-        std::vector<double> decrypt(const CKKSCiphertext &encrypted);
+        virtual std::vector<double> decrypt(const CKKSCiphertext &encrypted) const = 0;
 
         int plaintext_dim() const;
 
-        CKKSEvaluator *evaluator;
+        // CKKSEvaluator *evaluator;
         std::shared_ptr<seal::SEALContext> context;
+        seal::EncryptionParameters *params = nullptr;
+        seal::CKKSEncoder *encoder = nullptr;
+        int log_scale_;
 
-        double get_estimated_max_log_scale() const;
+        // double get_estimated_max_log_scale() const;
 
-        int get_multiplicative_depth() const;
+        // int get_multiplicative_depth() const;
 
-        double get_exact_max_log_plain_val() const;
+        // double get_exact_max_log_plain_val() const;
 
-        void print_op_count() const;
+        // void print_op_count() const;
 
         // reuse this instance for another computation
-        void reset();
+        // void reset();
 
         CKKSInstance(const CKKSInstance &) = delete;
         CKKSInstance &operator=(const CKKSInstance &) = delete;
         CKKSInstance(CKKSInstance &&) = delete;
         CKKSInstance &operator=(CKKSInstance &&) = delete;
 
-       private:
+       protected:
         // instances without keys
         CKKSInstance(Mode mode, int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params);
 
@@ -135,16 +139,15 @@ namespace hit {
         void shared_param_init(int num_slots, int multiplicative_depth, int log_scale_in, bool use_seal_params);
         hit::protobuf::CKKSParams save_ckks_params();
 
-        seal::Encryptor *seal_encryptor;
-        seal::CKKSEncoder *encoder;
-        CKKSEncryptor *encryptor;
-        CKKSDecryptor *decryptor;
+        seal::Evaluator *seal_evaluator;
+        seal::Encryptor *seal_encryptor = nullptr;
+        seal::Decryptor *seal_decryptor = nullptr;
+        // CKKSEncryptor *encryptor = nullptr;
+        // CKKSDecryptor *decryptor = nullptr;
         seal::PublicKey pk;
         seal::SecretKey sk;
-        seal::GaloisKeys gk;
-        seal::RelinKeys rk;
-        seal::EncryptionParameters *params;
-        int log_scale_;
+        seal::GaloisKeys galois_keys;
+        seal::RelinKeys relin_keys;
         int encryption_count_ = 0;
         bool standard_params_;
         Mode mode_;

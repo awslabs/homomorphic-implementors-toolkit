@@ -14,7 +14,7 @@ namespace hit {
     /* This evaluator tracks the plaintext computation */
     class OpCount : public CKKSEvaluator {
        public:
-        explicit OpCount(const std::shared_ptr<seal::SEALContext> &context);
+        OpCount();
 
         /* For documentation on the API, see ../evaluator.h */
         ~OpCount() override;
@@ -27,7 +27,9 @@ namespace hit {
         /* Print the total number of operations performed in this computation. */
         void print_op_count() const;
 
-        int get_multiplicative_depth() const;
+        CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1) override;
+
+        std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
 
        protected:
         void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) override;
@@ -72,6 +74,7 @@ namespace hit {
         int rotations_ = 0;
         int mod_downs_ = 0;
         int mod_down_multi_levels_ = 0;
+        int encryptions_ = 0;
 
         inline void count_multiple_ops() {
             std::scoped_lock lock(mutex_);

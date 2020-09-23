@@ -15,17 +15,72 @@ using namespace seal;
 
 namespace hit {
 
-    DebugEval::DebugEval(const shared_ptr<SEALContext> &context, CKKSEncoder &encoder, Encryptor &encryptor,
-                         const GaloisKeys &galois_keys, const RelinKeys &relin_keys, double scale,
-                         CKKSDecryptor &decryptor)
-        : CKKSEvaluator(context), decryptor(decryptor), init_scale_(scale) {
-        homomorphic_eval = new HomomorphicEval(context, encoder, encryptor, galois_keys, relin_keys, false);
-        scale_estimator = new ScaleEstimator(context, static_cast<int>(2 * encoder.slot_count()), scale);
+    // DebugEval::DebugEval(const shared_ptr<SEALContext> &context, CKKSEncoder &encoder, Encryptor &encryptor,
+    //                      const GaloisKeys &galois_keys, const RelinKeys &relin_keys, double scale,
+    //                      CKKSDecryptor &decryptor)
+    //     : CKKSEvaluator(context), decryptor(decryptor), log_scale_(scale) {
+    //     homomorphic_eval = new HomomorphicEval(context, encoder, encryptor, galois_keys, relin_keys, false);
+    //     scale_estimator = new ScaleEstimator(context, static_cast<int>(2 * encoder.slot_count()), scale);
+    // }
+
+    DebugEval::DebugEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,
+                         const std::vector<int> &galois_steps) {
+        homomorphic_eval = new HomomorphicEval(num_slots, multiplicative_depth, log_scale, use_seal_params, galois_steps);
+        // use the _private_ ScaleEstimator constructor to avoid creating two sets of CKKS params
+        scale_estimator = new ScaleEstimator(num_slots, multiplicative_depth, *homomorphic_eval);
+        context = homomorphic_eval->context;
+        log_scale_ = homomorphic_eval->log_scale_;
+        encoder = homomorphic_eval->encoder;
+        seal_encryptor = homomorphic_eval->seal_encryptor;
     }
 
     DebugEval::~DebugEval() {
         delete homomorphic_eval;
         delete scale_estimator;
+    }
+
+    CKKSCiphertext DebugEval::encrypt(const std::vector<double> &coeffs, int level) {
+        scale_estimator->update_plaintext_max_val(coeffs);
+
+        int num_slots_ = encoder->slot_count();
+        if (coeffs.size() != num_slots_) {
+            // bad things can happen if you don't plan for your input to be smaller than the ciphertext
+            // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
+            throw invalid_argument(
+                "You can only encrypt vectors which have exactly as many coefficients as the number of plaintext "
+                "slots: Expected " +
+                to_string(num_slots_) + ", got " + to_string(coeffs.size()));
+        }
+
+        if (level == -1) {
+            level = context->first_context_data()->chain_index();
+        }
+
+        auto context_data = context->first_context_data();
+        double scale = pow(2, log_scale_);
+        while (context_data->chain_index() > level) {
+            // order of operations is very important: floating point arithmetic is not associative
+            scale = (scale * scale) / static_cast<double>(context_data->parms().coeff_modulus().back().value());
+            context_data = context_data->next_context_data();
+        }
+
+        CKKSCiphertext destination;
+        destination.he_level_ = level;
+        destination.scale_ = scale;
+        destination.raw_pt = coeffs;
+
+        Plaintext temp;
+        encoder->encode(coeffs, context_data->parms_id(), scale, temp);
+        seal_encryptor->encrypt(temp, destination.seal_ct);
+
+        destination.num_slots_ = num_slots_;
+        destination.initialized = true;
+
+        return destination;
+    }
+
+    std::vector<double> DebugEval::decrypt(const CKKSCiphertext &encrypted) const {
+        return homomorphic_eval->decrypt(encrypted);
     }
 
     void DebugEval::reset_internal() {
@@ -37,7 +92,7 @@ namespace hit {
     // or is at the square of its expected scale.
     void DebugEval::check_scale(const CKKSCiphertext &ct) const {
         auto context_data = context->first_context_data();
-        double expected_scale = init_scale_;
+        double expected_scale = log_scale_;
         while (context_data->chain_index() > ct.he_level()) {
             expected_scale = (expected_scale * expected_scale) /
                             static_cast<double>(context_data->parms().coeff_modulus().back().value());
@@ -57,7 +112,7 @@ namespace hit {
         double norm = 0;
 
         // decrypt to compute the approximate plaintext
-        vector<double> homom_plaintext = decryptor.decrypt(ct);
+        vector<double> homom_plaintext = decrypt(ct);
         vector<double> exact_plaintext = ct.raw_pt.data();
 
         norm = diff2_norm(exact_plaintext, homom_plaintext);
@@ -119,10 +174,10 @@ namespace hit {
             LOG(INFO) << actual_debug_result.str();
 
             Plaintext encoded_plain;
-            homomorphic_eval->encoder.encode(ct.raw_pt.data(), scale_estimator->base_scale_, encoded_plain);
+            homomorphic_eval->encoder->encode(ct.raw_pt.data(), scale_estimator->base_scale_, encoded_plain);
 
             vector<double> decoded_plain;
-            homomorphic_eval->encoder.decode(encoded_plain, decoded_plain);
+            homomorphic_eval->encoder->decode(encoded_plain, decoded_plain);
 
             // the exact_plaintext and homom_plaintext should have the same length.
             // decoded_plain is full-dimensional, however. This may not match
@@ -298,15 +353,15 @@ namespace hit {
         check_scale(ct);
     }
 
-    void DebugEval::update_plaintext_max_val(double x) {
-        scale_estimator->update_plaintext_max_val(x);
-    }
+    // void DebugEval::update_plaintext_max_val(double x) {
+    //     scale_estimator->update_plaintext_max_val(x);
+    // }
 
-    double DebugEval::get_exact_max_log_plain_val() const {
-        return scale_estimator->get_exact_max_log_plain_val();
-    }
+    // double DebugEval::get_exact_max_log_plain_val() const {
+    //     return scale_estimator->get_exact_max_log_plain_val();
+    // }
 
-    double DebugEval::get_estimated_max_log_scale() const {
-        return scale_estimator->get_estimated_max_log_scale();
-    }
+    // double DebugEval::get_estimated_max_log_scale() const {
+    //     return scale_estimator->get_estimated_max_log_scale();
+    // }
 }  // namespace hit

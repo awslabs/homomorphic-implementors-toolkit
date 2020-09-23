@@ -6,10 +6,12 @@
  */
 
 #include "homomorphic.h"
+#include "../../common.h"
 
 #include <future>
 
 #include "../../sealutils.h"
+#include <glog/logging.h>
 
 using namespace std;
 using namespace seal;
@@ -25,19 +27,128 @@ namespace hit {
      * metadata values, it will always be incorrect (no matter which order Debug calls its sub-evaluators).
      */
 
-    HomomorphicEval::HomomorphicEval(const shared_ptr<SEALContext> &context, CKKSEncoder &encoder, Encryptor &encryptor,
-                                     const GaloisKeys &galois_keys, const RelinKeys &relin_keys, bool update_metadata)
-        : CKKSEvaluator(context),
-          evaluator(context),
-          encoder(encoder),
-          encryptor(encryptor),
-          galois_keys(galois_keys),
-          relin_keys(relin_keys),
-          update_metadata_(update_metadata) {
-        evalPolicy = launch::async;
+    // HomomorphicEval::HomomorphicEval(const shared_ptr<SEALContext> &context, CKKSEncoder &encoder, Encryptor &encryptor,
+    //                                  const GaloisKeys &galois_keys, const RelinKeys &relin_keys, bool update_metadata)
+    //     : CKKSEvaluator(context),
+    //       // evaluator(context),
+    //       encoder(encoder),
+    //       encryptor(encryptor),
+    //       galois_keys(galois_keys),
+    //       relin_keys(relin_keys),
+    //       update_metadata_(update_metadata) {
+    //     evalPolicy = launch::async;
+    // }
+
+    HomomorphicEval::HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,
+                                     const vector<int> &galois_steps): update_metadata_(true) {
+        shared_param_init(num_slots, multiplicative_depth, log_scale, use_seal_params);
+        seal_evaluator = new seal::Evaluator(context);
+
+        int numGaloisKeys = galois_steps.size();
+        LOG(INFO) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth << ", including "
+                  << (numGaloisKeys != 0 ? to_string(numGaloisKeys) : "all") << " Galois keys." << endl;
+
+        double keysSizeBytes = estimate_key_size(galois_steps.size(), num_slots, multiplicative_depth);
+        LOG(INFO) << "Estimated size is " << setprecision(3);
+        // using base-10 (SI) units, rather than base-2 units.
+        double unitMultiplier = 1000;
+        double bytesPerKB = unitMultiplier;
+        double bytesPerMB = bytesPerKB * unitMultiplier;
+        double bytesPerGB = bytesPerMB * unitMultiplier;
+        if (keysSizeBytes < bytesPerKB) {
+            LOG(INFO) << keysSizeBytes << " bytes";
+        } else if (keysSizeBytes < bytesPerMB) {
+            LOG(INFO) << keysSizeBytes / bytesPerKB << " kilobytes (base 10)";
+        } else if (keysSizeBytes < bytesPerGB) {
+            LOG(INFO) << keysSizeBytes / bytesPerMB << " megabytes (base 10)";
+        } else {
+            LOG(INFO) << keysSizeBytes / bytesPerGB << " gigabytes (base 10)";
+        }
+
+        LOG(INFO) << "Generating keys...";
+        timepoint start = chrono::steady_clock::now();
+
+        // generate keys
+        // This call generates a KeyGenerator with fresh randomness
+        // The KeyGenerator object contains deterministic keys.
+        KeyGenerator keygen(context);
+        sk = keygen.secret_key();
+        pk = keygen.public_key();
+        if (numGaloisKeys > 0) {
+            galois_keys = keygen.galois_keys_local(galois_steps);
+        } else {
+            // generate all galois keys
+            galois_keys = keygen.galois_keys_local();
+        }
+        relin_keys = keygen.relin_keys_local();
+
+        print_elapsed_time(start);
+
+        seal_encryptor = new Encryptor(context, pk);
+        seal_decryptor = new Decryptor(context, sk);
     }
 
-    HomomorphicEval::~HomomorphicEval() = default;
+    HomomorphicEval::~HomomorphicEval() {
+        delete seal_encryptor;
+        delete seal_decryptor;
+        delete seal_evaluator;
+        delete encoder;
+        delete params;
+    }
+
+    CKKSCiphertext HomomorphicEval::encrypt(const std::vector<double> &coeffs, int level) {
+        int num_slots_ = encoder->slot_count();
+        if (coeffs.size() != num_slots_) {
+            // bad things can happen if you don't plan for your input to be smaller than the ciphertext
+            // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
+            throw invalid_argument(
+                "You can only encrypt vectors which have exactly as many coefficients as the number of plaintext "
+                "slots: Expected " +
+                to_string(num_slots_) + ", got " + to_string(coeffs.size()));
+        }
+
+        if (level == -1) {
+            level = context->first_context_data()->chain_index();
+        }
+
+        auto context_data = context->first_context_data();
+        double scale = (double)log_scale_;
+        while (context_data->chain_index() > level) {
+            // order of operations is very important: floating point arithmetic is not associative
+            scale = (scale * scale) / static_cast<double>(context_data->parms().coeff_modulus().back().value());
+            context_data = context_data->next_context_data();
+        }
+
+        CKKSCiphertext destination;
+        destination.he_level_ = level;
+        destination.scale_ = scale;
+
+        Plaintext temp;
+        encoder->encode(coeffs, context_data->parms_id(), scale, temp);
+        seal_encryptor->encrypt(temp, destination.seal_ct);
+
+        destination.num_slots_ = num_slots_;
+        destination.initialized = true;
+
+        return destination;
+    }
+
+    std::vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted) const {
+        Plaintext temp;
+
+        int lvl = encrypted.he_level();
+        if (lvl != 0) {
+            LOG(WARNING) << "Decrypting a ciphertext at level " << lvl << "; consider starting with a smaller modulus"
+                         << " to improve performance.";
+        }
+
+        seal_decryptor->decrypt(encrypted.seal_ct, temp);
+
+        vector<double> decoded_output;
+        encoder->decode(temp, decoded_output);
+
+        return decoded_output;
+    }
 
     void HomomorphicEval::reset_internal() {
     }
@@ -48,15 +159,15 @@ namespace hit {
 
     void HomomorphicEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
         CKKSCiphertext dest = ct;
-        evaluator.rotate_vector_inplace(ct.seal_ct, -steps, galois_keys);
+        seal_evaluator->rotate_vector_inplace(ct.seal_ct, -steps, galois_keys);
     }
 
     void HomomorphicEval::rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) {
-        evaluator.rotate_vector_inplace(ct.seal_ct, steps, galois_keys);
+        seal_evaluator->rotate_vector_inplace(ct.seal_ct, steps, galois_keys);
     }
 
     void HomomorphicEval::negate_inplace_internal(CKKSCiphertext &ct) {
-        evaluator.negate_inplace(ct.seal_ct);
+        seal_evaluator->negate_inplace(ct.seal_ct);
     }
 
     void HomomorphicEval::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
@@ -67,13 +178,13 @@ namespace hit {
                    << " != " << get_SEAL_level(ct2);
             throw invalid_argument(buffer.str());
         }
-        evaluator.add_inplace(ct1.seal_ct, ct2.seal_ct);
+        seal_evaluator->add_inplace(ct1.seal_ct, ct2.seal_ct);
     }
 
     void HomomorphicEval::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         Plaintext encoded_plain;
-        encoder.encode(scalar, ct.seal_ct.parms_id(), ct.seal_ct.scale(), encoded_plain);
-        evaluator.add_plain_inplace(ct.seal_ct, encoded_plain);
+        encoder->encode(scalar, ct.seal_ct.parms_id(), ct.seal_ct.scale(), encoded_plain);
+        seal_evaluator->add_plain_inplace(ct.seal_ct, encoded_plain);
     }
 
     void HomomorphicEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
@@ -82,8 +193,8 @@ namespace hit {
                 "Error in HomomorphicEval::add_plain_internal: plaintext size does not match ciphertext size");
         }
         Plaintext temp;
-        encoder.encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
-        evaluator.add_plain_inplace(ct.seal_ct, temp);
+        encoder->encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
+        seal_evaluator->add_plain_inplace(ct.seal_ct, temp);
     }
 
     void HomomorphicEval::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
@@ -94,13 +205,13 @@ namespace hit {
                    << " != " << get_SEAL_level(ct2);
             throw invalid_argument(buffer.str());
         }
-        evaluator.sub_inplace(ct1.seal_ct, ct2.seal_ct);
+        seal_evaluator->sub_inplace(ct1.seal_ct, ct2.seal_ct);
     }
 
     void HomomorphicEval::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         Plaintext encoded_plain;
-        encoder.encode(scalar, ct.seal_ct.parms_id(), ct.seal_ct.scale(), encoded_plain);
-        evaluator.sub_plain_inplace(ct.seal_ct, encoded_plain);
+        encoder->encode(scalar, ct.seal_ct.parms_id(), ct.seal_ct.scale(), encoded_plain);
+        seal_evaluator->sub_plain_inplace(ct.seal_ct, encoded_plain);
     }
 
     void HomomorphicEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
@@ -109,8 +220,8 @@ namespace hit {
                 "Error in HomomorphicEval::sub_plain_internal: plaintext size does not match ciphertext size");
         }
         Plaintext temp;
-        encoder.encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
-        evaluator.sub_plain_inplace(ct.seal_ct, temp);
+        encoder->encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
+        seal_evaluator->sub_plain_inplace(ct.seal_ct, temp);
     }
 
     void HomomorphicEval::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
@@ -121,7 +232,7 @@ namespace hit {
                    << " != " << get_SEAL_level(ct2);
             throw invalid_argument(buffer.str());
         }
-        evaluator.multiply_inplace(ct1.seal_ct, ct2.seal_ct);
+        seal_evaluator->multiply_inplace(ct1.seal_ct, ct2.seal_ct);
         if (update_metadata_) {
             ct1.scale_ *= ct2.scale();
         }
@@ -132,11 +243,11 @@ namespace hit {
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         if (scalar != double{0}) {
             Plaintext encoded_plain;
-            encoder.encode(scalar, ct.seal_ct.parms_id(), ct.seal_ct.scale(), encoded_plain);
-            evaluator.multiply_plain_inplace(ct.seal_ct, encoded_plain);
+            encoder->encode(scalar, ct.seal_ct.parms_id(), ct.seal_ct.scale(), encoded_plain);
+            seal_evaluator->multiply_plain_inplace(ct.seal_ct, encoded_plain);
         } else {
             double previous_scale = ct.seal_ct.scale();
-            encryptor.encrypt_zero(ct.seal_ct.parms_id(), ct.seal_ct);
+            seal_encryptor->encrypt_zero(ct.seal_ct.parms_id(), ct.seal_ct);
             // seal sets the scale to be 1, but our the debug evaluator always ensures that the SEAL scale is consistent
             // with our mirror calculation
             ct.seal_ct.scale() = previous_scale * previous_scale;
@@ -153,15 +264,15 @@ namespace hit {
                 "size");
         }
         Plaintext temp;
-        encoder.encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
-        evaluator.multiply_plain_inplace(ct.seal_ct, temp);
+        encoder->encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
+        seal_evaluator->multiply_plain_inplace(ct.seal_ct, temp);
         if (update_metadata_) {
             ct.scale_ *= ct.scale();
         }
     }
 
     void HomomorphicEval::square_inplace_internal(CKKSCiphertext &ct) {
-        evaluator.square_inplace(ct.seal_ct);
+        seal_evaluator->square_inplace(ct.seal_ct);
         if (update_metadata_) {
             ct.scale_ *= ct.scale();
         }
@@ -181,7 +292,7 @@ namespace hit {
     }
 
     void HomomorphicEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        evaluator.rescale_to_next_inplace(ct.seal_ct);
+        seal_evaluator->rescale_to_next_inplace(ct.seal_ct);
 
         if (update_metadata_) {
             // we have to get the last prime *before* reducing the HE level,
@@ -194,6 +305,6 @@ namespace hit {
     }
 
     void HomomorphicEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
-        evaluator.relinearize_inplace(ct.seal_ct, relin_keys);
+        seal_evaluator->relinearize_inplace(ct.seal_ct, relin_keys);
     }
 }  // namespace hit

@@ -35,8 +35,9 @@ namespace hit {
         friend class HomomorphicEval;  // needs access to seal_ct
         friend class PlaintextEval;    // modifies raw_pt
         friend class ScaleEstimator;   // modifies scale_
+        friend class OpCount;    //
 
-       private:
+       protected:
         // Copy all members except the ciphertext itself
         void copyMetadataFrom(const CKKSCiphertext &src);
 
