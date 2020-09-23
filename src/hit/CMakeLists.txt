@@ -5,7 +5,6 @@ target_sources(aws_hit_obj
   PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/CKKSInstance.cpp
     ${CMAKE_CURRENT_LIST_DIR}/common.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/matrix.cpp
     ${CMAKE_CURRENT_LIST_DIR}/sealutils.cpp
 )
 

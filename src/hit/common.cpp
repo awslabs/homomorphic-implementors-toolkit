@@ -66,8 +66,8 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
 
-        Vector expected_vec = from_std_vector(expected);
-        Vector actual_vec = from_std_vector(actual);
+        Vector expected_vec = Vector(expected);
+        Vector actual_vec = Vector(actual);
         Vector diff_vec = expected_vec - actual_vec;
         double expected_l2_norm = norm_2(expected_vec);
         double actual_l2_norm = norm_2(actual_vec);
