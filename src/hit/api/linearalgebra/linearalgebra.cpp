@@ -260,13 +260,9 @@ namespace hit {
             iterIdxs[i] = i;
         }
 
-        if (eval.evalPolicy == launch::deferred) {
-            std::for_each(execution::seq, begin(iterIdxs), end(iterIdxs),
-                          [&](int j) { cts_transpose[j] = matrix_rowvec_hadamard_mul_loop(enc_vec, enc_mat, j); });
-        } else {
-            std::for_each(execution::par, begin(iterIdxs), end(iterIdxs),
-                          [&](int j) { cts_transpose[j] = matrix_rowvec_hadamard_mul_loop(enc_vec, enc_mat, j); });
-        }
+        std::for_each(execution::par, begin(iterIdxs), end(iterIdxs),
+                      [&](int j) { cts_transpose[j] = matrix_rowvec_hadamard_mul_loop(enc_vec, enc_mat, j);
+        });
 
         // Because we iterate over the *columns* of the encoding, the encoding units are transposed
         // We un-transpose them here.
@@ -309,13 +305,9 @@ namespace hit {
             iterIdxs[i] = i;
         }
 
-        if (eval.evalPolicy == launch::deferred) {
-            std::for_each(execution::seq, begin(iterIdxs), end(iterIdxs),
-                          [&](int i) { cts[i] = matrix_colvec_hadamard_mul_loop(enc_mat, enc_vec, i); });
-        } else {
-            std::for_each(execution::par, begin(iterIdxs), end(iterIdxs),
-                          [&](int i) { cts[i] = matrix_colvec_hadamard_mul_loop(enc_mat, enc_vec, i); });
-        }
+        std::for_each(execution::par, begin(iterIdxs), end(iterIdxs),
+                      [&](int i) { cts[i] = matrix_colvec_hadamard_mul_loop(enc_mat, enc_vec, i);
+        });
 
         return EncryptedMatrix(enc_mat.height(), enc_mat.width(), enc_mat.encoding_unit(), cts);
     }
@@ -455,15 +447,10 @@ namespace hit {
             iterIdxs[i] = i;
         }
 
-        if (eval.evalPolicy == launch::deferred) {
-            std::for_each(execution::seq, begin(iterIdxs), end(iterIdxs), [&](int k) {
-                row_results[k] = matrix_matrix_mul_loop(enc_mat_a_trans, mat_b_leveled, scalar, k, transpose_unit);
-            });
-        } else {
-            std::for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int k) {
-                row_results[k] = matrix_matrix_mul_loop(enc_mat_a_trans, mat_b_leveled, scalar, k, transpose_unit);
-            });
-        }
+        std::for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int k) {
+            row_results[k] = matrix_matrix_mul_loop(enc_mat_a_trans, mat_b_leveled, scalar, k, transpose_unit);
+        });
+
         return row_results;
     }
 
@@ -612,15 +599,9 @@ namespace hit {
             iterIdxs[i] = i;
         }
 
-        if (eval.evalPolicy == launch::deferred) {
-            std::for_each(execution::seq, begin(iterIdxs), end(iterIdxs), [&](int i) {
-                cts[i] = sum_cols_core(eval.add_many(enc_mat.cts[i]), enc_mat.encoding_unit(), scalar);
-            });
-        } else {
-            std::for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int i) {
-                cts[i] = sum_cols_core(eval.add_many(enc_mat.cts[i]), enc_mat.encoding_unit(), scalar);
-            });
-        }
+        std::for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int i) {
+            cts[i] = sum_cols_core(eval.add_many(enc_mat.cts[i]), enc_mat.encoding_unit(), scalar);
+        });
 
         return EncryptedRowVector(enc_mat.height(), enc_mat.encoding_unit(), cts);
     }
@@ -718,13 +699,10 @@ namespace hit {
             iterIdxs[i] = i;
         }
 
-        if (eval.evalPolicy == launch::deferred) {
-            std::for_each(execution::seq, begin(iterIdxs), end(iterIdxs),
-                          [&](int j) { cts[j] = sum_rows_loop(enc_mat, j); });
-        } else {
-            std::for_each(execution::par, begin(iterIdxs), end(iterIdxs),
-                          [&](int j) { cts[j] = sum_rows_loop(enc_mat, j); });
-        }
+        std::for_each(execution::par, begin(iterIdxs), end(iterIdxs),
+                      [&](int j) { cts[j] = sum_rows_loop(enc_mat, j);
+        });
+
         return EncryptedColVector(enc_mat.width(), enc_mat.encoding_unit(), cts);
     }
 }  // namespace hit

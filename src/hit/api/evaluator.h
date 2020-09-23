@@ -219,11 +219,6 @@ namespace hit {
          */
         void relinearize_inplace(CKKSCiphertext &ct);
 
-        // parallel evaluation strategy for this evaluator
-        // most evaluators require serial execution since they aren't thread safe
-        // but thread-safe evaluators can change this value.
-        std::launch evalPolicy = std::launch::deferred;
-
        protected:
         virtual void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) = 0;
         virtual void rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) = 0;
