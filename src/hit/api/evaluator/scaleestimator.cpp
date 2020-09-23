@@ -20,7 +20,7 @@ namespace hit {
     // encoding/decoding, this should be set to as high as possible.
     int defaultScaleBits = 30;
 
-    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth): base_scale_(defaultScaleBits) {
+    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth): base_scale_(pow(2,defaultScaleBits)) {
         plaintext_eval = new PlaintextEval(num_slots);
         depth_finder = new DepthFinder();
         depth_finder->top_he_level_ = multiplicative_depth;
@@ -35,7 +35,7 @@ namespace hit {
         }
     }
 
-    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth, const HomomorphicEval &homom_eval): base_scale_(defaultScaleBits) {
+    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth, const HomomorphicEval &homom_eval): base_scale_(pow(2,defaultScaleBits)) {
         plaintext_eval = new PlaintextEval(num_slots);
         depth_finder = new DepthFinder();
         depth_finder->top_he_level_ = multiplicative_depth;
@@ -81,7 +81,7 @@ namespace hit {
         }
 
         auto context_data = context->first_context_data();
-        double scale = pow(2, base_scale_);
+        double scale = base_scale_;
         while (context_data->chain_index() > level) {
             // order of operations is very important: floating point arithmetic is not associative
             scale = (scale * scale) / static_cast<double>(context_data->parms().coeff_modulus().back().value());
