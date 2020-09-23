@@ -5,7 +5,7 @@
 
 #include "../../testutil.h"
 #include "gtest/gtest.h"
-#include "hit/CKKSInstance.h"
+#include "hit/api/evaluator/plaintext.h"
 #include "hit/api/ciphertext.h"
 #include "hit/common.h"
 #include "seal/seal.h"
@@ -20,7 +20,7 @@ const double INVALID_NORM = -1;
 const int STEPS = 1;
 
 TEST(PlainTextTest, RotateLeft) {
-    CKKSInstance *ckks_instance = CKKSInstance::get_new_plaintext_instance(NUM_OF_SLOTS);
+    PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2;
@@ -29,10 +29,10 @@ TEST(PlainTextTest, RotateLeft) {
         vector2.push_back(vector1[i]);
     }
     vector2.push_back(vector1[0]);
-    ciphertext1 = ckks_instance->encrypt(vector1);
-    ciphertext2 = ckks_instance->evaluator->rotate_left(ciphertext1, STEPS);
+    ciphertext1 = ckks_instance.encrypt(vector1);
+    ciphertext2 = ckks_instance.rotate_left(ciphertext1, STEPS);
     // Check MaxLogPlainVal.
-    ASSERT_EQ(log2(l_inf_norm(vector2)), ckks_instance->get_exact_max_log_plain_val());
+    ASSERT_EQ(log2(l_inf_norm(vector2)), ckks_instance.get_exact_max_log_plain_val());
     // Check diff2_norm.
     vector<double> vector3 = ciphertext2.plaintext().data();
     double diff = diff2_norm(vector2, vector3);
@@ -41,7 +41,7 @@ TEST(PlainTextTest, RotateLeft) {
 }
 
 TEST(PlainTextTest, RotateRight) {
-    CKKSInstance *ckks_instance = CKKSInstance::get_new_plaintext_instance(NUM_OF_SLOTS);
+    PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2;
@@ -50,10 +50,10 @@ TEST(PlainTextTest, RotateRight) {
     for (int i = 0; i < NUM_OF_SLOTS - 1; i++) {
         vector2.push_back(vector1[i]);
     }
-    ciphertext1 = ckks_instance->encrypt(vector1);
-    ciphertext2 = ckks_instance->evaluator->rotate_right(ciphertext1, STEPS);
+    ciphertext1 = ckks_instance.encrypt(vector1);
+    ciphertext2 = ckks_instance.rotate_right(ciphertext1, STEPS);
     // Check MaxLogPlainVal.
-    ASSERT_EQ(log2(l_inf_norm(vector2)), ckks_instance->get_exact_max_log_plain_val());
+    ASSERT_EQ(log2(l_inf_norm(vector2)), ckks_instance.get_exact_max_log_plain_val());
     // Check diff2_norm.
     vector<double> vector3 = ciphertext2.plaintext().data();
     double diff = diff2_norm(vector2, vector3);
@@ -62,15 +62,15 @@ TEST(PlainTextTest, RotateRight) {
 }
 
 TEST(PlainTextTest, Negate) {
-    CKKSInstance *ckks_instance = CKKSInstance::get_new_plaintext_instance(NUM_OF_SLOTS);
+    PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), negate<>());
-    ciphertext1 = ckks_instance->encrypt(vector1);
-    ciphertext2 = ckks_instance->evaluator->negate(ciphertext1);
+    ciphertext1 = ckks_instance.encrypt(vector1);
+    ciphertext2 = ckks_instance.negate(ciphertext1);
     // Check MaxLogPlainVal.
-    ASSERT_EQ(log2(l_inf_norm(vector2)), ckks_instance->get_exact_max_log_plain_val());
+    ASSERT_EQ(log2(l_inf_norm(vector2)), ckks_instance.get_exact_max_log_plain_val());
     // Check diff2_norm.
     vector<double> vector3 = ciphertext2.plaintext().data();
     double diff = diff2_norm(vector2, vector3);
@@ -79,17 +79,17 @@ TEST(PlainTextTest, Negate) {
 }
 
 TEST(PlainTextTest, Add) {
-    CKKSInstance *ckks_instance = CKKSInstance::get_new_plaintext_instance(NUM_OF_SLOTS);
+    PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2 = random_vector(NUM_OF_SLOTS, RANGE);
-    ciphertext1 = ckks_instance->encrypt(vector1);
-    ciphertext2 = ckks_instance->encrypt(vector2);
+    ciphertext1 = ckks_instance.encrypt(vector1);
+    ciphertext2 = ckks_instance.encrypt(vector2);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), plus<>());
-    ciphertext3 = ckks_instance->evaluator->add(ciphertext1, ciphertext2);
+    ciphertext3 = ckks_instance.add(ciphertext1, ciphertext2);
     // Check MaxLogPlainVal.
-    ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance->get_exact_max_log_plain_val());
+    ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance.get_exact_max_log_plain_val());
     // Check diff2_norm.
     vector<double> vector4 = ciphertext3.plaintext().data();
     double diff = diff2_norm(vector3, vector4);
@@ -98,16 +98,16 @@ TEST(PlainTextTest, Add) {
 }
 
 TEST(PlainTextTest, AddPlaintext) {
-    CKKSInstance *ckks_instance = CKKSInstance::get_new_plaintext_instance(NUM_OF_SLOTS);
+    PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2 = random_vector(NUM_OF_SLOTS, RANGE);
-    ciphertext1 = ckks_instance->encrypt(vector1);
+    ciphertext1 = ckks_instance.encrypt(vector1);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), plus<>());
-    ciphertext2 = ckks_instance->evaluator->add_plain(ciphertext1, vector2);
+    ciphertext2 = ckks_instance.add_plain(ciphertext1, vector2);
     // Check MaxLogPlainVal.
-    ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance->get_exact_max_log_plain_val());
+    ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance.get_exact_max_log_plain_val());
     // Check diff2_norm.
     vector<double> vector4 = ciphertext2.plaintext().data();
     double diff = diff2_norm(vector3, vector4);
@@ -117,16 +117,16 @@ TEST(PlainTextTest, AddPlaintext) {
 
 TEST(PlainTextTest, AddPlainScalar) {
     double plaintext = (double)create_random_positive_int();
-    CKKSInstance *ckks_instance = CKKSInstance::get_new_plaintext_instance(NUM_OF_SLOTS);
+    PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2(NUM_OF_SLOTS, plaintext);
-    ciphertext1 = ckks_instance->encrypt(vector1);
+    ciphertext1 = ckks_instance.encrypt(vector1);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), plus<>());
-    ciphertext2 = ckks_instance->evaluator->add_plain(ciphertext1, plaintext);
+    ciphertext2 = ckks_instance.add_plain(ciphertext1, plaintext);
     // Check MaxLogPlainVal.
-    ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance->get_exact_max_log_plain_val());
+    ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance.get_exact_max_log_plain_val());
     // Check diff2_norm.
     vector<double> vector4 = ciphertext2.plaintext().data();
     double diff = diff2_norm(vector3, vector4);
@@ -135,17 +135,17 @@ TEST(PlainTextTest, AddPlainScalar) {
 }
 
 TEST(PlainTextTest, Sub) {
-    CKKSInstance *ckks_instance = CKKSInstance::get_new_plaintext_instance(NUM_OF_SLOTS);
+    PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2 = random_vector(NUM_OF_SLOTS, RANGE);
-    ciphertext1 = ckks_instance->encrypt(vector1);
-    ciphertext2 = ckks_instance->encrypt(vector2);
+    ciphertext1 = ckks_instance.encrypt(vector1);
+    ciphertext2 = ckks_instance.encrypt(vector2);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), minus<>());
-    ciphertext3 = ckks_instance->evaluator->sub(ciphertext1, ciphertext2);
+    ciphertext3 = ckks_instance.sub(ciphertext1, ciphertext2);
     // Check MaxLogPlainVal.
-    ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance->get_exact_max_log_plain_val());
+    ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance.get_exact_max_log_plain_val());
     // Check diff2_norm.
     vector<double> vector4 = ciphertext3.plaintext().data();
     double diff = diff2_norm(vector3, vector4);
@@ -154,16 +154,16 @@ TEST(PlainTextTest, Sub) {
 }
 
 TEST(PlainTextTest, SubPlaintext) {
-    CKKSInstance *ckks_instance = CKKSInstance::get_new_plaintext_instance(NUM_OF_SLOTS);
+    PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2 = random_vector(NUM_OF_SLOTS, RANGE);
-    ciphertext1 = ckks_instance->encrypt(vector1);
+    ciphertext1 = ckks_instance.encrypt(vector1);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), minus<>());
-    ciphertext2 = ckks_instance->evaluator->sub_plain(ciphertext1, vector2);
+    ciphertext2 = ckks_instance.sub_plain(ciphertext1, vector2);
     // Check MaxLogPlainVal.
-    ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance->get_exact_max_log_plain_val());
+    ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance.get_exact_max_log_plain_val());
     // Check diff2_norm.
     vector<double> vector4 = ciphertext2.plaintext().data();
     double diff = diff2_norm(vector3, vector4);
@@ -173,16 +173,16 @@ TEST(PlainTextTest, SubPlaintext) {
 
 TEST(PlainTextTest, SubPlainScalar) {
     double plaintext = (double)create_random_positive_int();
-    CKKSInstance *ckks_instance = CKKSInstance::get_new_plaintext_instance(NUM_OF_SLOTS);
+    PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2(NUM_OF_SLOTS, plaintext);
-    ciphertext1 = ckks_instance->encrypt(vector1);
+    ciphertext1 = ckks_instance.encrypt(vector1);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), minus<>());
-    ciphertext2 = ckks_instance->evaluator->sub_plain(ciphertext1, plaintext);
+    ciphertext2 = ckks_instance.sub_plain(ciphertext1, plaintext);
     // Check MaxLogPlainVal.
-    ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance->get_exact_max_log_plain_val());
+    ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance.get_exact_max_log_plain_val());
     // Check diff2_norm.
     vector<double> vector4 = ciphertext2.plaintext().data();
     double diff = diff2_norm(vector3, vector4);
@@ -192,16 +192,16 @@ TEST(PlainTextTest, SubPlainScalar) {
 
 TEST(PlainTextTest, MultiplyPlainScalar) {
     double plaintext = (double)create_random_positive_int();
-    CKKSInstance *ckks_instance = CKKSInstance::get_new_plaintext_instance(NUM_OF_SLOTS);
+    PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2(NUM_OF_SLOTS, plaintext);
-    ciphertext1 = ckks_instance->encrypt(vector1);
+    ciphertext1 = ckks_instance.encrypt(vector1);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), multiplies<>());
-    ciphertext2 = ckks_instance->evaluator->multiply_plain(ciphertext1, plaintext);
+    ciphertext2 = ckks_instance.multiply_plain(ciphertext1, plaintext);
     // Check MaxLogPlainVal.
-    ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance->get_exact_max_log_plain_val());
+    ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance.get_exact_max_log_plain_val());
     // Check diff2_norm.
     vector<double> vector4 = ciphertext2.plaintext().data();
     double diff = diff2_norm(vector3, vector4);
@@ -210,16 +210,16 @@ TEST(PlainTextTest, MultiplyPlainScalar) {
 }
 
 TEST(PlainTextTest, MultiplyPlainMattrix) {
-    CKKSInstance *ckks_instance = CKKSInstance::get_new_plaintext_instance(NUM_OF_SLOTS);
+    PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2 = random_vector(NUM_OF_SLOTS, RANGE);
-    ciphertext1 = ckks_instance->encrypt(vector1);
+    ciphertext1 = ckks_instance.encrypt(vector1);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), multiplies<>());
-    ciphertext2 = ckks_instance->evaluator->multiply_plain(ciphertext1, vector2);
+    ciphertext2 = ckks_instance.multiply_plain(ciphertext1, vector2);
     // Check MaxLogPlainVal.
-    ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance->get_exact_max_log_plain_val());
+    ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance.get_exact_max_log_plain_val());
     // Check diff2_norm.
     vector<double> vector4 = ciphertext2.plaintext().data();
     double diff = diff2_norm(vector3, vector4);
@@ -228,17 +228,17 @@ TEST(PlainTextTest, MultiplyPlainMattrix) {
 }
 
 TEST(PlainTextTest, Multiply) {
-    CKKSInstance *ckks_instance = CKKSInstance::get_new_plaintext_instance(NUM_OF_SLOTS);
+    PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2 = random_vector(NUM_OF_SLOTS, RANGE);
-    ciphertext1 = ckks_instance->encrypt(vector1);
-    ciphertext2 = ckks_instance->encrypt(vector2);
+    ciphertext1 = ckks_instance.encrypt(vector1);
+    ciphertext2 = ckks_instance.encrypt(vector2);
     vector<double> vector3(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector2.begin(), vector3.begin(), multiplies<>());
-    ciphertext3 = ckks_instance->evaluator->multiply(ciphertext1, ciphertext2);
+    ciphertext3 = ckks_instance.multiply(ciphertext1, ciphertext2);
     // Check MaxLogPlainVal.
-    ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance->get_exact_max_log_plain_val());
+    ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance.get_exact_max_log_plain_val());
     // Check diff2_norm.
     vector<double> vector4 = ciphertext3.plaintext().data();
     double diff = diff2_norm(vector3, vector4);
@@ -247,15 +247,15 @@ TEST(PlainTextTest, Multiply) {
 }
 
 TEST(PlainTextTest, Square) {
-    CKKSInstance *ckks_instance = CKKSInstance::get_new_plaintext_instance(NUM_OF_SLOTS);
+    PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
-    ciphertext1 = ckks_instance->encrypt(vector1);
+    ciphertext1 = ckks_instance.encrypt(vector1);
     vector<double> vector2(NUM_OF_SLOTS);
     transform(vector1.begin(), vector1.end(), vector1.begin(), vector2.begin(), multiplies<>());
-    ciphertext2 = ckks_instance->evaluator->square(ciphertext1);
+    ciphertext2 = ckks_instance.square(ciphertext1);
     // Check MaxLogPlainVal.
-    ASSERT_EQ(log2(l_inf_norm(vector2)), ckks_instance->get_exact_max_log_plain_val());
+    ASSERT_EQ(log2(l_inf_norm(vector2)), ckks_instance.get_exact_max_log_plain_val());
     // Check diff2_norm.
     vector<double> vector3 = ciphertext2.plaintext().data();
     double diff = diff2_norm(vector2, vector3);
