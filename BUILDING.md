@@ -1,15 +1,25 @@
 # Building HIT with CMake
 
 ## HIT Build Steps on Ubuntu 18.04
-### Install Compiler and Dependencies
+### Install Build Tool, Compiler and Dependencies
 
-Dependencies for this library include Google's protobuf compiler, boost, Microsoft SEAL, GoogleTest, Glog and TBB.
-We also recommend using ninja for the build system.
+HIT uses CMake (3.12+), and recommends using ninja as generator to speed up build.
 
-For convenience, the SEAL dependency is included as subtree.
-Note that SEAL requires CMAKE 3.10 or later.
+HIT supports compilers including GCC9 and Clang10.
 
-The following instructions should work for a clean install of Ubuntu 18.04.
+Dependencies of HIT includes:
+ * [Boost](https://github.com/boostorg/boost)
+ * [Google Protobuf](https://github.com/protocolbuffers/protobuf)
+ * [Glog](https://github.com/google/glog)
+ * [GoogleTest](https://github.com/google/googletest)
+ * [TBB](https://github.com/oneapi-src/oneTBB)
+ * [Microsoft SEAL](https://github.com/microsoft/SEAL)
+
+For `Boost` and `Google Protobuf`, HIT automatically downloads source code and builds the libraries if they are not found in system.
+For other dependencies, HIT does not look for system installed libraries but builds the binary from source code.
+HIT recommends installing `Boost` and `Google Protobuf` in system to reduce build time.
+
+The following instructions should have build tool, GCC9 and some dependencies (`Boost` and `Google Protobuf`) installed.
 ```!bash
 set -ex && \
 sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
@@ -42,10 +52,22 @@ sudo rm -rf /var/lib/apt/lists/* && \
 sudo rm -rf /tmp/*
 ```
 
+**OPTIONAL**: The following instructions have `Clang10`, `clang-tidy` and `clang-format` installed.
+```bash
+sudo set -ex && \
+sudo apt-get update && \
+sudo apt-get -y --no-install-recommends install clang clang-10 clang-tidy-10 && \
+sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-10 90 --slave /usr/bin/clang++ clang++ /usr/bin/clang-cpp-10 --slave /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-10 && \
+sudo apt-get autoremove --purge -y && \
+sudo apt-get clean && \
+sudo apt-get autoclean && \
+sudo rm -rf /var/lib/apt/lists/* && \
+sudo rm -rf /tmp/*
+```
+
 ### Download HIT, Build and Test
 ```!bash
 # Download HIT
-# TODO: while this repo is private, you must use SSH. When we make the repo public, switch this to HTTPS.
 git clone https://github.com/awslabs/homomorphic-implementors-toolkit.git
 cd homomorphic-implementors-toolkit
 
