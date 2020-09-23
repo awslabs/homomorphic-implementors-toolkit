@@ -40,7 +40,7 @@ namespace hit {
     // }
 
     HomomorphicEval::HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,
-                                     const vector<int> &galois_steps): update_metadata_(true) {
+                                     const vector<int> &galois_steps) {
         shared_param_init(num_slots, multiplicative_depth, log_scale, use_seal_params);
         seal_evaluator = new seal::Evaluator(context);
 
@@ -88,6 +88,79 @@ namespace hit {
         seal_decryptor = new Decryptor(context, sk);
     }
 
+    void HomomorphicEval::deserialize_common(istream &params_stream) {
+        protobuf::CKKSParams ckksParams;
+        ckksParams.ParseFromIstream(&params_stream);
+        log_scale_ = ckksParams.logscale();
+        int num_slots = ckksParams.numslots();
+        int poly_modulus_degree = num_slots * 2;
+        int numPrimes = ckksParams.modulusvec_size();
+        vector<Modulus> modulusVector;
+        modulusVector.reserve(numPrimes);
+        for (int i = 0; i < numPrimes; i++) {
+            auto val = Modulus(ckksParams.modulusvec(i));
+            modulusVector.push_back(val);
+        }
+
+        params = new EncryptionParameters(scheme_type::CKKS);
+        params->set_poly_modulus_degree(poly_modulus_degree);
+        params->set_coeff_modulus(modulusVector);
+
+        standard_params_ = ckksParams.standardparams();
+        timepoint start = chrono::steady_clock::now();
+        if (standard_params_) {
+            VLOG(LOG_VERBOSE) << "Creating encryption context...";
+            context = SEALContext::Create(*params);
+            if (VLOG_IS_ON(LOG_VERBOSE)) {
+                print_elapsed_time(start);
+            }
+        } else {
+            LOG(WARNING) << "YOU ARE NOT USING SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security."
+                         << " DO NOT USE IN PRODUCTION";
+            // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
+            VLOG(LOG_VERBOSE) << "Creating encryption context...";
+            context = SEALContext::Create(*params, true, sec_level_type::none);
+            if (VLOG_IS_ON(LOG_VERBOSE)) {
+                print_elapsed_time(start);
+            }
+        }
+        encoder = new CKKSEncoder(context);
+
+
+        istringstream pkstream(ckksParams.pubkey());
+        pk.load(context, pkstream);
+        seal_encryptor = new Encryptor(context, pk);
+    }
+
+    /* An evaluation instance */
+    HomomorphicEval::HomomorphicEval(istream &params_stream, istream &galois_key_stream,
+                                     istream &relin_key_stream) {
+        deserialize_common(params_stream);
+
+        timepoint start = chrono::steady_clock::now();
+        VLOG(LOG_VERBOSE) << "Reading keys...";
+        galois_keys.load(context, galois_key_stream);
+        relin_keys.load(context, relin_key_stream);
+        if (VLOG_IS_ON(LOG_VERBOSE)) {
+            print_elapsed_time(start);
+        }
+    }
+
+    /* A full instance */
+    HomomorphicEval::HomomorphicEval(istream &params_stream, istream &galois_key_stream,
+                                     istream &relin_key_stream, istream &secret_key_stream) {
+        deserialize_common(params_stream);
+
+        timepoint start = chrono::steady_clock::now();
+        VLOG(LOG_VERBOSE) << "Reading keys...";
+        sk.load(context, secret_key_stream);
+        galois_keys.load(context, galois_key_stream);
+        relin_keys.load(context, relin_key_stream);
+        if (VLOG_IS_ON(LOG_VERBOSE)) {
+            print_elapsed_time(start);
+        }
+    }
+
     HomomorphicEval::~HomomorphicEval() {
         delete seal_encryptor;
         delete seal_decryptor;
@@ -96,7 +169,22 @@ namespace hit {
         delete params;
     }
 
-    CKKSCiphertext HomomorphicEval::encrypt(const std::vector<double> &coeffs, int level) {
+    void HomomorphicEval::save(ostream &params_stream, ostream &galois_key_stream, ostream &relin_key_stream,
+                               ostream *secret_key_stream) {
+        if (secret_key_stream != nullptr) {
+            sk.save(*secret_key_stream);
+        }
+
+        protobuf::CKKSParams ckksParams = save_ckks_params();
+        ckksParams.SerializeToOstream(&params_stream);
+
+        // There is a SEAL limitation that prevents saving large files with compression
+        // This is reported at https://github.com/microsoft/SEAL/issues/142
+        galois_keys.save(galois_key_stream, compr_mode_type::none);
+        relin_keys.save(relin_key_stream);
+    }
+
+    CKKSCiphertext HomomorphicEval::encrypt(const vector<double> &coeffs, int level) {
         int num_slots_ = encoder->slot_count();
         if (coeffs.size() != num_slots_) {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
@@ -133,7 +221,11 @@ namespace hit {
         return destination;
     }
 
-    std::vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted) const {
+    vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted) const {
+        if (seal_decryptor == nullptr) {
+            throw invalid_argument("Decryption is only possible from a deserialized instance when the secret key is provided.");
+        }
+
         Plaintext temp;
 
         int lvl = encrypted.he_level();

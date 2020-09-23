@@ -33,7 +33,7 @@ namespace hit {
         depth_finder->reset_internal();
     }
 
-    CKKSCiphertext OpCount::encrypt(const std::vector<double>&, int level) {
+    CKKSCiphertext OpCount::encrypt(const vector<double>&, int level) {
         {
             scoped_lock lock(mutex_);
             encryptions_++;
@@ -47,10 +47,6 @@ namespace hit {
         destination.num_slots_ = 4096;
         destination.initialized = true;
         return destination;
-    }
-
-    std::vector<double> OpCount::decrypt(const CKKSCiphertext&) const {
-        throw invalid_argument("CKKSInstance: You cannot call decrypt with the OpCount evaluator!");
     }
 
     void OpCount::print_op_count() const {

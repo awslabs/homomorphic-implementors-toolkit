@@ -20,7 +20,7 @@ namespace hit {
         multiplicative_depth_ = 0;
     }
 
-    CKKSCiphertext DepthFinder::encrypt(const std::vector<double>&, int level) {
+    CKKSCiphertext DepthFinder::encrypt(const vector<double>&, int level) {
         if (level == -1) {
             level = top_he_level_;
         }
@@ -31,10 +31,6 @@ namespace hit {
         destination.initialized = true;
 
         return destination;
-    }
-
-    std::vector<double> DepthFinder::decrypt(const CKKSCiphertext&) const {
-        throw invalid_argument("CKKSInstance: You cannot call decrypt with the DepthFinder evaluator!");
     }
 
     // print some debug info

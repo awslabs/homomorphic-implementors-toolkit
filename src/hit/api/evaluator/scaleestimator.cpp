@@ -15,19 +15,6 @@ using namespace seal;
 
 namespace hit {
 
-    // ScaleEstimator::ScaleEstimator(const shared_ptr<SEALContext> &context, int poly_deg, double base_scale)
-    //     : CKKSEvaluator(context), base_scale_(base_scale), poly_deg_(poly_deg) {
-    //     plaintext_eval = new PlaintextEval(context);
-    //     depth_finder = new DepthFinder(context);
-
-    //     // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
-    //     estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
-    //     auto context_data = context->first_context_data();
-    //     for (const auto &prime : context_data->parms().coeff_modulus()) {
-    //         estimated_max_log_scale_ += log2(prime.value());
-    //     }
-    // }
-
     // it turns out that the lossiness of encoding/decoding strongly depends on
     // this value. For evaluators that don't really use SEAL, but do use CKKS
     // encoding/decoding, this should be set to as high as possible.
@@ -74,7 +61,7 @@ namespace hit {
         delete encoder;
     }
 
-    CKKSCiphertext ScaleEstimator::encrypt(const std::vector<double> &coeffs, int level) {
+    CKKSCiphertext ScaleEstimator::encrypt(const vector<double> &coeffs, int level) {
         update_plaintext_max_val(coeffs);
 
         int num_slots_ = encoder->slot_count();
@@ -109,10 +96,6 @@ namespace hit {
         destination.initialized = true;
 
         return destination;
-    }
-
-    std::vector<double> ScaleEstimator::decrypt(const CKKSCiphertext&) const {
-        throw invalid_argument("CKKSInstance: You cannot call decrypt with the ScaleEstimator evaluator!");
     }
 
     void ScaleEstimator::reset_internal() {
@@ -327,7 +310,7 @@ namespace hit {
     void ScaleEstimator::relinearize_inplace_internal(CKKSCiphertext &) {
     }
 
-    void ScaleEstimator::update_plaintext_max_val(const std::vector<double> &coeffs) {
+    void ScaleEstimator::update_plaintext_max_val(const vector<double> &coeffs) {
         double x = l_inf_norm(coeffs);
         // account for a freshly-encrypted ciphertext
         // if this is a depth-0 computation *AND* the parameters are such that it is a no-op,

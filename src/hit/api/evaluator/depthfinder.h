@@ -33,8 +33,6 @@ namespace hit {
 
         CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1) override;
 
-        std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
-
         /* Return the multiplicative depth of this computation.
          * Must be called after performing the target computation.
          * Not available for all concrete evaluators.

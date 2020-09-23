@@ -5,7 +5,6 @@
 
 #include <chrono>
 
-#include "CKKSInstance.h"
 #include "api/ciphertext.h"
 #include "hit/protobuf/ciphertext.pb.h"
 #include "hit/protobuf/ciphertext_vector.pb.h"

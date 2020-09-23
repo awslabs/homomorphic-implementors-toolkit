@@ -29,7 +29,7 @@ namespace hit {
         }
     }
 
-    CKKSCiphertext PlaintextEval::encrypt(const std::vector<double> &coeffs, int) {
+    CKKSCiphertext PlaintextEval::encrypt(const vector<double> &coeffs, int) {
         if (coeffs.size() != num_slots_) {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
@@ -45,10 +45,6 @@ namespace hit {
         destination.initialized = true;
 
         return destination;
-    }
-
-    std::vector<double> PlaintextEval::decrypt(const CKKSCiphertext&) const {
-        throw invalid_argument("CKKSInstance: You cannot call decrypt with the Plaintext evaluator!");
     }
 
     // print some debug info

@@ -29,8 +29,6 @@ namespace hit {
 
         CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1) override;
 
-        std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
-
        protected:
         void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) override;
 

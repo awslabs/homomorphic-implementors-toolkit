@@ -27,13 +27,22 @@ namespace hit {
          * When HomomorphicEval is used alone, update_metadata should be true.
          * When HomomorphicEval is used as a sub-evaluator (e.g., as a component of the Debug evaluator) where
          * other sub-evaluators compute the metadata, then update_metadata should be false.
+         *
+         * The `use_seal_params` flag allows you to restrict to SEAL parameters, or to use larger
+         * rings. The SEAL paramters are designed to achieve 128-bits of security, while setting
+         * `use_seal_params` to false allows you to set parameters which may not achieve 128-bits
+         * of security.
          */
-        // HomomorphicEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder,
-        //                 seal::Encryptor &encryptor, const seal::GaloisKeys &galois_keys,
-        //                 const seal::RelinKeys &relin_keys, bool update_metadata);
-
         HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params = true,
                         const std::vector<int> &galois_steps = std::vector<int>());
+
+        /* An evaluation instance */
+        HomomorphicEval(std::istream &params_stream, std::istream &galois_key_stream,
+                        std::istream &relin_key_stream);
+
+        /* A full instance */
+        HomomorphicEval(std::istream &params_stream, std::istream &galois_key_stream,
+                        std::istream &relin_key_stream, std::istream &secret_key_stream);
 
         /* For documentation on the API, see ../evaluator.h */
         ~HomomorphicEval() override;
@@ -43,8 +52,17 @@ namespace hit {
         HomomorphicEval(HomomorphicEval &&) = delete;
         HomomorphicEval &operator=(HomomorphicEval &&) = delete;
 
+        // set secret_key_stream to nullptr to serialize an evaluation-only instance
+        void save(std::ostream &params_stream, std::ostream &galois_key_stream, std::ostream &relin_key_stream,
+                  std::ostream *secret_key_stream);
+
         CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1) override;
 
+        /* A warning will show in log if you decrypt when the ciphertext is not at level 0
+         * Usually, decrypting a ciphertext not at level 0 indicates you are doing something
+         * inefficient. However for testing purposes, it may be useful, so you will want to
+         * suppress the warning.
+         */
         std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
 
        protected:
@@ -86,11 +104,13 @@ namespace hit {
         void reset_internal() override;
 
        private:
+        void deserialize_common(std::istream &params_stream);
+
         /* Helper function: Return the HE level of the SEAL ciphertext.
          */
         int get_SEAL_level(const CKKSCiphertext &ct) const;
 
-        const bool update_metadata_;
+        bool update_metadata_ = true;
 
         friend class DebugEval;
     };

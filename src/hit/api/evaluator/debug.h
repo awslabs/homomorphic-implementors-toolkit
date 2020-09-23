@@ -20,12 +20,16 @@ namespace hit {
 
     class DebugEval : public CKKSEvaluator {
        public:
-        // DebugEval(const std::shared_ptr<seal::SEALContext> &context, seal::CKKSEncoder &encoder,
-        //           seal::Encryptor &encryptor, const seal::GaloisKeys &galois_keys, const seal::RelinKeys &relin_keys,
-        //           double scale, CKKSDecryptor &decryptor);
-
+        /* The `use_seal_params` flag allows you to restrict to SEAL parameters, or to use larger
+         * rings. The SEAL paramters are designed to achieve 128-bits of security, while setting
+         * `use_seal_params` to false allows you to set parameters which may not achieve 128-bits
+         * of security.
+         */
         DebugEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params = true,
                   const std::vector<int> &galois_steps = std::vector<int>());
+
+        DebugEval(std::istream &params_stream, std::istream &galois_key_stream,
+                  std::istream &relin_key_stream, std::istream &secret_key_stream);
 
         /* For documentation on the API, see ../evaluator.h */
         ~DebugEval() override;
@@ -35,8 +39,16 @@ namespace hit {
         DebugEval(DebugEval &&) = delete;
         DebugEval &operator=(DebugEval &&) = delete;
 
+        void save(std::ostream &params_stream, std::ostream &galois_key_stream, std::ostream &relin_key_stream,
+                  std::ostream &secret_key_stream);
+
         CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1) override;
 
+        /* A warning will show in log if you decrypt when the ciphertext is not at level 0
+         * Usually, decrypting a ciphertext not at level 0 indicates you are doing something
+         * inefficient. However for testing purposes, it may be useful, so you will want to
+         * suppress the warning.
+         */
         std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
 
         // primarily used to indicate the maximum value for each *input* to the function.
@@ -96,5 +108,6 @@ namespace hit {
 
         void print_stats(const CKKSCiphertext &ct) const;
         void check_scale(const CKKSCiphertext &ct) const;
+        void constructor_common(int num_slots, int multiplicative_depth);
     };
 }  // namespace hit
