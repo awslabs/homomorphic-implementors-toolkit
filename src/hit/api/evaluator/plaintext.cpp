@@ -61,10 +61,6 @@ namespace hit {
         }
         // extract just the elements we care about from the real plaintext
         vector<double> exact_plaintext = ct.plaintext().data();
-        // double exact_plaintext_max_val = l_inf_norm(exact_plaintext);
-        // VLOG(LOG_VERBOSE) << "    + Scale: " << setprecision(4) << log2(ct.scale()) << " bits";
-        // VLOG(LOG_VERBOSE) << "    + Exact plaintext logmax: " << log2(exact_plaintext_max_val)
-        //                   << " bits (scaled: " << log2(ct.scale()) + log2(exact_plaintext_max_val) << " bits)";
 
         int max_print_size = 8;
         stringstream exact_plaintext_info;

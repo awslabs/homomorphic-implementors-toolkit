@@ -409,16 +409,4 @@ namespace hit {
         print_stats(ct);
         check_scale(ct);
     }
-
-    // void DebugEval::update_plaintext_max_val(double x) {
-    //     scale_estimator->update_plaintext_max_val(x);
-    // }
-
-    // double DebugEval::get_exact_max_log_plain_val() const {
-    //     return scale_estimator->get_exact_max_log_plain_val();
-    // }
-
-    // double DebugEval::get_estimated_max_log_scale() const {
-    //     return scale_estimator->get_estimated_max_log_scale();
-    // }
 }  // namespace hit

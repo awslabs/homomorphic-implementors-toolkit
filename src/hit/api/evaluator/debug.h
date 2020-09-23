@@ -50,21 +50,6 @@ namespace hit {
          */
         std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
 
-        // primarily used to indicate the maximum value for each *input* to the function.
-        // For functions which are a no-op, this function is the only way the evaluator
-        // can learn the maximum plaintext values, and thereby appropriately restrict the scale.
-        // void update_plaintext_max_val(double x);
-
-        // return the base-2 log of the maximum plaintext value in the computation
-        // this is useful for putting an upper bound on the scale parameter
-        // double get_exact_max_log_plain_val() const;
-
-        // return the base-2 log of the maximum scale that can be used for this
-        // computation. Using a scale larger than this will result in the plaintext
-        // exceeding SEAL's maximum size, and using a scale smaller than this value
-        // will unnecessarily reduce precision of the computation.
-        // double get_estimated_max_log_scale() const;
-
        protected:
         void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) override;
 

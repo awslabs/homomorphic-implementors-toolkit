@@ -28,16 +28,15 @@ namespace hit {
         double scale() const override;
         Vector plaintext() const override;
 
-        friend class CKKSEncryptor;    // needs access to all fields of seal_ct
-        friend class CKKSDecryptor;    // needs access to seal_ct
-        friend class DebugEval;        // needs access to seal_ct
-        friend class DepthFinder;      // modifies he_level_
-        friend class HomomorphicEval;  // needs access to seal_ct
-        friend class PlaintextEval;    // modifies raw_pt
-        friend class ScaleEstimator;   // modifies scale_
-        friend class OpCount;    //
+        // all evaluators need access for encryption and decryption
+        friend class DebugEval;
+        friend class DepthFinder;
+        friend class HomomorphicEval;
+        friend class PlaintextEval;
+        friend class OpCount;
+        friend class ScaleEstimator;
 
-       protected:
+       private:
         // Copy all members except the ciphertext itself
         void copyMetadataFrom(const CKKSCiphertext &src);
 
