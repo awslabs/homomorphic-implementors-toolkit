@@ -103,7 +103,7 @@ namespace hit {
     }
 
     EncodingUnit LinearAlgebra::make_unit(int encoding_height) const {
-        return EncodingUnit(encoding_height, eval.plaintext_dim() / encoding_height);
+        return EncodingUnit(encoding_height, eval.encoder->slot_count() / encoding_height);
     }
 
     Vector LinearAlgebra::decrypt(const EncryptedColVector &enc_vec) const {

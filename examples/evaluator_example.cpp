@@ -1,8 +1,14 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hit/CKKSInstance.h"
 #include "hit/api/evaluator.h"
+#include "hit/api/evaluator/homomorphic.h"
+#include "hit/api/evaluator/plaintext.h"
+#include "hit/api/evaluator/depthfinder.h"
+#include "hit/api/evaluator/opcount.h"
+#include "hit/api/evaluator/scaleestimator.h"
+#include "hit/api/evaluator/debug.h"
+
 #include "hit/common.h"
 #include <iostream>
 #include <glog/logging.h>
@@ -182,13 +188,13 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
    * means will encode the vector as a 32x128 matrix.
    */
   LOG(INFO) << "Using the Plaintext evaluator to test the correctness of the algorithm...";
-  CKKSInstance *ptInst = CKKSInstance::get_new_plaintext_instance(slots);
+  PlaintextEval ptInst = PlaintextEval(slots);
   // Encode and encrypt the input
   CKKSCiphertext x_enc_pt;
-  x_enc_pt = ptInst->encrypt(x);
+  x_enc_pt = ptInst.encrypt(x);
   // Evaluate the function with the Plaintext evaluator,
   // and assign the result to x_enc_pt
-  x_enc_pt = sigmoid(x_enc_pt, *ptInst->evaluator);
+  x_enc_pt = sigmoid(x_enc_pt, ptInst);
   // Compare the plaintext inside x_enc_pt to the expected result
   // getPlaintext() decodes the shadow plaintext
   double errNorm = diff2_norm(exactResult, x_enc_pt.plaintext().data());
@@ -198,7 +204,6 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   else {
     throw invalid_argument("Results from homomorphic and cleartext algorithms do not match!");
   }
-  delete ptInst;
 
 
   // *********** Compute Multiplicative Depth ***********
@@ -214,7 +219,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
    * a DepthFinder evaluator.
    */
   LOG(INFO) << "Using the DepthFinder evaluator to compute the multiplicative depth of the sigmoid function...";
-  CKKSInstance *dfInst = CKKSInstance::get_new_depthfinder_instance();
+  DepthFinder dfInst = DepthFinder();
   // Encrypt the input
   CKKSCiphertext x_enc_df;
   /* Re-encrypt the input, for two reasons. The first is that
@@ -223,17 +228,16 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
    * the DepthFinder evaluator, since the two evaluators are
    * independent.
    */
-  x_enc_df = dfInst->encrypt(x);
+  x_enc_df = dfInst.encrypt(x);
   // Evaluate the function with the DepthFinder evaluator,
   // and assign the result to x_enc_df
-  x_enc_df = sigmoid(x_enc_df, *dfInst->evaluator);
+  x_enc_df = sigmoid(x_enc_df, dfInst);
   // Obtain the multiplicative depth
-  int multDepth = dfInst->get_multiplicative_depth();
+  int multDepth = dfInst.get_multiplicative_depth();
   // Note that the multiplicative depth is two less than the required number of primes.
   // This is because SEAL requires a "special" modulus that doesn't count towards the
   // depth, and you always have to have at least one modulus.
   LOG(INFO) << "\tMultiplicative depth=" << multDepth;
-  delete dfInst;
 
 
   // *********** Compute Scale Factor ***********
@@ -254,17 +258,16 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
    * so it must be run serially after the DepthFinder step.
    */
   LOG(INFO) << "Using the ScaleEstimator evaluator to compute the optimal CKKS scale factor...";
-  CKKSInstance *scaleInst = CKKSInstance::get_new_scaleestimator_instance(slots, multDepth);
+  ScaleEstimator scaleInst = ScaleEstimator(slots, multDepth);
   // Re-encrypt the input
   CKKSCiphertext x_enc_scale;
-  x_enc_scale = scaleInst->encrypt(x);
+  x_enc_scale = scaleInst.encrypt(x);
   // Evaluate the function with the ScaleEstimator evaluator,
   // and assign the result to x_enc_scale
-  x_enc_scale = sigmoid(x_enc_scale, *scaleInst->evaluator);
+  x_enc_scale = sigmoid(x_enc_scale, scaleInst);
   // Obtain the multiplicative depth
-  int logScale = floor(scaleInst->get_estimated_max_log_scale());
+  int logScale = floor(scaleInst.get_estimated_max_log_scale());
   LOG(INFO) << "\tThe maximum possible scale for this input is 2^" << logScale;
-  delete scaleInst;
 
 
   // *********** Once more, with Encrypted Inputs ***********
@@ -272,15 +275,15 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
    * construct a evaluator that works on encrypted inputs.
    */
   LOG(INFO) << "Running the computation on ciphertexts...";
-  CKKSInstance *homomInst = try_load_instance(slots, multDepth, logScale, NORMAL);
+  HomomorphicEval homomInst = HomomorphicEval(slots, multDepth, logScale, true);
   // Re-encrypt the input
   CKKSCiphertext x_enc_homom;
-  x_enc_homom = homomInst->encrypt(x);
+  x_enc_homom = homomInst.encrypt(x);
   // Evaluate the function with the Normal homomorphic evaluator,
   // and assign the result to x_enc_homom
-  x_enc_homom = sigmoid(x_enc_homom, *homomInst->evaluator);
+  x_enc_homom = sigmoid(x_enc_homom, homomInst);
   // Decrypt the result
-  vector<double> homom_result = homomInst->decrypt(x_enc_homom);
+  vector<double> homom_result = homomInst.decrypt(x_enc_homom);
   // See if the test passed
   double errNorm_homom = diff2_norm(exactResult, homom_result);
   if(errNorm_homom < 0.0001) {
@@ -289,7 +292,6 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   else {
     throw invalid_argument("Check your CKKS parameters and try again!");
   }
-  delete homomInst;
 
 
   // *********** View Debug Output ***********
@@ -298,16 +300,15 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
    * regarding all aspects of the computation in real-time.
    */
   LOG(INFO) << "Running the computation in debug mode...";
-  CKKSInstance *debugInst = try_load_instance(slots, multDepth, logScale, DEBUG);
+  DebugEval debugInst = DebugEval(slots, multDepth, logScale, true);
   // Re-encrypt the input
   CKKSCiphertext x_enc_debug;
-  x_enc_debug = debugInst->encrypt(x);
+  x_enc_debug = debugInst.encrypt(x);
   // Evaluate the function with the Normal homomorphic evaluator,
   // and assign the result to x_enc_debug
-  x_enc_debug = sigmoid(x_enc_debug, *debugInst->evaluator);
+  x_enc_debug = sigmoid(x_enc_debug, debugInst);
   // No need to do anything here; the output is printed during
   // evaluation.
-  delete debugInst;
 
 
   /* *********** Evaluator Heierarchy ***********

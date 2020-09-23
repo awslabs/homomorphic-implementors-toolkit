@@ -9,12 +9,18 @@
 #include "seal/seal.h"
 
 namespace hit {
-
     /* This evaluator tracks the plaintext computation */
     class PlaintextEval : public CKKSEvaluator {
        public:
         explicit PlaintextEval(const std::shared_ptr<seal::SEALContext> &context);
 
+        /* The number of slots is a proxy for the dimension of the underlying cyclotomic ring.
+         * This limits the maximum size of the plaintext vector to `num_slots`, and also limits
+         * the maximum size of the modulus. For a fixed multiplicative depth, this imposes a
+         * corresponding limit on the scale, and thus the precision, of the computation.
+         * There's no good way to know what value to use here without generating some parameters
+         * first. Reasonable values include 4096, 8192, or 16384.
+         */
         PlaintextEval(int num_slots);
 
         /* For documentation on the API, see ../evaluator.h */
@@ -35,8 +41,6 @@ namespace hit {
         // void update_plaintext_max_val(double x);
 
         CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1) override;
-
-        std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
 
        protected:
         void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) override;
