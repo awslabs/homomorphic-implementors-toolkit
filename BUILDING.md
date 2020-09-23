@@ -71,10 +71,6 @@ sudo rm -rf /tmp/*
 git clone https://github.com/awslabs/homomorphic-implementors-toolkit.git
 cd homomorphic-implementors-toolkit
 
-# Create build dir
-if [ -d build ]; then rm -Rf build; fi
-mkdir -p build && cd build
-
 # Run build command
 cmake . -Bbuild -GNinja -DCMAKE_BUILD_TYPE=Release -DHIT_BUILD_TESTS=ON -DHIT_BUILD_EXAMPLES=ON
 ninja -j $(nproc)
