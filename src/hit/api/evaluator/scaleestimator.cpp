@@ -20,10 +20,11 @@ namespace hit {
     // encoding/decoding, this should be set to as high as possible.
     int defaultScaleBits = 30;
 
-    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth): base_scale_(pow(2,defaultScaleBits)) {
+    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth) {
         plaintext_eval = new PlaintextEval(num_slots);
         depth_finder = new DepthFinder();
         depth_finder->top_he_level_ = multiplicative_depth;
+        log_scale_ = defaultScaleBits;
 
         shared_param_init(num_slots, multiplicative_depth, defaultScaleBits, false);
 
@@ -35,10 +36,11 @@ namespace hit {
         }
     }
 
-    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth, const HomomorphicEval &homom_eval): base_scale_(pow(2,defaultScaleBits)) {
+    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth, const HomomorphicEval &homom_eval): has_shared_params_(true) {
         plaintext_eval = new PlaintextEval(num_slots);
         depth_finder = new DepthFinder();
         depth_finder->top_he_level_ = multiplicative_depth;
+        log_scale_ = defaultScaleBits;
 
         // instead of calling shared_param_init to create a new instance, use the instance provided
         params = homom_eval.params;
@@ -57,8 +59,13 @@ namespace hit {
     ScaleEstimator::~ScaleEstimator() {
         delete depth_finder;
         delete plaintext_eval;
-        delete params;
-        delete encoder;
+
+        // if we are using shared parameters, these values are freed by the homomorphic evaluator
+        // if we free them here, we double-free and get corruption.
+        if (!has_shared_params_) {
+            delete params;
+            delete encoder;
+        }
     }
 
     CKKSCiphertext ScaleEstimator::encrypt(const vector<double> &coeffs, int level) {
@@ -81,7 +88,7 @@ namespace hit {
         }
 
         auto context_data = context->first_context_data();
-        double scale = base_scale_;
+        double scale = pow(2,log_scale_);
         while (context_data->chain_index() > level) {
             // order of operations is very important: floating point arithmetic is not associative
             scale = (scale * scale) / static_cast<double>(context_data->parms().coeff_modulus().back().value());
@@ -129,7 +136,7 @@ namespace hit {
     }
 
     // At all times, we need ct.scale*l_inf_norm(ct.getPlaintext()) <~ q/4
-    // Define ct.scale = i*base_scale_ for i \in {1,2}
+    // Define ct.scale = i*pow(2,log_scale_) for i \in {1,2}
     // If(i > ct.he_level): estimated_max_log_scale_ \le
     //      (PLAINTEXT_LOG_MAX-log2(l_inf_norm(ct.getPlaintext()))/(i-ct.he_level))
     // Else if (i == ct.he_level):
@@ -139,11 +146,11 @@ namespace hit {
     //      this is bogus, so nothing to do.
     void ScaleEstimator::update_max_log_scale(const CKKSCiphertext &ct) {
         // update the estimated_max_log_scale_
-        auto scale_exp = static_cast<int>(round(log2(ct.scale()) / log2(base_scale_)));
+        auto scale_exp = static_cast<int>(round(log2(ct.scale()) / log2(pow(2,log_scale_))));
         if (scale_exp != 1 && scale_exp != 2) {
             stringstream buffer;
             buffer << "INTERNAL ERROR: scale_exp is not 1 or 2: got " << scale_exp << "\t" << log2(ct.scale()) << "\t"
-                   << log2(base_scale_);
+                   << log2(pow(2,log_scale_));
             throw invalid_argument(buffer.str());
         }
         if (scale_exp > ct.he_level()) {
