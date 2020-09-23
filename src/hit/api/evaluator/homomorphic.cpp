@@ -27,18 +27,6 @@ namespace hit {
      * metadata values, it will always be incorrect (no matter which order Debug calls its sub-evaluators).
      */
 
-    // HomomorphicEval::HomomorphicEval(const shared_ptr<SEALContext> &context, CKKSEncoder &encoder, Encryptor &encryptor,
-    //                                  const GaloisKeys &galois_keys, const RelinKeys &relin_keys, bool update_metadata)
-    //     : CKKSEvaluator(context),
-    //       // evaluator(context),
-    //       encoder(encoder),
-    //       encryptor(encryptor),
-    //       galois_keys(galois_keys),
-    //       relin_keys(relin_keys),
-    //       update_metadata_(update_metadata) {
-    //     evalPolicy = launch::async;
-    // }
-
     HomomorphicEval::HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,
                                      const vector<int> &galois_steps) {
         shared_param_init(num_slots, multiplicative_depth, log_scale, use_seal_params);
