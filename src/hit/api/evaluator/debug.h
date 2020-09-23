@@ -4,7 +4,6 @@
 #pragma once
 
 #include "../ciphertext.h"
-#include "../decryptor.h"
 #include "../evaluator.h"
 #include "homomorphic.h"
 #include "scaleestimator.h"

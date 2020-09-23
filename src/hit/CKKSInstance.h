@@ -3,11 +3,10 @@
 
 #pragma once
 
-#include "api/decryptor.h"
-#include "api/encryptor.h"
-#include "hit/protobuf/ckksparams.pb.h"  // NOLINT
+#include "hit/protobuf/ckksparams.pb.h"
 #include "seal/context.h"
 #include "seal/seal.h"
+#include "api/ciphertext.h"
 
 namespace hit {
 
