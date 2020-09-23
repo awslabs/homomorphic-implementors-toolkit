@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "../ciphertext.h"
 #include "hit/protobuf/encoding_unit.pb.h"
 
 namespace hit {

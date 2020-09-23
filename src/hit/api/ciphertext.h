@@ -37,8 +37,6 @@ namespace hit {
         friend class ScaleEstimator;
 
        private:
-        // Copy all members except the ciphertext itself
-        void copyMetadataFrom(const CKKSCiphertext &src);
 
         // The raw plaintxt. This is used with some of the evaluators tha track ciphertext
         // metadata (e.g., DebugEval and PlaintextEval), but not by the Homomorphic evaluator.

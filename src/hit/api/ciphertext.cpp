@@ -12,14 +12,6 @@ using namespace seal;
 
 namespace hit {
 
-    void CKKSCiphertext::copyMetadataFrom(const CKKSCiphertext &src) {
-        raw_pt = src.raw_pt;
-        initialized = src.initialized;
-        he_level_ = src.he_level_;
-        scale_ = src.scale_;
-        num_slots_ = src.num_slots_;
-    }
-
     CKKSCiphertext::CKKSCiphertext(const shared_ptr<SEALContext> &context, const protobuf::Ciphertext &proto_ct) {
         initialized = proto_ct.initialized();
         scale_ = proto_ct.scale();
