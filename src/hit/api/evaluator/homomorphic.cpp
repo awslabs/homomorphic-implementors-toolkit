@@ -314,7 +314,7 @@ namespace hit {
         }
         seal_evaluator->multiply_inplace(ct1.seal_ct, ct2.seal_ct);
         if (update_metadata_) {
-            ct1.scale_ *= ct2.scale();
+            ct1.scale_ = ct1.seal_ct.scale();
         }
     }
 
@@ -333,7 +333,7 @@ namespace hit {
             ct.seal_ct.scale() = previous_scale * previous_scale;
         }
         if (update_metadata_) {
-            ct.scale_ *= ct.scale();
+            ct.scale_ = ct.seal_ct.scale();
         }
     }
 
@@ -347,14 +347,14 @@ namespace hit {
         encoder->encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
         seal_evaluator->multiply_plain_inplace(ct.seal_ct, temp);
         if (update_metadata_) {
-            ct.scale_ *= ct.scale();
+            ct.scale_ = ct.seal_ct.scale();
         }
     }
 
     void HomomorphicEval::square_inplace_internal(CKKSCiphertext &ct) {
         seal_evaluator->square_inplace(ct.seal_ct);
         if (update_metadata_) {
-            ct.scale_ *= ct.scale();
+            ct.scale_ = ct.seal_ct.scale();
         }
     }
 
@@ -375,12 +375,8 @@ namespace hit {
         seal_evaluator->rescale_to_next_inplace(ct.seal_ct);
 
         if (update_metadata_) {
-            // we have to get the last prime *before* reducing the HE level,
-            // since the "last prime" is level-dependent
-            auto context_data = getContextData(ct);
-            uint64_t prime = context_data->parms().coeff_modulus().back().value();
-            ct.scale_ /= prime;
-            ct.he_level_--;
+            ct.scale_ = ct.seal_ct.scale();
+            ct.he_level_ = get_SEAL_level(ct);
         }
     }
 
