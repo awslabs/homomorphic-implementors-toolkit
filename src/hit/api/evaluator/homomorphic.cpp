@@ -74,8 +74,6 @@ namespace hit {
 
         seal_encryptor = new Encryptor(context, pk);
         seal_decryptor = new Decryptor(context, sk);
-
-        evalPolicy = launch::async;
     }
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {
@@ -120,8 +118,6 @@ namespace hit {
         istringstream pkstream(ckks_params.pubkey());
         pk.load(context, pkstream);
         seal_encryptor = new Encryptor(context, pk);
-
-        evalPolicy = launch::async;
     }
 
     /* An evaluation instance */
