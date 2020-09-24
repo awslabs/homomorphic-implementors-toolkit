@@ -79,7 +79,7 @@ namespace hit {
         void reset_internal() override;
 
        private:
-        int num_slots_ = 0;
+        const int num_slots_ = 0;
 
         void update_max_log_plain_val(const CKKSCiphertext &ct);
 

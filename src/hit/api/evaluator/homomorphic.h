@@ -5,7 +5,6 @@
 
 #include "../ciphertext.h"
 #include "../evaluator.h"
-#include "homomorphic.h"
 #include "seal/context.h"
 #include "seal/seal.h"
 

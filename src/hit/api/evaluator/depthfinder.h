@@ -77,8 +77,11 @@ namespace hit {
 
        private:
         int multiplicative_depth_ = 0;
-        // this is always 0 when used as a standalone evaluator,
-        // but derived evaluators may change this value
+        // We can't make this value `const` even though DepthFinder
+        // doesn't update it. The reason is that DepthFinder works when
+        // top_he_level_ is 0, but other evaluators which depend on
+        // DepthFinder (like ScaleEstimator) have to update this value
+        // to work correctly.
         int top_he_level_ = 0;
 
         void print_stats(const CKKSCiphertext &ct) const;

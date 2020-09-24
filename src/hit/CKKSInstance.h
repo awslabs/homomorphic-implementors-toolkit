@@ -44,7 +44,6 @@ namespace hit {
         CKKSInstance &operator=(CKKSInstance &&) = delete;
 
        protected:
-        // instances without
         int gen_modulus_vec(int numPrimes, std::vector<int> &modulusVector) const;
         void set_max_val(const std::vector<double> &plain);
         void shared_param_init(int num_slots, int multiplicative_depth, int log_scale_in, bool use_seal_params);
@@ -53,8 +52,6 @@ namespace hit {
         seal::Evaluator *seal_evaluator;
         seal::Encryptor *seal_encryptor = nullptr;
         seal::Decryptor *seal_decryptor = nullptr;
-        // CKKSEncryptor *encryptor = nullptr;
-        // CKKSDecryptor *decryptor = nullptr;
         seal::PublicKey pk;
         seal::SecretKey sk;
         seal::GaloisKeys galois_keys;

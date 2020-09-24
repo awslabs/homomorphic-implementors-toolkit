@@ -32,25 +32,25 @@ namespace hit {
         shared_param_init(num_slots, multiplicative_depth, log_scale, use_seal_params);
         seal_evaluator = new seal::Evaluator(context);
 
-        int numGaloisKeys = galois_steps.size();
+        int num_galois_keys = galois_steps.size();
         LOG(INFO) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth << ", including "
-                  << (numGaloisKeys != 0 ? to_string(numGaloisKeys) : "all") << " Galois keys." << endl;
+                  << (num_galois_keys != 0 ? to_string(num_galois_keys) : "all") << " Galois keys." << endl;
 
-        double keysSizeBytes = estimate_key_size(galois_steps.size(), num_slots, multiplicative_depth);
+        double keys_size_bytes = estimate_key_size(galois_steps.size(), num_slots, multiplicative_depth);
         LOG(INFO) << "Estimated size is " << setprecision(3);
         // using base-10 (SI) units, rather than base-2 units.
-        double unitMultiplier = 1000;
-        double bytesPerKB = unitMultiplier;
-        double bytesPerMB = bytesPerKB * unitMultiplier;
-        double bytesPerGB = bytesPerMB * unitMultiplier;
-        if (keysSizeBytes < bytesPerKB) {
-            LOG(INFO) << keysSizeBytes << " bytes";
-        } else if (keysSizeBytes < bytesPerMB) {
-            LOG(INFO) << keysSizeBytes / bytesPerKB << " kilobytes (base 10)";
-        } else if (keysSizeBytes < bytesPerGB) {
-            LOG(INFO) << keysSizeBytes / bytesPerMB << " megabytes (base 10)";
+        double unit_multiplier = 1000;
+        double bytes_per_kb = unit_multiplier;
+        double bytes_per_mb = bytes_per_kb * unit_multiplier;
+        double bytes_per_gb = bytes_per_mb * unit_multiplier;
+        if (keys_size_bytes < bytes_per_kb) {
+            LOG(INFO) << keys_size_bytes << " bytes";
+        } else if (keys_size_bytes < bytes_per_mb) {
+            LOG(INFO) << keys_size_bytes / bytes_per_kb << " kilobytes (base 10)";
+        } else if (keys_size_bytes < bytes_per_gb) {
+            LOG(INFO) << keys_size_bytes / bytes_per_mb << " megabytes (base 10)";
         } else {
-            LOG(INFO) << keysSizeBytes / bytesPerGB << " gigabytes (base 10)";
+            LOG(INFO) << keys_size_bytes / bytes_per_gb << " gigabytes (base 10)";
         }
 
         LOG(INFO) << "Generating keys...";
@@ -62,7 +62,7 @@ namespace hit {
         KeyGenerator keygen(context);
         sk = keygen.secret_key();
         pk = keygen.public_key();
-        if (numGaloisKeys > 0) {
+        if (num_galois_keys > 0) {
             galois_keys = keygen.galois_keys_local(galois_steps);
         } else {
             // generate all galois keys
@@ -79,24 +79,24 @@ namespace hit {
     }
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {
-        protobuf::CKKSParams ckksParams;
-        ckksParams.ParseFromIstream(&params_stream);
-        log_scale_ = ckksParams.logscale();
-        int num_slots = ckksParams.numslots();
+        protobuf::CKKSParams ckks_params;
+        ckks_params.ParseFromIstream(&params_stream);
+        log_scale_ = ckks_params.logscale();
+        int num_slots = ckks_params.numslots();
         int poly_modulus_degree = num_slots * 2;
-        int numPrimes = ckksParams.modulusvec_size();
-        vector<Modulus> modulusVector;
-        modulusVector.reserve(numPrimes);
+        int numPrimes = ckks_params.modulusvec_size();
+        vector<Modulus> modulus_vector;
+        modulus_vector.reserve(numPrimes);
         for (int i = 0; i < numPrimes; i++) {
-            auto val = Modulus(ckksParams.modulusvec(i));
-            modulusVector.push_back(val);
+            auto val = Modulus(ckks_params.modulusvec(i));
+            modulus_vector.push_back(val);
         }
 
         params = new EncryptionParameters(scheme_type::CKKS);
         params->set_poly_modulus_degree(poly_modulus_degree);
-        params->set_coeff_modulus(modulusVector);
+        params->set_coeff_modulus(modulus_vector);
 
-        standard_params_ = ckksParams.standardparams();
+        standard_params_ = ckks_params.standardparams();
         timepoint start = chrono::steady_clock::now();
         if (standard_params_) {
             VLOG(LOG_VERBOSE) << "Creating encryption context...";
@@ -117,7 +117,7 @@ namespace hit {
         encoder = new CKKSEncoder(context);
 
 
-        istringstream pkstream(ckksParams.pubkey());
+        istringstream pkstream(ckks_params.pubkey());
         pk.load(context, pkstream);
         seal_encryptor = new Encryptor(context, pk);
 
@@ -167,8 +167,8 @@ namespace hit {
             sk.save(*secret_key_stream);
         }
 
-        protobuf::CKKSParams ckksParams = save_ckks_params();
-        ckksParams.SerializeToOstream(&params_stream);
+        protobuf::CKKSParams ckks_params = save_ckks_params();
+        ckks_params.SerializeToOstream(&params_stream);
 
         // There is a SEAL limitation that prevents saving large files with compression
         // This is reported at https://github.com/microsoft/SEAL/issues/142
