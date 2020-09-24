@@ -47,7 +47,8 @@ vector<double> poly_eval_plaintext(vector<double> xs) {
  * of this functions. After each operation, we include a comment indicating
  * the output variable, whether it is a linear or quadratic ciphertext,
  * its approximate scale (either the encryption scale or its square),
- * and the HE level of the variable.
+ * and the HE level of the variable. We assume that the input is a linear
+ * ciphertext with nominal scale and level `i`.
  */
 CKKSCiphertext poly_eval_homomorphic_v1(CKKSEvaluator &eval, CKKSCiphertext &ct) {
 	// eval.square performs "Hadamard multiplication" on the encrypted vector,
@@ -98,7 +99,7 @@ CKKSCiphertext poly_eval_homomorphic_v1(CKKSEvaluator &eval, CKKSCiphertext &ct)
  * should be used with care since raw plaintext is inserted into a `CKKSCiphertext`, so it
  * is not secure to use in production.
  */
-int main() {
+void example_2_driver() {
 	// Create a CKKS instance which operates on plaintexts.
 	// To ensure consistency between inputs and ensure that inputs would be valid
 	// if we were doing encryption, you must specify the number of slots your plaintexts

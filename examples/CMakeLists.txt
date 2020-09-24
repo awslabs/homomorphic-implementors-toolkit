@@ -5,12 +5,16 @@ add_executable(hit-example evaluator_example.cpp)
 set_common_flags(hit-example)
 target_link_libraries(hit-example aws-hit glog::glog)
 
-add_executable(hit-example-1 example_1_ckks.cpp)
-target_link_libraries(hit-example-1 aws-hit)
-add_executable(hit-example-2 example_1_ckks.cpp example_2_plaintext.cpp)
-target_link_libraries(hit-example-2 aws-hit)
-add_executable(hit-example-3 example_1_ckks.cpp example_2_plaintext.cpp example_3_parameters.cpp)
-target_link_libraries(hit-example-3 aws-hit)
+
+
+add_library(aws_hit_examples OBJECT)
+target_sources(aws_hit_examples
+  PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/example_1_ckks.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/example_2_plaintext.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/example_3_parameters.cpp
+)
+target_link_libraries(aws_hit_examples PUBLIC aws-hit)
 
 add_custom_target(
   run_hit_example

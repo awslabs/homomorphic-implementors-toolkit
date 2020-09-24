@@ -150,7 +150,7 @@ vector<double> randomVector(int dim, double maxNorm) {
     return x;
 }
 
-int main() {
+void example_1_driver() {
 	// Select CKKS parameters
 	// Other examples will explore parameter selection futher
 	int num_slots = 4096;
