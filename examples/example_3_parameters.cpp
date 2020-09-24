@@ -1,8 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hit/api/evaluator/depthfinder.h"
-#include "hit/common.h"
+#include "hit/hit.h"
 
 using namespace std;
 using namespace hit;
@@ -18,7 +17,20 @@ extern CKKSCiphertext poly_eval_homomorphic_v1(CKKSEvaluator &eval, CKKSCipherte
  * homomorphic circuit design is to evaluate the circuit on ciphertexts! To
  * do that, we need cryptosystem parameters. HIT demystifies the process of
  * selecting encryption system parameters by providing evaluators which
- * compute suggested encryption parameters.
+ * compute suggested encryption parameters. HIT does help a bit in this area:
+ * if the requested depth and scale are not compatible with the requested number
+ * of slots, HIT will throw a runtime error when trying to make a CKKS instance
+ * indicating that a larger plaintext must be used.
+ *
+ *
+ * ******** Plaintext Slots ********
+ * It's up to the user to determine the number of plaintext slots that should
+ * be in each ciphertext. A smaller number of slots results in better performance,
+ * but, as noted in Example 1, limits the size of the ciphertext modulus, which
+ * in turn limits the precision of the computation and/or the depth of circuits
+ * which can be evaluated. Thus, to evaluate deeper circuits, evaluate with
+ * more precision, or to pack more plaintext slots into a single ciphertext, you
+ * can increase the number of plaintext slots.
  *
  *
  * ******** Circuit Depth ********
@@ -41,8 +53,10 @@ extern CKKSCiphertext poly_eval_homomorphic_v1(CKKSEvaluator &eval, CKKSCipherte
  * of the function we want to evaluate.
  */
 void example_3_driver() {
+	int num_slots = 8192;
+
 	// Create a CKKS instance to compute circuit depth. This instance type needs _no_ parameters.
-	DepthFinder inst = DepthFinder();
+	DepthFinder df_inst = DepthFinder();
 
 	// Generate a plaintext with `num_slots` random coefficients, each with absolute value < `plaintext_inf_norm`
 	int plaintext_inf_norm = 10;
@@ -50,13 +64,15 @@ void example_3_driver() {
 
 	// Encrypt the plaintext. This evaluator only tracks ciphertext metadata;
 	// the CKKSCiphertext does not contain a real ciphertext or the plaintext.
-	CKKSCiphertext ciphertext = inst.encrypt(plaintext);
+	CKKSCiphertext df_ciphertext = df_inst.encrypt(plaintext);
 
 	// Now we can evaluate our homomorphic circuit on this input, ignoring the output
-	poly_eval_homomorphic_v1(inst, ciphertext);
+	// While evaluating this circuit, the DepthFinder instance emits logs indicating the level
+	// of the output of each gate, which can be seen <TODO>
+	poly_eval_homomorphic_v1(df_inst, df_ciphertext);
 
 	// Finally, we can ask the evaluator for the circuit's depth.
-	int max_depth = inst.get_multiplicative_depth();
+	int max_depth = df_inst.get_multiplicative_depth();
 	cout << "poly_eval_homomorphic_v1 has multiplicative depth " << max_depth << endl;
 
 /* ******** CKKS Scale ********
@@ -67,4 +83,39 @@ void example_3_driver() {
  * Imagine a ciphertext at level 0. SEAL recommends a 60-bit ciphertext
  * modulus at this level, so in order to avoid overflow, we must satisfy inf_norm(plaintext)*scale < 2^60.
  * By evaluating the circuit on a representative plaintext, we can get a good idea of the
+ * maximum scale.
+ */
 
+	// Assume that the plaintext generated above is representative.
+	// The ScaleEstimator instance type requires the maximum depth of the circuits which
+	// will be evaluated, so we pass in the value computed with the DepthFinder instance.
+	ScaleEstimator se_inst = ScaleEstimator(num_slots, max_depth);
+
+	// Don't reuse ciphertexts between instance types!
+	CKKSCiphertext se_ciphertext = se_inst.encrypt(plaintext);
+
+	// Now we can evaluate our homomorphic circuit on this input, ignoring the output
+	// While evaluating this circuit, the ScaleEstimator instance emits logs for the maximum
+	// plaintext value, number of ciphertext modulus bits, and estimated max log scale at
+	// the output of each gate. This logging can be enabled by setting <TODO>
+	poly_eval_homomorphic_v1(se_inst, se_ciphertext);
+
+	// After evaluating the circuit on the representative input, we can ask the
+	// ScaleEstimator to estimate the maximum log scale we can use with ciphertexts.
+	int log_scale = se_inst.get_estimated_max_log_scale();
+
+/* ******** Ciphertext Evaluation ********
+ * Having used HIT to help determine the circuit depth and the maximum scale
+ * we can use, we can now set up an instance which actually does homomorphic
+ * computation.
+ */
+	HomomorphicEval he_inst = HomomorphicEval(num_slots, max_depth, log_scale);
+
+	// Don't reuse ciphertexts between instance types!
+	CKKSCiphertext he_ciphertext = he_inst.encrypt(plaintext);
+
+	// Now we can evaluate our homomorphic circuit on this input, ignoring the output
+	CKKSCiphertext ct_result = poly_eval_homomorphic_v1(he_inst, he_ciphertext);
+
+	vector<double> pt_result = he_inst.decrypt(ct_result);
+}

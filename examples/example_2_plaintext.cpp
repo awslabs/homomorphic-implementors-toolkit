@@ -61,7 +61,7 @@ CKKSCiphertext poly_eval_homomorphic_v1(CKKSEvaluator &eval, CKKSCiphertext &ct)
 	// ct_squared is now a linear ciphertext with nominal scale, so we can now
 	// compute ct_cubed = ct_squared * ct. However, before we can operate on
 	// these two values, we must reduce the level of ct to the level of ct_squared.
-	eval.mod_down_to_inplace(ct, ct_squared);                 // ct, linear, scale, level i-1
+	eval.reduce_level_to_inplace(ct, ct_squared);             // ct, linear, scale, level i-1
 	CKKSCiphertext ct_cubed = eval.multiply(ct_squared, ct);  // ct_cubed, quadratic, scale^2, level i-1
 	// again, we need to relinarize and rescale
 	eval.relinearize_inplace(ct_cubed);                       // ct_cubed, linear, scale^2, level i-1
@@ -73,15 +73,15 @@ CKKSCiphertext poly_eval_homomorphic_v1(CKKSEvaluator &eval, CKKSCiphertext &ct)
 	eval.rescale_to_next_inplace(term1);                       // term1, linear, scale, level i-3
 	// term2 is similar
 	CKKSCiphertext term2 = eval.multiply_plain(ct, c_1);       // term2, linear, scale^2, level i
-	eval.rescale_to_next_inplace(term1);                       // term2, linear, scale, level i-1
+	eval.rescale_to_next_inplace(term2);                       // term2, linear, scale, level i-1
 	// To add these terms together, we need both arguments at the same level
-	eval.mod_down_to_inplace(term2, term1);                    // term2, linear, scale, level-3
+	eval.reduce_level_to_inplace(term2, term1);                // term2, linear, scale, level-3
 	// Addition of ciphertexts induces component-wise addition
 	// on the plaintexts. Addition of linear ciphertexts results
 	// in a linear ciphertext, and does not change the ciphertext scale
 	CKKSCiphertext poly_result = eval.add(term1, term2);       // poly_result, linear, scale, level i-3
 	// Addition of a constant adds the constant to each plaintext coefficient.
-	eval.add_plain_inplace(poly_result, c_0);                 // poly_result, linear, scale, level i-3
+	eval.add_plain_inplace(poly_result, c_0);                  // poly_result, linear, scale, level i-3
 	return poly_result;
 }
 /* Phew. That's a lot. Even ignoring the maintenance operations, does `poly_eval_homomorphic_v1`
@@ -122,8 +122,11 @@ void example_2_driver() {
 	// Now we can evaluate our homomorphic circuit on this input
 	CKKSCiphertext ct_out = poly_eval_homomorphic_v1(inst, ciphertext);
 
-	// Next, we can decrypt a ciphertext to recover a plaintext
-	vector<double> actual_result = inst.decrypt(ct_out);
+	// Next, we want to extract the plaintext to compare the result
+	vector<double> actual_result = ct_out.plaintext();
+	// Note that calling decrypt with the Plaintext instance type is an error
+	// since the ct_out doesn't actually contain a ciphertext.
+	// vector<double> actual_result = inst.decrypt(ct_out); // ERROR
 
 	// Compute the |expected-actual|/|expected|, where |*| denotes the 2-norm.
 	// If this value is small, then the expected and actual results closely agree,
