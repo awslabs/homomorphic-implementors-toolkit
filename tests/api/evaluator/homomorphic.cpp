@@ -317,12 +317,12 @@ TEST(HomomorphicTest, Square) {
     ASSERT_LE(diff, MAX_NORM);
 }
 
-TEST(HomomorphicTest, ModDownToLevel) {
+TEST(HomomorphicTest, ReduceLevelTo) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     ciphertext1 = ckks_instance.encrypt(vector1);
-    ciphertext2 = ckks_instance.mod_down_to_level(ciphertext1, ZERO_MULTI_DEPTH);
+    ciphertext2 = ckks_instance.reduce_level_to(ciphertext1, ZERO_MULTI_DEPTH);
     // Check scale and he_level.
     ASSERT_EQ(ciphertext2.he_level(), ZERO_MULTI_DEPTH);
     uint64_t prime = get_last_prime(ckks_instance.context, ONE_MULTI_DEPTH);
@@ -334,25 +334,25 @@ TEST(HomomorphicTest, ModDownToLevel) {
     ASSERT_LE(diff, MAX_NORM);
 }
 
-TEST(HomomorphicTest, ModDownToLevel_InvalidCase) {
+TEST(HomomorphicTest, ReduceLevelTo_InvalidCase) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     CKKSCiphertext ciphertext1;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ASSERT_THROW((
                      // Expect invalid_argument is thrown when the level is higher.
-                     ckks_instance.mod_down_to_level(ciphertext1, ONE_MULTI_DEPTH)),
+                     ckks_instance.reduce_level_to(ciphertext1, ONE_MULTI_DEPTH)),
                  invalid_argument);
 }
 
-TEST(HomomorphicTest, ModDownToMin) {
+TEST(HomomorphicTest, ReduceLevelToMin) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     ciphertext1 = ckks_instance.encrypt(vector1);
     ciphertext3 = ciphertext1;
-    ciphertext2 = ckks_instance.mod_down_to_level(ciphertext1, ZERO_MULTI_DEPTH);
-    ckks_instance.mod_down_to_min_inplace(ciphertext1, ciphertext2);
-    ckks_instance.mod_down_to_min_inplace(ciphertext2, ciphertext3);
+    ciphertext2 = ckks_instance.reduce_level_to(ciphertext1, ZERO_MULTI_DEPTH);
+    ckks_instance.reduce_level_to_min_inplace(ciphertext1, ciphertext2);
+    ckks_instance.reduce_level_to_min_inplace(ciphertext2, ciphertext3);
     // Check scale and he_level.
     ASSERT_EQ(ciphertext3.he_level(), ZERO_MULTI_DEPTH);
     uint64_t prime = get_last_prime(ckks_instance.context, ONE_MULTI_DEPTH);

@@ -274,15 +274,15 @@ namespace hit {
         print_stats(ct);
     }
 
-    void ScaleEstimator::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
+    void ScaleEstimator::reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level) {
         int level_diff = ct.he_level() - level;
 
         if (level < 0) {
-            throw invalid_argument("modDownToLevel: level must be >= 0.");
+            throw invalid_argument("reduce_level_to: level must be >= 0.");
         }
 
-        depth_finder->mod_down_to_level_inplace_internal(ct, level);
-        plaintext_eval->mod_down_to_level_inplace_internal(ct, level);
+        depth_finder->reduce_level_to_inplace_internal(ct, level);
+        plaintext_eval->reduce_level_to_inplace_internal(ct, level);
 
         // reset he_level for dest
         ct.he_level_ += level_diff;

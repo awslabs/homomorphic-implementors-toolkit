@@ -26,8 +26,8 @@ namespace hit {
             additions_ = 0;
             negations_ = 0;
             rotations_ = 0;
-            mod_downs_ = 0;
-            mod_down_multi_levels_ = 0;
+            reduce_levels_ = 0;
+            reduce_level_muls_ = 0;
             encryptions_ = 0;
         }
         depth_finder->reset_internal();
@@ -52,11 +52,11 @@ namespace hit {
     void OpCount::print_op_count() const {
         shared_lock lock(mutex_);
         LOG(INFO) << "Multiplications: " << multiplies_;
-        LOG(INFO) << "ModDownMuls: " << mod_down_multi_levels_;
+        LOG(INFO) << "ReduceLevelMuls: " << reduce_level_muls_;
         LOG(INFO) << "Additions: " << additions_;
         LOG(INFO) << "Negations: " << negations_;
         LOG(INFO) << "Rotations: " << rotations_;
-        LOG(INFO) << "ModDownTos: " << mod_downs_;
+        LOG(INFO) << "ReduceLevels: " << reduce_levels_;
         LOG(INFO) << "Encryptions: " << encryption_count_;
     }
 
@@ -128,15 +128,15 @@ namespace hit {
         depth_finder->square_inplace_internal(ct);
     }
 
-    void OpCount::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
+    void OpCount::reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level) {
         {
             scoped_lock lock(mutex_);
             if (ct.he_level() - level > 0) {
-                mod_downs_++;
+                reduce_levels_++;
             }
-            mod_down_multi_levels_ += (ct.he_level() - level);
+            reduce_level_muls_ += (ct.he_level() - level);
         }
-        depth_finder->mod_down_to_level_inplace_internal(ct, level);
+        depth_finder->reduce_level_to_inplace_internal(ct, level);
     }
 
     void OpCount::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {

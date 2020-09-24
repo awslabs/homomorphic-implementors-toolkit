@@ -358,10 +358,10 @@ namespace hit {
         }
     }
 
-    void HomomorphicEval::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
+    void HomomorphicEval::reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level) {
         if (get_SEAL_level(ct) < level) {
             stringstream buffer;
-            buffer << "Error in mod_down_to_level: input is at a lower level than target. Input level: "
+            buffer << "Error in reduce_level_to: input is at a lower level than target. Input level: "
                    << get_SEAL_level(ct) << ", target level: " << level;
             throw invalid_argument(buffer.str());
         }

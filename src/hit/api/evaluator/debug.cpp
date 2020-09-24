@@ -372,10 +372,10 @@ namespace hit {
         check_scale(ct);
     }
 
-    void DebugEval::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
+    void DebugEval::reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level) {
         check_scale(ct);
-        homomorphic_eval->mod_down_to_level_inplace_internal(ct, level);
-        scale_estimator->mod_down_to_level_inplace_internal(ct, level);
+        homomorphic_eval->reduce_level_to_inplace_internal(ct, level);
+        scale_estimator->reduce_level_to_inplace_internal(ct, level);
 
         print_stats(ct);
         check_scale(ct);

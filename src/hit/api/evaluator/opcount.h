@@ -56,7 +56,7 @@ namespace hit {
 
         void square_inplace_internal(CKKSCiphertext &ct) override;
 
-        void mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) override;
+        void reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level) override;
 
         void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
 
@@ -70,8 +70,8 @@ namespace hit {
         int additions_ = 0;
         int negations_ = 0;
         int rotations_ = 0;
-        int mod_downs_ = 0;
-        int mod_down_multi_levels_ = 0;
+        int reduce_levels_ = 0;
+        int reduce_level_muls_ = 0;
         int encryptions_ = 0;
 
         inline void count_multiple_ops() {

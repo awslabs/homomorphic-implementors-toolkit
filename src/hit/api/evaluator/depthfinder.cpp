@@ -112,7 +112,7 @@ namespace hit {
         print_stats(ct);
     }
 
-    void DepthFinder::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) {
+    void DepthFinder::reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level) {
         if (ct.he_level() >= level) {
             ct.he_level_ = level;
         } else {

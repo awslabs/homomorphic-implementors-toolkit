@@ -116,7 +116,7 @@ CKKSCiphertext sigmoid(const CKKSCiphertext &x1_encrypted, CKKSEvaluator &eval) 
    * We need to add these two terms together, but that requires them to be at the same
    * level. We solve this problem by multiplying coeff1_x1_encrypted by the scalar 1.
    */
-  eval.mod_down_to_level_inplace(coeff1_x1_encrypted, coeff3_x3_encrypted.he_level());
+  eval.reduce_level_to_inplace(coeff1_x1_encrypted, coeff3_x3_encrypted.he_level());
 
   // add 0.5 and 0.15*x
   CKKSCiphertext result = eval.add_plain(coeff1_x1_encrypted, sigmoid_c0);

@@ -858,7 +858,7 @@ TEST(LinearAlgebraTest, MultiplyMatrixCol) {
     test_multiply_matrix_col(linear_algebra, 300, 27, PI, unit1);
 }
 
-TEST(LinearAlgebraTest, ModDownToMinMatrix) {
+TEST(LinearAlgebraTest, ReduceLevelToMinMatrix) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
@@ -870,17 +870,17 @@ TEST(LinearAlgebraTest, ModDownToMinMatrix) {
     EncryptedMatrix ct_mat0 = linear_algebra.encrypt_matrix(mat, unit1, 0);
     ASSERT_EQ(ct_mat1.he_level(), 1);
     ASSERT_EQ(ct_mat0.he_level(), 0);
-    linear_algebra.mod_down_to_min_inplace(ct_mat1, ct_mat0);
+    linear_algebra.reduce_level_to_min_inplace(ct_mat1, ct_mat0);
     ASSERT_EQ(ct_mat1.he_level(), 0);
 
     ct_mat1 = linear_algebra.encrypt_matrix(mat, unit1);
     ASSERT_EQ(ct_mat1.he_level(), 1);
     ASSERT_EQ(ct_mat0.he_level(), 0);
-    linear_algebra.mod_down_to_min_inplace(ct_mat0, ct_mat1);
+    linear_algebra.reduce_level_to_min_inplace(ct_mat0, ct_mat1);
     ASSERT_EQ(ct_mat1.he_level(), 0);
 }
 
-TEST(LinearAlgebraTest, ModDownToMinRow) {
+TEST(LinearAlgebraTest, ReduceLevelToMinRow) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
@@ -892,17 +892,17 @@ TEST(LinearAlgebraTest, ModDownToMinRow) {
     EncryptedRowVector ct_vec0 = linear_algebra.encrypt_row_vector(vec, unit1, 0);
     ASSERT_EQ(ct_vec1.he_level(), 1);
     ASSERT_EQ(ct_vec0.he_level(), 0);
-    linear_algebra.mod_down_to_min_inplace(ct_vec1, ct_vec0);
+    linear_algebra.reduce_level_to_min_inplace(ct_vec1, ct_vec0);
     ASSERT_EQ(ct_vec1.he_level(), 0);
 
     ct_vec1 = linear_algebra.encrypt_row_vector(vec, unit1);
     ASSERT_EQ(ct_vec1.he_level(), 1);
     ASSERT_EQ(ct_vec0.he_level(), 0);
-    linear_algebra.mod_down_to_min_inplace(ct_vec0, ct_vec1);
+    linear_algebra.reduce_level_to_min_inplace(ct_vec0, ct_vec1);
     ASSERT_EQ(ct_vec1.he_level(), 0);
 }
 
-TEST(LinearAlgebraTest, ModDownToMinCol) {
+TEST(LinearAlgebraTest, ReduceLevelToMinCol) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
@@ -914,17 +914,17 @@ TEST(LinearAlgebraTest, ModDownToMinCol) {
     EncryptedColVector ct_vec0 = linear_algebra.encrypt_col_vector(vec, unit1, 0);
     ASSERT_EQ(ct_vec1.he_level(), 1);
     ASSERT_EQ(ct_vec0.he_level(), 0);
-    linear_algebra.mod_down_to_min_inplace(ct_vec1, ct_vec0);
+    linear_algebra.reduce_level_to_min_inplace(ct_vec1, ct_vec0);
     ASSERT_EQ(ct_vec1.he_level(), 0);
 
     ct_vec1 = linear_algebra.encrypt_col_vector(vec, unit1);
     ASSERT_EQ(ct_vec1.he_level(), 1);
     ASSERT_EQ(ct_vec0.he_level(), 0);
-    linear_algebra.mod_down_to_min_inplace(ct_vec0, ct_vec1);
+    linear_algebra.reduce_level_to_min_inplace(ct_vec0, ct_vec1);
     ASSERT_EQ(ct_vec1.he_level(), 0);
 }
 
-TEST(LinearAlgebraTest, ModDownToLevelMatrix) {
+TEST(LinearAlgebraTest, ReduceLevelToMatrix) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
@@ -934,11 +934,11 @@ TEST(LinearAlgebraTest, ModDownToLevelMatrix) {
     Matrix mat = random_mat(64, 64);
     EncryptedMatrix ct_mat1 = linear_algebra.encrypt_matrix(mat, unit1);
     ASSERT_EQ(ct_mat1.he_level(), 1);
-    linear_algebra.mod_down_to_level_inplace(ct_mat1, 0);
+    linear_algebra.reduce_level_to_inplace(ct_mat1, 0);
     ASSERT_EQ(ct_mat1.he_level(), 0);
 }
 
-TEST(LinearAlgebraTest, ModDownToLevelRow) {
+TEST(LinearAlgebraTest, ReduceLevelToRow) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
@@ -948,11 +948,11 @@ TEST(LinearAlgebraTest, ModDownToLevelRow) {
     Vector vec = random_vec(64);
     EncryptedRowVector ct_vec1 = linear_algebra.encrypt_row_vector(vec, unit1);
     ASSERT_EQ(ct_vec1.he_level(), 1);
-    linear_algebra.mod_down_to_level_inplace(ct_vec1, 0);
+    linear_algebra.reduce_level_to_inplace(ct_vec1, 0);
     ASSERT_EQ(ct_vec1.he_level(), 0);
 }
 
-TEST(LinearAlgebraTest, ModDownToLevelCol) {
+TEST(LinearAlgebraTest, ReduceLevelToCol) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
@@ -962,7 +962,7 @@ TEST(LinearAlgebraTest, ModDownToLevelCol) {
     Vector vec = random_vec(64);
     EncryptedColVector ct_vec1 = linear_algebra.encrypt_col_vector(vec, unit1);
     ASSERT_EQ(ct_vec1.he_level(), 1);
-    linear_algebra.mod_down_to_level_inplace(ct_vec1, 0);
+    linear_algebra.reduce_level_to_inplace(ct_vec1, 0);
     ASSERT_EQ(ct_vec1.he_level(), 0);
 }
 
@@ -1341,7 +1341,7 @@ TEST(LinearAlgebraTest, HadamardMulColSquare) {
     test_hadamard_mul_col_square(linear_algebra, 128, unit1);
 }
 
-TEST(LinearAlgebraTest, ModDownToMin_Matrix) {
+TEST(LinearAlgebraTest, ReduceLevelToMin_Matrix) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
@@ -1352,15 +1352,15 @@ TEST(LinearAlgebraTest, ModDownToMin_Matrix) {
 
     EncryptedMatrix ct_mat1 = linear_algebra.encrypt_matrix(mat1, unit);
     EncryptedMatrix ct_mat2 = linear_algebra.encrypt_matrix(mat1, unit, 0);
-    linear_algebra.mod_down_to_min_inplace(ct_mat1, ct_mat2);
+    linear_algebra.reduce_level_to_min_inplace(ct_mat1, ct_mat2);
     ASSERT_EQ(ct_mat1.he_level(), 0);
 
     EncryptedMatrix ct_vec3 = linear_algebra.encrypt_matrix(mat1, unit);
-    linear_algebra.mod_down_to_min_inplace(ct_mat2, ct_vec3);
+    linear_algebra.reduce_level_to_min_inplace(ct_mat2, ct_vec3);
     ASSERT_EQ(ct_vec3.he_level(), 0);
 }
 
-TEST(LinearAlgebraTest, ModDownToMin_ColVec) {
+TEST(LinearAlgebraTest, ReduceLevelToMin_ColVec) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
@@ -1371,15 +1371,15 @@ TEST(LinearAlgebraTest, ModDownToMin_ColVec) {
 
     EncryptedColVector ct_vec1 = linear_algebra.encrypt_col_vector(vec1, unit);
     EncryptedColVector ct_vec2 = linear_algebra.encrypt_col_vector(vec1, unit, 0);
-    linear_algebra.mod_down_to_min_inplace(ct_vec1, ct_vec2);
+    linear_algebra.reduce_level_to_min_inplace(ct_vec1, ct_vec2);
     ASSERT_EQ(ct_vec1.he_level(), 0);
 
     EncryptedColVector ct_vec3 = linear_algebra.encrypt_col_vector(vec1, unit);
-    linear_algebra.mod_down_to_min_inplace(ct_vec2, ct_vec3);
+    linear_algebra.reduce_level_to_min_inplace(ct_vec2, ct_vec3);
     ASSERT_EQ(ct_vec3.he_level(), 0);
 }
 
-TEST(LinearAlgebraTest, ModDownToMin_RowVec) {
+TEST(LinearAlgebraTest, ReduceLevelToMin_RowVec) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
@@ -1390,15 +1390,15 @@ TEST(LinearAlgebraTest, ModDownToMin_RowVec) {
 
     EncryptedRowVector ct_vec1 = linear_algebra.encrypt_row_vector(vec1, unit);
     EncryptedRowVector ct_vec2 = linear_algebra.encrypt_row_vector(vec1, unit, 0);
-    linear_algebra.mod_down_to_min_inplace(ct_vec1, ct_vec2);
+    linear_algebra.reduce_level_to_min_inplace(ct_vec1, ct_vec2);
     ASSERT_EQ(ct_vec1.he_level(), 0);
 
     EncryptedRowVector ct_vec3 = linear_algebra.encrypt_row_vector(vec1, unit);
-    linear_algebra.mod_down_to_min_inplace(ct_vec2, ct_vec3);
+    linear_algebra.reduce_level_to_min_inplace(ct_vec2, ct_vec3);
     ASSERT_EQ(ct_vec3.he_level(), 0);
 }
 
-TEST(LinearAlgebraTest, ModDownToLevel_Matrix) {
+TEST(LinearAlgebraTest, ReduceLevelTo_Matrix) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
@@ -1408,11 +1408,11 @@ TEST(LinearAlgebraTest, ModDownToLevel_Matrix) {
     Matrix mat1 = random_mat(128, 128);
 
     EncryptedMatrix ct_mat1 = linear_algebra.encrypt_matrix(mat1, unit);
-    EncryptedMatrix ct_mat2 = linear_algebra.mod_down_to_level(ct_mat1, 0);
+    EncryptedMatrix ct_mat2 = linear_algebra.reduce_level_to(ct_mat1, 0);
     ASSERT_EQ(ct_mat2.he_level(), 0);
 }
 
-TEST(LinearAlgebraTest, ModDownToLevel_ColVec) {
+TEST(LinearAlgebraTest, ReduceLevelTo_ColVec) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
@@ -1422,11 +1422,11 @@ TEST(LinearAlgebraTest, ModDownToLevel_ColVec) {
     Vector vec1 = random_vec(128);
 
     EncryptedColVector ct_vec1 = linear_algebra.encrypt_col_vector(vec1, unit);
-    EncryptedColVector ct_vec2 = linear_algebra.mod_down_to_level(ct_vec1, 0);
+    EncryptedColVector ct_vec2 = linear_algebra.reduce_level_to(ct_vec1, 0);
     ASSERT_EQ(ct_vec2.he_level(), 0);
 }
 
-TEST(LinearAlgebraTest, ModDownToLevel_RowVec) {
+TEST(LinearAlgebraTest, ReduceLevelTo_RowVec) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
@@ -1436,7 +1436,7 @@ TEST(LinearAlgebraTest, ModDownToLevel_RowVec) {
     Vector vec1 = random_vec(128);
 
     EncryptedRowVector ct_vec1 = linear_algebra.encrypt_row_vector(vec1, unit);
-    EncryptedRowVector ct_vec2 = linear_algebra.mod_down_to_level(ct_vec1, 0);
+    EncryptedRowVector ct_vec2 = linear_algebra.reduce_level_to(ct_vec1, 0);
     ASSERT_EQ(ct_vec2.he_level(), 0);
 }
 

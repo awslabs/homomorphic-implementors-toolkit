@@ -222,7 +222,7 @@ namespace hit {
         print_stats(ct);
     }
 
-    void PlaintextEval::mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int) {
+    void PlaintextEval::reduce_level_to_inplace_internal(CKKSCiphertext &ct, int) {
         // does not change plaintext_max_log_
         print_stats(ct);
     }

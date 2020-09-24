@@ -175,26 +175,26 @@ namespace hit {
 
         /* Reduce the HE level of `x` to the level of the `target`.
          */
-        CKKSCiphertext mod_down_to(const CKKSCiphertext &ct, const CKKSCiphertext &target);
+        CKKSCiphertext reduce_level_to(const CKKSCiphertext &ct, const CKKSCiphertext &target);
 
         /* Reduce the HE level of `x` to the level of the `target`, inplace.
          */
-        void mod_down_to_inplace(CKKSCiphertext &ct, const CKKSCiphertext &target);
+        void reduce_level_to_inplace(CKKSCiphertext &ct, const CKKSCiphertext &target);
 
         /* Reduce the HE level of both inputs to the lower of the two levels.
          * This can modify at most one of the inputs.
          */
-        void mod_down_to_min_inplace(CKKSCiphertext &ct1, CKKSCiphertext &ct2);
+        void reduce_level_to_min_inplace(CKKSCiphertext &ct1, CKKSCiphertext &ct2);
 
         /* Reduce the HE level of `x` to level `level`, which has
          * level+1 moduli. `level` must be >= 0.
          */
-        CKKSCiphertext mod_down_to_level(const CKKSCiphertext &ct, int level);
+        CKKSCiphertext reduce_level_to(const CKKSCiphertext &ct, int level);
 
         /* Reduce the HE level of `x` to level `level`, which has
          * level+1 moduli. `level` must be >= 0. Store the result in the first arugment.
          */
-        void mod_down_to_level_inplace(CKKSCiphertext &ct, int level);
+        void reduce_level_to_inplace(CKKSCiphertext &ct, int level);
 
         /* Remove a prime from the modulus (i.e. go down one level) and scale
          * down the plaintext by that prime.
@@ -233,7 +233,7 @@ namespace hit {
         virtual void multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) = 0;
         virtual void multiply_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain) = 0;
         virtual void square_inplace_internal(CKKSCiphertext &ct) = 0;
-        virtual void mod_down_to_level_inplace_internal(CKKSCiphertext &ct, int level) = 0;
+        virtual void reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level) = 0;
         virtual void rescale_to_next_inplace_internal(CKKSCiphertext &ct) = 0;
         virtual void relinearize_inplace_internal(CKKSCiphertext &ct) = 0;
         virtual void reset_internal() = 0;

@@ -191,31 +191,31 @@ namespace hit {
         square_inplace_internal(ct);
     }
 
-    CKKSCiphertext CKKSEvaluator::mod_down_to(const CKKSCiphertext &ct, const CKKSCiphertext &target) {
-        return mod_down_to_level(ct, target.he_level());
+    CKKSCiphertext CKKSEvaluator::reduce_level_to(const CKKSCiphertext &ct, const CKKSCiphertext &target) {
+        return reduce_level_to(ct, target.he_level());
     }
 
-    void CKKSEvaluator::mod_down_to_inplace(CKKSCiphertext &ct, const CKKSCiphertext &target) {
-        mod_down_to_level_inplace(ct, target.he_level());
+    void CKKSEvaluator::reduce_level_to_inplace(CKKSCiphertext &ct, const CKKSCiphertext &target) {
+        reduce_level_to_inplace(ct, target.he_level());
     }
 
-    void CKKSEvaluator::mod_down_to_min_inplace(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
+    void CKKSEvaluator::reduce_level_to_min_inplace(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
         if (ct1.he_level() > ct2.he_level()) {
-            mod_down_to_level_inplace(ct1, ct2.he_level());
+            reduce_level_to_inplace(ct1, ct2.he_level());
         } else {
-            mod_down_to_level_inplace(ct2, ct1.he_level());
+            reduce_level_to_inplace(ct2, ct1.he_level());
         }
     }
 
-    CKKSCiphertext CKKSEvaluator::mod_down_to_level(const CKKSCiphertext &ct, int level) {
+    CKKSCiphertext CKKSEvaluator::reduce_level_to(const CKKSCiphertext &ct, int level) {
         CKKSCiphertext output = ct;
-        mod_down_to_level_inplace(output, level);
+        reduce_level_to_inplace(output, level);
         return output;
     }
 
-    void CKKSEvaluator::mod_down_to_level_inplace(CKKSCiphertext &ct, int level) {
+    void CKKSEvaluator::reduce_level_to_inplace(CKKSCiphertext &ct, int level) {
         VLOG(LOG_VERBOSE) << "Decreasing HE level to " << level;
-        mod_down_to_level_inplace_internal(ct, level);
+        reduce_level_to_inplace_internal(ct, level);
     }
 
     CKKSCiphertext CKKSEvaluator::rescale_to_next(const CKKSCiphertext &ct) {

@@ -401,8 +401,8 @@ namespace hit {
          * a linear ciphertext which does not need to be rescaled.
          */
         template <typename T1, typename T2>
-        T1 mod_down_to(const T1 &arg1, const T2 &arg2) {
-            return mod_down_to_level(arg1, arg2.he_level());
+        T1 reduce_level_to(const T1 &arg1, const T2 &arg2) {
+            return reduce_level_to(arg1, arg2.he_level());
         }
 
         /* Reduce the HE level of the first argument to level of the second argument, inplace.
@@ -423,8 +423,8 @@ namespace hit {
          * a linear ciphertext which does not need to be rescaled.
          */
         template <typename T1, typename T2>
-        void mod_down_to_inplace(T1 &arg1, const T2 &arg2) {
-            mod_down_to_level_inplace(arg1, arg2.he_level());
+        void reduce_level_to_inplace(T1 &arg1, const T2 &arg2) {
+            reduce_level_to_inplace(arg1, arg2.he_level());
         }
 
         /* Reduce the HE level of both inputs to the lower of the two levels. This can modify at most one of the inputs.
@@ -439,13 +439,13 @@ namespace hit {
          * a linear ciphertext which does not need to be rescaled.
          */
         template <typename T>
-        void mod_down_to_min_inplace(T &arg1, T &arg2) {
+        void reduce_level_to_min_inplace(T &arg1, T &arg2) {
             if (!arg1.initialized() || !arg2.initialized()) {
-                throw std::invalid_argument("LinearAlgebra::mod_down_to_min: arguments not initialized.");
+                throw std::invalid_argument("LinearAlgebra::reduce_level_to_min: arguments not initialized.");
             }
 
             for (size_t i = 0; i < arg1.num_cts(); i++) {
-                eval.mod_down_to_min_inplace(arg1[i], arg2[i]);
+                eval.reduce_level_to_min_inplace(arg1[i], arg2[i]);
             }
         }
 
@@ -461,9 +461,9 @@ namespace hit {
          * a linear ciphertext which does not need to be rescaled.
          */
         template <typename T>
-        T mod_down_to_level(const T &arg, int level) {
+        T reduce_level_to(const T &arg, int level) {
             T temp = arg;
-            mod_down_to_level_inplace(temp, level);
+            reduce_level_to_inplace(temp, level);
             return temp;
         }
 
@@ -479,13 +479,13 @@ namespace hit {
          * a linear ciphertext which does not need to be rescaled.
          */
         template <typename T>
-        void mod_down_to_level_inplace(T &arg, int level) {
+        void reduce_level_to_inplace(T &arg, int level) {
             if (!arg.initialized()) {
-                throw std::invalid_argument("LinearAlgebra::mod_down_to_level: argument not initialized.");
+                throw std::invalid_argument("LinearAlgebra::reduce_level_to: argument not initialized.");
             }
 
             for (size_t i = 0; i < arg.num_cts(); i++) {
-                eval.mod_down_to_level_inplace(arg[i], level);
+                eval.reduce_level_to_inplace(arg[i], level);
             }
         }
 
@@ -520,7 +520,7 @@ namespace hit {
         template <typename T>
         void rescale_to_next_inplace(T &arg) {
             if (!arg.initialized()) {
-                throw std::invalid_argument("LinearAlgebra::mod_down_to_level: argument not initialized.");
+                throw std::invalid_argument("LinearAlgebra::reduce_level_to: argument not initialized.");
             }
 
             for (size_t i = 0; i < arg.num_cts(); i++) {
@@ -551,7 +551,7 @@ namespace hit {
         template <typename T>
         void relinearize_inplace(T &arg) {
             if (!arg.initialized()) {
-                throw std::invalid_argument("LinearAlgebra::mod_down_to_level: argument not initialized.");
+                throw std::invalid_argument("LinearAlgebra::reduce_level_to: argument not initialized.");
             }
 
             for (size_t i = 0; i < arg.num_cts(); i++) {
