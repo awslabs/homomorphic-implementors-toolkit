@@ -26,7 +26,7 @@ namespace hit {
         int num_slots() const override;
         int he_level() const override;
         double scale() const override;
-        Vector plaintext() const override;
+        vector<double> plaintext() const override;
 
         // all evaluators need access for encryption and decryption
         friend class DebugEval;
