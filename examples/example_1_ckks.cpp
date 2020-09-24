@@ -132,10 +132,23 @@
  */
 #include "hit/api/evaluator/homomorphic.h"
 #include "hit/common.h"
-#include "../test/test.h" // include some helper functions for this demo
 
 using namespace std;
 using namespace hit;
+
+// generate a random vector of the given dimension, where each value is in the range [-maxNorm, maxNorm].
+vector<double> randomVector(int dim, double maxNorm) {
+    vector<double> x;
+    x.reserve(dim);
+
+    srand(time(NULL));
+    for (int i = 0; i < dim; i++) {
+        // generate a random double between -maxNorm and maxNorm
+        double a = -maxNorm + ((static_cast<double>(random())) / (static_cast<double>(RAND_MAX))) * (2 * maxNorm);
+        x.push_back(a);
+    }
+    return x;
+}
 
 int main() {
 	// Select CKKS parameters
@@ -146,10 +159,9 @@ int main() {
 
 	// Create a CKKS instance corresponding to the parameters chosen above.
 	// Set up the cryptosystem and generate keys.
-	HomopmorphicEval inst = HomomorphicEval(num_slots, max_depth, log_scale);
+	HomomorphicEval inst = HomomorphicEval(num_slots, max_depth, log_scale);
 
 	// Generate a plaintext with `num_slots` random coefficients, each with absolute value < `plaintext_inf_norm`
-	srand(time(NULL));
 	int plaintext_inf_norm = 10;
 	vector<double> plaintext = randomVector(num_slots, plaintext_inf_norm);
 
@@ -161,7 +173,7 @@ int main() {
 	cout << "Ciphertext1 encrypts " << ciphertext1.num_slots() << " coefficients; expected " << num_slots << endl;
 
 	// At any point, we can check the level of a ciphertext
-	cout << "Ciphertext1 is at level " << ciphertext1.he_level() "; expected " << max_depth << endl;
+	cout << "Ciphertext1 is at level " << ciphertext1.he_level() << "; expected " << max_depth << endl;
 
 	// We can also check the scale of the ciphertext
 	cout << "Ciphertext1 has a scale of " << log2(ciphertext1.scale()) << " bits; expected " << log_scale << endl;
@@ -172,7 +184,7 @@ int main() {
 	// Compute the |expected-actual|/|expected|, where |*| denotes the 2-norm.
 	// If the decrypted value was identical to the input plaintext, this would be exactly;
 	// instead we see that the 2-norm of the difference is small but non-zero.
-	cout << "Relative difference between input and decrypted output: " << diff_2norm(plaintext, recovered_pt1) << endl;
+	cout << "Relative difference between input and decrypted output: " << diff2_norm(plaintext, recovered_pt1) << endl;
 
 	// Decryption issues a log message because `ciphertext1` is not at level 0, which is where
 	// we expect most decryption to happen since we usually decrypt only at the end of a computation.
@@ -185,10 +197,10 @@ int main() {
 
 	// Instead of being encrypted at level 1, which is the highest possible level for these parameters,
 	// ciphertext2 is encrypted at level 0.
-	cout << "Ciphertext2 is at level " << ciphertext2.he_level() " rather than the default, level " << max_level << endl;
+	cout << "Ciphertext2 is at level " << ciphertext2.he_level() << " rather than the default, level " << max_depth << endl;
 
 	// No log message is generated here since the input is at level 0.
 	vector<double> recovered_pt2 = inst.decrypt(ciphertext2);
 
-	cout << "Decryption level doesn't affect noise, the relative difference is similar: " << diff_2norm(plaintext, recovered_pt2) << endl;
+	cout << "Decryption level doesn't affect noise, the relative difference is similar: " << diff2_norm(plaintext, recovered_pt2) << endl;
 }

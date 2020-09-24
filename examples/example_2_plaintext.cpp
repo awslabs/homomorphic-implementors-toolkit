@@ -1,12 +1,14 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hit/api/evaluator/homomorphic.h"
+#include "hit/api/evaluator/plaintext.h"
 #include "hit/common.h"
-#include "../test/test.h" // include some helper functions for this demo
 
 using namespace std;
 using namespace hit;
+
+// defined in example_1_ckks.cpp
+extern vector<double> randomVector(int dim, double maxNorm);
 
 /* The Homomorphic Implementor's Tookit (HIT) is a library to simplify the
  * design and implementation of homomorphic circuits for the CKKS homomorphic
@@ -78,7 +80,7 @@ CKKSCiphertext poly_eval_homomorphic_v1(CKKSEvaluator &eval, CKKSCiphertext &ct)
 	// in a linear ciphertext, and does not change the ciphertext scale
 	CKKSCiphertext poly_result = eval.add(term1, term2);       // poly_result, linear, scale, level i-3
 	// Addition of a constant adds the constant to each plaintext coefficient.
-	eval.add_scalar_inplace(poly_result, c_0);                 // poly_result, linear, scale, level i-3
+	eval.add_plain_inplace(poly_result, c_0);                 // poly_result, linear, scale, level i-3
 	return poly_result;
 }
 /* Phew. That's a lot. Even ignoring the maintenance operations, does `poly_eval_homomorphic_v1`
@@ -97,20 +99,19 @@ CKKSCiphertext poly_eval_homomorphic_v1(CKKSEvaluator &eval, CKKSCiphertext &ct)
  * is not secure to use in production.
  */
 int main() {
-	// Generate a plaintext with `num_slots` random coefficients, each with absolute value < `plaintext_inf_norm`
-	srand(time(NULL));
-	int plaintext_inf_norm = 10;
-	vector<double> plaintext = randomVector(num_slots, plaintext_inf_norm);
-
-	// First, we will evaluate the plaintext function on the plaintext input
-	vector<double> expected_result = poly_eval_plaintext(plaintext);
-
 	// Create a CKKS instance which operates on plaintexts.
 	// To ensure consistency between inputs and ensure that inputs would be valid
 	// if we were doing encryption, you must specify the number of slots your plaintexts
 	// will have.
 	int num_slots = 4096;
 	PlaintextEval inst = PlaintextEval(num_slots);
+
+	// Generate a plaintext with `num_slots` random coefficients, each with absolute value < `plaintext_inf_norm`
+	int plaintext_inf_norm = 10;
+	vector<double> plaintext = randomVector(num_slots, plaintext_inf_norm);
+
+	// First, we will evaluate the plaintext function on the plaintext input
+	vector<double> expected_result = poly_eval_plaintext(plaintext);
 
 	// Encrypt the plaintext; there is no need to worry about
 	// the encryption level with the PlaintextEval instance.
@@ -127,7 +128,7 @@ int main() {
 	// If this value is small, then the expected and actual results closely agree,
 	// up to floating point roundoff (note that since the PlaintextEval only operates on
 	// plaintexts, there is no CKKS noise to introduce additional error.)
-	cout << "Relative difference between input and decrypted output: " << diff_2norm(expected_result, actual_result) << endl;
+	cout << "Relative difference between input and decrypted output: " << diff2_norm(expected_result, actual_result) << endl;
 }
 /* Since the normalized difference of the vectors is small, we can be sure that the "core" of our circuit
  * (i.e., excluding ciphertext maintenance operations) is correct! What if this value was large?

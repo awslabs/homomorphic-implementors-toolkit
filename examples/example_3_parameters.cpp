@@ -17,6 +17,11 @@
  * or increasing the number of plaintext slots, which dramatically decreases
  * performance.
  */
+#include "hit/api/evaluator/homomorphic.h"
+#include "hit/common.h"
+
+using namespace std;
+using namespace hit;
 
 extern vector<double> poly_eval_plaintext(vector<double> xs);
 extern CKKSCiphertext poly_eval_homomorphic_v1(CKKSEvaluator &eval, CKKSCiphertext &ct);
