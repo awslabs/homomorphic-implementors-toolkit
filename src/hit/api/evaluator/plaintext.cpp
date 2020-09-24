@@ -18,6 +18,9 @@ namespace hit {
     const double INITIAL_PLAINTEXT_MAX_LOG = -100;
 
     PlaintextEval::PlaintextEval(int num_slots) : num_slots_(num_slots) {
+        if (!is_pow2(num_slots)) {
+            throw invalid_argument("Numer of plaintext slots must be a power of two; got " + to_string(num_slots));\
+        }
     }
 
     void PlaintextEval::reset_internal() {
