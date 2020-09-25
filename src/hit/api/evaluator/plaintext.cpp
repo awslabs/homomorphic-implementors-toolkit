@@ -6,11 +6,11 @@
 #include <glog/logging.h>
 
 #include <iomanip>
+#include <functional>
 
 #include "../../common.h"
 
 using namespace std;
-using namespace seal;
 
 namespace hit {
 
@@ -124,17 +124,23 @@ namespace hit {
         print_stats(ct);
     }
 
+    template <class UnaryOperation>
+    void map_inplace(vector<double> &arg1, UnaryOperation unary_op) {
+        transform(arg1.begin(), arg1.end(), arg1.begin(), unary_op);
+    }
+
+    template <class BinaryOperation>
+    void zip_with_inplace(vector<double> &arg1, const vector<double> &arg2, BinaryOperation binary_op) {
+        transform(arg1.begin(), arg1.end(), arg2.begin(), arg1.begin(), binary_op);
+    }
+
     void PlaintextEval::negate_inplace_internal(CKKSCiphertext &ct) {
-        for (auto &coeff : ct.raw_pt) {
-            coeff = -coeff;
-        }
+        map_inplace(ct.raw_pt, std::negate<>());
         print_stats(ct);
     }
 
     void PlaintextEval::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        for(int i = 0; i < ct1.plaintext().size(); i++) {
-            ct1.raw_pt[i] = ct1.plaintext()[i] + ct2.plaintext()[i];
-        }
+        zip_with_inplace(ct1.raw_pt, ct2.plaintext(), plus<>());
         update_max_log_plain_val(ct1);
         print_stats(ct1);
     }
@@ -155,17 +161,13 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
 
-        for(int i = 0; i < ct.plaintext().size(); i++) {
-            ct.raw_pt[i] = ct.plaintext()[i] + plain[i];
-        }
+        zip_with_inplace(ct.raw_pt, plain, plus<>());
         update_max_log_plain_val(ct);
         print_stats(ct);
     }
 
     void PlaintextEval::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        for(int i = 0; i < ct1.plaintext().size(); i++) {
-            ct1.raw_pt[i] = ct1.plaintext()[i] - ct2.plaintext()[i];
-        }
+        zip_with_inplace(ct1.raw_pt, ct2.raw_pt, minus<>());
         update_max_log_plain_val(ct1);
         print_stats(ct1);
     }
@@ -186,9 +188,7 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
 
-        for(int i = 0; i < ct.plaintext().size(); i++) {
-            ct.raw_pt[i] = ct.plaintext()[i] - plain[i];
-        }
+        zip_with_inplace(ct.raw_pt, plain, minus<>());
         update_max_log_plain_val(ct);
         print_stats(ct);
     }
@@ -197,9 +197,7 @@ namespace hit {
         if (ct1.num_slots() != ct2.num_slots()) {
             throw invalid_argument("INTERNAL ERROR: Plaintext size mismatch");
         }
-        for (int i = 0; i < ct1.plaintext().size(); i++) {
-            ct1.raw_pt[i] = ct1.raw_pt[i] * ct2.raw_pt[i];
-        }
+        zip_with_inplace(ct1.raw_pt, ct2.raw_pt, multiplies<>());
         update_max_log_plain_val(ct1);
         print_stats(ct1);
     }
@@ -220,17 +218,13 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
 
-        for (int i = 0; i < ct.num_slots(); i++) {
-            ct.raw_pt[i] = ct.raw_pt[i] * plain[i];
-        }
+        zip_with_inplace(ct.raw_pt, plain, multiplies<>());
         update_max_log_plain_val(ct);
         print_stats(ct);
     }
 
     void PlaintextEval::square_inplace_internal(CKKSCiphertext &ct) {
-        for (auto &coeff : ct.raw_pt) {
-            coeff *= coeff;
-        }
+        zip_with_inplace(ct.raw_pt, ct.raw_pt, multiplies<>());
         update_max_log_plain_val(ct);
         print_stats(ct);
     }
