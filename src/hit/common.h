@@ -9,6 +9,8 @@
 #include "hit/protobuf/ciphertext.pb.h"
 #include "hit/protobuf/ciphertext_vector.pb.h"
 #include "seal/seal.h"
+#include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/vector.hpp>
 
 #define LOG_VERBOSE 1
 
@@ -22,6 +24,8 @@
 #define PLAINTEXT_LOG_MAX 59
 
 namespace hit {
+    using Matrix = boost::numeric::ublas::matrix<double, boost::numeric::ublas::row_major, std::vector<double>>;
+    using Vector = boost::numeric::ublas::vector<double, std::vector<double>>;
 
     using timepoint =
         std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration<int64_t, std::ratio<1, 1000000000>>>;

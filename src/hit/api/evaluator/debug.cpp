@@ -170,7 +170,7 @@ namespace hit {
 
         // decrypt to compute the approximate plaintext
         vector<double> homom_plaintext = decrypt(ct);
-        vector<double> exact_plaintext = ct.raw_pt.data();
+        vector<double> exact_plaintext = ct.raw_pt;
 
         norm = diff2_norm(exact_plaintext, homom_plaintext);
         if (abs(log2(ct.scale()) - log2(ct.seal_ct.scale())) > 0.1) {
@@ -231,7 +231,7 @@ namespace hit {
             LOG(INFO) << actual_debug_result.str();
 
             Plaintext encoded_plain;
-            homomorphic_eval->encoder->encode(ct.raw_pt.data(), pow(2,log_scale_), encoded_plain);
+            homomorphic_eval->encoder->encode(ct.raw_pt, pow(2,log_scale_), encoded_plain);
 
             vector<double> decoded_plain;
             homomorphic_eval->encoder->decode(encoded_plain, decoded_plain);

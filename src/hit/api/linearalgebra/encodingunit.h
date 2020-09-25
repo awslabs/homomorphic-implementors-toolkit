@@ -4,6 +4,7 @@
 #pragma once
 
 #include "hit/protobuf/encoding_unit.pb.h"
+#include "hit/common.h"
 
 namespace hit {
 

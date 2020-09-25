@@ -20,7 +20,7 @@ namespace hit {
 
         int raw_pt_size = proto_ct.raw_pt_size();
         if (raw_pt_size > 0) {
-            raw_pt = Vector(raw_pt_size);
+            raw_pt = vector<double>(raw_pt_size);
             for (int i = 0; i < raw_pt_size; i++) {
                 raw_pt[i] = proto_ct.raw_pt(i);
             }
@@ -71,7 +71,7 @@ namespace hit {
         return scale_;
     }
 
-    Vector CKKSCiphertext::plaintext() const {
+    vector<double> CKKSCiphertext::plaintext() const {
         if (raw_pt.empty()) {
             throw invalid_argument("Ciphertext does not contain a plaintext.");
         }

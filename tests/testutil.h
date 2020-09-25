@@ -5,7 +5,7 @@
 
 #include <iostream>
 #include <vector>
-#include "hit/matrix.h"
+#include "hit/common.h"
 
 uint32_t create_random_positive_int(const int mod = 100);
 

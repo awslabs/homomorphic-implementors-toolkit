@@ -12,7 +12,6 @@ install(
   FILES
     ${CMAKE_CURRENT_LIST_DIR}/CKKSInstance.h
     ${CMAKE_CURRENT_LIST_DIR}/common.h
-    ${CMAKE_CURRENT_LIST_DIR}/matrix.h
     ${CMAKE_CURRENT_LIST_DIR}/sealutils.h
     ${CMAKE_CURRENT_LIST_DIR}/hit.h
   DESTINATION
