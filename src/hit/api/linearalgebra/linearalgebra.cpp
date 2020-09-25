@@ -433,6 +433,7 @@ namespace hit {
         return kth_row_A_times_BT;
     }
 
+    // common core for matrix/matrix multiplication; used by both multiply and multiply_unit_transpose
     vector<EncryptedColVector> LinearAlgebra::multiply_common(const EncryptedMatrix &enc_mat_a_trans,
                                                               const EncryptedMatrix &enc_mat_b, double scalar,
                                                               bool transpose_unit) {

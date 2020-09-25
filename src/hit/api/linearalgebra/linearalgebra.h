@@ -85,6 +85,12 @@ namespace hit {
          */
         Vector decrypt(const EncryptedColVector &enc_vec) const;
 
+
+        /**************************************
+         * Standard Linear Algebra Operations *
+         **************************************/
+
+
         /* Computes the sum of two linear algebra objects.
          * Inputs: One of the following options
          *   - EncryptedMatrix, EncryptedMatrix
@@ -380,7 +386,7 @@ namespace hit {
         /* Computes a standard row vector/matrix product.
          * Inputs: Row vector and Matrix, both encoded with the same unit
          * Output: (vec*mat)^T, a column vector encoded with the same unit
-         *
+         * TODO: same input as hadamard_multiply, same output as sum_rows
          * Notes: This function has multiplicative depth one, meaning both inputs must be at least level 1.
          * The output is at the same level of the input and is linear ciphertext with squared scale,
          * so it needs to be rescaled but *not* relinearized.
@@ -390,7 +396,7 @@ namespace hit {
         /* Computes a standard matrix/column vector product.
          * Inputs: Matrix and Column vector, both encoded with the same unit
          * Output: (mat*vec)^T, a row vector encoded with the same unit
-         *
+         * TODO: same input as hadamard_multiply, same output as sum_cols
          * Notes: This function has multiplicative depth two, meaning both inputs must be at least level 2.
          * The output is one level below the inputs and is linear ciphertext with squared scale,
          * so it needs to be rescaled but *not* relinearized.
