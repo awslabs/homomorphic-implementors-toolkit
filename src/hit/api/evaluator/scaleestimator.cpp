@@ -105,7 +105,7 @@ namespace hit {
         return destination;
     }
 
-    void ScaleEstimator::reset_internal() {
+    void ScaleEstimator::reset() {
         {
             scoped_lock lock(mutex_);
             estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
@@ -114,8 +114,8 @@ namespace hit {
                 estimated_max_log_scale_ += log2(prime.value());
             }
         }
-        plaintext_eval->reset_internal();
-        depth_finder->reset_internal();
+        plaintext_eval->reset();
+        depth_finder->reset();
     }
 
     // print some debug info

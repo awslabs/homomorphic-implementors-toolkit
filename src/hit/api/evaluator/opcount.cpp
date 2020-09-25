@@ -19,7 +19,7 @@ namespace hit {
         delete depth_finder;
     }
 
-    void OpCount::reset_internal() {
+    void OpCount::reset() {
         {
             scoped_lock lock(mutex_);
             multiplies_ = 0;
@@ -30,7 +30,7 @@ namespace hit {
             reduce_level_muls_ = 0;
             encryptions_ = 0;
         }
-        depth_finder->reset_internal();
+        depth_finder->reset();
     }
 
     CKKSCiphertext OpCount::encrypt(const vector<double>&, int level) {

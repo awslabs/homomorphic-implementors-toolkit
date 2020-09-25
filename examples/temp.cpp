@@ -10,7 +10,7 @@ using namespace hit;
 void f(CKKSEvaluator &inst, CKKSCiphertext x) {
   int plaintext_inf_norm = 10;
   vector<double> y = random_vector(4096, plaintext_inf_norm);
-  inst.multiply(x,x);
+  inst.add(x,x);
   cout << "Scale bits: " << log2(x.scale()) << " SIZE: " << x.seal_ct.size() << endl;
 }
 
