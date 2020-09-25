@@ -305,11 +305,6 @@ namespace hit {
 
 
         /* Reduce the HE level of both inputs to the lower of the two levels.
-         * This can modify at most one of the inputs.
-         * linear/nominal
-         */
-
-        /* Reduce the HE level of both inputs to the lower of the two levels.
          * This operation modifies at most one of the inputs.
          * Input: Two ciphertexts where the ciphertext at the higher level is
          *        linear with nominal scale.
@@ -323,27 +318,25 @@ namespace hit {
 
         /* Reduce the HE level of `ct` to a lower level
          * Input: A linear ciphertext with nominal scale and level i, and a target level
-         *        j <= i.
+         *        0 <= j <= i.
          * Output: A linear ciphertext with nominal scale and level j, encrypting
          *         the same plaintext as `ct`.
-         * NOTE: It is an error if the target level is higher than the level of `ct`.
          */
         CKKSCiphertext reduce_level_to(const CKKSCiphertext &ct, int level);
 
 
         /* Reduce the HE level of `ct` to a lower level
          * Input: A linear ciphertext with nominal scale and level i, and a target level
-         *        j <= i.
+         *        0 <= j <= i.
          * Output (Inplace): A linear ciphertext with nominal scale and level j, encrypting
          *                   the same plaintext as `ct`.
-         * NOTE: It is an error if the target level is higher than the level of `ct`.
          */
         void reduce_level_to_inplace(CKKSCiphertext &ct, int level);
 
 
         /* Remove a prime from the modulus (i.e. go down one level) and scale
          * down the plaintext by that prime.
-         * Input: A linear or quadratic ciphertext with squared scale and level i.
+         * Input: A linear or quadratic ciphertext with squared scale and level i>0.
          * Output: A ciphertext with the same degree as the input
          *         with nominal scale and level i-1.
          */
@@ -352,7 +345,7 @@ namespace hit {
 
         /* Remove a prime from the modulus (i.e. go down one level) and scale
          * down the plaintext by that prime.
-         * Input: A linear or quadratic ciphertext with squared scale and level i.
+         * Input: A linear or quadratic ciphertext with squared scale and level i>0.
          * Output (Inplace): A ciphertext with the same degree as the input
          *                   with nominal scale and level i-1.
          */

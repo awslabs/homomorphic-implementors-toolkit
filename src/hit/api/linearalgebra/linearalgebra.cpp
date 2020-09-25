@@ -144,6 +144,9 @@ namespace hit {
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedMatrix &, const EncryptedMatrix &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedMatrix &, const EncryptedRowVector &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedMatrix &, const EncryptedColVector &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedMatrix &, const EncryptedMatrix &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedMatrix &, const EncryptedRowVector &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedMatrix &, const EncryptedColVector &);
 
     // explicit template instantiation
     template EncryptedRowVector LinearAlgebra::add(const EncryptedRowVector &, const EncryptedRowVector &);
@@ -170,6 +173,10 @@ namespace hit {
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedRowVector &, const EncryptedMatrix &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedRowVector &, const EncryptedRowVector &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedRowVector &, const EncryptedColVector &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedRowVector &, const EncryptedMatrix &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedRowVector &, const EncryptedRowVector &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedRowVector &, const EncryptedColVector &);
+
 
     // explicit template instantiation
     template EncryptedColVector LinearAlgebra::add(const EncryptedColVector &, const EncryptedColVector &);
@@ -196,6 +203,9 @@ namespace hit {
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedColVector &, const EncryptedMatrix &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedColVector &, const EncryptedRowVector &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedColVector &, const EncryptedColVector &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedColVector &, const EncryptedMatrix &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedColVector &, const EncryptedRowVector &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedColVector &, const EncryptedColVector &);
 
     void LinearAlgebra::add_plain_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2) {
         if (!enc_mat1.initialized() || enc_mat1.height() != mat2.size1() || enc_mat1.width() != mat2.size2()) {
@@ -671,19 +681,16 @@ namespace hit {
      *       This prevents the need for masking and a second round of shifting
      *       as in colSum, at the cost of flexibility
      */
-    CKKSCiphertext LinearAlgebra::sum_rows_core(const CKKSCiphertext &ct, const EncodingUnit &unit) {
-        CKKSCiphertext output = ct;
-        rot(output, unit.encoding_height(), unit.encoding_width(), true);
-        return output;
-    }
-
-    CKKSCiphertext LinearAlgebra::sum_rows_loop(const EncryptedMatrix &enc_mat, int j) {
+    CKKSCiphertext LinearAlgebra::sum_rows_core(const EncryptedMatrix &enc_mat, int j) {
         vector<CKKSCiphertext> col_prods(enc_mat.num_vertical_units());
         // extract the j^th column of encoding units
         for (int i = 0; i < enc_mat.num_vertical_units(); i++) {
             col_prods[i] = enc_mat.cts[i][j];
         }
-        return sum_rows_core(eval.add_many(col_prods), enc_mat.encoding_unit());
+
+        CKKSCiphertext output = eval.add_many(col_prods);
+        rot(output, enc_mat.encoding_unit().encoding_height(), enc_mat.encoding_unit().encoding_width(), true);
+        return output;
     }
 
     // To sum the rows of a matrix, first sum all of the units in each column,
@@ -698,7 +705,7 @@ namespace hit {
         }
 
         std::for_each(execution::par, begin(iterIdxs), end(iterIdxs),
-                      [&](int j) { cts[j] = sum_rows_loop(enc_mat, j);
+                      [&](int j) { cts[j] = sum_rows_core(enc_mat, j);
         });
 
         return EncryptedColVector(enc_mat.width(), enc_mat.encoding_unit(), cts);

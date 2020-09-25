@@ -8,10 +8,10 @@ using namespace std;
 using namespace hit;
 
 void f(LinearAlgebra &inst, EncryptedMatrix x) {
-  int plaintext_inf_norm = 10;
-  vector<double> y = random_vector(4096, plaintext_inf_norm);
-  inst.rotate_right_inplace(x,2);
-  cout << "Scale bits: " << log2(x.scale()) << " SIZE: " << x.seal_ct.size() << endl;
+  // int plaintext_inf_norm = 10;
+  // vector<double> y = random_vector(4096, plaintext_inf_norm);
+  inst.sum_rows(x);
+  cout << "Scale bits: " << log2(x.scale()) << endl;
 }
 
 int main() {
@@ -19,16 +19,20 @@ int main() {
   int max_depth = 2;
   int log_scale = 40;
 
-  HomomorphicEval inst = HomomorphicEval(num_slots, max_depth, log_scale);
+  HomomorphicEval he_inst = HomomorphicEval(num_slots, max_depth, log_scale);
+  LinearAlgebra inst = LinearAlgebra(he_inst);
+  EncodingUnit unit = inst.make_unit(64);
 
   // Generate a plaintext with `num_slots` random coefficients, each with absolute value < `plaintext_inf_norm`
   int plaintext_inf_norm = 10;
-  vector<double> plaintext = random_vector(num_slots, plaintext_inf_norm);
+  int pt_coeffs = 100;
+  vector<double> plaintext = random_vector(pt_coeffs, plaintext_inf_norm);
+  Matrix mat = Matrix(4,pt_coeffs/4,plaintext);
 
   // Encrypt the plaintext. By default, the ciphertext is created at the maximum
   // level allowed by the parameters, which is `max_depth`.
-  CKKSCiphertext ciphertext1 = inst.encrypt(plaintext);
-  CKKSCiphertext ciphertext2 = inst.encrypt(plaintext);
+  EncryptedMatrix ciphertext1 = inst.encrypt(mat, unit);
+  EncryptedMatrix ciphertext2 = inst.encrypt(mat, unit);
 
   // linear, nominal scale
   try {
@@ -40,7 +44,7 @@ int main() {
   }
 
   // linear, squared scale
-  CKKSCiphertext ciphertext3 = inst.multiply_plain(ciphertext2, 2);
+  EncryptedMatrix ciphertext3 = inst.multiply(ciphertext2, 2);
   try {
     f(inst, ciphertext3);
     cout << "Passed linear/squared" << endl;
@@ -50,7 +54,7 @@ int main() {
   }
 
   // quadratic, squared scale
-  CKKSCiphertext ciphertext4 = inst.multiply(ciphertext1, ciphertext2);
+  EncryptedMatrix ciphertext4 = inst.hadamard_multiply(ciphertext1, ciphertext2);
   try {
     f(inst, ciphertext4);
     cout << "Passed quadratic/squared" << endl;
@@ -60,7 +64,7 @@ int main() {
   }
 
   // quadratic, nominal scale
-  CKKSCiphertext ciphertext5 = ciphertext4;
+  EncryptedMatrix ciphertext5 = ciphertext4;
   inst.rescale_to_next_inplace(ciphertext5);
   try {
     f(inst, ciphertext5);

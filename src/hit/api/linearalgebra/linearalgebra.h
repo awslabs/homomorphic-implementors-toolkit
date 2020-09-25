@@ -398,63 +398,46 @@ namespace hit {
         EncryptedRowVector multiply(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec,
                                     double scalar = 1);
 
-        /* Reduce the HE level of the first argument to level of the second argument.
-         * Inputs: One of the following options
-         *   - EncryptedMatrix, EncryptedMatrix
-         *   - EncryptedMatrix, EncryptedRowVector
-         *   - EncryptedMatrix, EncryptedColVector
-         *   - EncryptedRowVector, EncryptedMatrix
-         *   - EncryptedRowVector, EncryptedRowVector
-         *   - EncryptedRowVector, EncryptedColVector
-         *   - EncryptedColVector, EncryptedMatrix
-         *   - EncryptedColVector, EncryptedRowVector
-         *   - EncryptedColVector, EncryptedColVector
-         * Inputs must be linear and not in need of a rescale.
-         * Output: A ciphertext encrypting the same value as the input, but at the level of the second argument.
-         *
-         * Notes: This function repeatedly multiplies by the constant 1 and then rescales. The output is
-         * a linear ciphertext which does not need to be rescaled.
+
+        /* Reduce the HE level of `ct` to the level of the `target`.
+         * Input: The first argument must be a linear encrypted linear algebra object
+         *        with nominal scale and level i, and the second argument must be a
+         *        (possibly different) encrypted linear algebra type at level j <= i.
+         * Output: A linear ciphertext with nominal scale and level j, encrypting
+         *         the same plaintext as the input.
+         * NOTE: It is an error if the level of `arg2` is higher than the level of `arg1`.
          */
         template <typename T1, typename T2>
         T1 reduce_level_to(const T1 &arg1, const T2 &arg2) {
             return reduce_level_to(arg1, arg2.he_level());
         }
 
-        /* Reduce the HE level of the first argument to level of the second argument, inplace.
-         * Inputs: One of the following options
-         *   - EncryptedMatrix, EncryptedMatrix
-         *   - EncryptedMatrix, EncryptedRowVector
-         *   - EncryptedMatrix, EncryptedColVector
-         *   - EncryptedRowVector, EncryptedMatrix
-         *   - EncryptedRowVector, EncryptedRowVector
-         *   - EncryptedRowVector, EncryptedColVector
-         *   - EncryptedColVector, EncryptedMatrix
-         *   - EncryptedColVector, EncryptedRowVector
-         *   - EncryptedColVector, EncryptedColVector
-         * Inputs must be linear and not in need of a rescale.
-         * Output: None.
-         *
-         * Notes: This function repeatedly multiplies by the constant 1 and then rescales. The output is
-         * a linear ciphertext which does not need to be rescaled.
+
+        /* Reduce the HE level of `ct` to the level of the `target`.
+         * Input: The first argument must be a linear encrypted linear algebra object
+         *        with nominal scale and level i, and the second argument must be a
+         *        (possibly different) encrypted linear algebra type at level j <= i.
+         * Output (Inplace): A linear ciphertext with nominal scale and level j, encrypting
+         *                   the same plaintext as the input.
+         * NOTE: It is an error if the level of `arg2` is higher than the level of `arg1`.
          */
         template <typename T1, typename T2>
         void reduce_level_to_inplace(T1 &arg1, const T2 &arg2) {
             reduce_level_to_inplace(arg1, arg2.he_level());
         }
 
-        /* Reduce the HE level of both inputs to the lower of the two levels. This can modify at most one of the inputs.
-         * Inputs: One of the following options
-         *   - EncryptedMatrix, EncryptedMatrix
-         *   - EncryptedRowVector, EncryptedRowVector
-         *   - EncryptedColVector, EncryptedColVector
-         * Inputs must be linear and not in need of a rescale.
-         * Output: None
-         *
-         * Notes: This function repeatedly multiplies by the constant 1 and then rescales. The modified argument is
-         * a linear ciphertext which does not need to be rescaled.
+
+        /* Reduce the HE level of both inputs to the lower of the two levels.
+         * This operation modifies at most one of the inputs.
+         * Input: Two encrypted linear algebra objects (not necessarily of the same type)
+         *        where the ciphertext at the higher level is linear with nominal scale.
+         * Output (Inplace): The ciphertext at the higher level is modified
+         *                   so that it is a linear ciphertext with nominal scale
+         *                   at the level of the other input.
+         * NOTE: If both inputs are at the same level, neither ciphertext is changed.
          */
-        template <typename T>
-        void reduce_level_to_min_inplace(T &arg1, T &arg2) {
+        template <typename T1, typename T2>
+        void reduce_level_to_min_inplace(T1 &arg1, T2 &arg2) {
             if (!arg1.initialized() || !arg2.initialized()) {
                 throw std::invalid_argument("LinearAlgebra::reduce_level_to_min: arguments not initialized.");
             }
@@ -464,16 +447,12 @@ namespace hit {
             }
         }
 
+
         /* Reduce the HE level of the first argument to the target level.
-         * Inputs: One of the following options
-         *   - EncryptedMatrix, int
-         *   - EncryptedRowVector, int
-         *   - EncryptedColVector, int
-         * Inputs must be linear and not in need of a rescale. `level` must be >= 0.
-         * Output: A ciphertext encrypting the same value as the input, but at the target level.
-         *
-         * Notes: This function repeatedly multiplies by the constant 1 and then rescales. The output is
-         * a linear ciphertext which does not need to be rescaled.
+         * Inputs: A linear EncryptedMatrix, EncryptedRowVector, or EncryptedColVector
+         *         with nominal scale and level i, and a target level 0 <= j <= i.
+         * Output : A linear ciphertext with nominal scale and level j, encrypting
+         *          the same plaintext as the input.
          */
         template <typename T>
         T reduce_level_to(const T &arg, int level) {
@@ -482,16 +461,12 @@ namespace hit {
             return temp;
         }
 
-        /* Reduce the HE level of the first argument to the target level, inplace.
-         * Inputs: One of the following options
-         *   - EncryptedMatrix, int
-         *   - EncryptedRowVector, int
-         *   - EncryptedColVector, int
-         * Inputs must be linear and not in need of a rescale. `level` must be >= 0.
-         * Output: None
-         *
-         * Notes: This function repeatedly multiplies by the constant 1 and then rescales. The output is
-         * a linear ciphertext which does not need to be rescaled.
+
+        /* Reduce the HE level of the first argument to the target level.
+         * Inputs: A linear EncryptedMatrix, EncryptedRowVector, or EncryptedColVector
+         *         with nominal scale and level i, and a target level 0 <= j <= i.
+         * Output (Inplace): A linear ciphertext with nominal scale and level j, encrypting
+         *                   the same plaintext as the input.
          */
         template <typename T>
         void reduce_level_to_inplace(T &arg, int level) {
@@ -504,16 +479,12 @@ namespace hit {
             }
         }
 
-        /* Remove a prime from the modulus (i.e. go down one level) and scale down the plaintext by that prime.
-         * Inputs: One of the following options
-         *   - EncryptedMatrix
-         *   - EncryptedRowVector
-         *   - EncryptedColVector
-         * Inputs must be linear and in need of a rescale. Encryption level must be >= 0.
-         * Output: A ciphertext which encrypts the same plaintext as the input, but whose
-         * encryption level is one lower, ane whose scale is reduced by the outer-most prime in the ciphertext modulus.
-         *
-         * Notes: The output is a linear ciphertext which does not need to be rescaled.
+
+        /* Remove a prime from the modulus (i.e. go down one level) and scale
+         * down the plaintext by that prime.
+         * Inputs: A linear or quadratic EncryptedMatrix, EncryptedRowVector, or EncryptedColVector
+         *         at level i > 0.
+         * Output: A ciphertext with the same degree as the input with nominal scale and level i-1.
          */
         template <typename T>
         T rescale_to_next(const T &arg) {
@@ -522,15 +493,12 @@ namespace hit {
             return temp;
         }
 
-        /* Remove a prime from the modulus (i.e. go down one level) and scale down the plaintext by that prime, inplace
-         * Inputs: One of the following options
-         *   - EncryptedMatrix
-         *   - EncryptedRowVector
-         *   - EncryptedColVector
-         * Inputs must be linear and in need of a rescale. Encryption level must be >= 0.
-         * Output: None
-         *
-         * Notes: The output is a linear ciphertext which does not need to be rescaled.
+
+        /* Remove a prime from the modulus (i.e. go down one level) and scale
+         * down the plaintext by that prime.
+         * Inputs: A linear or quadratic EncryptedMatrix, EncryptedRowVector, or EncryptedColVector
+         *         at level i > 0.
+         * Output (Inplace): A ciphertext with the same degree as the input with nominal scale and level i-1.
          */
         template <typename T>
         void rescale_to_next_inplace(T &arg) {
@@ -542,6 +510,7 @@ namespace hit {
                 eval.rescale_to_next_inplace(arg[i]);
             }
         }
+
 
         /* Ciphertexts in BGV-style encryption schemes, like CKKS, are polynomials
          * in the (unknown) secret. A fresh ciphertext is a linear polynomial
@@ -571,6 +540,7 @@ namespace hit {
             }
         }
 
+
         /* Sum the columns of a matrix, and encode the result as a row vector.
          * This is a key algorithm for (standard) matrix/column-vector multiplication,
          * which is achieved by performing a hadamard product between the matrix and column
@@ -588,35 +558,43 @@ namespace hit {
          */
         EncryptedRowVector sum_cols(const EncryptedMatrix &enc_mat, double scalar = 1);
 
+
         /* Sum the rows of a matrix, and encode the result as a column vector.
          * This is a key algorithm for (standard) row-vector/matrix multiplication,
          * which is achieved by performing a hadamard product between the row vector and matrix
          * (see hadamard_multiply()), and then summing the rows of the result.
-         * Inputs: An encrypted matrix.
+         * Inputs: An encrypted matrix which must be a linear ciphertext.
          * Output: A column vector which is the (transposed) sum of the rows of the input matrix.
+         *         The output is a linear ciphertext with the same scale and level as the input.
          *
          * Notes: This function is an additive homomorphism:
          * sum_rows(mat1) + sum_rows(mat2) = sum_rows(mat1 + mat2)
-         * It's fairly expensive to evaluate, so taking advantage of this homomorphism is recommended.
-         *
-         * This function has multiplicative depth zero and outputs a linear ciphertext at the same level
-         * as the input, so it does not need to be rescaled or relinearized.
+         * It's fairly expensive to evaluate, so taking advantage of this homomorphism
+         * is recommended; see `sum_rows_many()` for more information.
          */
         EncryptedColVector sum_rows(const EncryptedMatrix &enc_mat);
 
+
         /* This function enables the use of the sum_cols homomorphism across matrices of incompatibile dimensions.
          * If A is f-by-g1 and B is f-by-g2, then sum_cols(A, scalar) + sum_cols(B, scalar) is a f-dimensional row
-         * vector. This function returns the same result, but without invoking sum_cols multiple times. Inputs: A vector
-         * of matrices, each with the same encoding unit and the same height `f`. Ouptut: An f-dimensional row vector
-         * which is sum_cols(A, scalar)+sum_cols(B, scalar)
+         * vector. This function returns the same result, but without invoking sum_cols multiple times.
+         * Inputs: A vector of matrices, each with the same encoding unit and the same height `f`.
+         *         Each ciphertext must be linear, and all ciphertexts must be at the same level
+         *         and have nominal scale.
+         * Ouptut: An f-dimensional row vector which is sum_cols(A, scalar)+sum_cols(B, scalar).
+         *         The output is a linear ciphertext with squared scale.
          */
         EncryptedRowVector sum_cols_many(const std::vector<EncryptedMatrix> &enc_mats, double scalar = 1);
+
 
         /* This function enables the use of the sum_rows homomorphism across matrices of incompatibile dimensions.
          * If A is f1-by-g and B is f2-by-g, then sum_rows(A) + sum_rows(B) is a g-dimensional column vector.
          * This function returns the same result, but without invoking sum_rows multiple times.
          * Inputs: A vector of matrices, each with the same encoding unit and the same width `g`.
-         * Ouptut: An g-dimensional column vector which is sum_rows(A)+sum_rows(B)
+         *         Each ciphertext must be linear, and all ciphertexts must be at the same level
+         *         and with the same scale.
+         * Ouptut: An g-dimensional column vector which is sum_rows(A)+sum_rows(B).
+         *         The output is a linear ciphertext with the same scale and level as the input.
          */
         EncryptedColVector sum_rows_many(const std::vector<EncryptedMatrix> &enc_mats);
 
@@ -678,9 +656,6 @@ namespace hit {
         // inner loop for matrix/column vector hadamard multiplication
         std::vector<CKKSCiphertext> matrix_colvec_hadamard_mul_loop(const EncryptedMatrix &enc_mat,
                                                                     const EncryptedColVector &enc_vec, int i);
-
-        // inner loop for sum_rows
-        CKKSCiphertext sum_rows_loop(const EncryptedMatrix &enc_mat, int j);
 
         // inner loop for matrix/matrix multiplication
         EncryptedColVector matrix_matrix_mul_loop(const EncryptedMatrix &enc_mat_a_trans,
