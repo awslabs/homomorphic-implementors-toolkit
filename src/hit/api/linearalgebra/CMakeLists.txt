@@ -18,5 +18,5 @@ install(
         ${CMAKE_CURRENT_LIST_DIR}/encryptedrowvector.h
         ${CMAKE_CURRENT_LIST_DIR}/encryptedcolvector.h
     DESTINATION
-        ${HIT_INCLUDES_INSTALL_DIR}/api/evaluator/linearalgebra
+        ${HIT_INCLUDES_INSTALL_DIR}/api/linearalgebra
 )
