@@ -121,8 +121,27 @@ void example_3_driver() {
 
 	// Next, we will evaluate the plaintext function on the plaintext input
 	vector<double> expected_result = poly_eval_plaintext(plaintext);
+
+	// Compute the |expected-actual|/|expected|, where |*| denotes the 2-norm.
+	// If this value is small, then the expected and actual results closely agree,
+	// up to floating point roundoff (note that since the PlaintextEval only operates on
+	// plaintexts, there is no CKKS noise to introduce additional error.)
+	cout << "Relative difference between input and decrypted output: " << diff2_norm(expected_result, actual_result) << endl;
+
 /* ******** Debug Evaluator ********
- * Even if our circuit computes the correct value on a plaintext,
+ * Notice that this is subtley different than what we did in Example 2: here we are comparing
+ * the plaintext computation to the *encrypted* computation. Even if the difference between
+ * the two vectors was small in Example 2, they may not be here! There are several ways in
+ * which a circuit which works on plaintext values may fail on ciphertexts. For instance,
+ * the plaintext value may become too large and wrap around the ciphertext modulus,
+ * producing a random output on decryption. Because our function passes a test with the
+ * PlaintextEval instance, we know that the algorithm is mostly correct, but we've got some
+ * problems *only* due to the details of CKKS homomorphic encryption. This narrows down the
+ * search space for the error. However, we now need a way to look at the value inside plaintexts
+ * *as the encrypted computation proceeds*. The PlaintextEval instance can't do this for us; it
+ * does not do any homomorhic computation, and the HomomorphicEval instance doesn't allow us to
+ * see inside the ciphertexts. Instead, we should run the comptuation with the DebugEval instance.
+ * This runs the homomorphic comptutation in parallel with the plaintext computation, and
  *
  */
 }
