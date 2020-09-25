@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "../matrix.h"
 #include "hit/protobuf/ciphertext.pb.h"  // NOLINT
 #include "metadata.h"
 #include "seal/context.h"
@@ -12,7 +11,7 @@
 namespace hit {
     /* This is a wrapper around the SEAL `Ciphertext` type.
      */
-    struct CKKSCiphertext : public CiphertextMetadata<Vector> {
+    struct CKKSCiphertext : public CiphertextMetadata<std::vector<double>> {
         // A default constructor is useful since we often write, e.g, `Ciphertext a;`
         CKKSCiphertext() = default;
 
@@ -26,7 +25,7 @@ namespace hit {
         int num_slots() const override;
         int he_level() const override;
         double scale() const override;
-        Vector plaintext() const override;
+        std::vector<double> plaintext() const override;
 
         // all evaluators need access for encryption and decryption
         friend class DebugEval;
@@ -41,7 +40,7 @@ namespace hit {
         // The raw plaintxt. This is used with some of the evaluators tha track ciphertext
         // metadata (e.g., DebugEval and PlaintextEval), but not by the Homomorphic evaluator.
         // This plaintext is not CKKS-encoded; in particular it is not scaled by the scale factor.
-        Vector raw_pt;
+        std::vector<double> raw_pt;
 
         // SEAL ciphertext
         seal::Ciphertext seal_ct;

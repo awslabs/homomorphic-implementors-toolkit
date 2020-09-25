@@ -191,11 +191,7 @@ namespace hit {
     }
 
     double l_inf_norm(const vector<double> &x) {
-        double xmax = 0;
-        for (double i : x) {
-            xmax = max(xmax, abs(i));
-        }
-        return xmax;
+        return norm_inf(Vector(x));
     }
 
     uintmax_t stream_size(iostream &s) {

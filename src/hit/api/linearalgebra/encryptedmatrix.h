@@ -5,6 +5,7 @@
 
 #include "encodingunit.h"
 #include "../ciphertext.h"
+#include "hit/common.h"
 #include "hit/protobuf/encrypted_matrix.pb.h"
 
 namespace hit {

@@ -123,7 +123,7 @@ namespace hit {
         if (!VLOG_IS_ON(LOG_VERBOSE)) {
             return;
         }
-        double exact_plaintext_max_val = l_inf_norm(ct.raw_pt.data());
+        double exact_plaintext_max_val = l_inf_norm(ct.raw_pt);
         double log_modulus = 0;
         auto context_data = getContextData(ct);
         for (const auto &prime : context_data->parms().coeff_modulus()) {
@@ -154,12 +154,12 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
         if (scale_exp > ct.he_level()) {
-            auto estimated_scale = (PLAINTEXT_LOG_MAX - log2(l_inf_norm(ct.raw_pt.data()))) / (scale_exp - ct.he_level());
+            auto estimated_scale = (PLAINTEXT_LOG_MAX - log2(l_inf_norm(ct.raw_pt))) / (scale_exp - ct.he_level());
             {
                 scoped_lock lock(mutex_);
                 estimated_max_log_scale_ = min(estimated_max_log_scale_, estimated_scale);
             }
-        } else if (scale_exp == ct.he_level() && log2(l_inf_norm(ct.raw_pt.data())) > PLAINTEXT_LOG_MAX) {
+        } else if (scale_exp == ct.he_level() && log2(l_inf_norm(ct.raw_pt)) > PLAINTEXT_LOG_MAX) {
             stringstream buffer;
             buffer << "Plaintext exceeded " << PLAINTEXT_LOG_MAX
                    << " bits, which exceeds SEAL's capacity. Overflow is imminent.";

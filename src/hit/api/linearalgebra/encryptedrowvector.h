@@ -5,6 +5,7 @@
 
 #include "encodingunit.h"
 #include "../ciphertext.h"
+#include "../../common.h"
 #include "hit/protobuf/encrypted_row_vector.pb.h"
 
 namespace hit {

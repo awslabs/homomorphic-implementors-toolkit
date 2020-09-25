@@ -6,11 +6,11 @@
 #include <glog/logging.h>
 
 #include <iomanip>
+#include <functional>
 
 #include "../../common.h"
 
 using namespace std;
-using namespace seal;
 
 namespace hit {
 
@@ -61,7 +61,7 @@ namespace hit {
             return;
         }
         // extract just the elements we care about from the real plaintext
-        vector<double> exact_plaintext = ct.plaintext().data();
+        vector<double> exact_plaintext = ct.plaintext();
 
         int max_print_size = 8;
         stringstream exact_plaintext_info;
@@ -77,7 +77,7 @@ namespace hit {
     }
 
     void PlaintextEval::update_max_log_plain_val(const CKKSCiphertext &ct) {
-        double exact_plaintext_max_val = l_inf_norm(ct.plaintext().data());
+        double exact_plaintext_max_val = l_inf_norm(ct.plaintext());
         {
             scoped_lock lock(mutex_);
             plaintext_max_log_ = max(plaintext_max_log_, log2(exact_plaintext_max_val));
@@ -124,22 +124,31 @@ namespace hit {
         print_stats(ct);
     }
 
+    template <class UnaryOperation>
+    void map_inplace(vector<double> &arg1, UnaryOperation unary_op) {
+        transform(arg1.begin(), arg1.end(), arg1.begin(), unary_op);
+    }
+
+    template <class BinaryOperation>
+    void zip_with_inplace(vector<double> &arg1, const vector<double> &arg2, BinaryOperation binary_op) {
+        transform(arg1.begin(), arg1.end(), arg2.begin(), arg1.begin(), binary_op);
+    }
+
     void PlaintextEval::negate_inplace_internal(CKKSCiphertext &ct) {
-        for (auto &coeff : ct.raw_pt) {
-            coeff = -coeff;
-        }
+        map_inplace(ct.raw_pt, std::negate<>());
         print_stats(ct);
     }
 
     void PlaintextEval::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        ct1.raw_pt = ct1.plaintext() + ct2.plaintext();
+        zip_with_inplace(ct1.raw_pt, ct2.plaintext(), plus<>());
         update_max_log_plain_val(ct1);
         print_stats(ct1);
     }
 
     void PlaintextEval::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        Vector coeffVec(ct.num_slots(), scalar);
-        ct.raw_pt = ct.plaintext() + coeffVec;
+        for(auto &coeff : ct.raw_pt) {
+            coeff += scalar;
+        }
         update_max_log_plain_val(ct);
         print_stats(ct);
     }
@@ -152,21 +161,21 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
 
-        Vector coeffVec(ct.num_slots(), plain);
-        ct.raw_pt = ct.plaintext() + coeffVec;
+        zip_with_inplace(ct.raw_pt, plain, plus<>());
         update_max_log_plain_val(ct);
         print_stats(ct);
     }
 
     void PlaintextEval::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        ct1.raw_pt = ct1.plaintext() - ct2.plaintext();
+        zip_with_inplace(ct1.raw_pt, ct2.raw_pt, minus<>());
         update_max_log_plain_val(ct1);
         print_stats(ct1);
     }
 
     void PlaintextEval::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        Vector coeffVec(ct.num_slots(), scalar);
-        ct.raw_pt = ct.plaintext() - coeffVec;
+        for(auto &coeff : ct.raw_pt) {
+            coeff -= scalar;
+        }
         update_max_log_plain_val(ct);
         print_stats(ct);
     }
@@ -179,8 +188,7 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
 
-        Vector coeffVec(ct.num_slots(), plain);
-        ct.raw_pt = ct.plaintext() - coeffVec;
+        zip_with_inplace(ct.raw_pt, plain, minus<>());
         update_max_log_plain_val(ct);
         print_stats(ct);
     }
@@ -189,15 +197,15 @@ namespace hit {
         if (ct1.num_slots() != ct2.num_slots()) {
             throw invalid_argument("INTERNAL ERROR: Plaintext size mismatch");
         }
-        for (int i = 0; i < ct1.plaintext().size(); i++) {
-            ct1.raw_pt[i] = ct1.raw_pt[i] * ct2.raw_pt[i];
-        }
+        zip_with_inplace(ct1.raw_pt, ct2.raw_pt, multiplies<>());
         update_max_log_plain_val(ct1);
         print_stats(ct1);
     }
 
     void PlaintextEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        ct.raw_pt = scalar * ct.plaintext();
+        for (auto &coeff : ct.raw_pt) {
+            coeff *= scalar;
+        }
         update_max_log_plain_val(ct);
         print_stats(ct);
     }
@@ -210,17 +218,13 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
 
-        for (int i = 0; i < ct.num_slots(); i++) {
-            ct.raw_pt[i] = ct.raw_pt[i] * plain[i];
-        }
+        zip_with_inplace(ct.raw_pt, plain, multiplies<>());
         update_max_log_plain_val(ct);
         print_stats(ct);
     }
 
     void PlaintextEval::square_inplace_internal(CKKSCiphertext &ct) {
-        for (auto &coeff : ct.raw_pt) {
-            coeff *= coeff;
-        }
+        zip_with_inplace(ct.raw_pt, ct.raw_pt, multiplies<>());
         update_max_log_plain_val(ct);
         print_stats(ct);
     }
