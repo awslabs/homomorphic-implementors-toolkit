@@ -14,6 +14,7 @@
 #include "encryptedmatrix.h"
 #include "encryptedrowvector.h"
 #include "encryptedcolvector.h"
+#include "../../common.h"
 
 /* The LinearAlgebra API lifts the Evaluator API to linear algebra objects like row/column vectors and matrices.
  * It provides a simple API for performing many common linear algebra tasks, and automatic encoding and decoding
