@@ -114,7 +114,7 @@ void example_3_driver() {
 	// Don't reuse ciphertexts between instance types!
 	CKKSCiphertext he_ciphertext = he_inst.encrypt(plaintext);
 
-	// Now we can evaluate our homomorphic circuit on this input, ignoring the output
+	// Now we can evaluate our homomorphic circuit on this input
 	CKKSCiphertext ct_result = poly_eval_homomorphic_v1(he_inst, he_ciphertext);
 
 	vector<double> pt_result = he_inst.decrypt(ct_result);
@@ -141,7 +141,40 @@ void example_3_driver() {
  * *as the encrypted computation proceeds*. The PlaintextEval instance can't do this for us; it
  * does not do any homomorhic computation, and the HomomorphicEval instance doesn't allow us to
  * see inside the ciphertexts. Instead, we should run the comptuation with the DebugEval instance.
- * This runs the homomorphic comptutation in parallel with the plaintext computation, and
- *
+ * This runs the homomorphic comptutation in parallel with the plaintext computation, and compares
+ * the plaintext computation to the decrypted homomorphic computation at each gate. This allows you
+ * to pinpoint exactly where the homomorphic computation went off the rails. You use the DebugEval
+ * instance just like the HomomorphicEval instance.
  */
+	DebugEval dbg_inst = DebugEval(num_slots, max_depth, log_scale);
+
+	// Don't reuse ciphertexts between instance types!
+	CKKSCiphertext dbg_ciphertext = dbg_inst.encrypt(plaintext);
+
+	// Now we can evaluate our homomorphic circuit on this input, ignoring the output
+	poly_eval_homomorphic_v1(dbg_inst, dbg_ciphertext);
+
+/* When you set <TODO>, the DebugEval instance logs the first few coefficients of the
+ * decrypted homomorphic computation at each gate. When the evaluator detects a divergence
+ * between the plaintext and homomorphic computations, it prints out additional information.
+ * <TODO> be more precise here.
+ */
+
+/* ******** OpCount Evaluator ********
+ * Let's look at one final evaluator before moving on. When comparing large circuits, it is
+ * useful to know how many gates (and of what type) are evaluated in each circuit. The OpCount evaluator
+ * provides exactly this information. Let's see how to use it below.
+ */
+	// The OpCount instance type doesn't need any arguments.
+	OpCount oc_inst = OpCount();
+
+	// Don't reuse ciphertexts between instance types!
+	CKKSCiphertext oc_ciphertext = oc_inst.encrypt(plaintext);
+
+	// Now we can evaluate our homomorphic circuit on this input, ignoring the output
+	poly_eval_homomorphic_v1(oc_inst, oc_ciphertext);
+
+	// We can now ask the OpCount evaluator to print (to the log) a tally of each type of gate.
+	// This log output is visible when <TODO>
+	oc_inst.print_op_count();
 }
