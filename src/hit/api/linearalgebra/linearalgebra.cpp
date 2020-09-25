@@ -123,11 +123,11 @@ namespace hit {
     // explicit template instantiation
     template EncryptedMatrix LinearAlgebra::add(const EncryptedMatrix &, const EncryptedMatrix &);
     template void LinearAlgebra::add_inplace(EncryptedMatrix &, const EncryptedMatrix &);
-    template EncryptedMatrix LinearAlgebra::add(const vector<EncryptedMatrix> &);
-    template EncryptedMatrix LinearAlgebra::add(const EncryptedMatrix &, const Matrix &);
-    template EncryptedMatrix LinearAlgebra::add(const EncryptedMatrix &, double);
-    template void LinearAlgebra::add_inplace(EncryptedMatrix &enc_mat, double scalar);
-    template EncryptedMatrix LinearAlgebra::multiply(const EncryptedMatrix &, double);
+    template EncryptedMatrix LinearAlgebra::add_many(const vector<EncryptedMatrix> &);
+    template EncryptedMatrix LinearAlgebra::add_plain(const EncryptedMatrix &, const Matrix &);
+    template EncryptedMatrix LinearAlgebra::add_plain(const EncryptedMatrix &, double);
+    template void LinearAlgebra::add_plain_inplace(EncryptedMatrix &enc_mat, double scalar);
+    template EncryptedMatrix LinearAlgebra::multiply_plain(const EncryptedMatrix &, double);
     template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedMatrix &, EncryptedMatrix &);
     template EncryptedMatrix LinearAlgebra::reduce_level_to(const EncryptedMatrix &, int);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedMatrix &, int);
@@ -148,11 +148,11 @@ namespace hit {
     // explicit template instantiation
     template EncryptedRowVector LinearAlgebra::add(const EncryptedRowVector &, const EncryptedRowVector &);
     template void LinearAlgebra::add_inplace(EncryptedRowVector &, const EncryptedRowVector &);
-    template EncryptedRowVector LinearAlgebra::add(const vector<EncryptedRowVector> &);
-    template EncryptedRowVector LinearAlgebra::add(const EncryptedRowVector &, const Vector &);
-    template EncryptedRowVector LinearAlgebra::add(const EncryptedRowVector &, double);
-    template void LinearAlgebra::add_inplace(EncryptedRowVector &enc_vec, double scalar);
-    template EncryptedRowVector LinearAlgebra::multiply(const EncryptedRowVector &, double);
+    template EncryptedRowVector LinearAlgebra::add_many(const vector<EncryptedRowVector> &);
+    template EncryptedRowVector LinearAlgebra::add_plain(const EncryptedRowVector &, const Vector &);
+    template EncryptedRowVector LinearAlgebra::add_plain(const EncryptedRowVector &, double);
+    template void LinearAlgebra::add_plain_inplace(EncryptedRowVector &enc_vec, double scalar);
+    template EncryptedRowVector LinearAlgebra::multiply_plain(const EncryptedRowVector &, double);
     template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedRowVector &, EncryptedRowVector &);
     template EncryptedRowVector LinearAlgebra::reduce_level_to(const EncryptedRowVector &, int);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedRowVector &, int);
@@ -174,11 +174,11 @@ namespace hit {
     // explicit template instantiation
     template EncryptedColVector LinearAlgebra::add(const EncryptedColVector &, const EncryptedColVector &);
     template void LinearAlgebra::add_inplace(EncryptedColVector &, const EncryptedColVector &);
-    template EncryptedColVector LinearAlgebra::add(const vector<EncryptedColVector> &);
-    template EncryptedColVector LinearAlgebra::add(const EncryptedColVector &, const Vector &);
-    template EncryptedColVector LinearAlgebra::add(const EncryptedColVector &, double);
-    template void LinearAlgebra::add_inplace(EncryptedColVector &enc_vec, double scalar);
-    template EncryptedColVector LinearAlgebra::multiply(const EncryptedColVector &, double);
+    template EncryptedColVector LinearAlgebra::add_many(const vector<EncryptedColVector> &);
+    template EncryptedColVector LinearAlgebra::add_plain(const EncryptedColVector &, const Vector &);
+    template EncryptedColVector LinearAlgebra::add_plain(const EncryptedColVector &, double);
+    template void LinearAlgebra::add_plain_inplace(EncryptedColVector &enc_vec, double scalar);
+    template EncryptedColVector LinearAlgebra::multiply_plain(const EncryptedColVector &, double);
     template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedColVector &, EncryptedColVector &);
     template EncryptedColVector LinearAlgebra::reduce_level_to(const EncryptedColVector &, int);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedColVector &, int);
@@ -197,7 +197,7 @@ namespace hit {
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedColVector &, const EncryptedRowVector &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedColVector &, const EncryptedColVector &);
 
-    void LinearAlgebra::add_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2) {
+    void LinearAlgebra::add_plain_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2) {
         if (!enc_mat1.initialized() || enc_mat1.height() != mat2.size1() || enc_mat1.width() != mat2.size2()) {
             throw invalid_argument("Arguments to LinearAlgebra::add_inplace do not have the same dimensions.");
         }
@@ -210,7 +210,7 @@ namespace hit {
         }
     }
 
-    void LinearAlgebra::add_inplace(EncryptedRowVector &enc_vec1, const Vector &vec2) {
+    void LinearAlgebra::add_plain_inplace(EncryptedRowVector &enc_vec1, const Vector &vec2) {
         if (!enc_vec1.initialized() || enc_vec1.width() != vec2.size()) {
             throw invalid_argument("Arguments to LinearAlgebra::add_inplace do not have the same dimensions.");
         }
@@ -221,7 +221,7 @@ namespace hit {
         }
     }
 
-    void LinearAlgebra::add_inplace(EncryptedColVector &enc_vec1, const Vector &vec2) {
+    void LinearAlgebra::add_plain_inplace(EncryptedColVector &enc_vec1, const Vector &vec2) {
         if (!enc_vec1.initialized() || enc_vec1.height() != vec2.size()) {
             throw invalid_argument("Arguments to LinearAlgebra::add_inplace do not have the same dimensions.");
         }
