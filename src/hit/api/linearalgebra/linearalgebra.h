@@ -790,7 +790,7 @@ namespace hit {
          *       as in colSum, at the cost of flexibility
          * The output needs to be rescaled!
          */
-        CKKSCiphertext sum_rows_core(const CKKSCiphertext &ct, const EncodingUnit &unit);
+        CKKSCiphertext sum_rows_core(const EncryptedMatrix &enc_mat, int j);
 
         // helper function for sum_rows and sum_cols which repeatedly shifts by increasing powers of two, adding the
         // results

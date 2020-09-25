@@ -128,7 +128,6 @@ namespace hit {
     template EncryptedMatrix LinearAlgebra::add_plain(const EncryptedMatrix &, double);
     template void LinearAlgebra::add_plain_inplace(EncryptedMatrix &enc_mat, double scalar);
     template EncryptedMatrix LinearAlgebra::multiply_plain(const EncryptedMatrix &, double);
-    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedMatrix &, EncryptedMatrix &);
     template EncryptedMatrix LinearAlgebra::reduce_level_to(const EncryptedMatrix &, int);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedMatrix &, int);
     template void LinearAlgebra::rescale_to_next_inplace(EncryptedMatrix &);
@@ -144,9 +143,9 @@ namespace hit {
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedMatrix &, const EncryptedMatrix &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedMatrix &, const EncryptedRowVector &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedMatrix &, const EncryptedColVector &);
-    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedMatrix &, const EncryptedMatrix &);
-    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedMatrix &, const EncryptedRowVector &);
-    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedMatrix &, const EncryptedColVector &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedMatrix &, EncryptedMatrix &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedMatrix &, EncryptedRowVector &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedMatrix &, EncryptedColVector &);
 
     // explicit template instantiation
     template EncryptedRowVector LinearAlgebra::add(const EncryptedRowVector &, const EncryptedRowVector &);
@@ -156,7 +155,6 @@ namespace hit {
     template EncryptedRowVector LinearAlgebra::add_plain(const EncryptedRowVector &, double);
     template void LinearAlgebra::add_plain_inplace(EncryptedRowVector &enc_vec, double scalar);
     template EncryptedRowVector LinearAlgebra::multiply_plain(const EncryptedRowVector &, double);
-    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedRowVector &, EncryptedRowVector &);
     template EncryptedRowVector LinearAlgebra::reduce_level_to(const EncryptedRowVector &, int);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedRowVector &, int);
     template void LinearAlgebra::rescale_to_next_inplace(EncryptedRowVector &);
@@ -173,9 +171,9 @@ namespace hit {
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedRowVector &, const EncryptedMatrix &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedRowVector &, const EncryptedRowVector &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedRowVector &, const EncryptedColVector &);
-    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedRowVector &, const EncryptedMatrix &);
-    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedRowVector &, const EncryptedRowVector &);
-    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedRowVector &, const EncryptedColVector &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedRowVector &, EncryptedMatrix &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedRowVector &, EncryptedRowVector &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedRowVector &, EncryptedColVector &);
 
 
     // explicit template instantiation
@@ -186,7 +184,6 @@ namespace hit {
     template EncryptedColVector LinearAlgebra::add_plain(const EncryptedColVector &, double);
     template void LinearAlgebra::add_plain_inplace(EncryptedColVector &enc_vec, double scalar);
     template EncryptedColVector LinearAlgebra::multiply_plain(const EncryptedColVector &, double);
-    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedColVector &, EncryptedColVector &);
     template EncryptedColVector LinearAlgebra::reduce_level_to(const EncryptedColVector &, int);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedColVector &, int);
     template void LinearAlgebra::rescale_to_next_inplace(EncryptedColVector &);
@@ -203,9 +200,9 @@ namespace hit {
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedColVector &, const EncryptedMatrix &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedColVector &, const EncryptedRowVector &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedColVector &, const EncryptedColVector &);
-    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedColVector &, const EncryptedMatrix &);
-    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedColVector &, const EncryptedRowVector &);
-    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedColVector &, const EncryptedColVector &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedColVector &, EncryptedMatrix &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedColVector &, EncryptedRowVector &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedColVector &, EncryptedColVector &);
 
     void LinearAlgebra::add_plain_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2) {
         if (!enc_mat1.initialized() || enc_mat1.height() != mat2.size1() || enc_mat1.width() != mat2.size2()) {
@@ -457,7 +454,7 @@ namespace hit {
         }
 
         std::for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int k) {
-            row_results[k] = matrix_matrix_mul_loop(enc_mat_a_trans, mat_b_leveled, scalar, k, transpose_unit);
+            row_results[k] = matrix_matrix_mul_loop(enc_mat_a_trans, enc_mat_b, scalar, k, transpose_unit);
         });
 
         return row_results;
