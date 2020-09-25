@@ -42,101 +42,172 @@ namespace hit {
         void reset();
 
         /* Rotate a plaintext vector cyclically to the right.
+         * linear/nominal
+         * linear/squared
          */
         CKKSCiphertext rotate_right(const CKKSCiphertext &ct, int steps);
 
         /* Rotate a plaintext vector cyclically to the right, inplace.
+         * linear/nominal
+         * linear/squared
          */
         void rotate_right_inplace(CKKSCiphertext &ct, int steps);
 
         /* Rotate a plaintext vector cyclically to the left.
+         * linear/nominal
+         * linear/squared
          */
         CKKSCiphertext rotate_left(const CKKSCiphertext &ct, int steps);
 
         /* Rotate a plaintext vector cyclically to the left, inplace.
+         * linear/nominal
+         * linear/squared
          */
         void rotate_left_inplace(CKKSCiphertext &ct, int steps);
 
         /* Negate each coefficient of a plaintext vector.
+         * linear/nominal
+         * linear/squared
+         * quadratic/squared
+         * quadratic/nominal
          */
         CKKSCiphertext negate(const CKKSCiphertext &ct);
 
         /* Negate each coefficient of a plaintext vector, inplace.
+         * linear/nominal
+         * linear/squared
+         * quadratic/squared
+         * quadratic/nominal
          */
         void negate_inplace(CKKSCiphertext &ct);
 
         /* Add a scalar to (each slot of) the ciphertext, and place the result in `dest`.
          * The plaintext is encoded with the same scale as the ciphertext.
+         * linear/nominal
+         * linear/squared
+         * quadratic/squared
+         * quadratic/nominal
          */
         CKKSCiphertext add_plain(const CKKSCiphertext &ct, double scalar);
 
         /* Add a scalar to (each slot of) the ciphertext, and place the result in the first argument.
          * The plaintext is encoded with the same scale as the ciphertext.
+         * linear/nominal
+         * linear/squared
+         * quadratic/squared
+         * quadratic/nominal
          */
         void add_plain_inplace(CKKSCiphertext &ct, double scalar);
 
         /* Add a plaintext component-wise to an encrypted plaintext.
+         * linear/nominal
+         * linear/squared
+         * quadratic/squared
+         * quadratic/nominal
          */
         CKKSCiphertext add_plain(const CKKSCiphertext &ct, const std::vector<double> &plain);
 
         /* Add a plaintext component-wise to an encrypted plaintext, inplace.
+         * linear/nominal
+         * linear/squared
+         * quadratic/squared
+         * quadratic/nominal
          */
         void add_plain_inplace(CKKSCiphertext &ct, const std::vector<double> &plain);
 
         /* Add two ciphertexts (inducing component-wise addition on plaintexts)
          * and store the result in a new ciphertext.
+         * linear/nominal
+         * linear/squared
+         * quadratic/squared
+         * quadratic/nominal
+         * can add linear and quadratic
          */
         CKKSCiphertext add(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
 
         /* Add two ciphertexts (inducing component-wise addition on plaintexts)
          * and store the result in the first parameter.
+         * linear/nominal
+         * linear/squared
+         * quadratic/squared
+         * quadratic/nominal
+         * can add linear and quadratic
          */
         void add_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
 
         /* Add the ciphertexts in a vector. The vector must be non-empty.
+         * linear/nominal
+         * linear/squared
+         * quadratic/squared
+         * can add linear and quadratic
          */
         CKKSCiphertext add_many(const std::vector<CKKSCiphertext> &cts);
 
         /* Subtract two ciphertexts (inducing component-wise subtraction on plaintexts)
          * and store the result in a new ciphertext.
+         * transparent CT if args are equal (or if they differ by a constant: transparent means that only the constant term of the ciphertext is nonzero)
+         * linear/nominal
+         * linear/squared
+         * quadratic/squared
+         * can add linear and quadratic
          */
         CKKSCiphertext sub(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
 
         /* Subtract two ciphertexts (inducing component-wise subtraction on plaintexts)
          * and store the result in the first parameter.
+         * transparent CT if args are equal (or if they differ by a constant: transparent means that only the constant term of the ciphertext is nonzero)
+         * linear/nominal
+         * linear/squared
+         * quadratic/squared
+         * can add linear and quadratic
          */
         void sub_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
 
         /* Subtract a scalar from (each slot of) the ciphertext, and place the result in `dest`.
          * The plaintext is encoded with the same scale as the ciphertext.
+         * linear/nominal
+         * linear/squared
+         * quadratic/squared
          */
         CKKSCiphertext sub_plain(const CKKSCiphertext &ct, double scalar);
 
         /* Subtract a scalar from (each slot of) the ciphertext, and place the result in the first argument.
          * The plaintext is encoded with the same scale as the ciphertext.
+         * linear/nominal
+         * linear/squared
+         * quadratic/squared
          */
         void sub_plain_inplace(CKKSCiphertext &ct, double scalar);
 
         /* Subtract a plaintext component-wise from an encrypted plaintext.
+         * linear/nominal
+         * linear/squared
+         * quadratic/squared
          */
         CKKSCiphertext sub_plain(const CKKSCiphertext &ct, const std::vector<double> &plain);
 
         /* Subtract a plaintext component-wise from an encrypted plaintext, inplace.
+         * linear/nominal
+         * linear/squared
+         * quadratic/squared
          */
         void sub_plain_inplace(CKKSCiphertext &ct, const std::vector<double> &plain);
 
         /* Multiply two ciphertexts (inducing component-wise multiplication on
          * plaintexts) and store the result in the a new ciphertext.
+         * linear/nominal
          */
         CKKSCiphertext multiply(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
 
         /* Multiply two ciphertexts (inducing component-wise multiplication on
          * plaintexts) and store the result in the first parameter.
+         * linear/nominal
          */
         void multiply_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
 
         /* Multiply the ciphertext by the plaintext, and store the result in `dest`.
          * The plaintext is encoded using the same scale as the ciphertext.
+         * linear/nominal
          *
          * WARNING: Multiplying by 0 results in non-constant time behavior! Only multiply by 0 if the scalar is truly
          * public.
@@ -145,6 +216,7 @@ namespace hit {
 
         /* Multiply the ciphertext by the plaintext, and store the result in the first parameter.
          * The plaintext is encoded using the same scale as the ciphertext.
+         * linear/nominal
          *
          * WARNING: Multiplying by 0 results in non-constant time behavior! Only multiply by 0 if the scalar is truly
          * public.
@@ -155,6 +227,7 @@ namespace hit {
          * it takes a C++ vector whose size is the same as the size of the plaintext encrypted by the ciphertext,
          * and is interpreted as a matrix (i.e., no linear algebra encoding is performed).
          * The plaintext is encoded using the same scale as the ciphertext.
+         * linear/nominal
          */
         CKKSCiphertext multiply_plain(const CKKSCiphertext &ct, const std::vector<double> &plain);
 
@@ -162,47 +235,61 @@ namespace hit {
          * it takes a C++ vector whose size is the same as the size of the plaintext encrypted by the ciphertext,
          * and is interpreted as a matrix (i.e., no linear algebra encoding is performed).
          * The plaintext is encoded using the same scale as the ciphertext.
+         * linear/nominal
          */
         void multiply_plain_inplace(CKKSCiphertext &ct, const std::vector<double> &plain);
 
         /* Multiply the first input by itself, and store the result in a new ciphertext.
+         * linear/nominal
          */
         CKKSCiphertext square(const CKKSCiphertext &ct);
 
         /* Square the input inplace.
+         * linear/nominal
          */
         void square_inplace(CKKSCiphertext &ct);
 
         /* Reduce the HE level of `x` to the level of the `target`.
+         * linear/nominal
          */
         CKKSCiphertext reduce_level_to(const CKKSCiphertext &ct, const CKKSCiphertext &target);
 
         /* Reduce the HE level of `x` to the level of the `target`, inplace.
+         * linear/nominal
          */
         void reduce_level_to_inplace(CKKSCiphertext &ct, const CKKSCiphertext &target);
 
         /* Reduce the HE level of both inputs to the lower of the two levels.
          * This can modify at most one of the inputs.
+         * linear/nominal
          */
         void reduce_level_to_min_inplace(CKKSCiphertext &ct1, CKKSCiphertext &ct2);
 
         /* Reduce the HE level of `x` to level `level`, which has
          * level+1 moduli. `level` must be >= 0.
+         * linear/nominal
          */
         CKKSCiphertext reduce_level_to(const CKKSCiphertext &ct, int level);
 
         /* Reduce the HE level of `x` to level `level`, which has
          * level+1 moduli. `level` must be >= 0. Store the result in the first arugment.
+         * linear/nominal
          */
         void reduce_level_to_inplace(CKKSCiphertext &ct, int level);
 
         /* Remove a prime from the modulus (i.e. go down one level) and scale
          * down the plaintext by that prime.
+         * linear/nominal -> allowed, but bad
+         * linear/squared -> linear/nominal
+         * quadratic/squared -> quadratic/nominal
          */
         CKKSCiphertext rescale_to_next(const CKKSCiphertext &ct);
 
         /* Remove a prime from the modulus (i.e. go down one level) and scale
          * down the plaintext by that prime. Store the result inplace.
+         * linear/nominal -> allowed, but bad
+         * linear/squared -> linear/nominal
+         * quadratic/squared -> quadratic/nominal
          */
         void rescale_to_next_inplace(CKKSCiphertext &ct);
 
@@ -216,6 +303,9 @@ namespace hit {
          * operation called "relinearization" that uses a special set of keys
          * (`relin_keys`) to convert this quadratic ciphertext back into a linear
          * ciphertext that encrypts the same plaintext.
+         * linear/nominal -> no-op
+         * linear/squared -> linear/squared
+         * quadratic/squared -> linear/squared
          */
         void relinearize_inplace(CKKSCiphertext &ct);
 
