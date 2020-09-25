@@ -439,12 +439,12 @@ namespace hit {
                                                               bool transpose_unit) {
         // This function requires b to be at one level below enc_enc_mat_a_trans.
         // Ensure that's the case.
-        EncryptedMatrix mat_b_leveled = enc_mat_b;
-        for (int i = 0; i < enc_mat_b.cts.size(); i++) {
-            for (int j = 0; j < enc_mat_b.cts[0].size(); j++) {
-                eval.reduce_level_to_inplace(mat_b_leveled.cts[i][j], enc_mat_a_trans.he_level() - 1);
-            }
-        }
+        // EncryptedMatrix mat_b_leveled = enc_mat_b;
+        // for (int i = 0; i < enc_mat_b.cts.size(); i++) {
+        //     for (int j = 0; j < enc_mat_b.cts[0].size(); j++) {
+        //         eval.reduce_level_to_inplace(mat_b_leveled.cts[i][j], enc_mat_a_trans.he_level() - 1);
+        //     }
+        // }
 
         // we will iterate over all columns of A^T (rows of A)
         // and compute the k^th row of A times B^T

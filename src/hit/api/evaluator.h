@@ -144,7 +144,7 @@ namespace hit {
         void add_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
 
 
-        /* Add two encrypted plaintexts, component-wise.
+        /* Add a list of encrypted objects together, component-wise.
          * Input: A non-empty vector of ciphertexts. The ciphertexts must be at the same level,
          *        and their scales must be equal.
          *        Note that ciphertext degrees do not need to match.

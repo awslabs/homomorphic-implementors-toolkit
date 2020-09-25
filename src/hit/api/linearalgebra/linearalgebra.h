@@ -91,15 +91,21 @@ namespace hit {
          **************************************/
 
 
-        /* Computes the sum of two linear algebra objects.
-         * Inputs: One of the following options
-         *   - EncryptedMatrix, EncryptedMatrix
-         *   - EncryptedRowVector, EncryptedRowVector
-         *   - EncryptedColVector, EncryptedColVector
-         *   where the dimensions of both arguments must be the same.
-         * Output: The (encrypted) sum of the two objects
-         *
-         * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
+        /* Add two encrypted linear algebra objects, component-wise.
+         * Template Instantiations:
+         *   - EncryptedMatrix add(const EncryptedMatrix&, const EncryptedMatrix&)
+         *   - EncryptedRowVector add(const EncryptedRowVector&, const EncryptedRowVector&)
+         *   - EncryptedColVector add(const EncryptedColVector&, const EncryptedColVector&)
+         * Input Linear Algebra Constraints:
+         *       Both inputs must have matching dimensions and be encoded with the same unit.
+         * Input Ciphertext Constraints:
+         *       Inputs must be at the same level and have matching scales.
+         *       Note that ciphertext degrees do not need to match.
+         * Output Linear Algebra Properties:
+         *       Same as inputs.
+         * Output Ciphertext Properties:
+         *       A ciphertext whose level and scale is the same as the inputs, and whose
+         *       degree is the maximum of the two input degrees.
          */
         template <typename T>
         T add(const T &arg1, const T &arg2) {
@@ -108,15 +114,22 @@ namespace hit {
             return temp;
         }
 
-        /* Computes the sum of two linear algebra objects, putting the result in the first argument.
-         * Inputs: One of the following options
-         *   - EncryptedMatrix, EncryptedMatrix
-         *   - EncryptedRowVector, EncryptedRowVector
-         *   - EncryptedColVector, EncryptedColVector
-         *   where the dimensions of both arguments must be the same.
-         * Output: None
-         *
-         * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
+
+        /* Add two encrypted linear algebra objects, component-wise.
+         * Template Instantiations:
+         *   - void add_inplace(const EncryptedMatrix&, const EncryptedMatrix&)
+         *   - void add_inplace(const EncryptedRowVector&, const EncryptedRowVector&)
+         *   - void add_inplace(const EncryptedColVector&, const EncryptedColVector&)
+         * Input Linear Algebra Constraints:
+         *       Both inputs must have matching dimensions and be encoded with the same unit.
+         * Input Ciphertext Constraints:
+         *       Inputs must be at the same level and have matching scales.
+         *       Note that ciphertext degrees do not need to match.
+         * Output Linear Algebra Properties:
+         *       Same as input.
+         * Output Ciphertext Properties:
+         *       A ciphertext whose level and scale is the same as the inputs,
+         *       and whose degree is the maximum of the two input degrees.
          */
         template <typename T>
         void add_inplace(T &arg1, const T &arg2) {
@@ -133,15 +146,19 @@ namespace hit {
             }
         }
 
-        /* Computes the sum of two linear algebra objects.
-         * Inputs: One of the following options
-         *   - EncryptedMatrix, Matrix
-         *   - EncryptedRowVector, Vector
-         *   - EncryptedColVector, Vector
-         *   where the dimensions of both arguments must be the same.
-         * Output: The (encrypted) sum of the two objects
-         *
-         * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
+
+        /* Add a public plaintext component-wise to an encrypted plaintext.
+         * Template Instantiations:
+         *   - EncryptedMatrix add_plain(const EncryptedMatrix&, const Matrix&)
+         *   - EncryptedRowVector add_plain(const EncryptedRowVector&, const Vector&)
+         *   - EncryptedColVector add_plain(const EncryptedColVector&, const Vector&)
+         * Input Linear Algebra Constraints:
+         *       Both inputs must have matching dimensions.
+         * Input Ciphertext Constraints: None
+         * Output Linear Algebra Properties:
+         *       Same as input.
+         * Output Ciphertext Properties:
+         *       A encrypted object with the same ciphertext properties as the encrypted input.
          */
         template <typename T1, typename T2>
         T1 add_plain(const T1 &arg1, const T2 &arg2) {
@@ -150,71 +167,58 @@ namespace hit {
             return temp;
         }
 
-        /* Computes the sum of an encrypted matrix and a public matrix, where the result is stored in the first
-         * argument. Inputs: An encrypted matrix and a public matrix, both with the same dimensions. Output: None
-         *
-         * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
+
+        /* Add a public matrix component-wise to an encrypted matrix.
+         * Input Linear Algebra Constraints:
+         *       Both inputs must have matching dimensions.
+         * Input Ciphertext Constraints: None
+         * Output Linear Algebra Properties:
+         *       Same as input.
+         * Output Ciphertext Properties:
+         *       An encrypted matrix with the same ciphertext properties as the encrypted input.
          */
         void add_plain_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2);
 
-        /* Computes the sum of an encrypted row vector and a public vector, where the result is stored in the first
-         * argument. Inputs: An encrypted vector and a public vector, both with the same dimensions. Output: None
-         *
-         * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
+
+        /* Add a public row vector component-wise to an encrypted row vector.
+         * Input Linear Algebra Constraints:
+         *       Both inputs must have matching dimensions.
+         * Input Ciphertext Constraints: None
+         * Output (Inplace): An encrypted matrix with the same ciphertext
+         *                   properties as the encrypted input.
          */
         void add_plain_inplace(EncryptedRowVector &enc_vec1, const Vector &vec2);
 
-        /* Computes the sum of an encrypted column vector and a public vector, where the result is stored in the first
-         * argument. Inputs: An encrypted vector and a public vector, both with the same dimensions. Output: None
-         *
-         * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
+
+        /* Add a public column vector component-wise to an encrypted column vector.
+         * Input Linear Algebra Constraints:
+         *       Both inputs must have matching dimensions.
+         * Input Ciphertext Constraints: None
+         * Output Linear Algebra Properties:
+         *       Same as input.
+         * Output Ciphertext Properties:
+         *       An encrypted matrix with the same ciphertext properties as the encrypted input.
          */
         void add_plain_inplace(EncryptedColVector &enc_vec1, const Vector &vec2);
 
-        /* Add a constant to each coefficient of the encrypted plaintext, putting the result in the first argument.
-         * Inputs: One of the following options
-         *   - EncryptedMatrix, double
-         *   - EncryptedRowVector, double
-         *   - EncryptedColVector, double
-         * Output: None
-         *
-         * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
-         */
-        template <typename T>
-        void add_plain_inplace(T &arg, double scalar) {
-            if (!arg.initialized()) {
-                throw std::invalid_argument("LinearAlgebra::add_inplace: argument not initialized.");
-            }
-            for (size_t i = 0; i < arg.num_cts(); i++) {
-                eval.add_plain_inplace(arg[i], scalar);
-            }
-        }
 
-        /* Add a constant to each coefficient of the encrypted plaintext.
-         * Inputs: One of the following options
-         *   - EncryptedMatrix, double
-         *   - EncryptedRowVector, double
-         *   - EncryptedColVector, double
-         * Output: An encrypted object where each coefficient is shifted by the scalar.
-         *
-         * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
-         */
-        template <typename T>
-        T add_plain(const T &arg1, double scalar) {
-            T temp = arg1;
-            add_plain_inplace(temp, scalar);
-            return temp;
-        }
-
-        /* Add a list of encrypted objects together.
-         * Inputs: One of the following options
-         *   - vector<EncryptedMatrix>
-         *   - vector<EncryptedRowVector>
-         *   - vector<EncryptedColVector>
-         * Output: An encrypted object containing the sum of the inputs.
-         *
-         * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
-         * The input vector may not be empty.
+        /* Add a list of encrypted objects together, component-wise.
+         * Template Instantiations:
+         *   - EncryptedMatrix add_many(const vector<EncryptedMatrix>&)
+         *   - EncryptedRowVector add_many(const vector<EncryptedRowVector>&)
+         *   - EncryptedColVector add_many(const vector<EncryptedColVector>&)
+         * Input Linear Algebra Constraints:
+         *       All elements of the list must have the same dimensions and be
+         *       encoded with the same unit.
+         * Input Ciphertext Constraints:
+         *       The inputs must be at the same level, and their scales must be equal.
+         *       Note that ciphertext degrees do not need to match.
+         * Other Input Constraints: The list must be non-empty.
+         * Output Linear Algebra Properties:
+         *       Same as input units.
+         * Output Ciphertext Properties:
+         *       A ciphertext whose level and scale is the same as the inputs,
+         *       and whose degree is the maximum of the input degrees.
          */
         template <typename T>
         T add_many(const std::vector<T> &args) {
@@ -229,15 +233,169 @@ namespace hit {
             return temp;
         }
 
+
+        /* Scale an encrypted object by a constant.
+         * Template Instantiations:
+         *   - EncryptedMatrix multiply_plain(const EncryptedMatrix&, double scalar)
+         *   - EncryptedRowVector multiply_plain(const EncryptedRowVector&, double scalar)
+         *   - EncryptedColVector multiply_plain(const EncryptedColVector&, double scalar)
+         * Input Linear Algebra Constraints: None
+         * Input Ciphertext Constraints:
+                 First argument must be a linear or quadratic ciphertext with nominal scale.
+         * Output Linear Algebra Properties:
+         *       Same as input.
+         * Output Ciphertext Properties:
+         *       A ciphertext with the same ciphertext degree as the input, but with squared scale.
+         * NOTE: The scalar zero produces a transparent ciphertext since all ciphertext polynomial coefficients
+         *       are zero. Rather than throw an exception, this implementation returns a fresh encryption of a
+         *       all-zero plaintext.
+         */
+        template <typename T>
+        T multiply_plain(const T &arg1, double scalar) {
+            T temp = arg1;
+            multiply_plain_inplace(temp, scalar);
+            return temp;
+        }
+
+
+        /* Scale an encrypted object by a constant.
+         * Template Instantiations:
+         *   - void multiply_plain_inplace(const EncryptedMatrix&, double scalar)
+         *   - void multiply_plain_inplace(const EncryptedRowVector&, double scalar)
+         *   - void multiply_plain_inplace(const EncryptedColVector&, double scalar)
+         * Input Linear Algebra Constraints: None
+         * Input Ciphertext Constraints:
+                 First argument must be a linear or quadratic ciphertext with nominal scale.
+         * Output Linear Algebra Properties:
+         *       Same as input.
+         * Output Ciphertext Properties:
+         *       A ciphertext with the same ciphertext degree as the input, but with squared scale.
+         * NOTE: The scalar zero produces a transparent ciphertext since all ciphertext polynomial coefficients
+         *       are zero. Rather than throw an exception, this implementation returns a fresh encryption of a
+         *       all-zero plaintext.
+         */
+        template <typename T>
+        void multiply_plain_inplace(T &arg, double scalar) {
+            if (!arg.initialized()) {
+                throw std::invalid_argument("LinearAlgebra::multiply_inplace: argument not initialized.");
+            }
+
+            for (size_t i = 0; i < arg.num_cts(); i++) {
+                eval.multiply_plain_inplace(arg[i], scalar);
+            }
+        }
+
+
+        /* Computes a standard (scaled) matrix/matrix product scalar*A*B, except that the inputs
+         * are A^T and B.
+         * Input Linear Algebra Constraints:
+         *       Both arguments must be encoded with the same unit. `enc_mat_a_trans` is a g-by-f matrix,
+         *       and `enc_mat_b` is a g-by-h matrix.
+         * Input Ciphertext Constraints:
+         *       Both inputs must be linear ciphertexts with nominal scale. `enc_mat_a_trans` must be
+         *       at level i >= 3, and `enc_mat_b` must be at level i-1.
+         * Other Input Constraints:
+         *       Optional scalar defaults to 1.
+         * Output Linear Algebra Properties:
+         *       An f-by-h matrix scalar*A*B encoded with the same unit as the input.
+         * Output Ciphertext Properties:
+         *       A linear ciphertext with a squared scale at level i-2.
+         */
+        EncryptedMatrix multiply(const EncryptedMatrix &enc_mat_a_trans, const EncryptedMatrix &enc_mat_b,
+                                 double scalar = 1);
+
+
+        /* Computes a standard row vector/matrix product, except that the output is transposed.
+         * Input Linear Algebra Constraints:
+         *       Both arguments must be encoded with the same unit. `enc_vec` is a f-dimensional vector,
+         *       and `enc_mat` is a f-by-g matrix.
+         * Input Ciphertext Constraints:
+         *       Both inputs must be linear ciphertexts with nominal scale at level i >= 1.
+         * Output Linear Algebra Properties:
+         *       An g-dimensional column vector matrix encoded with the same unit as the input.
+         * Output Ciphertext Properties:
+         *       A linear ciphertext with a nominal scale at level i-1.
+         */
+        EncryptedColVector multiply(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat);
+
+
+        /* Computes a standard matrix/column vector product, except that the output is transposed.
+         * Input Linear Algebra Constraints:
+         *       Both arguments must be encoded with the same unit. `enc_mat` is a f-by-g matrix
+         *       and `enc_vec` is a g-dimensional vector.
+         * Input Ciphertext Constraints:
+         *       Both inputs must be linear ciphertexts with nominal scale at level i >= 2.
+         * Output Linear Algebra Properties:
+         *       An f-dimensional row vector matrix encoded with the same unit as the input.
+         * Output Ciphertext Properties:
+         *       A linear ciphertext with a sqaured scale at level i-1.
+         */
+        EncryptedRowVector multiply(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec,
+                                    double scalar = 1);
+
+
+        /******************************************
+         * Non-standard Linear Algebra Operations *
+         ******************************************/
+
+
+        /* Add a scalar to each coefficient of the encrypted value.
+         * Template Instantiations:
+         *   - void add_plain_inplace(const EncryptedMatrix&, double scalar)
+         *   - void add_plain_inplace(const EncryptedRowVector&, double scalar)
+         *   - void add_plain_inplace(const EncryptedColVector&, double scalar)
+         * Input Linear Algebra Constraints: None
+         * Input Ciphertext Constraints: None
+         * Output Linear Algebra Properties:
+         *      Same encoding unit as input.
+         * Output Ciphertext Properties:
+         *      Same properties as the input.
+         */
+        template <typename T>
+        void add_plain_inplace(T &arg, double scalar) {
+            if (!arg.initialized()) {
+                throw std::invalid_argument("LinearAlgebra::add_inplace: argument not initialized.");
+            }
+            for (size_t i = 0; i < arg.num_cts(); i++) {
+                eval.add_plain_inplace(arg[i], scalar);
+            }
+        }
+
+
+        /* Add a scalar to each coefficient of the encrypted value.
+         * Template Instantiations:
+         *   - EncryptedMatrix add_plain(const EncryptedMatrix&, double scalar)
+         *   - EncryptedRowVector add_plain(const EncryptedRowVector&, double scalar)
+         *   - EncryptedColVector add_plain(const EncryptedColVector&, double scalar)
+         * Input Linear Algebra Constraints: None
+         * Input Ciphertext Constraints: None
+         * Output Linear Algebra Properties:
+         *      Same encoding unit as input.
+         * Output Ciphertext Properties:
+         *      Same properties as the input.
+         */
+        template <typename T>
+        T add_plain(const T &arg1, double scalar) {
+            T temp = arg1;
+            add_plain_inplace(temp, scalar);
+            return temp;
+        }
+
+
         /* Coefficient-wise (Hadamard) product of two objects.
-         * Inputs: One of the following options
-         *   - EncryptedMatrix, EncryptedMatrix
-         *   - EncryptedRowVector, EncryptedRowVector
-         *   - EncryptedColVector, EncryptedColVector
-         * Output: An encrypted object containing the hadamard product of the inputs.
-         *
-         * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
-         * at the same level as the input, so it needs to be relinearized and rescaled.
+         * Template Instantiations:
+         *   - EncryptedMatrix hadamard_multiply(const EncryptedMatrix&, const EncryptedMatrix&)
+         *   - EncryptedRowVector hadamard_multiply(const EncryptedRowVector&, const EncryptedRowVector&)
+         *   - EncryptedColVector hadamard_multiply(const EncryptedColVector&, const EncryptedColVector&)
+         * Input Linear Algebra Constraints:
+         *      Inputs must have the same dimensions and encoding units.
+         * Input Ciphertext Constraints:
+         *      Inputs must be linear ciphertexts with nominal scales.
+         * Output Linear Algebra Properties:
+         *      Same encoding unit as inputs.
+         * Output Ciphertext Properties:
+         *      A quadratic ciphertext whose level is the same as the inputs,
+         *      and whose scale is squared.
          */
         template <typename T>
         T hadamard_multiply(const T &arg1, const T &arg2) {
@@ -246,15 +404,21 @@ namespace hit {
             return temp;
         }
 
-        /* Coefficient-wise (Hadamard) product of two objects, storing result in first argument.
-         * Inputs: One of the following options
-         *   - EncryptedMatrix, EncryptedMatrix
-         *   - EncryptedRowVector, EncryptedRowVector
-         *   - EncryptedColVector, EncryptedColVector
-         * Output: None
-         *
-         * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
-         * at the same level as the input, so it needs to be relinearized and rescaled.
+
+        /* Coefficient-wise (Hadamard) product of two objects.
+         * Template Instantiations:
+         *   - void hadamard_multiply_inplace(const EncryptedMatrix&, const EncryptedMatrix&)
+         *   - void hadamard_multiply_inplace(const EncryptedRowVector&, const EncryptedRowVector&)
+         *   - void hadamard_multiply_inplace(const EncryptedColVector&, const EncryptedColVector&)
+         * Input Linear Algebra Constraints:
+         *      Inputs must have the same dimensions and encoding units.
+         * Input Ciphertext Constraints:
+         *      Inputs must be linear ciphertexts with nominal scales.
+         * Output Linear Algebra Properties:
+         *      Same encoding unit as inputs.
+         * Output Ciphertext Properties:
+         *      A quadratic ciphertext whose level is the same as the inputs,
+         *      and whose scale is squared.
          */
         template <typename T>
         void hadamard_multiply_inplace(T &arg1, const T &arg2) {
@@ -271,16 +435,20 @@ namespace hit {
             }
         }
 
-        /* Squares each coefficient of an object.
-         * Inputs: One of the following options
-         *   - EncryptedMatrix
-         *   - EncryptedRowVector
-         *   - EncryptedColVector
-         * Output: An encrypted object where each coefficient is the square of the corresponding
-         * coefficient of the input.
-         *
-         * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
-         * at the same level as the input, so it needs to be relinearized and rescaled.
+
+        /* Square each coefficient of an object.
+         * Template Instantiations:
+         *   - EncryptedMatrix hadamard_square(const EncryptedMatrix&)
+         *   - EncryptedRowVector hadamard_square(const EncryptedRowVector&)
+         *   - EncryptedColVector hadamard_square(const EncryptedColVector&)
+         * Input Linear Algebra Constraints: None
+         * Input Ciphertext Constraints:
+         *      Input must be a linear ciphertext with nominal scale.
+         * Output Linear Algebra Properties:
+         *      Same encoding unit as input.
+         * Output Ciphertext Properties:
+         *      A quadratic ciphertext whose level is the same as the input,
+         *      and whose scale is squared.
          */
         template <typename T>
         T hadamard_square(const T &arg) {
@@ -289,15 +457,20 @@ namespace hit {
             return temp;
         }
 
-        /* Squares each coefficient of an object, inplace.
-         * Inputs: One of the following options
-         *   - EncryptedMatrix
-         *   - EncryptedRowVector
-         *   - EncryptedColVector
-         * Output: None
-         *
-         * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
-         * at the same level as the input, so it needs to be relinearized and rescaled.
+
+        /* Square each coefficient of an object.
+         * Template Instantiations:
+         *   - void hadamard_square_inplace(const EncryptedMatrix&)
+         *   - void hadamard_square_inplace(const EncryptedRowVector&)
+         *   - void hadamard_square_inplace(const EncryptedColVector&)
+         * Input Linear Algebra Constraints: None
+         * Input Ciphertext Constraints:
+         *      Input must be a linear ciphertext with nominal scale.
+         * Output Linear Algebra Properties:
+         *      Same encoding unit as input.
+         * Output Ciphertext Properties:
+         *      A quadratic ciphertext whose level is the same as the input,
+         *      and whose scale is squared.
          */
         template <typename T>
         void hadamard_square_inplace(T &arg) {
@@ -310,99 +483,125 @@ namespace hit {
             }
         }
 
+
         /* Hadamard product of a row vector with each column of a matrix.
-         * Inputs: A row vector and a matrix, both at the same HE level and encoded with respect to the same encoding
-         * unit. Input dimensions must be compatibile for standard row-vector/matrix product, i.e., the length of the
-         *         vector must be the same as the height of the matrix.
-         * Output: An encrypted matrix where each column is the hadamard product of the (encoded) row vector
-         *         and the corresponding column of the input matrix.
-         *
-         * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
-         * at the same level as the input, so it needs to be relinearized and rescaled.
+         * Input Linear Algebra Constraints:
+         *      Input dimensions must be compatibile for standard row-vector/matrix
+         *      product, i.e., the length of the vector must be the same as the
+         *      height of the matrix. Inputs must be encoded with respect to the
+         *      same encoding unit.
+         * Input Ciphertext Constraints:
+         *      Input must both be linear ciphertexts at the same HE level and with nominal scale.
+         * Output Linear Algebra Properties:
+         *      Same encoding unit as inputs.
+         * Output Ciphertext Properties:
+         *      A quadratic ciphertext whose level is the same as the input,
+         *      and whose scale is squared.
          */
         EncryptedMatrix hadamard_multiply(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat);
 
+
         /* Hadamard product of a column vector with each row of a matrix.
-         * Inputs: A column vector and a matrix, both at the same HE level and encoded with respect to the same encoding
-         * unit. Input dimensions must be compatibile for standard matrix/column-vector product, i.e., the length of the
-         *         vector must be the same as the width of the matrix.
-         * Output: An encrypted matrix where each row is the hadamard product of the (encoded) column vector
-         *         and the corresponding row of the input matrix.
-         *
-         * Notes: This function has multiplicative depth one and returns a quadratic ciphertext
-         * at the same level as the input, so it needs to be relinearized and rescaled.
+         * Input Linear Algebra Constraints:
+         *      Input dimensions must be compatibile for standard matrix/column-vector product,
+         *      i.e., the length of the vector must be the same as the width of the matrix.
+         *      Inputs must be encoded with respect to the same encoding unit.
+         * Input Ciphertext Constraints:
+         *      Input must both be linear ciphertexts at the same HE level and with nominal scale.
+         * Output Linear Algebra Properties:
+         *      Same encoding unit as inputs.
+         * Output Ciphertext Properties:
+         *      A quadratic ciphertext whose level is the same as the input,
+         *      and whose scale is squared.
          */
         EncryptedMatrix hadamard_multiply(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec);
 
-        /* Scale an encrypted object by a constant.
-         * Inputs: One of the following options
-         *   - EncryptedMatrix, double
-         *   - EncryptedRowVector, double
-         *   - EncryptedColVector, double
-         * Output: An encrypted object where each coefficient is scaled by the scalar.
-         *
-         * Notes: This function has multiplicative depth one and returns a linear ciphertext at
-         * the same level as the input, so it needs to be rescaled but *not* relinearized.
-         */
-        template <typename T>
-        T multiply_plain(const T &arg1, double scalar) {
-            T temp = arg1;
-            multiply_plain_inplace(temp, scalar);
-            return temp;
-        }
 
-        /* Scale an encrypted object by a constant and stores the result in the first argument.
-         * Inputs: One of the following options
-         *   - EncryptedMatrix, double
-         *   - EncryptedRowVector, double
-         *   - EncryptedColVector, double
-         * Output: None
-         *
-         * Notes: This function has multiplicative depth one and returns a linear ciphertext at
-         * the same level as the input, so it needs to be rescaled but *not* relinearized.
+        /* Sum the columns of a matrix, and encode the result as a row vector.
+         * This is a key algorithm for (standard) matrix/column-vector multiplication,
+         * which is achieved by performing a hadamard product between the matrix and column
+         * vector (see hadamard_multiply()), and then summing the columns of the result.
+         * This algorithm can optionally scale the result by a constant.
+         * Input Linear Algebra Constraints: None
+         * Input Ciphertext Constraints:
+         *      Input must be a linear ciphertext with nominal scale.
+         * Other Input Constraints:
+         *      Optional scalar is 1 if not specified.
+         * Output Linear Algebra Properties:
+         *      A row vector which is the (transposed) sum of the columns of the input matrix,
+         *      encoded with the same unit as the input.
+         * Output Ciphertext Properties:
+         *      A linear ciphertext at the same level as the input, but with squared scale.
+         * NOTE: This function is a linear map:
+         *            sum_cols(mat1, c) + sum_cols(mat2, c) = sum_cols(mat1 + mat2, c)
+         *       It's fairly expensive to evaluate, so taking advantage of this map
+         *       is recommended; see `sum_cols_many()` for more information.
          */
-        template <typename T>
-        void multiply_plain_inplace(T &arg, double scalar) {
-            if (!arg.initialized()) {
-                throw std::invalid_argument("LinearAlgebra::multiply_inplace: argument not initialized.");
-            }
+        EncryptedRowVector sum_cols(const EncryptedMatrix &enc_mat, double scalar = 1);
 
-            for (size_t i = 0; i < arg.num_cts(); i++) {
-                eval.multiply_plain_inplace(arg[i], scalar);
-            }
-        }
 
-        /* Computes a standard matrix product.
-         * Inputs: A^T and B, both encoded with the same unit, optional scalar which defaults to 1
-         * Output: scalar*A*B, encoded with the same unit
-         *
-         * Notes: This function has multiplicative depth three, meaning A^T must be at least level 3.
-         * The matrix B must be encrypted at at least level 2. The output is two levels below the level of A^T,
-         * but is a linear ciphertext with squared scale, so it needs to be rescaled but *not* relinearized.
+        /* Sum the rows of a matrix, and encode the result as a column vector.
+         * This is a key algorithm for (standard) row-vector/matrix multiplication,
+         * which is achieved by performing a hadamard product between the row vector and matrix
+         * (see hadamard_multiply()), and then summing the rows of the result.
+         * Input Linear Algebra Constraints: None
+         * Input Ciphertext Constraints:
+         *      Input must be a linear ciphertext (no scale constraint).
+         * Output Linear Algebra Properties:
+         *      A column vector which is the (transposed) sum of the rows of the input matrix,
+         *      encoded with the same unit as the input.
+         * Output Ciphertext Properties:
+         *      A linear ciphertext with the same scale and level as the input.
+         * NOTE: This function is a linear map:
+         *            sum_rows(mat1) + sum_rows(mat2) = sum_rows(mat1 + mat2)
+         *       It's fairly expensive to evaluate, so taking advantage of this map
+         *       is recommended; see `sum_rows_many()` for more information.
          */
-        EncryptedMatrix multiply(const EncryptedMatrix &enc_mat_a_trans, const EncryptedMatrix &enc_mat_b,
-                                 double scalar = 1);
+        EncryptedColVector sum_rows(const EncryptedMatrix &enc_mat);
 
-        /* Computes a standard row vector/matrix product.
-         * Inputs: Row vector and Matrix, both encoded with the same unit
-         * Output: (vec*mat)^T, a column vector encoded with the same unit
-         * TODO: same input as hadamard_multiply, same output as sum_rows
-         * Notes: This function has multiplicative depth one, meaning both inputs must be at least level 1.
-         * The output is at the same level of the input and is linear ciphertext with squared scale,
-         * so it needs to be rescaled but *not* relinearized.
-         */
-        EncryptedColVector multiply(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat);
 
-        /* Computes a standard matrix/column vector product.
-         * Inputs: Matrix and Column vector, both encoded with the same unit
-         * Output: (mat*vec)^T, a row vector encoded with the same unit
-         * TODO: same input as hadamard_multiply, same output as sum_cols
-         * Notes: This function has multiplicative depth two, meaning both inputs must be at least level 2.
-         * The output is one level below the inputs and is linear ciphertext with squared scale,
-         * so it needs to be rescaled but *not* relinearized.
+        /* This function enables the use of the sum_cols linear map across matrices of incompatibile dimensions.
+         * If A is f-by-g1 and B is f-by-g2, then sum_cols(A, scalar) + sum_cols(B, scalar) is a f-dimensional row
+         * vector. This function returns the same result, but without invoking sum_cols multiple times.
+         * Input Linear Algebra Constraints:
+         *      Each matrix in the input must be encoded with the same unit and have the same height `f`.
+         * Input Ciphertext Constraints:
+         *      Each ciphertext must be linear, and all ciphertexts must be at the same level
+         *      and have nominal scale.
+         * Other Input Constraints:
+         *      The input vector must be non-empty.
+         * Output Linear Algebra Properties:
+         *      An f-dimensional row vector which is \sum_i{sum_cols(enc_mats[i], scalar)} (but more efficient),
+         *      encoded with the same unit as the inputs.
+         * Output Ciphertext Properties:
+         *      A linear ciphertext with squared scale and same level as the input.
          */
-        EncryptedRowVector multiply(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec,
-                                    double scalar = 1);
+        EncryptedRowVector sum_cols_many(const std::vector<EncryptedMatrix> &enc_mats, double scalar = 1);
+
+
+        /* This function enables the use of the sum_rows linear map across matrices of incompatibile dimensions.
+         * If A is f1-by-g and B is f2-by-g, then sum_rows(A) + sum_rows(B) is a g-dimensional column vector.
+         * This function returns the same result, but without invoking sum_rows multiple times.
+         * Input Linear Algebra Constraints:
+         *      Each matrix in the input must be encoded with the same unit and have the same width `g`.
+         * Input Ciphertext Constraints:
+         *      Each ciphertext must be linear, and all ciphertexts must be at the same level
+         *      and have the same scale (can be nominal or squared).
+         * Other Input Constraints:
+         *      The input vector must be non-empty.
+         * Output Linear Algebra Properties:
+         *      An g-dimensional column vector which is \sum_i{sum_rows(enc_mats[i])} (but more efficient),
+         *      encoded with the same unit as the inputs.
+         * Output Ciphertext Properties:
+         *      A linear ciphertext with the same scale and level as the inputs.
+         */
+        EncryptedColVector sum_rows_many(const std::vector<EncryptedMatrix> &enc_mats);
+
+
+        /*************************************
+         * Ciphertext Maintenance Operations *
+         *************************************/
+        // These operations do not affect encoding unit or other linear algebra properties.
 
 
         /* Reduce the HE level of `ct` to the level of the `target`.
@@ -545,64 +744,6 @@ namespace hit {
                 eval.relinearize_inplace(arg[i]);
             }
         }
-
-
-        /* Sum the columns of a matrix, and encode the result as a row vector.
-         * This is a key algorithm for (standard) matrix/column-vector multiplication,
-         * which is achieved by performing a hadamard product between the matrix and column
-         * vector (see hadamard_multiply()), and then summing the columns of the result.
-         * This algorithm can optionally scale the result by a constant.
-         * Inputs: An encrypted matrix and an optional scalar, which is 1 if not specified.
-         *         The input must be a linear ciphertext with nominal scale.
-         * Output: A row vector which is the (transposed) sum of the columns of the input matrix,
-         * scaled by a constant. The output is a linear ciphertext with squared scale.
-         *
-         * Notes: This function is an additive homomorphism:
-         *            sum_cols(mat1, c) + sum_cols(mat2, c) = sum_cols(mat1 + mat2, c)
-         *        It's fairly expensive to evaluate, so taking advantage of this homomorphism
-         *        is recommended; see `sum_cols_many()` for more information.
-         */
-        EncryptedRowVector sum_cols(const EncryptedMatrix &enc_mat, double scalar = 1);
-
-
-        /* Sum the rows of a matrix, and encode the result as a column vector.
-         * This is a key algorithm for (standard) row-vector/matrix multiplication,
-         * which is achieved by performing a hadamard product between the row vector and matrix
-         * (see hadamard_multiply()), and then summing the rows of the result.
-         * Inputs: An encrypted matrix which must be a linear ciphertext.
-         * Output: A column vector which is the (transposed) sum of the rows of the input matrix.
-         *         The output is a linear ciphertext with the same scale and level as the input.
-         *
-         * Notes: This function is an additive homomorphism:
-         * sum_rows(mat1) + sum_rows(mat2) = sum_rows(mat1 + mat2)
-         * It's fairly expensive to evaluate, so taking advantage of this homomorphism
-         * is recommended; see `sum_rows_many()` for more information.
-         */
-        EncryptedColVector sum_rows(const EncryptedMatrix &enc_mat);
-
-
-        /* This function enables the use of the sum_cols homomorphism across matrices of incompatibile dimensions.
-         * If A is f-by-g1 and B is f-by-g2, then sum_cols(A, scalar) + sum_cols(B, scalar) is a f-dimensional row
-         * vector. This function returns the same result, but without invoking sum_cols multiple times.
-         * Inputs: A vector of matrices, each with the same encoding unit and the same height `f`.
-         *         Each ciphertext must be linear, and all ciphertexts must be at the same level
-         *         and have nominal scale.
-         * Ouptut: An f-dimensional row vector which is sum_cols(A, scalar)+sum_cols(B, scalar).
-         *         The output is a linear ciphertext with squared scale.
-         */
-        EncryptedRowVector sum_cols_many(const std::vector<EncryptedMatrix> &enc_mats, double scalar = 1);
-
-
-        /* This function enables the use of the sum_rows homomorphism across matrices of incompatibile dimensions.
-         * If A is f1-by-g and B is f2-by-g, then sum_rows(A) + sum_rows(B) is a g-dimensional column vector.
-         * This function returns the same result, but without invoking sum_rows multiple times.
-         * Inputs: A vector of matrices, each with the same encoding unit and the same width `g`.
-         *         Each ciphertext must be linear, and all ciphertexts must be at the same level
-         *         and with the same scale.
-         * Ouptut: An g-dimensional column vector which is sum_rows(A)+sum_rows(B).
-         *         The output is a linear ciphertext with the same scale and level as the input.
-         */
-        EncryptedColVector sum_rows_many(const std::vector<EncryptedMatrix> &enc_mats);
 
         CKKSEvaluator &eval;
 
