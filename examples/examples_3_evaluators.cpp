@@ -118,4 +118,11 @@ void example_3_driver() {
 	CKKSCiphertext ct_result = poly_eval_homomorphic_v1(he_inst, he_ciphertext);
 
 	vector<double> pt_result = he_inst.decrypt(ct_result);
+
+	// Next, we will evaluate the plaintext function on the plaintext input
+	vector<double> expected_result = poly_eval_plaintext(plaintext);
+/* ******** Debug Evaluator ********
+ * Even if our circuit computes the correct value on a plaintext,
+ *
+ */
 }
