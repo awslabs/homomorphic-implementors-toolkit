@@ -34,8 +34,6 @@ namespace hit {
         friend class PlaintextEval;
         friend class OpCount;
         friend class ScaleEstimator;
-        // SEAL ciphertext
-        seal::Ciphertext seal_ct;
 
        private:
 
@@ -44,6 +42,8 @@ namespace hit {
         // This plaintext is not CKKS-encoded; in particular it is not scaled by the scale factor.
         std::vector<double> raw_pt;
 
+        // SEAL ciphertext
+        seal::Ciphertext seal_ct;
 
         // `scale` is used by the ScaleEstimator evaluator
         double scale_ = 0;

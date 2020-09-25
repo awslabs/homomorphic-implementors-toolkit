@@ -551,17 +551,14 @@ namespace hit {
          * ciphertexts multiplies the corresponding polynomials, resulting in a
          * quadratic polynomial. All HE schemes with this property have a special
          * operation called "relinearization" that uses a special set of keys
-         * (`relin_keys`) to convert this quadratic ciphertext back into a linear
-         * ciphertext that encrypts the same plaintext.
+         * to convert this quadratic ciphertext back into a linear ciphertext
+         * that encrypts the same plaintext.
          *
-         * Inputs: One of the following options
-         *   - EncryptedMatrix
-         *   - EncryptedRowVector
-         *   - EncryptedColVector
-         * Input must be a quadratic ciphertext.
-         * Output: None
-         *
-         * Notes: The output is a linear ciphertext which does not need to be rescaled.
+         * Relinearize the encrypted object.
+         * Input: A quadratic EncryptedMatrix, EncryptedRowVector, or EncryptedColVector
+         *        with nominal or squared scale.
+         * Output (Inplace): A linear ciphertext with the same scale and level as the input.
+         * NOTE: Inputs which are linear ciphertexts to begin with are unchanged by this function.
          */
         template <typename T>
         void relinearize_inplace(T &arg) {
@@ -580,15 +577,14 @@ namespace hit {
          * vector (see hadamard_multiply()), and then summing the columns of the result.
          * This algorithm can optionally scale the result by a constant.
          * Inputs: An encrypted matrix and an optional scalar, which is 1 if not specified.
+         *         The input must be a linear ciphertext with nominal scale.
          * Output: A row vector which is the (transposed) sum of the columns of the input matrix,
-         * scaled by a constant.
+         * scaled by a constant. The output is a linear ciphertext with squared scale.
          *
          * Notes: This function is an additive homomorphism:
-         * sum_cols(mat1, c) + sum_cols(mat2, c) = sum_cols(mat1 + mat2, c)
-         * It's fairly expensive to evaluate, so taking advantage of this homomorphism is recommended.
-         *
-         * This function has multiplicative depth one and outputs a linear ciphertext at the same level
-         * as the input, so it needs to be rescaled but not relinearized.
+         *            sum_cols(mat1, c) + sum_cols(mat2, c) = sum_cols(mat1 + mat2, c)
+         *        It's fairly expensive to evaluate, so taking advantage of this homomorphism
+         *        is recommended; see `sum_cols_many()` for more information.
          */
         EncryptedRowVector sum_cols(const EncryptedMatrix &enc_mat, double scalar = 1);
 

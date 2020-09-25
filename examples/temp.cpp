@@ -7,10 +7,10 @@
 using namespace std;
 using namespace hit;
 
-void f(CKKSEvaluator &inst, CKKSCiphertext x) {
+void f(LinearAlgebra &inst, EncryptedMatrix x) {
   int plaintext_inf_norm = 10;
   vector<double> y = random_vector(4096, plaintext_inf_norm);
-  inst.add(x,x);
+  inst.rotate_right_inplace(x,2);
   cout << "Scale bits: " << log2(x.scale()) << " SIZE: " << x.seal_ct.size() << endl;
 }
 
@@ -77,12 +77,12 @@ int main() {
 
 
 
-
+/*
   cout << endl << endl;
   // linear/nominal and quadratic/nominal
   try {
     CKKSCiphertext temp = inst.reduce_level_to(ciphertext1, ciphertext5);
-    inst.add(temp,ciphertext5);
+    inst.multiply(temp,ciphertext5);
     cout << "Passed linear/nominal and quadratic/nominal" << endl;
   }
   catch(const exception &e) {
@@ -91,7 +91,7 @@ int main() {
 
   // linear/nominal and linear/squared
   try {
-    inst.add(ciphertext1,ciphertext3);
+    inst.multiply(ciphertext1,ciphertext3);
     cout << "Passed linear/nominal and linear/squared" << endl;
   }
   catch(const exception &e) {
@@ -100,7 +100,7 @@ int main() {
 
   // linear/nominal and quadratic/squared
   try {
-    inst.add(ciphertext1,ciphertext4);
+    inst.multiply(ciphertext1,ciphertext4);
     cout << "Passed linear/nominal and quadratic/squared" << endl;
   }
   catch(const exception &e) {
@@ -111,7 +111,7 @@ int main() {
   try {
     CKKSCiphertext temp = inst.encrypt(plaintext,1);
     inst.multiply_plain_inplace(temp, 2);
-    inst.add(ciphertext5,temp);
+    inst.multiply(ciphertext5,temp);
     cout << "Passed quadratic/nominal and linear/squared" << endl;
   }
   catch(const exception &e) {
@@ -123,7 +123,7 @@ int main() {
     CKKSCiphertext temp1 = inst.encrypt(plaintext,1);
     CKKSCiphertext temp2 = inst.encrypt(plaintext,1);
     CKKSCiphertext temp3 = inst.multiply(temp1, temp2);
-    inst.add(ciphertext5,temp3);
+    inst.multiply(ciphertext5,temp3);
     cout << "Passed quadratic/nominal and quadratic/squared" << endl;
   }
   catch(const exception &e) {
@@ -132,10 +132,11 @@ int main() {
 
   // linear/squared and quadratic/squared
   try {
-    inst.add(ciphertext3,ciphertext4);
+    inst.multiply(ciphertext3,ciphertext4);
     cout << "Passed linear/squared and quadratic/squared" << endl;
   }
   catch(const exception &e) {
     cout << "Failed linear/squared and quadratic/squared:\t" << e.what() << endl;
   }
+  */
 }

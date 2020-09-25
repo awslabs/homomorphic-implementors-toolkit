@@ -216,78 +216,90 @@ namespace hit {
         void sub_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
 
 
-        /* Multiply two ciphertexts (inducing component-wise multiplication on
-         * plaintexts) and store the result in the a new ciphertext.
-         * linear/nominal
-         */
-        CKKSCiphertext multiply(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
-
-
-        /* Multiply two ciphertexts (inducing component-wise multiplication on
-         * plaintexts) and store the result in the first parameter.
-         * linear/nominal
-         */
-        void multiply_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
-
-
-        /* Multiply the ciphertext by the plaintext, and store the result in `dest`.
-         * The plaintext is encoded using the same scale as the ciphertext.
-         * linear/nominal
-         *
-         * WARNING: Multiplying by 0 results in non-constant time behavior! Only multiply by 0 if the scalar is truly
-         * public.
+        /* Multiply each plaintext slot by a scalar.
+         * Input: A linear or quadratic ciphertext with nominal scale.
+         * Output: A ciphertext with the same ciphertext degree as the input, but with squared scale.
+         * NOTE: The scalar zero produces a transparent ciphertext since all ciphertext polynomial coefficients
+         *       are zero. Rather than throw an exception, this implementation returns a fresh encryption of a
+         *       all-zero plaintext.
          */
         CKKSCiphertext multiply_plain(const CKKSCiphertext &ct, double scalar);
 
 
-        /* Multiply the ciphertext by the plaintext, and store the result in the first parameter.
-         * The plaintext is encoded using the same scale as the ciphertext.
-         * linear/nominal
-         *
-         * WARNING: Multiplying by 0 results in non-constant time behavior! Only multiply by 0 if the scalar is truly
-         * public.
+        /* Multiply each plaintext slot by a scalar.
+         * Input: A linear or quadratic ciphertext with nominal scale.
+         * Output (Inplace): A ciphertext with the same ciphertext degree as the input, but with squared scale.
+         * NOTE: The scalar zero produces a transparent ciphertext since all ciphertext polynomial coefficients
+         *       are zero. Rather than throw an exception, this implementation returns a fresh encryption of a
+         *       all-zero plaintext.
          */
         void multiply_plain_inplace(CKKSCiphertext &ct, double scalar);
 
 
-        /* Multiply the ciphertext by the plaintext. This API is different than the corresponding SEAL API:
-         * it takes a C++ vector whose size is the same as the size of the plaintext encrypted by the ciphertext,
-         * and is interpreted as a matrix (i.e., no linear algebra encoding is performed).
-         * The plaintext is encoded using the same scale as the ciphertext.
-         * linear/nominal
+        /* Multiply the encrypted plaintext and the public plaintext component-wise.
+         * Input: A linear or quadratic ciphertext with nominal scale.
+         * Output: A ciphertext with the same ciphertext degree as the input,
+         *         but with squared scale.
          */
         CKKSCiphertext multiply_plain(const CKKSCiphertext &ct, const std::vector<double> &plain);
 
 
-        /* Multiply the ciphertext by the plaintext, inplace. This API is different than the corresponding SEAL API:
-         * it takes a C++ vector whose size is the same as the size of the plaintext encrypted by the ciphertext,
-         * and is interpreted as a matrix (i.e., no linear algebra encoding is performed).
-         * The plaintext is encoded using the same scale as the ciphertext.
-         * linear/nominal
+        /* Multiply the encrypted plaintext and the public plaintext component-wise.
+         * Input: A linear or quadratic ciphertext with nominal scale.
+         * Output (Inplace): A ciphertext with the same ciphertext degree as the input,
+         *                   but with squared scale.
          */
         void multiply_plain_inplace(CKKSCiphertext &ct, const std::vector<double> &plain);
 
 
-        /* Multiply the first input by itself, and store the result in a new ciphertext.
-         * linear/nominal
+        /* Multiply two encrypted plaintexts, component-wise.
+         * Input: Two linear ciphertexts at the same level, with nominal scales.
+         * Output: A quadratic ciphertext whose level is the same as the inputs,
+         *         and whose scale is squared.
+         */
+        CKKSCiphertext multiply(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
+
+
+        /* Multiply two encrypted plaintexts, component-wise.
+         * Input: Two linear ciphertexts at the same level, with nominal scales.
+         * Output (Inplace): A quadratic ciphertext whose level is the same as the inputs,
+         *                   and whose scale is squared.
+         */
+        void multiply_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
+
+
+        /* Square each plaintext coefficient.
+         * Input: A linear ciphertext with nominal scale.
+         * Output: A quadratic ciphertext whose level is the same as the input,
+         *         and whose scale is squared.
          */
         CKKSCiphertext square(const CKKSCiphertext &ct);
 
 
-        /* Square the input inplace.
-         * linear/nominal
+        /* Square each plaintext coefficient.
+         * Input: A linear ciphertext with nominal scale.
+         * Output (Inplace): A quadratic ciphertext whose level is the same as the input,
+         *                   and whose scale is squared.
          */
         void square_inplace(CKKSCiphertext &ct);
 
 
-        /* Reduce the HE level of `x` to the level of the `target`.
-         * linear/nominal
+        /* Reduce the HE level of `ct` to the level of the `target`.
+         * Input: A linear ciphertext with nominal scale and level i,
+         *        and an arbitrary ciphertext at level j <= i.
+         * Output: A linear ciphertext with nominal scale and level j, encrypting
+         *         the same plaintext as `ct`.
+         * NOTE: It is an error if the target level is higher than the level of `ct`.
          */
         CKKSCiphertext reduce_level_to(const CKKSCiphertext &ct, const CKKSCiphertext &target);
 
 
-        /* Reduce the HE level of `x` to the level of the `target`, inplace.
-         * linear/nominal
+        /* Reduce the HE level of `ct` to the level of the `target`.
+         * Input: A linear ciphertext with nominal scale and level i,
+         *        and an arbitrary ciphertext at level j <= i.
+         * Output (Inplace): A linear ciphertext with nominal scale and level j, encrypting
+         *                   the same plaintext as `ct`.
+         * NOTE: It is an error if the target level is higher than the level of `ct`.
          */
         void reduce_level_to_inplace(CKKSCiphertext &ct, const CKKSCiphertext &target);
 
@@ -296,37 +308,53 @@ namespace hit {
          * This can modify at most one of the inputs.
          * linear/nominal
          */
+
+        /* Reduce the HE level of both inputs to the lower of the two levels.
+         * This operation modifies at most one of the inputs.
+         * Input: Two ciphertexts where the ciphertext at the higher level is
+         *        linear with nominal scale.
+         * Output (Inplace): The ciphertext at the higher level is modified
+         *                   so that it is a linear ciphertext with nominal scale
+         *                   at the level of the other input.
+         * NOTE: If both inputs are at the same level, neither ciphertext is changed.
+         */
         void reduce_level_to_min_inplace(CKKSCiphertext &ct1, CKKSCiphertext &ct2);
 
 
-        /* Reduce the HE level of `x` to level `level`, which has
-         * level+1 moduli. `level` must be >= 0.
-         * linear/nominal
+        /* Reduce the HE level of `ct` to a lower level
+         * Input: A linear ciphertext with nominal scale and level i, and a target level
+         *        j <= i.
+         * Output: A linear ciphertext with nominal scale and level j, encrypting
+         *         the same plaintext as `ct`.
+         * NOTE: It is an error if the target level is higher than the level of `ct`.
          */
         CKKSCiphertext reduce_level_to(const CKKSCiphertext &ct, int level);
 
 
-        /* Reduce the HE level of `x` to level `level`, which has
-         * level+1 moduli. `level` must be >= 0. Store the result in the first arugment.
-         * linear/nominal
+        /* Reduce the HE level of `ct` to a lower level
+         * Input: A linear ciphertext with nominal scale and level i, and a target level
+         *        j <= i.
+         * Output (Inplace): A linear ciphertext with nominal scale and level j, encrypting
+         *                   the same plaintext as `ct`.
+         * NOTE: It is an error if the target level is higher than the level of `ct`.
          */
         void reduce_level_to_inplace(CKKSCiphertext &ct, int level);
 
 
         /* Remove a prime from the modulus (i.e. go down one level) and scale
          * down the plaintext by that prime.
-         * linear/nominal -> allowed, but bad
-         * linear/squared -> linear/nominal
-         * quadratic/squared -> quadratic/nominal
+         * Input: A linear or quadratic ciphertext with squared scale and level i.
+         * Output: A ciphertext with the same degree as the input
+         *         with nominal scale and level i-1.
          */
         CKKSCiphertext rescale_to_next(const CKKSCiphertext &ct);
 
 
         /* Remove a prime from the modulus (i.e. go down one level) and scale
-         * down the plaintext by that prime. Store the result inplace.
-         * linear/nominal -> allowed, but bad
-         * linear/squared -> linear/nominal
-         * quadratic/squared -> quadratic/nominal
+         * down the plaintext by that prime.
+         * Input: A linear or quadratic ciphertext with squared scale and level i.
+         * Output (Inplace): A ciphertext with the same degree as the input
+         *                   with nominal scale and level i-1.
          */
         void rescale_to_next_inplace(CKKSCiphertext &ct);
 
@@ -339,11 +367,13 @@ namespace hit {
          * ciphertexts multiplies the corresponding polynomials, resulting in a
          * quadratic polynomial. All HE schemes with this property have a special
          * operation called "relinearization" that uses a special set of keys
-         * (`relin_keys`) to convert this quadratic ciphertext back into a linear
-         * ciphertext that encrypts the same plaintext.
-         * linear/nominal -> no-op
-         * linear/squared -> linear/squared
-         * quadratic/squared -> linear/squared
+         * to convert this quadratic ciphertext back into a linear ciphertext
+         * that encrypts the same plaintext.
+         *
+         * Relinearize the ciphertext.
+         * Input: A quadratic ciphertext with nominal or squared scale.
+         * Output (Inplace): A linear ciphertext with the same scale and level as the input.
+         * NOTE: Inputs which are linear ciphertexts to begin with are unchanged by this function.
          */
         void relinearize_inplace(CKKSCiphertext &ct);
 
