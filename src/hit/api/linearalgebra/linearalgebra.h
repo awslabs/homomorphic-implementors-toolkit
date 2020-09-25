@@ -88,19 +88,16 @@ namespace hit {
         /* Computes the sum of two linear algebra objects.
          * Inputs: One of the following options
          *   - EncryptedMatrix, EncryptedMatrix
-         *   - EncryptedMatrix, Matrix
          *   - EncryptedRowVector, EncryptedRowVector
-         *   - EncryptedRowVector, Vector
          *   - EncryptedColVector, EncryptedColVector
-         *   - EncryptedColVector, Vector
          *   where the dimensions of both arguments must be the same.
          * Output: The (encrypted) sum of the two objects
          *
          * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
          */
-        template <typename T1, typename T2>
-        T1 add(const T1 &arg1, const T2 &arg2) {
-            T1 temp = arg1;
+        template <typename T>
+        T add(const T &arg1, const T &arg2) {
+            T temp = arg1;
             add_inplace(temp, arg2);
             return temp;
         }
@@ -130,26 +127,43 @@ namespace hit {
             }
         }
 
+        /* Computes the sum of two linear algebra objects.
+         * Inputs: One of the following options
+         *   - EncryptedMatrix, Matrix
+         *   - EncryptedRowVector, Vector
+         *   - EncryptedColVector, Vector
+         *   where the dimensions of both arguments must be the same.
+         * Output: The (encrypted) sum of the two objects
+         *
+         * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
+         */
+        template <typename T1, typename T2>
+        T1 add_plain(const T1 &arg1, const T2 &arg2) {
+            T1 temp = arg1;
+            add_plain_inplace(temp, arg2);
+            return temp;
+        }
+
         /* Computes the sum of an encrypted matrix and a public matrix, where the result is stored in the first
          * argument. Inputs: An encrypted matrix and a public matrix, both with the same dimensions. Output: None
          *
          * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
          */
-        void add_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2);
+        void add_plain_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2);
 
         /* Computes the sum of an encrypted row vector and a public vector, where the result is stored in the first
          * argument. Inputs: An encrypted vector and a public vector, both with the same dimensions. Output: None
          *
          * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
          */
-        void add_inplace(EncryptedRowVector &enc_vec1, const Vector &vec2);
+        void add_plain_inplace(EncryptedRowVector &enc_vec1, const Vector &vec2);
 
         /* Computes the sum of an encrypted column vector and a public vector, where the result is stored in the first
          * argument. Inputs: An encrypted vector and a public vector, both with the same dimensions. Output: None
          *
          * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
          */
-        void add_inplace(EncryptedColVector &enc_vec1, const Vector &vec2);
+        void add_plain_inplace(EncryptedColVector &enc_vec1, const Vector &vec2);
 
         /* Add a constant to each coefficient of the encrypted plaintext, putting the result in the first argument.
          * Inputs: One of the following options
@@ -161,7 +175,7 @@ namespace hit {
          * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
          */
         template <typename T>
-        void add_inplace(T &arg, double scalar) {
+        void add_plain_inplace(T &arg, double scalar) {
             if (!arg.initialized()) {
                 throw std::invalid_argument("LinearAlgebra::add_inplace: argument not initialized.");
             }
@@ -180,9 +194,9 @@ namespace hit {
          * Notes: This function has multiplicative depth zero and returns a linear ciphertext.
          */
         template <typename T>
-        T add(const T &arg1, double scalar) {
+        T add_plain(const T &arg1, double scalar) {
             T temp = arg1;
-            add_inplace(temp, scalar);
+            add_plain_inplace(temp, scalar);
             return temp;
         }
 
@@ -197,9 +211,9 @@ namespace hit {
          * The input vector may not be empty.
          */
         template <typename T>
-        T add(const std::vector<T> &args) {
+        T add_many(const std::vector<T> &args) {
             if (args.empty()) {
-                throw std::invalid_argument("Vector of summands to LinearAlgebra::add cannot be empty.");
+                throw std::invalid_argument("Vector of summands to LinearAlgebra::add_many cannot be empty.");
             }
             // no further validation needed since we call a LinearAlgebra function
             T temp = args[0];
@@ -325,9 +339,9 @@ namespace hit {
          * the same level as the input, so it needs to be rescaled but *not* relinearized.
          */
         template <typename T>
-        T multiply(const T &arg1, double scalar) {
+        T multiply_plain(const T &arg1, double scalar) {
             T temp = arg1;
-            multiply_inplace(temp, scalar);
+            multiply_plain_inplace(temp, scalar);
             return temp;
         }
 
@@ -342,7 +356,7 @@ namespace hit {
          * the same level as the input, so it needs to be rescaled but *not* relinearized.
          */
         template <typename T>
-        void multiply_inplace(T &arg, double scalar) {
+        void multiply_plain_inplace(T &arg, double scalar) {
             if (!arg.initialized()) {
                 throw std::invalid_argument("LinearAlgebra::multiply_inplace: argument not initialized.");
             }

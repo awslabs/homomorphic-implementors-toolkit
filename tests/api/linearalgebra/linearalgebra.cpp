@@ -268,10 +268,10 @@ TEST(LinearAlgebraTest, AddMatrixPlaintextMatrix_InvalidCase) {
 
     ASSERT_THROW(
         // Expect invalid_argument is thrown because widths do not match.
-        (linear_algebra.add_inplace(ciphertext1, mat2)), invalid_argument);
+        (linear_algebra.add_plain_inplace(ciphertext1, mat2)), invalid_argument);
     ASSERT_THROW(
         // Expect invalid_argument is thrown because heights do not match.
-        (linear_algebra.add_inplace(ciphertext1, mat3)), invalid_argument);
+        (linear_algebra.add_plain_inplace(ciphertext1, mat3)), invalid_argument);
 }
 
 TEST(LinearAlgebraTest, AddMatrixPlaintextMatrix) {
@@ -287,7 +287,7 @@ TEST(LinearAlgebraTest, AddMatrixPlaintextMatrix) {
     Matrix mat2 = random_mat(height, width);
     EncryptedMatrix ciphertext1 = linear_algebra.encrypt_matrix(mat1, unit1);
 
-    EncryptedMatrix ciphertext3 = linear_algebra.add(ciphertext1, mat2);
+    EncryptedMatrix ciphertext3 = linear_algebra.add_plain(ciphertext1, mat2);
     Matrix actual_result = linear_algebra.decrypt(ciphertext3);
     Matrix expected_result = mat1 + mat2;
     ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
@@ -306,7 +306,7 @@ TEST(LinearAlgebraTest, AddRowPlaintextRow_InvalidCase) {
 
     ASSERT_THROW(
         // Expect invalid_argument is thrown because sizes do not match.
-        (linear_algebra.add_inplace(ciphertext1, vec2)), invalid_argument);
+        (linear_algebra.add_plain_inplace(ciphertext1, vec2)), invalid_argument);
 }
 
 TEST(LinearAlgebraTest, AddRowPlaintextRow) {
@@ -321,7 +321,7 @@ TEST(LinearAlgebraTest, AddRowPlaintextRow) {
     Vector vec2 = random_vec(width);
     EncryptedRowVector ciphertext1 = linear_algebra.encrypt_row_vector(vec1, unit1);
 
-    EncryptedRowVector ciphertext3 = linear_algebra.add(ciphertext1, vec2);
+    EncryptedRowVector ciphertext3 = linear_algebra.add_plain(ciphertext1, vec2);
     Vector actual_result = linear_algebra.decrypt(ciphertext3);
     Vector expected_result = vec1 + vec2;
     ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
@@ -340,7 +340,7 @@ TEST(LinearAlgebraTest, AddColPlaintextCol_InvalidCase) {
 
     ASSERT_THROW(
         // Expect invalid_argument is thrown because sizes do not match.
-        (linear_algebra.add_inplace(ciphertext1, vec2)), invalid_argument);
+        (linear_algebra.add_plain_inplace(ciphertext1, vec2)), invalid_argument);
 }
 
 TEST(LinearAlgebraTest, AddColPlaintextCol) {
@@ -355,7 +355,7 @@ TEST(LinearAlgebraTest, AddColPlaintextCol) {
     Vector vec2 = random_vec(width);
     EncryptedColVector ciphertext1 = linear_algebra.encrypt_col_vector(vec1, unit1);
 
-    EncryptedColVector ciphertext3 = linear_algebra.add(ciphertext1, vec2);
+    EncryptedColVector ciphertext3 = linear_algebra.add_plain(ciphertext1, vec2);
     Vector actual_result = linear_algebra.decrypt(ciphertext3);
     Vector expected_result = vec1 + vec2;
     ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
@@ -375,7 +375,7 @@ TEST(LinearAlgebraTest, AddMatrixScalar) {
     Matrix mat2 = Matrix(height, width, vector<double>(height * width, scalar));
     EncryptedMatrix ciphertext1 = linear_algebra.encrypt_matrix(mat1, unit1);
 
-    EncryptedMatrix ciphertext3 = linear_algebra.add(ciphertext1, scalar);
+    EncryptedMatrix ciphertext3 = linear_algebra.add_plain(ciphertext1, scalar);
     Matrix actual_result = linear_algebra.decrypt(ciphertext3);
     Matrix expected_result = mat1 + mat2;
     ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
@@ -394,7 +394,7 @@ TEST(LinearAlgebraTest, AddRowScalar) {
     Vector vec2 = Vector(vector<double>(width, scalar));
     EncryptedRowVector ciphertext1 = linear_algebra.encrypt_row_vector(vec1, unit1);
 
-    EncryptedRowVector ciphertext3 = linear_algebra.add(ciphertext1, scalar);
+    EncryptedRowVector ciphertext3 = linear_algebra.add_plain(ciphertext1, scalar);
     Vector actual_result = linear_algebra.decrypt(ciphertext3);
     Vector expected_result = vec1 + vec2;
     ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
@@ -413,7 +413,7 @@ TEST(LinearAlgebraTest, AddColScalar) {
     Vector vec2 = Vector(vector<double>(height, scalar));
     EncryptedColVector ciphertext1 = linear_algebra.encrypt_col_vector(vec1, unit1);
 
-    EncryptedColVector ciphertext3 = linear_algebra.add(ciphertext1, scalar);
+    EncryptedColVector ciphertext3 = linear_algebra.add_plain(ciphertext1, scalar);
     Vector actual_result = linear_algebra.decrypt(ciphertext3);
     Vector expected_result = vec1 + vec2;
     ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
@@ -442,13 +442,13 @@ TEST(LinearAlgebraTest, AddMultipleMatrix_InvalidCase) {
 
     ASSERT_THROW(
         // Expect invalid_argument is thrown because widths do not match.
-        (linear_algebra.add(set1)), invalid_argument);
+        (linear_algebra.add_many(set1)), invalid_argument);
     ASSERT_THROW(
         // Expect invalid_argument is thrown because heights do not match.
-        (linear_algebra.add(set2)), invalid_argument);
+        (linear_algebra.add_many(set2)), invalid_argument);
     ASSERT_THROW(
         // Expect invalid_argument is thrown because encoding units do not match.
-        (linear_algebra.add(set3)), invalid_argument);
+        (linear_algebra.add_many(set3)), invalid_argument);
 }
 
 TEST(LinearAlgebraTest, AddMultipleMatrix) {
@@ -468,7 +468,7 @@ TEST(LinearAlgebraTest, AddMultipleMatrix) {
     Matrix matrix3 = random_mat(height, width);
     cts.emplace_back(linear_algebra.encrypt_matrix(matrix3, unit1));
 
-    EncryptedMatrix ciphertext = linear_algebra.add(cts);
+    EncryptedMatrix ciphertext = linear_algebra.add_many(cts);
     Matrix actual_result = linear_algebra.decrypt(ciphertext);
     Matrix expected_result = matrix1 + matrix2 + matrix3;
     ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
@@ -494,10 +494,10 @@ TEST(LinearAlgebraTest, AddMultipleRow_InvalidCase) {
 
     ASSERT_THROW(
         // Expect invalid_argument is thrown because dimensions do not match.
-        (linear_algebra.add(set1)), invalid_argument);
+        (linear_algebra.add_many(set1)), invalid_argument);
     ASSERT_THROW(
         // Expect invalid_argument is thrown because units do not match.
-        (linear_algebra.add(set2)), invalid_argument);
+        (linear_algebra.add_many(set2)), invalid_argument);
 }
 
 TEST(LinearAlgebraTest, AddMultipleRow) {
@@ -516,7 +516,7 @@ TEST(LinearAlgebraTest, AddMultipleRow) {
     Vector vec3 = random_vec(width);
     cts.emplace_back(linear_algebra.encrypt_row_vector(vec3, unit1));
 
-    EncryptedRowVector ciphertext = linear_algebra.add(cts);
+    EncryptedRowVector ciphertext = linear_algebra.add_many(cts);
     Vector actual_result = linear_algebra.decrypt(ciphertext);
     Vector expected_result = vec1 + vec2 + vec3;
     ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
@@ -542,10 +542,10 @@ TEST(LinearAlgebraTest, AddMultipleCol_InvalidCase) {
 
     ASSERT_THROW(
         // Expect invalid_argument is thrown because dimensions do not match.
-        (linear_algebra.add(set1)), invalid_argument);
+        (linear_algebra.add_many(set1)), invalid_argument);
     ASSERT_THROW(
         // Expect invalid_argument is thrown because units do not match.
-        (linear_algebra.add(set2)), invalid_argument);
+        (linear_algebra.add_many(set2)), invalid_argument);
 }
 
 TEST(LinearAlgebraTest, AddMultipleCol) {
@@ -564,7 +564,7 @@ TEST(LinearAlgebraTest, AddMultipleCol) {
     Vector vec3 = random_vec(width);
     cts.emplace_back(linear_algebra.encrypt_col_vector(vec3, unit1));
 
-    EncryptedColVector ciphertext = linear_algebra.add(cts);
+    EncryptedColVector ciphertext = linear_algebra.add_many(cts);
     Vector actual_result = linear_algebra.decrypt(ciphertext);
     Vector expected_result = vec1 + vec2 + vec3;
     ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
@@ -583,7 +583,7 @@ TEST(LinearAlgebraTest, MultiplyMatrixScalar) {
     double scalar = 3.14;
     EncryptedMatrix ciphertext1 = linear_algebra.encrypt_matrix(mat1, unit1);
 
-    EncryptedMatrix ciphertext3 = linear_algebra.multiply(ciphertext1, scalar);
+    EncryptedMatrix ciphertext3 = linear_algebra.multiply_plain(ciphertext1, scalar);
     Matrix actual_result = linear_algebra.decrypt(ciphertext3);
     Matrix expected_result = scalar * mat1;
     ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
@@ -601,7 +601,7 @@ TEST(LinearAlgebraTest, MultiplyRowScalar) {
     double scalar = 3.14;
     EncryptedRowVector ciphertext1 = linear_algebra.encrypt_row_vector(vec1, unit1);
 
-    EncryptedRowVector ciphertext3 = linear_algebra.multiply(ciphertext1, scalar);
+    EncryptedRowVector ciphertext3 = linear_algebra.multiply_plain(ciphertext1, scalar);
     Vector actual_result = linear_algebra.decrypt(ciphertext3);
     Vector expected_result = scalar * vec1;
     ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
@@ -619,7 +619,7 @@ TEST(LinearAlgebraTest, MultiplyColScalar) {
     double scalar = 3.14;
     EncryptedColVector ciphertext1 = linear_algebra.encrypt_col_vector(vec1, unit1);
 
-    EncryptedColVector ciphertext3 = linear_algebra.multiply(ciphertext1, scalar);
+    EncryptedColVector ciphertext3 = linear_algebra.multiply_plain(ciphertext1, scalar);
     Vector actual_result = linear_algebra.decrypt(ciphertext3);
     Vector expected_result = scalar * vec1;
     ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
@@ -975,7 +975,7 @@ TEST(LinearAlgebraTest, RescaleToNextMatrix) {
 
     Matrix mat = random_mat(64, 64);
     EncryptedMatrix ct_mat1 = linear_algebra.encrypt_matrix(mat, unit1);
-    EncryptedMatrix ct_mat2 = linear_algebra.multiply(ct_mat1, 3.14);
+    EncryptedMatrix ct_mat2 = linear_algebra.multiply_plain(ct_mat1, 3.14);
 
     ASSERT_EQ(pow(2, LOG_SCALE * 2), ct_mat2.scale());
     uint64_t prime = get_last_prime(ckks_instance.context, ct_mat1.he_level());
@@ -992,7 +992,7 @@ TEST(LinearAlgebraTest, RescaleToNextRow) {
 
     Vector vec = random_vec(64);
     EncryptedRowVector ct_vec1 = linear_algebra.encrypt_row_vector(vec, unit1);
-    EncryptedRowVector ct_vec2 = linear_algebra.multiply(ct_vec1, 3.14);
+    EncryptedRowVector ct_vec2 = linear_algebra.multiply_plain(ct_vec1, 3.14);
 
     ASSERT_EQ(pow(2, LOG_SCALE * 2), ct_vec2.scale());
     uint64_t prime = get_last_prime(ckks_instance.context, ct_vec1.he_level());
@@ -1009,7 +1009,7 @@ TEST(LinearAlgebraTest, RescaleToNextCol) {
 
     Vector vec = random_vec(64);
     EncryptedColVector ct_vec1 = linear_algebra.encrypt_col_vector(vec, unit1);
-    EncryptedColVector ct_vec2 = linear_algebra.multiply(ct_vec1, 3.14);
+    EncryptedColVector ct_vec2 = linear_algebra.multiply_plain(ct_vec1, 3.14);
 
     ASSERT_EQ(pow(2, LOG_SCALE * 2), ct_vec2.scale());
     uint64_t prime = get_last_prime(ckks_instance.context, ct_vec1.he_level());
@@ -1451,7 +1451,7 @@ TEST(LinearAlgebraTest, RescaleToNext_Matrix) {
 
     EncryptedMatrix ct_mat1 = linear_algebra.encrypt_matrix(mat1, unit);
     ASSERT_EQ(ct_mat1.scale(), pow(2, LOG_SCALE));
-    linear_algebra.multiply_inplace(ct_mat1, 2);
+    linear_algebra.multiply_plain_inplace(ct_mat1, 2);
     ASSERT_EQ(ct_mat1.scale(), pow(2, 2 * LOG_SCALE));
     ASSERT_EQ(ct_mat1.he_level(), 1);
     linear_algebra.rescale_to_next_inplace(ct_mat1);
@@ -1471,7 +1471,7 @@ TEST(LinearAlgebraTest, RescaleToNext_ColVec) {
 
     EncryptedColVector ct_vec1 = linear_algebra.encrypt_col_vector(vec1, unit);
     ASSERT_EQ(ct_vec1.scale(), pow(2, LOG_SCALE));
-    linear_algebra.multiply_inplace(ct_vec1, 2);
+    linear_algebra.multiply_plain_inplace(ct_vec1, 2);
     ASSERT_EQ(ct_vec1.scale(), pow(2, 2 * LOG_SCALE));
     ASSERT_EQ(ct_vec1.he_level(), 1);
     linear_algebra.rescale_to_next_inplace(ct_vec1);
@@ -1491,7 +1491,7 @@ TEST(LinearAlgebraTest, RescaleToNext_RowVec) {
 
     EncryptedRowVector ct_vec1 = linear_algebra.encrypt_row_vector(vec1, unit);
     ASSERT_EQ(ct_vec1.scale(), pow(2, LOG_SCALE));
-    linear_algebra.multiply_inplace(ct_vec1, 2);
+    linear_algebra.multiply_plain_inplace(ct_vec1, 2);
     ASSERT_EQ(ct_vec1.scale(), pow(2, 2 * LOG_SCALE));
     ASSERT_EQ(ct_vec1.he_level(), 1);
     linear_algebra.rescale_to_next_inplace(ct_vec1);
