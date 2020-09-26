@@ -130,8 +130,7 @@
  * The following code demonstrates how to use HIT to create a CKKS instance, and to
  * use it for encryption and decryption.
  */
-#include "hit/api/evaluator/homomorphic.h"
-#include "hit/common.h"
+#include "hit/hit.h"
 
 using namespace std;
 using namespace hit;

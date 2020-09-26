@@ -12,7 +12,8 @@ target_sources(aws_hit_examples
   PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/example_1_ckks.cpp
     ${CMAKE_CURRENT_LIST_DIR}/example_2_plaintext.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/example_3_parameters.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/example_3_evaluators.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/example_4_linearalgebra.cpp
 )
 target_link_libraries(aws_hit_examples PUBLIC aws-hit)
 

@@ -1,8 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hit/api/evaluator/plaintext.h"
-#include "hit/common.h"
+#include "hit/hit.h"
 
 using namespace std;
 using namespace hit;

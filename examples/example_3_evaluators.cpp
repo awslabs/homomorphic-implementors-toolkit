@@ -117,7 +117,7 @@ void example_3_driver() {
 	// Now we can evaluate our homomorphic circuit on this input
 	CKKSCiphertext ct_result = poly_eval_homomorphic_v1(he_inst, he_ciphertext);
 
-	vector<double> pt_result = he_inst.decrypt(ct_result);
+	vector<double> actual_result = he_inst.decrypt(ct_result);
 
 	// Next, we will evaluate the plaintext function on the plaintext input
 	vector<double> expected_result = poly_eval_plaintext(plaintext);
