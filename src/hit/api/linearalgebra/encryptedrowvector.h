@@ -60,8 +60,17 @@ namespace hit {
         // Returns a EncryptedRowVector, which is deserialized from protobuf::EncryptedRowVector.
         EncryptedRowVector(const std::shared_ptr<seal::SEALContext> &context,
                            const protobuf::EncryptedRowVector &encrypted_row_vector);
+        // Returns a EncryptedRowVector, which is deserialized from a stream containing a protobuf::EncryptedRowVector.
+        EncryptedRowVector(const std::shared_ptr<seal::SEALContext> &context, std::istream &stream);
         // Returns a protobuf::EncryptedRowVector, which is serialized from EncryptedRowVector.
+        // This function is typically used in protobuf serialization code for objects which
+        // contain a protobuf::EncryptedRowVector. When used directly, you are responsible for
+        // calling `delete` on the pointer. When passed as an argument to a protocol buffer
+        // `add_allocated` function, ownership is transferred to the protocol buffer object,
+        // which is responsible for releasing the memory allocated here.
         protobuf::EncryptedRowVector *serialize() const;
+        // Serialize an EncryptedRowVector as a protobuf object to a stream.
+        void save(std::ostream &stream) const;
 
         int width() const;
         int num_units() const;
@@ -77,6 +86,9 @@ namespace hit {
         Vector plaintext() const override;
 
        private:
+        void read_from_proto(const std::shared_ptr<seal::SEALContext> &context,
+                             const protobuf::EncryptedRowVector &encrypted_row_vector);
+
         EncryptedRowVector(int width, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts);
 
         bool initialized() const;

@@ -9,17 +9,30 @@
 using namespace std;
 
 namespace hit {
-    EncryptedColVector::EncryptedColVector(int height, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts)
+    EncryptedColVector::EncryptedColVector(int height, const EncodingUnit &unit, vector<CKKSCiphertext> &cts)
         : height_(height), unit(unit), cts(cts) {
         validate_init();
     }
 
-    EncryptedColVector::EncryptedColVector(const std::shared_ptr<seal::SEALContext> &context,
-                                           const protobuf::EncryptedColVector &encrypted_col_vector)
-        : height_(encrypted_col_vector.height()), unit(encrypted_col_vector.unit()) {
+    void EncryptedColVector::read_from_proto(const shared_ptr<seal::SEALContext> &context,
+                                             const protobuf::EncryptedColVector &encrypted_col_vector) {
+        height_ = encrypted_col_vector.height();
+        unit = EncodingUnit(encrypted_col_vector.unit());
         cts.reserve(encrypted_col_vector.cts().cts_size());
         deserialize_vector(context, encrypted_col_vector.cts(), cts);
         validate_init();
+    }
+
+    EncryptedColVector::EncryptedColVector(const shared_ptr<seal::SEALContext> &context,
+                                           const protobuf::EncryptedColVector &encrypted_col_vector) {
+        read_from_proto(context, encrypted_col_vector);
+    }
+
+    EncryptedColVector::EncryptedColVector(const shared_ptr<seal::SEALContext> &context,
+                                           istream &stream) {
+        protobuf::EncryptedColVector proto_vec;
+        proto_vec.ParseFromIstream(&stream);
+        read_from_proto(context, proto_vec);
     }
 
     protobuf::EncryptedColVector *EncryptedColVector::serialize() const {
@@ -28,6 +41,12 @@ namespace hit {
         encrypted_col_vector->set_allocated_unit(unit.serialize());
         encrypted_col_vector->set_allocated_cts(serialize_vector(cts));
         return encrypted_col_vector;
+    }
+
+    void EncryptedColVector::save(ostream &stream) const {
+        protobuf::EncryptedColVector *proto_vec = serialize();
+        proto_vec->SerializeToOstream(&stream);
+        delete proto_vec;
     }
 
     EncodingUnit EncryptedColVector::encoding_unit() const {

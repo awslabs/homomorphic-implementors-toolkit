@@ -12,7 +12,7 @@ using namespace seal;
 
 namespace hit {
 
-    CKKSCiphertext::CKKSCiphertext(const shared_ptr<SEALContext> &context, const protobuf::Ciphertext &proto_ct) {
+    void CKKSCiphertext::read_from_proto(const shared_ptr<seal::SEALContext> &context, const protobuf::Ciphertext &proto_ct) {
         initialized = proto_ct.initialized();
         scale_ = proto_ct.scale();
         he_level_ = proto_ct.he_level();
@@ -30,6 +30,16 @@ namespace hit {
             istringstream ctstream(proto_ct.seal_ct());
             seal_ct.load(context, ctstream);
         }
+    }
+
+    CKKSCiphertext::CKKSCiphertext(const shared_ptr<SEALContext> &context, const protobuf::Ciphertext &proto_ct) {
+        read_from_proto(context, proto_ct);
+    }
+
+    CKKSCiphertext::CKKSCiphertext(const shared_ptr<SEALContext> &context, istream &stream) {
+        protobuf::Ciphertext proto_ct;
+        proto_ct.ParseFromIstream(&stream);
+        read_from_proto(context, proto_ct);
     }
 
     protobuf::Ciphertext *CKKSCiphertext::serialize() const {
@@ -56,6 +66,12 @@ namespace hit {
         }
 
         return proto_ct;
+    }
+
+    void CKKSCiphertext::save(ostream &stream) const {
+        protobuf::Ciphertext *proto_ct = serialize();
+        proto_ct->SerializeToOstream(&stream);
+        delete proto_ct;
     }
 
     // Metadata interface functions

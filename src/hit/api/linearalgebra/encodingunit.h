@@ -30,8 +30,17 @@ namespace hit {
        public:
         // Returns a EncodingUnit, which is deserialized from protobuf::EncodingUnit.
         explicit EncodingUnit(const protobuf::EncodingUnit &encoding_unit);
+        // Returns a EncodingUnit, which is deserialized from a stream containing a protobuf::EncodingUnit.
+        explicit EncodingUnit(std::istream &stream);
         // Returns a protobuf::EncodingUnit, which is serialized from EncodingUnit.
+        // This function is typically used in protobuf serialization code for objects which
+        // contain a protobuf::EncodingUnit. When used directly, you are responsible for
+        // calling `delete` on the pointer. When passed as an argument to a protocol buffer
+        // `add_allocated` function, ownership is transferred to the protocol buffer object,
+        // which is responsible for releasing the memory allocated here.
         protobuf::EncodingUnit *serialize() const;
+        // Serialize an Encoding unit as a protobuf object to a stream.
+        void save(std::ostream &stream) const;
         friend bool operator==(const EncodingUnit &lhs, const EncodingUnit &rhs);
         friend bool operator!=(const EncodingUnit &lhs, const EncodingUnit &rhs);
         // height of this encoding unit
@@ -42,6 +51,7 @@ namespace hit {
         EncodingUnit transpose() const;
 
        private:
+        void read_from_proto(const protobuf::EncodingUnit &encoding_unit);
         // use `make_unit` in `LinearAlgebra` to construct an encoding unit
         EncodingUnit() = default;
         EncodingUnit(int encoding_height, int encoding_width);

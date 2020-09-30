@@ -11,17 +11,31 @@
 using namespace std;
 
 namespace hit {
-    EncryptedRowVector::EncryptedRowVector(int width, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts)
+    EncryptedRowVector::EncryptedRowVector(int width, const EncodingUnit &unit, vector<CKKSCiphertext> &cts)
         : width_(width), unit(unit), cts(cts) {
         validate_init();
     }
 
-    EncryptedRowVector::EncryptedRowVector(const std::shared_ptr<seal::SEALContext> &context,
-                                           const protobuf::EncryptedRowVector &encrypted_row_vector)
-        : width_(encrypted_row_vector.width()), unit(encrypted_row_vector.unit()) {
+    void EncryptedRowVector::read_from_proto(const shared_ptr<seal::SEALContext> &context,
+                                             const protobuf::EncryptedRowVector &encrypted_row_vector) {
+        width_ = encrypted_row_vector.width();
+        unit = EncodingUnit(encrypted_row_vector.unit());
+
         cts.reserve(encrypted_row_vector.cts().cts_size());
         deserialize_vector(context, encrypted_row_vector.cts(), cts);
         validate_init();
+    }
+
+    EncryptedRowVector::EncryptedRowVector(const shared_ptr<seal::SEALContext> &context,
+                                           const protobuf::EncryptedRowVector &encrypted_row_vector) {
+        read_from_proto(context, encrypted_row_vector);
+    }
+
+    EncryptedRowVector::EncryptedRowVector(const shared_ptr<seal::SEALContext> &context,
+                                           istream &stream) {
+        protobuf::EncryptedRowVector proto_vec;
+        proto_vec.ParseFromIstream(&stream);
+        read_from_proto(context, proto_vec);
     }
 
     protobuf::EncryptedRowVector *EncryptedRowVector::serialize() const {
@@ -30,6 +44,12 @@ namespace hit {
         encrypted_row_vector->set_allocated_unit(unit.serialize());
         encrypted_row_vector->set_allocated_cts(serialize_vector(cts));
         return encrypted_row_vector;
+    }
+
+    void EncryptedRowVector::save(ostream &stream) const {
+        protobuf::EncryptedRowVector *proto_vec = serialize();
+        proto_vec->SerializeToOstream(&stream);
+        delete proto_vec;
     }
 
     int EncryptedRowVector::width() const {
