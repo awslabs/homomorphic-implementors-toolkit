@@ -21,6 +21,4 @@ TEST(OpcountTest, BasicFlow) {
     ckks_instance.square_inplace(ciphertext);
     ckks_instance.relinearize_inplace(ciphertext);
     ckks_instance.rescale_to_next_inplace(ciphertext);
-    vector<double> vector_output = ckks_instance.decrypt(ciphertext);
-    ASSERT_LE(relative_error(vector_input, vector_output), MAX_NORM);
 }
