@@ -86,8 +86,8 @@ namespace hit {
         Vector plaintext() const override;
 
        private:
-        void readFromProto(const std::shared_ptr<seal::SEALContext> &context,
-                           const protobuf::EncryptedRowVector &encrypted_row_vector);
+        void read_from_proto(const std::shared_ptr<seal::SEALContext> &context,
+                             const protobuf::EncryptedRowVector &encrypted_row_vector);
 
         EncryptedRowVector(int width, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts);
 

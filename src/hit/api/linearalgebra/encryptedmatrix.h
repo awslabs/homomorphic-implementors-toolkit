@@ -81,8 +81,8 @@ namespace hit {
         Matrix plaintext() const override;
 
        private:
-        void readFromProto(const std::shared_ptr<seal::SEALContext> &context,
-                           const protobuf::EncryptedMatrix &encrypted_matrix);
+        void read_from_proto(const std::shared_ptr<seal::SEALContext> &context,
+                             const protobuf::EncryptedMatrix &encrypted_matrix);
 
         EncryptedMatrix(int height, int width, const EncodingUnit &unit,
                         const std::vector<std::vector<CKKSCiphertext>> &cts);

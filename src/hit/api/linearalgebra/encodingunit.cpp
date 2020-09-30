@@ -13,20 +13,20 @@ namespace hit {
         validate_init();
     }
 
-    void EncodingUnit::readFromProto(const protobuf::EncodingUnit &encoding_unit) {
+    void EncodingUnit::read_from_proto(const protobuf::EncodingUnit &encoding_unit) {
         encoding_height_ = encoding_unit.encoding_height();
         encoding_width_ = encoding_unit.encoding_width();
         validate_init();
     }
 
     EncodingUnit::EncodingUnit(const protobuf::EncodingUnit &encoding_unit) {
-        readFromProto(encoding_unit);
+        read_from_proto(encoding_unit);
     }
 
     EncodingUnit::EncodingUnit(istream &stream) {
         protobuf::EncodingUnit proto_unit;
         proto_unit.ParseFromIstream(&stream);
-        readFromProto(proto_unit);
+        read_from_proto(proto_unit);
     }
 
     bool operator==(const EncodingUnit &lhs, const EncodingUnit &rhs) {

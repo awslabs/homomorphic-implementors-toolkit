@@ -51,7 +51,7 @@ namespace hit {
         EncodingUnit transpose() const;
 
        private:
-        void readFromProto(const protobuf::EncodingUnit &encoding_unit);
+        void read_from_proto(const protobuf::EncodingUnit &encoding_unit);
         // use `make_unit` in `LinearAlgebra` to construct an encoding unit
         EncodingUnit() = default;
         EncodingUnit(int encoding_height, int encoding_width);

@@ -16,7 +16,7 @@ namespace hit {
         CKKSCiphertext() = default;
 
         // Deserialize a ciphertext from a protobuf object
-        CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context, const hit::protobuf::Ciphertext &proto_ct);
+        CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context, const protobuf::Ciphertext &proto_ct);
 
         // Deserialize a ciphertext from a stream containing a protobuf object
         CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context, std::istream &stream);
@@ -27,7 +27,7 @@ namespace hit {
         // calling `delete` on the pointer. When passed as an argument to a protocol buffer
         // `add_allocated` function, ownership is transferred to the protocol buffer object,
         // which is responsible for releasing the memory allocated here.
-        hit::protobuf::Ciphertext *serialize() const;
+        protobuf::Ciphertext *serialize() const;
         // Serialize an ciphertext as a protobuf object to a stream.
         void save(std::ostream &stream) const;
 
@@ -47,7 +47,7 @@ namespace hit {
 
        private:
 
-        void readFromProto(const std::shared_ptr<seal::SEALContext> &context, const hit::protobuf::Ciphertext &proto_ct);
+        void read_from_proto(const std::shared_ptr<seal::SEALContext> &context, const protobuf::Ciphertext &proto_ct);
 
         // The raw plaintxt. This is used with some of the evaluators tha track ciphertext
         // metadata (e.g., DebugEval and PlaintextEval), but not by the Homomorphic evaluator.

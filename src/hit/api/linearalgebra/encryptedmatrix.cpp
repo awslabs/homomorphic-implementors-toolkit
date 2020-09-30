@@ -15,8 +15,8 @@ namespace hit {
         validate_init();
     }
 
-    void EncryptedMatrix::readFromProto(const std::shared_ptr<seal::SEALContext> &context,
-                                        const protobuf::EncryptedMatrix &encrypted_matrix) {
+    void EncryptedMatrix::read_from_proto(const shared_ptr<seal::SEALContext> &context,
+                                          const protobuf::EncryptedMatrix &encrypted_matrix) {
         height_ = encrypted_matrix.height();
         width_ = encrypted_matrix.width();
         unit = EncodingUnit(encrypted_matrix.unit());
@@ -32,9 +32,15 @@ namespace hit {
         validate_init();
     }
 
-    EncryptedMatrix::EncryptedMatrix(const std::shared_ptr<seal::SEALContext> &context,
+    EncryptedMatrix::EncryptedMatrix(const shared_ptr<seal::SEALContext> &context,
                                      const protobuf::EncryptedMatrix &encrypted_matrix) {
-        readFromProto(context, encrypted_matrix);
+        read_from_proto(context, encrypted_matrix);
+    }
+
+    EncryptedMatrix::EncryptedMatrix(const shared_ptr<seal::SEALContext> &context, istream &stream) {
+        protobuf::EncryptedMatrix proto_mat;
+        proto_mat.ParseFromIstream(&stream);
+        read_from_proto(context, proto_mat);
     }
 
     protobuf::EncryptedMatrix *EncryptedMatrix::serialize() const {

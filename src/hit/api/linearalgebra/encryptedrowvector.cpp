@@ -11,13 +11,13 @@
 using namespace std;
 
 namespace hit {
-    EncryptedRowVector::EncryptedRowVector(int width, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts)
+    EncryptedRowVector::EncryptedRowVector(int width, const EncodingUnit &unit, vector<CKKSCiphertext> &cts)
         : width_(width), unit(unit), cts(cts) {
         validate_init();
     }
 
-    void EncryptedRowVector::readFromProto(const std::shared_ptr<seal::SEALContext> &context,
-                                           const protobuf::EncryptedRowVector &encrypted_row_vector) {
+    void EncryptedRowVector::read_from_proto(const shared_ptr<seal::SEALContext> &context,
+                                             const protobuf::EncryptedRowVector &encrypted_row_vector) {
         width_ = encrypted_row_vector.width();
         unit = EncodingUnit(encrypted_row_vector.unit());
 
@@ -26,16 +26,16 @@ namespace hit {
         validate_init();
     }
 
-    EncryptedRowVector::EncryptedRowVector(const std::shared_ptr<seal::SEALContext> &context,
+    EncryptedRowVector::EncryptedRowVector(const shared_ptr<seal::SEALContext> &context,
                                            const protobuf::EncryptedRowVector &encrypted_row_vector) {
-        readFromProto(context, encrypted_row_vector);
+        read_from_proto(context, encrypted_row_vector);
     }
 
-    EncryptedRowVector::EncryptedRowVector(const std::shared_ptr<seal::SEALContext> &context,
-                                           std::istream &stream) {
+    EncryptedRowVector::EncryptedRowVector(const shared_ptr<seal::SEALContext> &context,
+                                           istream &stream) {
         protobuf::EncryptedRowVector proto_vec;
         proto_vec.ParseFromIstream(&stream);
-        readFromProto(context, proto_vec);
+        read_from_proto(context, proto_vec);
     }
 
     protobuf::EncryptedRowVector *EncryptedRowVector::serialize() const {
