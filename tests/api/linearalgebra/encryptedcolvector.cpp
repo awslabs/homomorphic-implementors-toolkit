@@ -29,5 +29,5 @@ TEST(EncryptedColVectorTest, Serialization) {
     ASSERT_EQ(ct1.height(), ct2.height());
     ASSERT_EQ(ct1.encoding_unit(), ct2.encoding_unit());
     Vector output = laInst.decrypt(ct2);
-    ASSERT_LT(diff2_norm(plaintext.data(), output.data()), MAX_NORM);
+    ASSERT_LT(relative_error(plaintext.data(), output.data()), MAX_NORM);
 }
