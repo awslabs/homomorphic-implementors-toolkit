@@ -163,12 +163,12 @@ void example_4_driver() {
  * one-dimenisonal list of units.
  */
 	// Let's create a 150-dimensional vector
-	int vec_size = 150;
-	vector<double> vec_data = randomVector(vec_size, plaintext_inf_norm);
-	Vector vec = Vector(vec_data);
+	int rvec_size = 150;
+	vector<double> rvec_data = randomVector(rvec_size, plaintext_inf_norm);
+	Vector rvec = Vector(rvec_data);
 
 	// We can now encrypt this row vector with respect to one of the units
-	EncryptedRowVector enc_rvec = la_inst.encrypt<EncryptedRowVector>(vec, unit_64x128);
+	EncryptedRowVector enc_rvec = la_inst.encrypt<EncryptedRowVector>(rvec, unit_64x128);
 	// The ciphertext knows the plaintext's original width.
 	cout << "enc_rvec has dimension " << enc_rvec.width() << endl;
 	// We can also see how many encoding units it took to tile this vector
@@ -216,8 +216,13 @@ void example_4_driver() {
  * Like the encoding for row vectors, column vectors are encoded as a
  * one-dimenisonal list of units.
  */
+	// Let's create a 300-dimensional vector
+	int cvec_size = 300;
+	vector<double> cvec_data = randomVector(cvec_size, plaintext_inf_norm);
+	Vector cvec = Vector(cvec_data);
+
 	// We can now encrypt a column vector with respect to one of the units
-	EncryptedColVector enc_cvec = la_inst.encrypt<EncryptedColVector>(vec, unit_64x128);
+	EncryptedColVector enc_cvec = la_inst.encrypt<EncryptedColVector>(cvec, unit_64x128);
 	// The ciphertext knows the plaintext's original height.
 	cout << "enc_cvec has dimension " << enc_cvec.height() << endl;
 	// We can also see how many encoding units it took to tile this vector
@@ -232,4 +237,177 @@ void example_4_driver() {
 	// we can obtain the plaintext row vector (decoded to an object the same size as the input)
 	Vector recovered_cvec = enc_cvec.plaintext();
 	cout << "The plaintext inside enc_cvec has dimension " << recovered_cvec.size() << endl;
+
+/* ******** Linear Algebra Operations ********
+ * HIT's linear algebra API hides the complexity of this encoding so users
+ * can just think about the plaintext object. The API provides standard linear algebra
+ * operations like adding two matrices or two vectors (one of which may be public),
+ * multiplying by a public scalar, and matrix/vector multiplication.
+ * The API also includes some functions which don't correspond to classic linear
+ * algebra operations, like adding a constant to each component of a matrix or vector,
+ * ciphertext maintenance operations, `sum_rows`, and `sum_cols`. We'll explore these
+ * last two operations below. The ciphertext maintance operations work just like
+ * the operations for ciphertexts, except the API automatically applies them to
+ * each encoding unit of an encoded object.
+ */
+
+/* ******** Matrix/Vector Multiplication ********
+ * HIT's linear algebra API includes the ability to multiply a matrix with a column
+ * vector or a row vector and a matrix.
+ */
+	// Recall that `enc_mat1` encrypts a 150x300 matrix with a 64x128 encoding unit,
+	// `enc_cvec` encrypts a 300-dimensional column vector with the same unit, and
+	// `enc_rvec` encrypts a 150-dimensional row vector, also with the same unit.
+
+	// First, let's use the convenience function to compute the matrix/column-vector
+	// product. As described above, the output is a row vector rather than a column
+	// vector.
+	EncryptedRowVector mat_cvec_prod1 = la_inst.multiply(enc_mat1, enc_cvec);
+	// This type of product returns "a linear ciphertext with a squared scale at level i-1."
+	// Let's verify that:
+	cout << "Ciphertext metadata for matrix/col-vec multiplication:" << endl;
+	cout << "  Expected scale of ~" << 2*log_scale << " bits, the product has a scale of ~" << log2(mat_cvec_prod1.scale()) << " bits" << endl;
+	cout << "  Expected product level to be " << enc_mat1.he_level()-1 << "; actual level is " << mat_cvec_prod1.he_level() << endl;
+
+	// Similarly, a row-vector times a matrix results in a column vector:
+	EncryptedColVector rvec_mat_prod1 = la_inst.multiply(enc_rvec, enc_mat1);
+	// A linear ciphertext with a nominal scale at level i-1.
+	cout << "Ciphertext metadata for row-vec/matrix multiplication:" << endl;
+	cout << "  Expected scale of ~" << log_scale << " bits, the product has a scale of ~" << log2(rvec_mat_prod1.scale()) << " bits" << endl;
+	cout << "  Expected product level to be " << enc_mat1.he_level()-1 << "; actual level is " << rvec_mat_prod1.he_level() << endl;
+
+/* That was easy! However, these operations are complex enough that it is sometimes
+ * advantageous to break them down into multiple homomorphic operations rather than
+ * using the convenience functions. Let's dive into the homomorphic matrix/vector
+ * multiplication algorithm. The first step is to compute the Hadamard product
+ * between the matrix and the encoded vector. Consider the following matrix and
+ * column vector:
+ *
+ *  A = [ a b c d ]    v = [ 2 ]
+ *      [ e f g h ]        [ 3 ]
+ *                         [ 4 ]
+ *                         [ 5 ]
+ *
+ * These are encoded with a 2x4 unit as:
+ *
+ *  A = [ a b c d ]    v = [ 2 3 4 5 ]
+ *      [ e f g h ]        [ 2 3 4 5 ]
+ *
+ * and their Hadamard product (denoted by ⚬) is
+ *
+ * A⚬v = [ 2a 3b 4c 5d ]
+ *       [ 2e 3f 4g 5h ]
+ *
+ * The standard product A*v can be achieved by summing the columns of A⚬v.
+ * However, we seek an *encoding* of the product. This turns out to be
+ * difficult to do; an easier task is to find an encoding of the *transpose*
+ * of the standard product. We do this with the special `sum_cols` operation,
+ * which sums the columns of a matrix, and then replicates that sum in every
+ * column. Thus:
+ *
+ *  sum_cols(A⚬v) = [ 2a+3b+4c+5d  2a+3b+4c+5d  2a+3b+4c+5d  2a+3b+4c+5d ]
+ *                  [ 2e+3f+4g+5h  2e+3f+4g+5h  2e+3f+4g+5h  2e+3f+4g+5h ]
+ *
+ * Note that this is an encoding of the _row_ vector
+ *
+ * (A*v)^T = [ 2a+3b+4c+5d  2e+3f+4g+5h ]
+ *
+ * HIT's linear algebra API provides a simple API for easily computing products
+ * (as we demonstrated above), but it also exposes these lower-level operations
+ * which are useful when creating optimized linear algebra circuits.
+ */
+
+	// We can compute the same products as above, but in two steps
+	// The output of a Hadamard product is always a matrix
+	EncryptedMatrix mat_cvec_hprod = la_inst.hadamard_multiply(enc_mat1, enc_cvec);
+	// need to relinearize and rescale after a Hadamard multiplication
+	la_inst.relinearize_inplace(mat_cvec_hprod);
+	la_inst.rescale_to_next_inplace(mat_cvec_hprod);
+	EncryptedRowVector mat_cvec_prod2 = la_inst.sum_cols(mat_cvec_hprod);
+	// This encrypts the same value as mat_cvec_prod1
+	// We used a debug instance, so we can compare the plaintexts:
+	cout << "Matrix/column-vector alternate computation works if "
+	     << diff2_norm(mat_cvec_prod1.plaintext(), mat_cvec_prod2.plaintext())
+	     << " is small." << endl;
+
+	// For the row-vector/matrix product, the idea is similar, but we use `sum_rows`
+	// instead:
+	EncryptedMatrix rvec_mat_hprod = la_inst.hadamard_multiply(enc_rvec, enc_mat1);
+	la_inst.relinearize_inplace(rvec_mat_hprod);
+	la_inst.rescale_to_next_inplace(rvec_mat_hprod);
+	EncryptedColVector rvec_mat_prod2 = la_inst.sum_rows(rvec_mat_hprod);
+	// This encrypts the same value as rvec_mat_prod1
+	// To demonstrate all of our options, we'll decrypt for this comparison
+	// Note that the norm will be larger due to the error caused by homomorphic operations
+	// and the CKKS encoding process.
+	cout << "Row-vector/Matrix alternate computation works if "
+	     << diff2_norm(la_inst.decrypt(rvec_mat_prod1), la_inst.decrypt(rvec_mat_prod2))
+	     << " is small." << endl;
+
+/* Why would we ever want to use this more tedious API? `sum_rows` and `sum_cols`
+ * are relatively expensive operations, but we can frequently reduce the number
+ * of invocations to these operations by exploiting their structure as linear maps.
+ * This means that for two matrices A and B which have the same dimensions and a
+ * constant c,
+ *        sum_cols(A) + sum_cols(B) = sum_cols(A+B), and
+ *        c*sum_cols(A) = sum_cols(c*A)
+ * (and likewise for `sum_rows`). However, we can even go one step farther and
+ * extend this linear map to objects which we can't directly add. Consider the
+ * following two matrices:
+ *
+ * A = [ 1 2 3 4 ]      B = [ 1 2 ]
+ *     [ 5 6 7 8 ]          [ 3 4 ]
+ *
+ * It makes sense to add `sum_cols(A)` and `sum_cols(B)` since both are 2-dimensional
+ * row vectors (remember that `sum_cols` results in a row instead of a column).
+ * However, it seems like this *requires* two invocations of `sum_cols`. But
+ *       sum_cols(A) + sum_cols(B) = sum_cols(A | B)
+ * where | denotes concatenation, so we can still use the linear map to reduce the
+ * number of calls to `sum_cols` as long as the arguments have the same number of rows!
+ * The same is true for `sum_rows`, as long as the arguments have the same number of
+ * columns. This functionality is captured by `sum_rows_many` and `sum_cols_many`.
+ */
+
+/* ******** Matrix/Matrix Multiplication ********
+ * Finally, we'll cover matrix-matrix multiplication. As with matrix/vector
+ * multiplication, the homomorphic algorithm has a "twist": to compute the product
+ * A*B, we need to provide encryptions of A^T and B. While this operation has
+ * multiplicative depth 3 regardless of the matrix dimensions, the number of overall
+ * multiplications involved *does* depend on the matrix dimensions. It's important
+ * to consider this when choosing to use this operation, since multiplying larger
+ * matrices involves many expensive operations, even on highly parallel hardware.
+ */
+	// Recall that `enc_mat1` encrypts a 150x300 matrix with a 64x128 encoding unit
+	// Call this matrix B. Now let's make a 20x150 matrix A, and homomorphically
+	// compute 2*A*B.
+    vector<double> mat_data_a = randomVector(20*150, plaintext_inf_norm);
+	Matrix mat_a = Matrix(20, 150, mat_data);
+
+	// To compute the homomorphic product A*B, we actually need to encrypt A^T
+	EncryptedMatrix enc_mat_a_trans = la_inst.encrypt(trans(mat_a), unit_64x128);
+
+	// Some operations allow us to throw in a free constant multiplication,
+	// so we'll do that here
+	// We also need enc_mat_a_trans at level >= 3, which it is since we
+	// created the evaluator with max_depth 3. However, `enc_mat1` must be at
+	// level 2, so we will first reduce its level.
+	la_inst.reduce_level_to_inplace(enc_mat1, enc_mat_a_trans.he_level()-1);
+	EncryptedMatrix mat_prod_ab = la_inst.multiply(enc_mat_a_trans, enc_mat1, 2);
+	// A linear ciphertext with a squared scale, so let's rescale:
+	la_inst.rescale_to_next_inplace(mat_prod_ab);
+
+	// Use boost to compute the plaintext matrix product
+	Matrix expected_result = prec_prod(mat_a, mat);
+	// Look at the plaintext product using the homomorphic algorithm
+	Matrix actual_result_plaintext = mat_prod_ab.plaintext();
+	// We can also decrypt the result to see what happened on ciphertexts
+	Matrix actual_result_homomorphic = la_inst.decrypt(mat_prod_ab);
+
+	cout << "Matrix/Matrix plaintext algorithm is correct if "
+	     << diff2_norm(expected_result, actual_result_plaintext)
+	     << " is small." << endl;
+
+	cout << "Matrix/Matrix homomorphic algorithm is correct if "
+	     << diff2_norm(expected_result, actual_result_homomorphic)
+	     << " is small." << endl;
 }

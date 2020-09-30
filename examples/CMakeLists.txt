@@ -14,8 +14,20 @@ target_sources(aws_hit_examples
     ${CMAKE_CURRENT_LIST_DIR}/example_2_plaintext.cpp
     ${CMAKE_CURRENT_LIST_DIR}/example_3_evaluators.cpp
     ${CMAKE_CURRENT_LIST_DIR}/example_4_linearalgebra.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/example_5_serialization.cpp
 )
 target_link_libraries(aws_hit_examples PUBLIC aws-hit)
+
+add_executable(hit-examples
+  run_examples.cpp
+  example_1_ckks.cpp
+  example_2_plaintext.cpp
+  example_3_evaluators.cpp
+  example_4_linearalgebra.cpp
+  example_5_serialization
+)
+set_common_flags(hit-examples)
+target_link_libraries(hit-examples aws-hit)
 
 add_custom_target(
   run_hit_example
