@@ -15,9 +15,12 @@ namespace hit {
         validate_init();
     }
 
-    EncryptedMatrix::EncryptedMatrix(const std::shared_ptr<seal::SEALContext> &context,
-                                     const protobuf::EncryptedMatrix &encrypted_matrix)
-        : height_(encrypted_matrix.height()), width_(encrypted_matrix.width()), unit(encrypted_matrix.unit()) {
+    void EncryptedMatrix::readFromProto(const std::shared_ptr<seal::SEALContext> &context,
+                                        const protobuf::EncryptedMatrix &encrypted_matrix) {
+        height_ = encrypted_matrix.height();
+        width_ = encrypted_matrix.width();
+        unit = EncodingUnit(encrypted_matrix.unit());
+
         cts.reserve(encrypted_matrix.cts_size());
         for (int i = 0; i < encrypted_matrix.cts_size(); i++) {
             const protobuf::CiphertextVector &proto_ciphertext_vector = encrypted_matrix.cts(i);
@@ -29,6 +32,11 @@ namespace hit {
         validate_init();
     }
 
+    EncryptedMatrix::EncryptedMatrix(const std::shared_ptr<seal::SEALContext> &context,
+                                     const protobuf::EncryptedMatrix &encrypted_matrix) {
+        readFromProto(context, encrypted_matrix);
+    }
+
     protobuf::EncryptedMatrix *EncryptedMatrix::serialize() const {
         auto *encrypted_matrix = new protobuf::EncryptedMatrix();
         encrypted_matrix->set_height(height_);
@@ -38,6 +46,12 @@ namespace hit {
             encrypted_matrix->mutable_cts()->AddAllocated(serialize_vector(ciphertext_vector));
         }
         return encrypted_matrix;
+    }
+
+    void EncryptedMatrix::save(ostream &stream) const {
+        protobuf::EncryptedMatrix *proto_mat = serialize();
+        proto_mat->SerializeToOstream(&stream);
+        delete proto_mat;
     }
 
     EncodingUnit EncryptedMatrix::encoding_unit() const {

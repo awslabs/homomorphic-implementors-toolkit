@@ -50,8 +50,12 @@ namespace hit {
         // Returns a EncryptedMatrix, which is deserialized from protobuf::EncryptedMatrix.
         EncryptedMatrix(const std::shared_ptr<seal::SEALContext> &context,
                         const protobuf::EncryptedMatrix &encrypted_matrix);
+        // Returns a EncryptedMatrix, which is deserialized from a stream containing a protobuf::EncryptedMatrix.
+        EncryptedMatrix(const std::shared_ptr<seal::SEALContext> &context, std::istream &stream);
         // Returns a protobuf::EncryptedMatrix, which is serialized from EncryptedMatrix.
         protobuf::EncryptedMatrix *serialize() const;
+        // Serialize an EncryptedMatrix as a protobuf object to a stream.
+        void save(std::ostream &stream) const;
         // height of the encrypted matrix
         int height() const;
         // width of the encrypted matrix
@@ -72,6 +76,9 @@ namespace hit {
         Matrix plaintext() const override;
 
        private:
+        void readFromProto(const std::shared_ptr<seal::SEALContext> &context,
+                           const protobuf::EncryptedMatrix &encrypted_matrix);
+
         EncryptedMatrix(int height, int width, const EncodingUnit &unit,
                         const std::vector<std::vector<CKKSCiphertext>> &cts);
 

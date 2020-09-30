@@ -13,10 +13,20 @@ namespace hit {
         validate_init();
     }
 
-    EncodingUnit::EncodingUnit(const protobuf::EncodingUnit &encoding_unit) {
+    void EncodingUnit::readFromProto(const protobuf::EncodingUnit &encoding_unit) {
         encoding_height_ = encoding_unit.encoding_height();
         encoding_width_ = encoding_unit.encoding_width();
         validate_init();
+    }
+
+    EncodingUnit::EncodingUnit(const protobuf::EncodingUnit &encoding_unit) {
+        readFromProto(encoding_unit);
+    }
+
+    EncodingUnit::EncodingUnit(istream &stream) {
+        protobuf::EncodingUnit proto_unit;
+        proto_unit.ParseFromIstream(&stream);
+        readFromProto(proto_unit);
     }
 
     bool operator==(const EncodingUnit &lhs, const EncodingUnit &rhs) {
@@ -40,6 +50,12 @@ namespace hit {
         encoding_unit->set_encoding_height(encoding_height_);
         encoding_unit->set_encoding_width(encoding_width_);
         return encoding_unit;
+    }
+
+    void EncodingUnit::save(ostream &stream) const {
+        protobuf::EncodingUnit *proto_unit = serialize();
+        proto_unit->SerializeToOstream(&stream);
+        delete proto_unit;
     }
 
     bool EncodingUnit::initialized() const {

@@ -49,8 +49,12 @@ namespace hit {
         // Returns a EncryptedColVector, which is deserialized from protobuf::EncryptedColVector.
         EncryptedColVector(const std::shared_ptr<seal::SEALContext> &context,
                            const protobuf::EncryptedColVector &encrypted_col_vector);
+        // Returns a EncryptedColVector, which is deserialized from a stream containing a protobuf::EncryptedColVector.
+        EncryptedColVector(const std::shared_ptr<seal::SEALContext> &context, std::istream &stream);
         // Returns a protobuf::EncryptedColVector, which is serialized from EncryptedColVector.
         protobuf::EncryptedColVector *serialize() const;
+        // Serialize an EncryptedColVector as a protobuf object to a stream.
+        void save(std::ostream &stream) const;
 
         int height() const;
         int num_units() const;
@@ -66,6 +70,9 @@ namespace hit {
         Vector plaintext() const override;
 
        private:
+        void readFromProto(const std::shared_ptr<seal::SEALContext> &context,
+                           const protobuf::EncryptedColVector &encrypted_col_vector);
+
         EncryptedColVector(int height, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts);
 
         bool initialized() const;

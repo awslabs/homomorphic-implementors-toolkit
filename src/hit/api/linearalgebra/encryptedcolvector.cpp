@@ -14,12 +14,25 @@ namespace hit {
         validate_init();
     }
 
-    EncryptedColVector::EncryptedColVector(const std::shared_ptr<seal::SEALContext> &context,
-                                           const protobuf::EncryptedColVector &encrypted_col_vector)
-        : height_(encrypted_col_vector.height()), unit(encrypted_col_vector.unit()) {
+    void EncryptedColVector::readFromProto(const std::shared_ptr<seal::SEALContext> &context,
+                                           const protobuf::EncryptedColVector &encrypted_col_vector) {
+        height_ = encrypted_col_vector.height();
+        unit = EncodingUnit(encrypted_col_vector.unit());
         cts.reserve(encrypted_col_vector.cts().cts_size());
         deserialize_vector(context, encrypted_col_vector.cts(), cts);
         validate_init();
+    }
+
+    EncryptedColVector::EncryptedColVector(const std::shared_ptr<seal::SEALContext> &context,
+                                           const protobuf::EncryptedColVector &encrypted_col_vector) {
+        readFromProto(context, encrypted_col_vector);
+    }
+
+    EncryptedColVector::EncryptedColVector(const std::shared_ptr<seal::SEALContext> &context,
+                                           std::istream &stream) {
+        protobuf::EncryptedColVector proto_vec;
+        proto_vec.ParseFromIstream(&stream);
+        readFromProto(context, proto_vec);
     }
 
     protobuf::EncryptedColVector *EncryptedColVector::serialize() const {
@@ -28,6 +41,12 @@ namespace hit {
         encrypted_col_vector->set_allocated_unit(unit.serialize());
         encrypted_col_vector->set_allocated_cts(serialize_vector(cts));
         return encrypted_col_vector;
+    }
+
+    void EncryptedColVector::save(ostream &stream) const {
+        protobuf::EncryptedColVector *proto_vec = serialize();
+        proto_vec->SerializeToOstream(&stream);
+        delete proto_vec;
     }
 
     EncodingUnit EncryptedColVector::encoding_unit() const {

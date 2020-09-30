@@ -30,8 +30,12 @@ namespace hit {
        public:
         // Returns a EncodingUnit, which is deserialized from protobuf::EncodingUnit.
         explicit EncodingUnit(const protobuf::EncodingUnit &encoding_unit);
+        // Returns a EncodingUnit, which is deserialized from a stream containing a protobuf::EncodingUnit.
+        explicit EncodingUnit(std::istream &stream);
         // Returns a protobuf::EncodingUnit, which is serialized from EncodingUnit.
         protobuf::EncodingUnit *serialize() const;
+        // Serialize an Encoding unit as a protobuf object to a stream.
+        void save(std::ostream &stream) const;
         friend bool operator==(const EncodingUnit &lhs, const EncodingUnit &rhs);
         friend bool operator!=(const EncodingUnit &lhs, const EncodingUnit &rhs);
         // height of this encoding unit
@@ -42,6 +46,7 @@ namespace hit {
         EncodingUnit transpose() const;
 
        private:
+        void readFromProto(const protobuf::EncodingUnit &encoding_unit);
         // use `make_unit` in `LinearAlgebra` to construct an encoding unit
         EncodingUnit() = default;
         EncodingUnit(int encoding_height, int encoding_width);

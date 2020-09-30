@@ -60,8 +60,12 @@ namespace hit {
         // Returns a EncryptedRowVector, which is deserialized from protobuf::EncryptedRowVector.
         EncryptedRowVector(const std::shared_ptr<seal::SEALContext> &context,
                            const protobuf::EncryptedRowVector &encrypted_row_vector);
+        // Returns a EncryptedRowVector, which is deserialized from a stream containing a protobuf::EncryptedRowVector.
+        EncryptedRowVector(const std::shared_ptr<seal::SEALContext> &context, std::istream &stream);
         // Returns a protobuf::EncryptedRowVector, which is serialized from EncryptedRowVector.
         protobuf::EncryptedRowVector *serialize() const;
+        // Serialize an EncryptedRowVector as a protobuf object to a stream.
+        void save(std::ostream &stream) const;
 
         int width() const;
         int num_units() const;
@@ -77,6 +81,9 @@ namespace hit {
         Vector plaintext() const override;
 
        private:
+        void readFromProto(const std::shared_ptr<seal::SEALContext> &context,
+                           const protobuf::EncryptedRowVector &encrypted_row_vector);
+
         EncryptedRowVector(int width, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts);
 
         bool initialized() const;

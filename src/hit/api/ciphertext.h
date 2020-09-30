@@ -15,11 +15,18 @@ namespace hit {
         // A default constructor is useful since we often write, e.g, `Ciphertext a;`
         CKKSCiphertext() = default;
 
-        // Deserialize a ciphertext
+        // Deserialize a ciphertext from a protobuf object
         CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context, const hit::protobuf::Ciphertext &proto_ct);
 
-        // Serialize a ciphertext
+        // Deserialize a ciphertext from a stream containing a protobuf object
+        CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context, std::istream &stream);
+
+        // Serialize a ciphertext to a protobuf object
+        // This is useful if you want to make a custom protobuf object that
+        // packages several encrypted objects together.
         hit::protobuf::Ciphertext *serialize() const;
+        // Serialize an ciphertext as a protobuf object to a stream.
+        void save(std::ostream &stream) const;
 
         // Ciphertext metadata
         int num_slots() const override;
@@ -36,6 +43,8 @@ namespace hit {
         friend class ScaleEstimator;
 
        private:
+
+        void readFromProto(const std::shared_ptr<seal::SEALContext> &context, const hit::protobuf::Ciphertext &proto_ct);
 
         // The raw plaintxt. This is used with some of the evaluators tha track ciphertext
         // metadata (e.g., DebugEval and PlaintextEval), but not by the Homomorphic evaluator.
