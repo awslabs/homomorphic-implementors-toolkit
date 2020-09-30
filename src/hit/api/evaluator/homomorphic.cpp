@@ -230,7 +230,7 @@ namespace hit {
         return decoded_output;
     }
 
-    void HomomorphicEval::reset_internal() {
+    void HomomorphicEval::reset() {
     }
 
     int HomomorphicEval::get_SEAL_level(const CKKSCiphertext &ct) const {

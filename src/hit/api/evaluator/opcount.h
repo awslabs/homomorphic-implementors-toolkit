@@ -29,6 +29,9 @@ namespace hit {
 
         CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1) override;
 
+        // reuse this evaluator for another computation
+        void reset();
+
        protected:
         void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) override;
 
@@ -61,9 +64,6 @@ namespace hit {
         void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
 
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
-
-        // reuse this evaluator for another computation
-        void reset_internal() override;
 
        private:
         int multiplies_ = 0;

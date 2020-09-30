@@ -15,7 +15,7 @@ namespace hit {
     DepthFinder::DepthFinder(const shared_ptr<SEALContext> &context) : top_he_level_(context->first_context_data()->chain_index()) {
     }
 
-    void DepthFinder::reset_internal() {
+    void DepthFinder::reset() {
         scoped_lock lock(mutex_);
         multiplicative_depth_ = 0;
     }

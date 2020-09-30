@@ -18,10 +18,6 @@ using namespace seal;
 
 namespace hit {
 
-    void CKKSEvaluator::reset() {
-        reset_internal();
-    }
-
     CKKSCiphertext CKKSEvaluator::rotate_right(const CKKSCiphertext &ct, int steps) {
         CKKSCiphertext output = ct;
         rotate_right_inplace(output, steps);
@@ -202,7 +198,7 @@ namespace hit {
     void CKKSEvaluator::reduce_level_to_min_inplace(CKKSCiphertext &ct1, CKKSCiphertext &ct2) {
         if (ct1.he_level() > ct2.he_level()) {
             reduce_level_to_inplace(ct1, ct2.he_level());
-        } else {
+        } else if (ct1.he_level() < ct2.he_level()) {
             reduce_level_to_inplace(ct2, ct1.he_level());
         }
     }

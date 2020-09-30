@@ -84,7 +84,7 @@ namespace hit {
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
         // reuse this evaluator for another computation
-        void reset_internal() override;
+        void reset();
 
        private:
         HomomorphicEval *homomorphic_eval;

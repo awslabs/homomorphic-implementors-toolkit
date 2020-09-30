@@ -128,7 +128,6 @@ namespace hit {
     template EncryptedMatrix LinearAlgebra::add_plain(const EncryptedMatrix &, double);
     template void LinearAlgebra::add_plain_inplace(EncryptedMatrix &enc_mat, double scalar);
     template EncryptedMatrix LinearAlgebra::multiply_plain(const EncryptedMatrix &, double);
-    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedMatrix &, EncryptedMatrix &);
     template EncryptedMatrix LinearAlgebra::reduce_level_to(const EncryptedMatrix &, int);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedMatrix &, int);
     template void LinearAlgebra::rescale_to_next_inplace(EncryptedMatrix &);
@@ -144,6 +143,9 @@ namespace hit {
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedMatrix &, const EncryptedMatrix &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedMatrix &, const EncryptedRowVector &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedMatrix &, const EncryptedColVector &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedMatrix &, EncryptedMatrix &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedMatrix &, EncryptedRowVector &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedMatrix &, EncryptedColVector &);
 
     // explicit template instantiation
     template EncryptedRowVector LinearAlgebra::add(const EncryptedRowVector &, const EncryptedRowVector &);
@@ -153,7 +155,6 @@ namespace hit {
     template EncryptedRowVector LinearAlgebra::add_plain(const EncryptedRowVector &, double);
     template void LinearAlgebra::add_plain_inplace(EncryptedRowVector &enc_vec, double scalar);
     template EncryptedRowVector LinearAlgebra::multiply_plain(const EncryptedRowVector &, double);
-    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedRowVector &, EncryptedRowVector &);
     template EncryptedRowVector LinearAlgebra::reduce_level_to(const EncryptedRowVector &, int);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedRowVector &, int);
     template void LinearAlgebra::rescale_to_next_inplace(EncryptedRowVector &);
@@ -170,6 +171,10 @@ namespace hit {
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedRowVector &, const EncryptedMatrix &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedRowVector &, const EncryptedRowVector &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedRowVector &, const EncryptedColVector &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedRowVector &, EncryptedMatrix &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedRowVector &, EncryptedRowVector &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedRowVector &, EncryptedColVector &);
+
 
     // explicit template instantiation
     template EncryptedColVector LinearAlgebra::add(const EncryptedColVector &, const EncryptedColVector &);
@@ -179,7 +184,6 @@ namespace hit {
     template EncryptedColVector LinearAlgebra::add_plain(const EncryptedColVector &, double);
     template void LinearAlgebra::add_plain_inplace(EncryptedColVector &enc_vec, double scalar);
     template EncryptedColVector LinearAlgebra::multiply_plain(const EncryptedColVector &, double);
-    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedColVector &, EncryptedColVector &);
     template EncryptedColVector LinearAlgebra::reduce_level_to(const EncryptedColVector &, int);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedColVector &, int);
     template void LinearAlgebra::rescale_to_next_inplace(EncryptedColVector &);
@@ -196,6 +200,9 @@ namespace hit {
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedColVector &, const EncryptedMatrix &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedColVector &, const EncryptedRowVector &);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedColVector &, const EncryptedColVector &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedColVector &, EncryptedMatrix &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedColVector &, EncryptedRowVector &);
+    template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedColVector &, EncryptedColVector &);
 
     void LinearAlgebra::add_plain_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2) {
         if (!enc_mat1.initialized() || enc_mat1.height() != mat2.size1() || enc_mat1.width() != mat2.size2()) {
@@ -423,17 +430,11 @@ namespace hit {
         return kth_row_A_times_BT;
     }
 
+    // common core for matrix/matrix multiplication; used by both multiply and multiply_unit_transpose
     vector<EncryptedColVector> LinearAlgebra::multiply_common(const EncryptedMatrix &enc_mat_a_trans,
                                                               const EncryptedMatrix &enc_mat_b, double scalar,
                                                               bool transpose_unit) {
         // This function requires b to be at one level below enc_enc_mat_a_trans.
-        // Ensure that's the case.
-        EncryptedMatrix mat_b_leveled = enc_mat_b;
-        for (int i = 0; i < enc_mat_b.cts.size(); i++) {
-            for (int j = 0; j < enc_mat_b.cts[0].size(); j++) {
-                eval.reduce_level_to_inplace(mat_b_leveled.cts[i][j], enc_mat_a_trans.he_level() - 1);
-            }
-        }
 
         // we will iterate over all columns of A^T (rows of A)
         // and compute the k^th row of A times B^T
@@ -446,7 +447,7 @@ namespace hit {
         }
 
         std::for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int k) {
-            row_results[k] = matrix_matrix_mul_loop(enc_mat_a_trans, mat_b_leveled, scalar, k, transpose_unit);
+            row_results[k] = matrix_matrix_mul_loop(enc_mat_a_trans, enc_mat_b, scalar, k, transpose_unit);
         });
 
         return row_results;
@@ -457,12 +458,16 @@ namespace hit {
         if (!enc_mat_a_trans.initialized() || !enc_mat_b.initialized()) {
             throw std::invalid_argument("Arguments to LinearAlgebra::multiply are not initialized");
         }
+        if (enc_mat_a_trans.he_level() != enc_mat_b.he_level() + 1) {
+            throw std::invalid_argument("Arguments to LinearAlgebra::multiply are not initialized");
+        }
         if (enc_mat_a_trans.height() != enc_mat_b.height() ||
             enc_mat_a_trans.encoding_unit() != enc_mat_b.encoding_unit()) {
             throw invalid_argument("Arguments to LinearAlgebra::multiply do not have compatible dimensions: " +
                                    dim_string(enc_mat_a_trans) + " vs " + dim_string(enc_mat_b));
         }
 
+        // Multiply each row of A by the matrix B. The result is a list of column vectors.
         vector<EncryptedColVector> row_results = multiply_common(enc_mat_a_trans, enc_mat_b, scalar, false);
 
         // row_results[i] contains a *single* row (possibily distributed across several cts)
@@ -671,19 +676,16 @@ namespace hit {
      *       This prevents the need for masking and a second round of shifting
      *       as in colSum, at the cost of flexibility
      */
-    CKKSCiphertext LinearAlgebra::sum_rows_core(const CKKSCiphertext &ct, const EncodingUnit &unit) {
-        CKKSCiphertext output = ct;
-        rot(output, unit.encoding_height(), unit.encoding_width(), true);
-        return output;
-    }
-
-    CKKSCiphertext LinearAlgebra::sum_rows_loop(const EncryptedMatrix &enc_mat, int j) {
+    CKKSCiphertext LinearAlgebra::sum_rows_core(const EncryptedMatrix &enc_mat, int j) {
         vector<CKKSCiphertext> col_prods(enc_mat.num_vertical_units());
         // extract the j^th column of encoding units
         for (int i = 0; i < enc_mat.num_vertical_units(); i++) {
             col_prods[i] = enc_mat.cts[i][j];
         }
-        return sum_rows_core(eval.add_many(col_prods), enc_mat.encoding_unit());
+
+        CKKSCiphertext output = eval.add_many(col_prods);
+        rot(output, enc_mat.encoding_unit().encoding_height(), enc_mat.encoding_unit().encoding_width(), true);
+        return output;
     }
 
     // To sum the rows of a matrix, first sum all of the units in each column,
@@ -698,7 +700,7 @@ namespace hit {
         }
 
         std::for_each(execution::par, begin(iterIdxs), end(iterIdxs),
-                      [&](int j) { cts[j] = sum_rows_loop(enc_mat, j);
+                      [&](int j) { cts[j] = sum_rows_core(enc_mat, j);
         });
 
         return EncryptedColVector(enc_mat.width(), enc_mat.encoding_unit(), cts);

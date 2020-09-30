@@ -23,7 +23,7 @@ namespace hit {
         }
     }
 
-    void PlaintextEval::reset_internal() {
+    void PlaintextEval::reset() {
         {
             scoped_lock lock(mutex_);
             plaintext_max_log_ = INITIAL_PLAINTEXT_MAX_LOG;

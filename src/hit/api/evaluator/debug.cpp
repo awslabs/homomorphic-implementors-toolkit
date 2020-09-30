@@ -140,9 +140,9 @@ namespace hit {
         return homomorphic_eval->decrypt(encrypted);
     }
 
-    void DebugEval::reset_internal() {
-        homomorphic_eval->reset_internal();
-        scale_estimator->reset_internal();
+    void DebugEval::reset() {
+        homomorphic_eval->reset();
+        scale_estimator->reset();
     }
 
     // Verify that the ciphertext is either at its expected scale (based on its level),
