@@ -112,6 +112,7 @@ namespace hit {
                 print_elapsed_time(start);
             }
         }
+        seal_evaluator = new seal::Evaluator(context);
         encoder = new CKKSEncoder(context);
 
 
