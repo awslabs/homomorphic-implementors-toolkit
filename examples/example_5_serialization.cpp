@@ -13,6 +13,9 @@ extern vector<double> randomVector(int dim, double maxNorm);
 // defined in example_2_plaintext.cpp
 extern CKKSCiphertext poly_eval_homomorphic_v1(CKKSEvaluator &eval, CKKSCiphertext &ct);
 
+// defined below
+void example_5_server();
+
 /* This example demonstrates how to use HIT in a basic
  * client/server application for outsourced computation.
  * In the basic scenario, a client has unencrypted data, and wants to
@@ -70,7 +73,7 @@ void example_5_client() {
 	example_5_server();
 
 	// The server will send back a response, which we can then read
-	ofstream inputDataStream("/tmp/datain", ios::in | ios::binary);
+	ifstream inputDataStream("/tmp/datain", ios::in | ios::binary);
 	CKKSCiphertext homom_result = CKKSCiphertext(he_inst.context, inputDataStream);
 
 	// Don't forget to close the stream!
@@ -88,9 +91,9 @@ void example_5_server() {
 	// function on the encrypted data, serialize the result, and send it to the
 	// client.
 
-	ofstream paramsStream("/tmp/params", ios::in | ios::binary);
-	ofstream galoisKeyStream("/tmp/galois", ios::in | ios::binary);
-	ofstream relinKeyStream("/tmp/relin", ios::in | ios::binary);
+	ifstream paramsStream("/tmp/params", ios::in | ios::binary);
+	ifstream galoisKeyStream("/tmp/galois", ios::in | ios::binary);
+	ifstream relinKeyStream("/tmp/relin", ios::in | ios::binary);
 
 	// We will create a HomomorphicEval instance using the instance parameters
 	// and evaluation keys. However, this instance will be incapable of decryption
@@ -105,7 +108,7 @@ void example_5_server() {
 	relinKeyStream.close();
 
 	// The server's input is the client's output
-	ofstream inputDataStream("/tmp/dataout", ios::in | ios::binary);
+	ifstream inputDataStream("/tmp/dataout", ios::in | ios::binary);
 	CKKSCiphertext ct_in = CKKSCiphertext(he_inst.context, inputDataStream);
 
 	// Don't forget to close the stream!
