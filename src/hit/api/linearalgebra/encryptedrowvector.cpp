@@ -69,6 +69,14 @@ namespace hit {
         return cts[0].he_level();
     }
 
+    bool EncryptedRowVector::needs_rescale() const {
+        return cts[0].needs_rescale();
+    }
+
+    bool EncryptedRowVector::needs_relin() const {
+        return cts[0].needs_relin();
+    }
+
     Vector EncryptedRowVector::plaintext() const {
         vector<Matrix> plaintext_pieces(cts.size());
 

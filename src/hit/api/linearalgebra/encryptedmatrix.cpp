@@ -94,6 +94,14 @@ namespace hit {
         return cts[0][0].scale();
     }
 
+    bool EncryptedMatrix::needs_rescale() const {
+        return cts[0][0].needs_rescale();
+    }
+
+    bool EncryptedMatrix::needs_relin() const {
+        return cts[0][0].needs_relin();
+    }
+
     Matrix EncryptedMatrix::plaintext() const {
         vector<vector<Matrix>> plaintext_pieces(cts.size());
 
