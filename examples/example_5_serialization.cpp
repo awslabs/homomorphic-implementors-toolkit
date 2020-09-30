@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hit/hit.h"
+#include <fstream>
 
 using namespace std;
 using namespace hit;
@@ -45,7 +46,7 @@ void example_5_client() {
 	ofstream relinKeyStream("/tmp/relin", ios::out | ios::binary);
 	// We can optionally write the secret key to a stream, but we don't need to
 	// for this application.
-	he_inst.save(paramsStream, galoisKeyStream, relinKeyStream);
+	he_inst.save(paramsStream, galoisKeyStream, relinKeyStream, nullptr);
 
 	// Don't forget to close the streams!
 	paramsStream.close();
