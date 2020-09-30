@@ -172,7 +172,7 @@ namespace hit {
         vector<double> homom_plaintext = decrypt(ct);
         vector<double> exact_plaintext = ct.raw_pt;
 
-        norm = diff2_norm(exact_plaintext, homom_plaintext);
+        norm = relative_error(exact_plaintext, homom_plaintext);
         if (abs(log2(ct.scale()) - log2(ct.seal_ct.scale())) > 0.1) {
             stringstream buffer;
             buffer << "INTERNAL ERROR: SCALE COMPUTATION IS INCORRECT: " << log2(ct.scale())
@@ -242,8 +242,8 @@ namespace hit {
             // vector, so we need to truncate the decoded value.
             vector<double> truncated_decoded_plain(decoded_plain.begin(),
                                                    decoded_plain.begin() + exact_plaintext.size());
-            double norm2 = diff2_norm(exact_plaintext, truncated_decoded_plain);
-            double norm3 = diff2_norm(truncated_decoded_plain, homom_plaintext);
+            double norm2 = relative_error(exact_plaintext, truncated_decoded_plain);
+            double norm3 = relative_error(truncated_decoded_plain, homom_plaintext);
 
             LOG(INFO) << "Encoding norm: " << norm2;
             LOG(INFO) << "Encryption norm: " << norm3;

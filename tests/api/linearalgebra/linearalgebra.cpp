@@ -27,7 +27,7 @@ void test_encrypt_matrix(LinearAlgebra &linear_algebra, int mat_height, int mat_
     Matrix plaintext = random_mat(mat_height, mat_width);
     EncryptedMatrix ciphertext = linear_algebra.encrypt_matrix(plaintext, unit);
     Matrix output = linear_algebra.decrypt(ciphertext);
-    ASSERT_LT(diff2_norm(plaintext.data(), output.data()), MAX_NORM);
+    ASSERT_LT(relative_error(plaintext, output), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, EncryptMatrix) {
@@ -70,7 +70,7 @@ void test_encrypt_row_vector(LinearAlgebra &linear_algebra, int vec_width, Encod
     Vector plaintext = random_vec(vec_width);
     EncryptedRowVector ciphertext = linear_algebra.encrypt_row_vector(plaintext, unit);
     Vector output = linear_algebra.decrypt(ciphertext);
-    ASSERT_LT(diff2_norm(plaintext.data(), output.data()), MAX_NORM);
+    ASSERT_LT(relative_error(plaintext, output), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, EncryptRowVector) {
@@ -98,7 +98,7 @@ void test_encrypt_col_vector(LinearAlgebra &linear_algebra, int vec_height, Enco
     Vector plaintext = random_vec(vec_height);
     EncryptedColVector ciphertext = linear_algebra.encrypt_col_vector(plaintext, unit);
     Vector output = linear_algebra.decrypt(ciphertext);
-    ASSERT_LT(diff2_norm(plaintext.data(), output.data()), MAX_NORM);
+    ASSERT_LT(relative_error(plaintext, output), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, EncryptColVector) {
@@ -167,7 +167,7 @@ TEST(LinearAlgebraTest, AddMatrixMatrix) {
     EncryptedMatrix ciphertext3 = linear_algebra.add(ciphertext1, ciphertext2);
     Matrix actual_result = linear_algebra.decrypt(ciphertext3);
     Matrix expected_result = mat1 + mat2;
-    ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, AddRowRow_InvalidCase) {
@@ -209,7 +209,7 @@ TEST(LinearAlgebraTest, AddRowRow) {
     EncryptedRowVector ciphertext3 = linear_algebra.add(ciphertext1, ciphertext2);
     Vector actual_result = linear_algebra.decrypt(ciphertext3);
     Vector expected_result = vec1 + vec2;
-    ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, AddColCol_InvalidCase) {
@@ -251,7 +251,7 @@ TEST(LinearAlgebraTest, AddColCol) {
     EncryptedColVector ciphertext3 = linear_algebra.add(ciphertext1, ciphertext2);
     Vector actual_result = linear_algebra.decrypt(ciphertext3);
     Vector expected_result = vec1 + vec2;
-    ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, AddMatrixPlaintextMatrix_InvalidCase) {
@@ -290,7 +290,7 @@ TEST(LinearAlgebraTest, AddMatrixPlaintextMatrix) {
     EncryptedMatrix ciphertext3 = linear_algebra.add_plain(ciphertext1, mat2);
     Matrix actual_result = linear_algebra.decrypt(ciphertext3);
     Matrix expected_result = mat1 + mat2;
-    ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, AddRowPlaintextRow_InvalidCase) {
@@ -324,7 +324,7 @@ TEST(LinearAlgebraTest, AddRowPlaintextRow) {
     EncryptedRowVector ciphertext3 = linear_algebra.add_plain(ciphertext1, vec2);
     Vector actual_result = linear_algebra.decrypt(ciphertext3);
     Vector expected_result = vec1 + vec2;
-    ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, AddColPlaintextCol_InvalidCase) {
@@ -358,7 +358,7 @@ TEST(LinearAlgebraTest, AddColPlaintextCol) {
     EncryptedColVector ciphertext3 = linear_algebra.add_plain(ciphertext1, vec2);
     Vector actual_result = linear_algebra.decrypt(ciphertext3);
     Vector expected_result = vec1 + vec2;
-    ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, AddMatrixScalar) {
@@ -378,7 +378,7 @@ TEST(LinearAlgebraTest, AddMatrixScalar) {
     EncryptedMatrix ciphertext3 = linear_algebra.add_plain(ciphertext1, scalar);
     Matrix actual_result = linear_algebra.decrypt(ciphertext3);
     Matrix expected_result = mat1 + mat2;
-    ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, AddRowScalar) {
@@ -397,7 +397,7 @@ TEST(LinearAlgebraTest, AddRowScalar) {
     EncryptedRowVector ciphertext3 = linear_algebra.add_plain(ciphertext1, scalar);
     Vector actual_result = linear_algebra.decrypt(ciphertext3);
     Vector expected_result = vec1 + vec2;
-    ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, AddColScalar) {
@@ -416,7 +416,7 @@ TEST(LinearAlgebraTest, AddColScalar) {
     EncryptedColVector ciphertext3 = linear_algebra.add_plain(ciphertext1, scalar);
     Vector actual_result = linear_algebra.decrypt(ciphertext3);
     Vector expected_result = vec1 + vec2;
-    ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, AddMultipleMatrix_InvalidCase) {
@@ -471,7 +471,7 @@ TEST(LinearAlgebraTest, AddMultipleMatrix) {
     EncryptedMatrix ciphertext = linear_algebra.add_many(cts);
     Matrix actual_result = linear_algebra.decrypt(ciphertext);
     Matrix expected_result = matrix1 + matrix2 + matrix3;
-    ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, AddMultipleRow_InvalidCase) {
@@ -519,7 +519,7 @@ TEST(LinearAlgebraTest, AddMultipleRow) {
     EncryptedRowVector ciphertext = linear_algebra.add_many(cts);
     Vector actual_result = linear_algebra.decrypt(ciphertext);
     Vector expected_result = vec1 + vec2 + vec3;
-    ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, AddMultipleCol_InvalidCase) {
@@ -567,7 +567,7 @@ TEST(LinearAlgebraTest, AddMultipleCol) {
     EncryptedColVector ciphertext = linear_algebra.add_many(cts);
     Vector actual_result = linear_algebra.decrypt(ciphertext);
     Vector expected_result = vec1 + vec2 + vec3;
-    ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, MultiplyMatrixScalar) {
@@ -586,7 +586,7 @@ TEST(LinearAlgebraTest, MultiplyMatrixScalar) {
     EncryptedMatrix ciphertext3 = linear_algebra.multiply_plain(ciphertext1, scalar);
     Matrix actual_result = linear_algebra.decrypt(ciphertext3);
     Matrix expected_result = scalar * mat1;
-    ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, MultiplyRowScalar) {
@@ -604,7 +604,7 @@ TEST(LinearAlgebraTest, MultiplyRowScalar) {
     EncryptedRowVector ciphertext3 = linear_algebra.multiply_plain(ciphertext1, scalar);
     Vector actual_result = linear_algebra.decrypt(ciphertext3);
     Vector expected_result = scalar * vec1;
-    ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, MultiplyColScalar) {
@@ -622,7 +622,7 @@ TEST(LinearAlgebraTest, MultiplyColScalar) {
     EncryptedColVector ciphertext3 = linear_algebra.multiply_plain(ciphertext1, scalar);
     Vector actual_result = linear_algebra.decrypt(ciphertext3);
     Vector expected_result = scalar * vec1;
-    ASSERT_LT(diff2_norm(actual_result.data(), expected_result.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, MultiplyMatrixMatrix_InvalidCase) {
@@ -665,7 +665,7 @@ void test_multiply_matrix_matrix(LinearAlgebra &linear_algebra, int left_dim, in
     Matrix matrix_a = trans(matrix_a_transpose);
     Matrix expected_output = scalar * prec_prod(matrix_a, matrix_b);
 
-    ASSERT_LT(diff2_norm(actual_output.data(), expected_output.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, MultiplyMatrixMatrix) {
@@ -733,7 +733,7 @@ void test_multiply_row_matrix(LinearAlgebra &linear_algebra, int left_dim, int r
 
     Vector expected_output = prec_prod(vec, mat);
 
-    ASSERT_LT(diff2_norm(actual_output.data(), expected_output.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
 }
 
 // this test also covers EncryptedMatrix hadamard_multiply(const EncryptedMatrix &mat, const EncryptedColVector &vec);
@@ -813,7 +813,7 @@ void test_multiply_matrix_col(LinearAlgebra &linear_algebra, int left_dim, int r
 
     Vector expected_output = scalar * prec_prod(mat, vec);
 
-    ASSERT_LT(diff2_norm(actual_output.data(), expected_output.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
 }
 
 // this test also covers EncryptedMatrix hadamard_multiply(const EncryptedRowVector &vec, const EncryptedMatrix &mat);
@@ -1037,7 +1037,7 @@ void test_sum_rows(LinearAlgebra &linear_algebra, int height, int width, Encodin
     Vector actual_output = linear_algebra.decrypt(ct_vec);
 
     Vector expected_output = sum_rows_plaintext(mat);
-    ASSERT_LT(diff2_norm(actual_output.data(), expected_output.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, SumRows) {
@@ -1068,7 +1068,7 @@ void test_sum_rows_many(LinearAlgebra &linear_algebra, int height1, int width1, 
     Vector actual_output = linear_algebra.decrypt(ct_vec);
 
     Vector expected_output = sum_rows_plaintext(mat1) + sum_rows_plaintext(mat2);
-    ASSERT_LT(diff2_norm(actual_output.data(), expected_output.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, SumRowsMany) {
@@ -1110,7 +1110,7 @@ void test_sum_cols(LinearAlgebra &linear_algebra, int height, int width, double 
     Vector actual_output = linear_algebra.decrypt(ct_vec);
 
     Vector expected_output = scalar * sum_cols_plaintext(mat);
-    ASSERT_LT(diff2_norm(actual_output.data(), expected_output.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, SumCols) {
@@ -1141,7 +1141,7 @@ void test_sum_cols_many(LinearAlgebra &linear_algebra, int height1, int width1, 
     Vector actual_output = linear_algebra.decrypt(ct_vec);
 
     Vector expected_output = sum_cols_plaintext(mat1) + sum_cols_plaintext(mat2);
-    ASSERT_LT(diff2_norm(actual_output.data(), expected_output.data()), MAX_NORM);
+    ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, SumColsMany) {
@@ -1177,7 +1177,7 @@ void test_hadamard_mul_matrix_matrix(LinearAlgebra &linear_algebra, int height, 
 
     EncryptedMatrix ct_mat3 = linear_algebra.hadamard_multiply(ct_mat1, ct_mat2);
     Matrix actual_output = linear_algebra.decrypt(ct_mat3);
-    ASSERT_LT(diff2_norm(actual_output.data(), hprod_coeffs), MAX_NORM);
+    ASSERT_LT(relative_error(actual_output.data(), hprod_coeffs), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, HadamardMulMatrixMatrix) {
@@ -1212,7 +1212,7 @@ void test_hadamard_mul_row_row(LinearAlgebra &linear_algebra, int width, Encodin
 
     EncryptedRowVector ct_vec3 = linear_algebra.hadamard_multiply(ct_vec1, ct_vec2);
     Vector actual_output = linear_algebra.decrypt(ct_vec3);
-    ASSERT_LT(diff2_norm(actual_output.data(), hprod_coeffs), MAX_NORM);
+    ASSERT_LT(relative_error(actual_output, hprod_coeffs), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, HadamardMulRowRow) {
@@ -1241,7 +1241,7 @@ void test_hadamard_mul_col_col(LinearAlgebra &linear_algebra, int height, Encodi
 
     EncryptedColVector ct_vec3 = linear_algebra.hadamard_multiply(ct_vec1, ct_vec2);
     Vector actual_output = linear_algebra.decrypt(ct_vec3);
-    ASSERT_LT(diff2_norm(actual_output.data(), hprod_coeffs), MAX_NORM);
+    ASSERT_LT(relative_error(actual_output, hprod_coeffs), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, HadamardMulColCol) {
@@ -1267,7 +1267,7 @@ void test_hadamard_mul_matrix_square(LinearAlgebra &linear_algebra, int height, 
     EncryptedMatrix ct_mat1 = linear_algebra.encrypt_matrix(mat1, unit);
     EncryptedMatrix ct_mat3 = linear_algebra.hadamard_square(ct_mat1);
     Matrix actual_output = linear_algebra.decrypt(ct_mat3);
-    ASSERT_LT(diff2_norm(actual_output.data(), hprod_coeffs), MAX_NORM);
+    ASSERT_LT(relative_error(actual_output.data(), hprod_coeffs), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, HadamardMulMatrixSquare) {
@@ -1299,7 +1299,7 @@ void test_hadamard_mul_row_square(LinearAlgebra &linear_algebra, int width, Enco
     EncryptedRowVector ct_vec1 = linear_algebra.encrypt_row_vector(vec1, unit);
     EncryptedRowVector ct_vec3 = linear_algebra.hadamard_square(ct_vec1);
     Vector actual_output = linear_algebra.decrypt(ct_vec3);
-    ASSERT_LT(diff2_norm(actual_output.data(), hprod_coeffs), MAX_NORM);
+    ASSERT_LT(relative_error(actual_output.data(), hprod_coeffs), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, HadamardMulRowSquare) {
@@ -1326,7 +1326,7 @@ void test_hadamard_mul_col_square(LinearAlgebra &linear_algebra, int height, Enc
 
     EncryptedColVector ct_vec3 = linear_algebra.hadamard_square(ct_vec1);
     Vector actual_output = linear_algebra.decrypt(ct_vec3);
-    ASSERT_LT(diff2_norm(actual_output.data(), hprod_coeffs), MAX_NORM);
+    ASSERT_LT(relative_error(actual_output.data(), hprod_coeffs), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, HadamardMulColSquare) {

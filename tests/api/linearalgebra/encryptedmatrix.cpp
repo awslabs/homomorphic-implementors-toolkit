@@ -30,5 +30,5 @@ TEST(EncryptMatrixTest, Serialization) {
     ASSERT_EQ(ct1.width(), ct2.width());
     ASSERT_EQ(ct1.encoding_unit(), ct2.encoding_unit());
     Matrix output = laInst.decrypt(ct2);
-    ASSERT_LT(diff2_norm(plaintext.data(), output.data()), MAX_NORM);
+    ASSERT_LT(relative_error(plaintext, output), MAX_NORM);
 }

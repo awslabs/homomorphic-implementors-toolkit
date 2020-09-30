@@ -197,7 +197,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   x_enc_pt = sigmoid(x_enc_pt, ptInst);
   // Compare the plaintext inside x_enc_pt to the expected result
   // getPlaintext() decodes the shadow plaintext
-  double errNorm = diff2_norm(exactResult, x_enc_pt.plaintext());
+  double errNorm = relative_error(exactResult, x_enc_pt.plaintext());
   if(errNorm < 0.0001) {
     LOG(INFO) << "\tHomomorphic algorithm matches cleartext algorithm.";
   }
@@ -285,7 +285,7 @@ int main(int, char **argv) {// NOLINT(bugprone-exception-escape)
   // Decrypt the result
   vector<double> homom_result = homomInst.decrypt(x_enc_homom);
   // See if the test passed
-  double errNorm_homom = diff2_norm(exactResult, homom_result);
+  double errNorm_homom = relative_error(exactResult, homom_result);
   if(errNorm_homom < 0.0001) {
     LOG(INFO) << "\tHomomorphic result matches cleartext result.";
   }
