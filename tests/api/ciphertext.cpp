@@ -30,5 +30,5 @@ TEST(CKKSCiphertextTest, Serialization) {
 
     CKKSCiphertext ciphertext2(ckks_instance.context, *ciphertext1_proto);
     vector<double> vector2 = ckks_instance.decrypt(ciphertext2);
-    ASSERT_LT(diff2_norm(vector1, vector2), MAX_NORM);
+    ASSERT_LT(relative_error(vector1, vector2), MAX_NORM);
 }

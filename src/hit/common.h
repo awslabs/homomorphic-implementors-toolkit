@@ -37,7 +37,9 @@ namespace hit {
     void print_elapsed_time(timepoint start);
 
     // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
-    double diff2_norm(const std::vector<double> &expected, const std::vector<double> &actual);
+    double relative_error(const std::vector<double> &expected, const std::vector<double> &actual);
+    double relative_error(const Vector &expected, const Vector &actual);
+    double relative_error(const Matrix &expected, const Matrix &actual);
 
     // tests if x is a power of two or not
     bool is_pow2(int x);

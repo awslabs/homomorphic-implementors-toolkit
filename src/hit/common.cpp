@@ -58,11 +58,11 @@ namespace hit {
     }
 
     // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
-    double diff2_norm(const vector<double> &expected, const vector<double> &actual) {
+    double relative_error(const vector<double> &expected, const vector<double> &actual) {
         int len = expected.size();
         if (len != actual.size()) {
             stringstream buffer;
-            buffer << "diff2_norm inputs do not have the same size: " << len << " != " << actual.size();
+            buffer << "relative_error inputs do not have the same size: " << len << " != " << actual.size();
             throw invalid_argument(buffer.str());
         }
 
@@ -99,6 +99,14 @@ namespace hit {
             LOG(INFO) << "LogL2Norm: " << setprecision(8) << log2(expected_l2_norm);
         }
         return diff_l2_norm;
+    }
+
+    double relative_error(const Vector &expected, const Vector &actual) {
+        return relative_error(expected.data(), actual.data());
+    }
+
+    double relative_error(const Matrix &expected, const Matrix &actual) {
+        return relative_error(expected.data(), actual.data());
     }
 
     // true if x is a power of 2, false otherwise.

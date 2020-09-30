@@ -41,7 +41,7 @@ TEST(HomomorphicTest, RotateLeft) {
     ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE));
     // Expect vector is rotated.
     vector<double> vector3 = ckks_instance.decrypt(ciphertext2);
-    double diff = diff2_norm(vector2, vector3);
+    double diff = relative_error(vector2, vector3);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -72,7 +72,7 @@ TEST(HomomorphicTest, RotateRight) {
     ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE));
     // Expect vector is rotated.
     vector<double> vector3 = ckks_instance.decrypt(ciphertext2);
-    double diff = diff2_norm(vector2, vector3);
+    double diff = relative_error(vector2, vector3);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -99,7 +99,7 @@ TEST(HomomorphicTest, Negate) {
     ASSERT_EQ(ciphertext3.scale(), pow(2, LOG_SCALE));
     // Check vector values.
     vector<double> vector3 = ckks_instance.decrypt(ciphertext3);
-    double diff = diff2_norm(vector2, vector3);
+    double diff = relative_error(vector2, vector3);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -119,7 +119,7 @@ TEST(HomomorphicTest, Add_Two) {
     ASSERT_EQ(ciphertext3.scale(), pow(2, LOG_SCALE));
     // Check vector values.
     vector<double> vector4 = ckks_instance.decrypt(ciphertext3);
-    double diff = diff2_norm(vector3, vector4);
+    double diff = relative_error(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -139,7 +139,7 @@ TEST(HomomorphicTest, AddPlainScalar) {
     ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE));
     // Check vector values.
     vector<double> vector4 = ckks_instance.decrypt(ciphertext2);
-    double diff = diff2_norm(vector3, vector4);
+    double diff = relative_error(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -158,7 +158,7 @@ TEST(HomomorphicTest, AddPlaintext) {
     ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE));
     // Check vector values.
     vector<double> vector4 = ckks_instance.decrypt(ciphertext2);
-    double diff = diff2_norm(vector3, vector4);
+    double diff = relative_error(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -178,7 +178,7 @@ TEST(HomomorphicTest, Sub_Two) {
     ASSERT_EQ(ciphertext3.scale(), pow(2, LOG_SCALE));
     // Check vector values.
     vector<double> vector4 = ckks_instance.decrypt(ciphertext3);
-    double diff = diff2_norm(vector3, vector4);
+    double diff = relative_error(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -198,7 +198,7 @@ TEST(HomomorphicTest, SubPlainScalar) {
     ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE));
     // Check vector values.
     vector<double> vector4 = ckks_instance.decrypt(ciphertext2);
-    double diff = diff2_norm(vector3, vector4);
+    double diff = relative_error(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -217,7 +217,7 @@ TEST(HomomorphicTest, SubPlaintext) {
     ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE));
     // Check vector values.
     vector<double> vector4 = ckks_instance.decrypt(ciphertext2);
-    double diff = diff2_norm(vector3, vector4);
+    double diff = relative_error(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -237,7 +237,7 @@ TEST(HomomorphicTest, MultiplyPlainScalar) {
     ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE * 2));
     // Check vector values.
     vector<double> vector4 = ckks_instance.decrypt(ciphertext2);
-    double diff = diff2_norm(vector3, vector4);
+    double diff = relative_error(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -256,7 +256,7 @@ TEST(HomomorphicTest, MultiplyPlainMattrix) {
     ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE * 2));
     // Check vector values.
     vector<double> vector4 = ckks_instance.decrypt(ciphertext2);
-    double diff = diff2_norm(vector3, vector4);
+    double diff = relative_error(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -287,7 +287,7 @@ TEST(HomomorphicTest, Multiply) {
     ASSERT_EQ(ciphertext3.scale(), pow(2, LOG_SCALE * 2));
     // Check vector values.
     vector<double> vector4 = ckks_instance.decrypt(ciphertext3);
-    double diff = diff2_norm(vector3, vector4);
+    double diff = relative_error(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -312,7 +312,7 @@ TEST(HomomorphicTest, Square) {
     ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE * 2));
     // Check vector values.
     vector<double> vector3 = ckks_instance.decrypt(ciphertext2);
-    double diff = diff2_norm(vector2, vector3);
+    double diff = relative_error(vector2, vector3);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -329,7 +329,7 @@ TEST(HomomorphicTest, ReduceLevelTo) {
     ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE * 2) / prime);
     // Check vector values.
     vector<double> vector2 = ckks_instance.decrypt(ciphertext2);
-    double diff = diff2_norm(vector1, vector2);
+    double diff = relative_error(vector1, vector2);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -359,11 +359,11 @@ TEST(HomomorphicTest, ReduceLevelToMin) {
     ASSERT_EQ(ciphertext3.scale(), pow(2, LOG_SCALE * 2) / prime);
     // Check vector values.
     vector<double> vector2 = ckks_instance.decrypt(ciphertext1);
-    double diff1 = diff2_norm(vector1, vector2);
+    double diff1 = relative_error(vector1, vector2);
     ASSERT_NE(diff1, INVALID_NORM);
     ASSERT_LE(diff1, MAX_NORM);
     vector<double> vector3 = ckks_instance.decrypt(ciphertext3);
-    double diff2 = diff2_norm(vector1, vector3);
+    double diff2 = relative_error(vector1, vector3);
     ASSERT_NE(diff2, INVALID_NORM);
     ASSERT_LE(diff2, MAX_NORM);
 }
@@ -384,7 +384,7 @@ TEST(HomomorphicTest, RescaleToNextInPlace) {
     ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE * 2) / prime);
     // Check vector values.
     vector<double> vector3 = ckks_instance.decrypt(ciphertext2);
-    double diff = diff2_norm(vector2, vector3);
+    double diff = relative_error(vector2, vector3);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }

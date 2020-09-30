@@ -33,9 +33,9 @@ TEST(PlaintextTest, RotateLeft) {
     ciphertext2 = ckks_instance.rotate_left(ciphertext1, STEPS);
     // Check MaxLogPlainVal.
     ASSERT_EQ(log2(l_inf_norm(vector2)), ckks_instance.get_exact_max_log_plain_val());
-    // Check diff2_norm.
+    // Check relative_error.
     vector<double> vector3 = ciphertext2.plaintext();
-    double diff = diff2_norm(vector2, vector3);
+    double diff = relative_error(vector2, vector3);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -54,9 +54,9 @@ TEST(PlaintextTest, RotateRight) {
     ciphertext2 = ckks_instance.rotate_right(ciphertext1, STEPS);
     // Check MaxLogPlainVal.
     ASSERT_EQ(log2(l_inf_norm(vector2)), ckks_instance.get_exact_max_log_plain_val());
-    // Check diff2_norm.
+    // Check relative_error.
     vector<double> vector3 = ciphertext2.plaintext();
-    double diff = diff2_norm(vector2, vector3);
+    double diff = relative_error(vector2, vector3);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -71,9 +71,9 @@ TEST(PlaintextTest, Negate) {
     ciphertext2 = ckks_instance.negate(ciphertext1);
     // Check MaxLogPlainVal.
     ASSERT_EQ(log2(l_inf_norm(vector2)), ckks_instance.get_exact_max_log_plain_val());
-    // Check diff2_norm.
+    // Check relative_error.
     vector<double> vector3 = ciphertext2.plaintext();
-    double diff = diff2_norm(vector2, vector3);
+    double diff = relative_error(vector2, vector3);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -90,9 +90,9 @@ TEST(PlaintextTest, Add) {
     ciphertext3 = ckks_instance.add(ciphertext1, ciphertext2);
     // Check MaxLogPlainVal.
     ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance.get_exact_max_log_plain_val());
-    // Check diff2_norm.
+    // Check relative_error.
     vector<double> vector4 = ciphertext3.plaintext();
-    double diff = diff2_norm(vector3, vector4);
+    double diff = relative_error(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -108,9 +108,9 @@ TEST(PlaintextTest, AddPlaintext) {
     ciphertext2 = ckks_instance.add_plain(ciphertext1, vector2);
     // Check MaxLogPlainVal.
     ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance.get_exact_max_log_plain_val());
-    // Check diff2_norm.
+    // Check relative_error.
     vector<double> vector4 = ciphertext2.plaintext();
-    double diff = diff2_norm(vector3, vector4);
+    double diff = relative_error(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -127,9 +127,9 @@ TEST(PlaintextTest, AddPlainScalar) {
     ciphertext2 = ckks_instance.add_plain(ciphertext1, plaintext);
     // Check MaxLogPlainVal.
     ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance.get_exact_max_log_plain_val());
-    // Check diff2_norm.
+    // Check relative_error.
     vector<double> vector4 = ciphertext2.plaintext();
-    double diff = diff2_norm(vector3, vector4);
+    double diff = relative_error(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -146,9 +146,9 @@ TEST(PlaintextTest, Sub) {
     ciphertext3 = ckks_instance.sub(ciphertext1, ciphertext2);
     // Check MaxLogPlainVal.
     ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance.get_exact_max_log_plain_val());
-    // Check diff2_norm.
+    // Check relative_error.
     vector<double> vector4 = ciphertext3.plaintext();
-    double diff = diff2_norm(vector3, vector4);
+    double diff = relative_error(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -164,9 +164,9 @@ TEST(PlaintextTest, SubPlaintext) {
     ciphertext2 = ckks_instance.sub_plain(ciphertext1, vector2);
     // Check MaxLogPlainVal.
     ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance.get_exact_max_log_plain_val());
-    // Check diff2_norm.
+    // Check relative_error.
     vector<double> vector4 = ciphertext2.plaintext();
-    double diff = diff2_norm(vector3, vector4);
+    double diff = relative_error(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -183,9 +183,9 @@ TEST(PlaintextTest, SubPlainScalar) {
     ciphertext2 = ckks_instance.sub_plain(ciphertext1, plaintext);
     // Check MaxLogPlainVal.
     ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance.get_exact_max_log_plain_val());
-    // Check diff2_norm.
+    // Check relative_error.
     vector<double> vector4 = ciphertext2.plaintext();
-    double diff = diff2_norm(vector3, vector4);
+    double diff = relative_error(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -202,9 +202,9 @@ TEST(PlaintextTest, MultiplyPlainScalar) {
     ciphertext2 = ckks_instance.multiply_plain(ciphertext1, plaintext);
     // Check MaxLogPlainVal.
     ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance.get_exact_max_log_plain_val());
-    // Check diff2_norm.
+    // Check relative_error.
     vector<double> vector4 = ciphertext2.plaintext();
-    double diff = diff2_norm(vector3, vector4);
+    double diff = relative_error(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -220,9 +220,9 @@ TEST(PlaintextTest, MultiplyPlainMattrix) {
     ciphertext2 = ckks_instance.multiply_plain(ciphertext1, vector2);
     // Check MaxLogPlainVal.
     ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance.get_exact_max_log_plain_val());
-    // Check diff2_norm.
+    // Check relative_error.
     vector<double> vector4 = ciphertext2.plaintext();
-    double diff = diff2_norm(vector3, vector4);
+    double diff = relative_error(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -239,9 +239,9 @@ TEST(PlaintextTest, Multiply) {
     ciphertext3 = ckks_instance.multiply(ciphertext1, ciphertext2);
     // Check MaxLogPlainVal.
     ASSERT_EQ(log2(l_inf_norm(vector3)), ckks_instance.get_exact_max_log_plain_val());
-    // Check diff2_norm.
+    // Check relative_error.
     vector<double> vector4 = ciphertext3.plaintext();
-    double diff = diff2_norm(vector3, vector4);
+    double diff = relative_error(vector3, vector4);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
@@ -256,9 +256,9 @@ TEST(PlaintextTest, Square) {
     ciphertext2 = ckks_instance.square(ciphertext1);
     // Check MaxLogPlainVal.
     ASSERT_EQ(log2(l_inf_norm(vector2)), ckks_instance.get_exact_max_log_plain_val());
-    // Check diff2_norm.
+    // Check relative_error.
     vector<double> vector3 = ciphertext2.plaintext();
-    double diff = diff2_norm(vector2, vector3);
+    double diff = relative_error(vector2, vector3);
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
