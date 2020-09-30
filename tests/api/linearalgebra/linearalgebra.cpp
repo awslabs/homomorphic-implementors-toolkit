@@ -1177,7 +1177,7 @@ void test_hadamard_mul_matrix_matrix(LinearAlgebra &linear_algebra, int height, 
 
     EncryptedMatrix ct_mat3 = linear_algebra.hadamard_multiply(ct_mat1, ct_mat2);
     Matrix actual_output = linear_algebra.decrypt(ct_mat3);
-    ASSERT_LT(relative_error(actual_output, hprod_coeffs), MAX_NORM);
+    ASSERT_LT(relative_error(actual_output.data(), hprod_coeffs), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, HadamardMulMatrixMatrix) {
@@ -1267,7 +1267,7 @@ void test_hadamard_mul_matrix_square(LinearAlgebra &linear_algebra, int height, 
     EncryptedMatrix ct_mat1 = linear_algebra.encrypt_matrix(mat1, unit);
     EncryptedMatrix ct_mat3 = linear_algebra.hadamard_square(ct_mat1);
     Matrix actual_output = linear_algebra.decrypt(ct_mat3);
-    ASSERT_LT(relative_error(actual_output, hprod_coeffs), MAX_NORM);
+    ASSERT_LT(relative_error(actual_output.data(), hprod_coeffs), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, HadamardMulMatrixSquare) {
@@ -1299,7 +1299,7 @@ void test_hadamard_mul_row_square(LinearAlgebra &linear_algebra, int width, Enco
     EncryptedRowVector ct_vec1 = linear_algebra.encrypt_row_vector(vec1, unit);
     EncryptedRowVector ct_vec3 = linear_algebra.hadamard_square(ct_vec1);
     Vector actual_output = linear_algebra.decrypt(ct_vec3);
-    ASSERT_LT(relative_error(actual_output, hprod_coeffs), MAX_NORM);
+    ASSERT_LT(relative_error(actual_output.data(), hprod_coeffs), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, HadamardMulRowSquare) {
@@ -1326,7 +1326,7 @@ void test_hadamard_mul_col_square(LinearAlgebra &linear_algebra, int height, Enc
 
     EncryptedColVector ct_vec3 = linear_algebra.hadamard_square(ct_vec1);
     Vector actual_output = linear_algebra.decrypt(ct_vec3);
-    ASSERT_LT(relative_error(actual_output, hprod_coeffs), MAX_NORM);
+    ASSERT_LT(relative_error(actual_output.data(), hprod_coeffs), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, HadamardMulColSquare) {
