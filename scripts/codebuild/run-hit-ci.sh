@@ -25,4 +25,4 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release \
     -DHIT_BUILD_EXAMPLES=ON ../
 ninja -j $(nproc)
 ninja run_hit_tests
-ninja run_hit_example
+ninja run_hit_examples
