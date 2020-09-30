@@ -435,13 +435,6 @@ namespace hit {
                                                               const EncryptedMatrix &enc_mat_b, double scalar,
                                                               bool transpose_unit) {
         // This function requires b to be at one level below enc_enc_mat_a_trans.
-        // Ensure that's the case.
-        // EncryptedMatrix mat_b_leveled = enc_mat_b;
-        // for (int i = 0; i < enc_mat_b.cts.size(); i++) {
-        //     for (int j = 0; j < enc_mat_b.cts[0].size(); j++) {
-        //         eval.reduce_level_to_inplace(mat_b_leveled.cts[i][j], enc_mat_a_trans.he_level() - 1);
-        //     }
-        // }
 
         // we will iterate over all columns of A^T (rows of A)
         // and compute the k^th row of A times B^T
@@ -465,12 +458,16 @@ namespace hit {
         if (!enc_mat_a_trans.initialized() || !enc_mat_b.initialized()) {
             throw std::invalid_argument("Arguments to LinearAlgebra::multiply are not initialized");
         }
+        if (enc_mat_a_trans.he_level() != enc_mat_b.he_level() + 1) {
+            throw std::invalid_argument("Arguments to LinearAlgebra::multiply are not initialized");
+        }
         if (enc_mat_a_trans.height() != enc_mat_b.height() ||
             enc_mat_a_trans.encoding_unit() != enc_mat_b.encoding_unit()) {
             throw invalid_argument("Arguments to LinearAlgebra::multiply do not have compatible dimensions: " +
                                    dim_string(enc_mat_a_trans) + " vs " + dim_string(enc_mat_b));
         }
 
+        // Multiply each row of A by the matrix B. The result is a list of column vectors.
         vector<EncryptedColVector> row_results = multiply_common(enc_mat_a_trans, enc_mat_b, scalar, false);
 
         // row_results[i] contains a *single* row (possibily distributed across several cts)

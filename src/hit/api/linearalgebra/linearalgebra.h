@@ -287,7 +287,8 @@ namespace hit {
 
 
         /* Computes a standard (scaled) matrix/matrix product scalar*A*B, except that the inputs
-         * are A^T and B.
+         * are A^T and B. Note that this operation has constant depth, but involves 3*g (parallel)
+         * multiplications.
          * Input Linear Algebra Constraints:
          *       Both arguments must be encoded with the same unit. `enc_mat_a_trans` is a g-by-f matrix,
          *       and `enc_mat_b` is a g-by-h matrix.
@@ -328,7 +329,7 @@ namespace hit {
          * Output Linear Algebra Properties:
          *       An f-dimensional row vector matrix encoded with the same unit as the input.
          * Output Ciphertext Properties:
-         *       A linear ciphertext with a sqaured scale at level i-1.
+         *       A linear ciphertext with a squared scale at level i-1.
          */
         EncryptedRowVector multiply(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec,
                                     double scalar = 1);
