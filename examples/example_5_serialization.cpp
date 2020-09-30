@@ -30,10 +30,13 @@ void example_5_client() {
 	int max_depth = 3;
 	int log_scale = 40;
 
+	cout << "Generating client keys..." << endl;
+
 	// In a production application, only the Homomorphic instance type
 	// should be used!
 	HomomorphicEval he_inst = HomomorphicEval(num_slots, max_depth, log_scale);
 
+	cout << "Encrypting client data..." << endl;
 	// The next step in the client/server model is for the client to encrypt some data
 	vector<double> data = randomVector(num_slots, 10);
 	CKKSCiphertext ct = he_inst.encrypt(data);
@@ -43,6 +46,8 @@ void example_5_client() {
  *   - cryptosystem parameters
  *   - (public) evalaution keys
  */
+
+	cout << "Serializing client keys..." << endl;
 	// First, serialize the instance parameters
 	ofstream paramsStream("/tmp/params", ios::out | ios::binary);
 	ofstream galoisKeyStream("/tmp/galois", ios::out | ios::binary);
@@ -56,6 +61,7 @@ void example_5_client() {
 	galoisKeyStream.close();
 	relinKeyStream.close();
 
+	cout << "Serializing client data..." << endl;
 	// If our data consists of a single ciphertext, we can use the `save` API.
 	// Typically, we might need to send several ciphertexts to the server, which
 	// can be done by sending multiple small streams (via `save`) or by packaging
@@ -70,7 +76,9 @@ void example_5_client() {
  * and waits for a response. In this demo, we'll cheat and invoke the server
  * directly.
  */
+	cout << "Invoking remote server..." << endl;
 	example_5_server();
+	cout << "Deserializing computation result..." << endl;
 
 	// The server will send back a response, which we can then read
 	ifstream inputDataStream("/tmp/datain", ios::in | ios::binary);
@@ -78,6 +86,8 @@ void example_5_client() {
 
 	// Don't forget to close the stream!
 	inputDataStream.close();
+
+	cout << "Decrypting computation result..." << endl;
 
 	// Finally, we can decrypt the result
 	vector<double> plain_result = he_inst.decrypt(homom_result);
@@ -91,6 +101,7 @@ void example_5_server() {
 	// function on the encrypted data, serialize the result, and send it to the
 	// client.
 
+	cout << "Server is reading instance parameters and keys..." << endl;
 	ifstream paramsStream("/tmp/params", ios::in | ios::binary);
 	ifstream galoisKeyStream("/tmp/galois", ios::in | ios::binary);
 	ifstream relinKeyStream("/tmp/relin", ios::in | ios::binary);
@@ -107,6 +118,8 @@ void example_5_server() {
 	galoisKeyStream.close();
 	relinKeyStream.close();
 
+	cout << "Server is deserializing data..." << endl;
+
 	// The server's input is the client's output
 	ifstream inputDataStream("/tmp/dataout", ios::in | ios::binary);
 	CKKSCiphertext ct_in = CKKSCiphertext(he_inst.context, inputDataStream);
@@ -114,19 +127,18 @@ void example_5_server() {
 	// Don't forget to close the stream!
 	inputDataStream.close();
 
+	cout << "Server is computing on encrypted data..." << endl;
 	// We can now evaluate the homomorphic function.
 	CKKSCiphertext ct_result = poly_eval_homomorphic_v1(he_inst, ct_in);
 
+	cout << "Server is serializing computation result..." << endl;
 	// And save the result to the client's input stream
 	ofstream outputDataStream("/tmp/datain", ios::out | ios::binary);
-	ct.save(outputDataStream);
+	ct_result.save(outputDataStream);
 
 	// Don't forget to close the stream!
 	outputDataStream.close();
 }
-
-
-TODO: how to free
 
 void example_5_driver() {
 	// In this toy demo, the client invokes the server directly, so to kick things off,
