@@ -39,7 +39,7 @@ namespace hit {
             encryptions_++;
         }
         if (level == -1) {
-            level = context->first_context_data()->chain_index();
+            level = 0;
         }
 
         CKKSCiphertext destination;
