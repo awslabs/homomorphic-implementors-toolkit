@@ -315,7 +315,7 @@ namespace hit {
          * Output Linear Algebra Properties:
          *       An g-dimensional column vector matrix encoded with the same unit as the input.
          * Output Ciphertext Properties:
-         *       A linear ciphertext with a nominal scale at level i-1.
+         *       A linear ciphertext with a squared scale at level i.
          */
         EncryptedColVector multiply(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat);
 
