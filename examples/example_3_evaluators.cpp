@@ -126,7 +126,7 @@ void example_3_driver() {
 	// If this value is small, then the expected and actual results closely agree,
 	// up to floating point roundoff (note that since the PlaintextEval only operates on
 	// plaintexts, there is no CKKS noise to introduce additional error.)
-	cout << "Relative difference between input and decrypted output: " << diff2_norm(expected_result, actual_result) << endl;
+	cout << "Relative difference between input and decrypted output: " << relative_error(expected_result, actual_result) << endl;
 
 /* ******** Debug Evaluator ********
  * Notice that this is subtley different than what we did in Example 2: here we are comparing

@@ -131,7 +131,7 @@ void example_2_driver() {
 	// If this value is small, then the expected and actual results closely agree,
 	// up to floating point roundoff (note that since the PlaintextEval only operates on
 	// plaintexts, there is no CKKS noise to introduce additional error.)
-	cout << "Relative difference between input and decrypted output: " << diff2_norm(expected_result, actual_result) << endl;
+	cout << "Relative difference between input and decrypted output: " << relative_error(expected_result, actual_result) << endl;
 }
 /* Since the normalized difference of the vectors is small, we can be sure that the "core" of our circuit
  * (i.e., excluding ciphertext maintenance operations) is correct! What if this value was large?

@@ -327,7 +327,7 @@ void example_4_driver() {
 	// This encrypts the same value as mat_cvec_prod1
 	// We used a debug instance, so we can compare the plaintexts:
 	cout << "Matrix/column-vector alternate computation works if "
-	     << diff2_norm(mat_cvec_prod1.plaintext(), mat_cvec_prod2.plaintext())
+	     << relative_error(mat_cvec_prod1.plaintext(), mat_cvec_prod2.plaintext())
 	     << " is small." << endl;
 
 	// For the row-vector/matrix product, the idea is similar, but we use `sum_rows`
@@ -341,7 +341,7 @@ void example_4_driver() {
 	// Note that the norm will be larger due to the error caused by homomorphic operations
 	// and the CKKS encoding process.
 	cout << "Row-vector/Matrix alternate computation works if "
-	     << diff2_norm(la_inst.decrypt(rvec_mat_prod1), la_inst.decrypt(rvec_mat_prod2))
+	     << relative_error(la_inst.decrypt(rvec_mat_prod1), la_inst.decrypt(rvec_mat_prod2))
 	     << " is small." << endl;
 
 /* Why would we ever want to use this more tedious API? `sum_rows` and `sum_cols`
@@ -404,10 +404,10 @@ void example_4_driver() {
 	Matrix actual_result_homomorphic = la_inst.decrypt(mat_prod_ab);
 
 	cout << "Matrix/Matrix plaintext algorithm is correct if "
-	     << diff2_norm(expected_result, actual_result_plaintext)
+	     << relative_error(expected_result, actual_result_plaintext)
 	     << " is small." << endl;
 
 	cout << "Matrix/Matrix homomorphic algorithm is correct if "
-	     << diff2_norm(expected_result, actual_result_homomorphic)
+	     << relative_error(expected_result, actual_result_homomorphic)
 	     << " is small." << endl;
 }

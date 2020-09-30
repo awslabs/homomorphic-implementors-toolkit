@@ -183,7 +183,7 @@ void example_1_driver() {
 	// Compute the |expected-actual|/|expected|, where |*| denotes the 2-norm.
 	// If the decrypted value was identical to the input plaintext, this would be exactly;
 	// instead we see that the 2-norm of the difference is small but non-zero.
-	cout << "Relative difference between input and decrypted output: " << diff2_norm(plaintext, recovered_pt1) << endl;
+	cout << "Relative difference between input and decrypted output: " << relative_error(plaintext, recovered_pt1) << endl;
 
 	// Decryption issues a log message because `ciphertext1` is not at level 0, which is where
 	// we expect most decryption to happen since we usually decrypt only at the end of a computation.
@@ -201,5 +201,5 @@ void example_1_driver() {
 	// No log message is generated here since the input is at level 0.
 	vector<double> recovered_pt2 = inst.decrypt(ciphertext2);
 
-	cout << "Decryption level doesn't affect noise, the relative difference is similar: " << diff2_norm(plaintext, recovered_pt2) << endl;
+	cout << "Decryption level doesn't affect noise, the relative difference is similar: " << relative_error(plaintext, recovered_pt2) << endl;
 }
