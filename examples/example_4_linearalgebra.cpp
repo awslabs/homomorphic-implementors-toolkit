@@ -273,8 +273,8 @@ void example_4_driver() {
 	EncryptedColVector rvec_mat_prod1 = la_inst.multiply(enc_rvec, enc_mat1);
 	// A linear ciphertext with a nominal scale at level i-1.
 	cout << "Ciphertext metadata for row-vec/matrix multiplication:" << endl;
-	cout << "  Expected scale of ~" << log_scale << " bits, the product has a scale of ~" << log2(rvec_mat_prod1.scale()) << " bits" << endl;
-	cout << "  Expected product level to be " << enc_mat1.he_level()-1 << "; actual level is " << rvec_mat_prod1.he_level() << endl;
+	cout << "  Expected scale of ~" << 2*log_scale << " bits, the product has a scale of ~" << log2(rvec_mat_prod1.scale()) << " bits" << endl;
+	cout << "  Expected product level to be " << enc_mat1.he_level() << "; actual level is " << rvec_mat_prod1.he_level() << endl;
 
 /* That was easy! However, these operations are complex enough that it is sometimes
  * advantageous to break them down into multiple homomorphic operations rather than
@@ -328,7 +328,7 @@ void example_4_driver() {
 	// We used a debug instance, so we can compare the plaintexts:
 	cout << "Matrix/column-vector alternate computation works if "
 	     << relative_error(mat_cvec_prod1.plaintext(), mat_cvec_prod2.plaintext())
-	     << " is small." << endl;
+	     << " is <<1." << endl;
 
 	// For the row-vector/matrix product, the idea is similar, but we use `sum_rows`
 	// instead:
@@ -342,7 +342,7 @@ void example_4_driver() {
 	// and the CKKS encoding process.
 	cout << "Row-vector/Matrix alternate computation works if "
 	     << relative_error(la_inst.decrypt(rvec_mat_prod1), la_inst.decrypt(rvec_mat_prod2))
-	     << " is small." << endl;
+	     << " is <<1." << endl;
 
 /* Why would we ever want to use this more tedious API? `sum_rows` and `sum_cols`
  * are relatively expensive operations, but we can frequently reduce the number
@@ -381,7 +381,7 @@ void example_4_driver() {
 	// Call this matrix B. Now let's make a 20x150 matrix A, and homomorphically
 	// compute 2*A*B.
     vector<double> mat_data_a = randomVector(20*150, plaintext_inf_norm);
-	Matrix mat_a = Matrix(20, 150, mat_data);
+	Matrix mat_a = Matrix(20, 150, mat_data_a);
 
 	// To compute the homomorphic product A*B, we actually need to encrypt A^T
 	EncryptedMatrix enc_mat_a_trans = la_inst.encrypt(trans(mat_a), unit_64x128);
@@ -397,7 +397,7 @@ void example_4_driver() {
 	la_inst.rescale_to_next_inplace(mat_prod_ab);
 
 	// Use boost to compute the plaintext matrix product
-	Matrix expected_result = prec_prod(mat_a, mat);
+	Matrix expected_result = 2*prec_prod(mat_a, mat);
 	// Look at the plaintext product using the homomorphic algorithm
 	Matrix actual_result_plaintext = mat_prod_ab.plaintext();
 	// We can also decrypt the result to see what happened on ciphertexts
@@ -405,9 +405,9 @@ void example_4_driver() {
 
 	cout << "Matrix/Matrix plaintext algorithm is correct if "
 	     << relative_error(expected_result, actual_result_plaintext)
-	     << " is small." << endl;
+	     << " is <<1." << endl;
 
 	cout << "Matrix/Matrix homomorphic algorithm is correct if "
 	     << relative_error(expected_result, actual_result_homomorphic)
-	     << " is small." << endl;
+	     << " is <<1." << endl;
 }

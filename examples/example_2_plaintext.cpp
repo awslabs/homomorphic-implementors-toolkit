@@ -36,14 +36,42 @@ vector<double> poly_eval_plaintext(vector<double> xs) {
 	}
 	return results;
 }
-/* For this demo, we will evaluate the polynomial on
- * each plaintext slot. Just as the plaintext version took a vector
+/* HIT provides an interface for low-level homomorphic operations
+ * like addition and multiplication. For this demo, we will evaluate the
+ * polynomial on each plaintext slot. This is a useful technique in HE
+ * because polynomials are relatively simple to evaluate compared to
+ * non-polynomial functions. It is frequently convenient to approximate
+ * a non-polynomial function by a polynomial for homomorphic evaluation.
+ *
+ * We compute the approximation using the following circuit:
+ *
+ *  Lvl                                                              Scale
+ *   i      x     x     x     c_3      x     c_1                      s
+ *           \   /       \     /        \     /
+ *  i-1       x^2         c_3*x          c_1*x        1             s^2/p_i
+ *             \           /               \         /
+ *              \         /                 \       /
+ *               \       /                   \     /
+ *  i-2           c_3*x^3                     c_1*x            (s^2/p_i)^2/p_{i-1}
+ *                     \                       /
+ *                      \                     /
+ *                       \                   /
+ *                        \                 /
+ *                         \               /
+ *                          \             /
+ *  i-2                      c_3*x^3+c_1*x           c_0      (s^2/p_i)^2/p_{i-1}
+ *                                \                   /
+ *                                 \                 /
+ *  i-2                             c_3*x^3+c_1*x+c_0          (s^2/p_i)^2/p_{i-1}
+ *
+ * Inputs to addition or multiplication must be at the same level
+ * of the tree. Constants can be inserted at any level of the tree.
+ * Multiplication (even by a constant) consumes a level, while addition
+ * never consumes a level.
+ * Just as the plaintext version of this function took a vector
  * and returned a vector, the homomorphic version will take an encrypted
  * vector (one ciphertext) and return an encrypted vector (one ciphertext).
- * We will additionally need an instance of a homomorphic encrpytion scheme
- * to do our homomorphic computation.
- * For our first whack at this circuit, we will use a naive implementation
- * of this functions. After each operation, we include a comment indicating
+ * After each operation, we include a comment indicating
  * the output variable, whether it is a linear or quadratic ciphertext,
  * its approximate scale (either the encryption scale or its square),
  * and the HE level of the variable. We assume that the input is a linear
@@ -57,30 +85,37 @@ CKKSCiphertext poly_eval_homomorphic_v1(CKKSEvaluator &eval, CKKSCiphertext &ct)
 	// before doing further operations, we need to *relinearize* and *rescale*
 	eval.relinearize_inplace(ct_squared);                     // ct_squared, linear, scale^2, level i
 	eval.rescale_to_next_inplace(ct_squared);                 // ct_squared, linear, scale, level i-1
-	// ct_squared is now a linear ciphertext with nominal scale, so we can now
-	// compute ct_cubed = ct_squared * ct. However, before we can operate on
-	// these two values, we must reduce the level of ct to the level of ct_squared.
-	eval.reduce_level_to_inplace(ct, ct_squared);             // ct, linear, scale, level i-1
-	CKKSCiphertext ct_cubed = eval.multiply(ct_squared, ct);  // ct_cubed, quadratic, scale^2, level i-1
-	// again, we need to relinarize and rescale
-	eval.relinearize_inplace(ct_cubed);                       // ct_cubed, linear, scale^2, level i-1
-	eval.rescale_to_next_inplace(ct_cubed);                   // ct_cubed, linear, scale, level i-2
-	// multiplication by a scalar squares the scale, but
-	// results in a linear ciphertext. We need to rescale,
-	// but not relinearize.
-	CKKSCiphertext term1 = eval.multiply_plain(ct_cubed, c_3); // term1, linear, scale^2, level i-2
-	eval.rescale_to_next_inplace(term1);                       // term1, linear, scale, level i-3
-	// term2 is similar
-	CKKSCiphertext term2 = eval.multiply_plain(ct, c_1);       // term2, linear, scale^2, level i
-	eval.rescale_to_next_inplace(term2);                       // term2, linear, scale, level i-1
-	// To add these terms together, we need both arguments at the same level
-	eval.reduce_level_to_inplace(term2, term1);                // term2, linear, scale, level-3
+	// ct_squared is now a linear ciphertext with nominal scale
+
+	// Next, we comput c_3*ct
+	CKKSCiphertext c3_ct = eval.multiply_plain(ct, c_3);      // c3_ct, linear, scale^2, level i
+	// Since c3_ct is linear, we don't need to relinearize,
+	// but we do need to rescale
+	eval.rescale_to_next_inplace(c3_ct);                      // c3_ct, linear, scale, level i-1
+
+	// term2 = c_1*ct is similar
+	CKKSCiphertext term2 = eval.multiply_plain(ct, c_1);      // term2, linear, scale^2, level i
+	eval.rescale_to_next_inplace(term2);                      // term2, linear, scale, level i-1
+
+	// Now we can compute the second layer of the circuit,
+	// starting with term1 (c_3*ct^3)
+	CKKSCiphertext term1 = eval.multiply(c3_ct, ct_squared);  // term1, quadratic, scale^2, level i-1
+	// relinearize and rescale
+	eval.relinearize_inplace(term1);                          // term1, linear, scale^2, level i-1
+	eval.rescale_to_next_inplace(term1);                      // term1, linear, scale, level i-2
+	// To add these terms together, we need both arguments
+	// at the same level, so we will reduce the level of
+	// term2 to the level of term1 by mutliplying by the
+	// scalar 1 and then rescaling. This combination
+	// (possibly repeated until the first argument is
+	// at the target level) is encapsulated as `reduce_level_to`
+	eval.reduce_level_to_inplace(term2, term1);               // term2, linear, scale, level-2
 	// Addition of ciphertexts induces component-wise addition
 	// on the plaintexts. Addition of linear ciphertexts results
 	// in a linear ciphertext, and does not change the ciphertext scale
-	CKKSCiphertext poly_result = eval.add(term1, term2);       // poly_result, linear, scale, level i-3
+	CKKSCiphertext poly_result = eval.add(term1, term2);       // poly_result, linear, scale, level i-2
 	// Addition of a constant adds the constant to each plaintext coefficient.
-	eval.add_plain_inplace(poly_result, c_0);                  // poly_result, linear, scale, level i-3
+	eval.add_plain_inplace(poly_result, c_0);                  // poly_result, linear, scale, level i-2
 	return poly_result;
 }
 /* Phew. That's a lot. Even ignoring the maintenance operations, does `poly_eval_homomorphic_v1`
