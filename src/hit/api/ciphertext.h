@@ -22,8 +22,11 @@ namespace hit {
         CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context, std::istream &stream);
 
         // Serialize a ciphertext to a protobuf object
-        // This is useful if you want to make a custom protobuf object that
-        // packages several encrypted objects together.
+        // This function is typically used in protobuf serialization code for objects which
+        // contain a protobuf::Ciphertext. When used directly, you are responsible for
+        // calling `delete` on the pointer. When passed as an argument to a protocol buffer
+        // `add_allocated` function, ownership is transferred to the protocol buffer object,
+        // which is responsible for releasing the memory allocated here.
         hit::protobuf::Ciphertext *serialize() const;
         // Serialize an ciphertext as a protobuf object to a stream.
         void save(std::ostream &stream) const;
