@@ -8,7 +8,7 @@ using namespace std;
 using namespace hit;
 
 // defined in example_1_ckks.cpp
-extern vector<double> randomVector(int dim, double maxNorm);
+extern vector<double> random_vector(int dim, double maxNorm);
 
 // defined in example_2_plaintext.cpp
 extern CKKSCiphertext poly_eval_homomorphic_v1(CKKSEvaluator &eval, CKKSCiphertext &ct);
@@ -23,9 +23,9 @@ void example_5_server();
  */
 
 void example_5_client() {
-/* First, the client generates homomorphic encryption parameters and keys,
- * as well as public keys needed for the server to evaluate the target function.
- */
+	/* First, the client generates homomorphic encryption parameters and keys,
+	 * as well as public keys needed for the server to evaluate the target function.
+	 */
 	int num_slots = 8192;
 	int max_depth = 3;
 	int log_scale = 40;
@@ -38,54 +38,54 @@ void example_5_client() {
 
 	cout << "Encrypting client data..." << endl;
 	// The next step in the client/server model is for the client to encrypt some data
-	vector<double> data = randomVector(num_slots, 10);
+	vector<double> data = random_vector(num_slots, 10);
 	CKKSCiphertext ct = he_inst.encrypt(data);
 
-/* Next, the client sends everything the server needs for evaluation. This includes:
- *   - encrypted data
- *   - cryptosystem parameters
- *   - (public) evalaution keys
- */
+	/* Next, the client sends everything the server needs for evaluation. This includes:
+	 *   - encrypted data
+	 *   - cryptosystem parameters
+	 *   - (public) evalaution keys
+	 */
 
 	cout << "Serializing client keys..." << endl;
 	// First, serialize the instance parameters
-	ofstream paramsStream("/tmp/params", ios::out | ios::binary);
-	ofstream galoisKeyStream("/tmp/galois", ios::out | ios::binary);
-	ofstream relinKeyStream("/tmp/relin", ios::out | ios::binary);
+	ofstream params_stream("/tmp/params", ios::out | ios::binary);
+	ofstream galois_key_stream("/tmp/galois", ios::out | ios::binary);
+	ofstream relin_key_stream("/tmp/relin", ios::out | ios::binary);
 	// We can optionally write the secret key to a stream, but we don't need to
 	// for this application.
-	he_inst.save(paramsStream, galoisKeyStream, relinKeyStream, nullptr);
+	he_inst.save(params_stream, galois_key_stream, relin_key_stream, nullptr);
 
 	// Don't forget to close the streams!
-	paramsStream.close();
-	galoisKeyStream.close();
-	relinKeyStream.close();
+	params_stream.close();
+	galois_key_stream.close();
+	relin_key_stream.close();
 
 	cout << "Serializing client data..." << endl;
 	// If our data consists of a single ciphertext, we can use the `save` API.
 	// Typically, we might need to send several ciphertexts to the server, which
 	// can be done by sending multiple small streams (via `save`) or by packaging
 	// these encrypted values into a custom protobuf type using the `serialize` API.
-	ofstream outputDataStream("/tmp/dataout", ios::out | ios::binary);
-	ct.save(outputDataStream);
+	ofstream output_data_stream("/tmp/dataout", ios::out | ios::binary);
+	ct.save(output_data_stream);
 
 	// Don't forget to close the stream!
-	outputDataStream.close();
+	output_data_stream.close();
 
-/* At this point, the client transmits the serialized data to the server
- * and waits for a response. In this demo, we'll cheat and invoke the server
- * directly.
- */
+	/* At this point, the client transmits the serialized data to the server
+	 * and waits for a response. In this demo, we'll cheat and invoke the server
+	 * directly.
+	 */
 	cout << "Invoking remote server..." << endl;
 	example_5_server();
 	cout << "Deserializing computation result..." << endl;
 
 	// The server will send back a response, which we can then read
-	ifstream inputDataStream("/tmp/datain", ios::in | ios::binary);
-	CKKSCiphertext homom_result = CKKSCiphertext(he_inst.context, inputDataStream);
+	ifstream input_data_stream("/tmp/datain", ios::in | ios::binary);
+	CKKSCiphertext homom_result = CKKSCiphertext(he_inst.context, input_data_stream);
 
 	// Don't forget to close the stream!
-	inputDataStream.close();
+	input_data_stream.close();
 
 	cout << "Decrypting computation result..." << endl;
 
@@ -102,30 +102,30 @@ void example_5_server() {
 	// client.
 
 	cout << "Server is reading instance parameters and keys..." << endl;
-	ifstream paramsStream("/tmp/params", ios::in | ios::binary);
-	ifstream galoisKeyStream("/tmp/galois", ios::in | ios::binary);
-	ifstream relinKeyStream("/tmp/relin", ios::in | ios::binary);
+	ifstream params_stream("/tmp/params", ios::in | ios::binary);
+	ifstream galois_key_stream("/tmp/galois", ios::in | ios::binary);
+	ifstream relin_key_stream("/tmp/relin", ios::in | ios::binary);
 
 	// We will create a HomomorphicEval instance using the instance parameters
 	// and evaluation keys. However, this instance will be incapable of decryption
 	// because it does not know the secret key.
 	// It is an error to call `he_inst.decrypt` with a HomomorphicEval constructed
 	// this way.
-	HomomorphicEval he_inst = HomomorphicEval(paramsStream, galoisKeyStream, relinKeyStream);
+	HomomorphicEval he_inst = HomomorphicEval(params_stream, galois_key_stream, relin_key_stream);
 
 	// Don't forget to close the streams!
-	paramsStream.close();
-	galoisKeyStream.close();
-	relinKeyStream.close();
+	params_stream.close();
+	galois_key_stream.close();
+	relin_key_stream.close();
 
 	cout << "Server is deserializing data..." << endl;
 
 	// The server's input is the client's output
-	ifstream inputDataStream("/tmp/dataout", ios::in | ios::binary);
-	CKKSCiphertext ct_in = CKKSCiphertext(he_inst.context, inputDataStream);
+	ifstream input_data_stream("/tmp/dataout", ios::in | ios::binary);
+	CKKSCiphertext ct_in = CKKSCiphertext(he_inst.context, input_data_stream);
 
 	// Don't forget to close the stream!
-	inputDataStream.close();
+	input_data_stream.close();
 
 	cout << "Server is computing on encrypted data..." << endl;
 	// We can now evaluate the homomorphic function.
@@ -133,11 +133,11 @@ void example_5_server() {
 
 	cout << "Server is serializing computation result..." << endl;
 	// And save the result to the client's input stream
-	ofstream outputDataStream("/tmp/datain", ios::out | ios::binary);
-	ct_result.save(outputDataStream);
+	ofstream output_data_stream("/tmp/datain", ios::out | ios::binary);
+	ct_result.save(output_data_stream);
 
 	// Don't forget to close the stream!
-	outputDataStream.close();
+	output_data_stream.close();
 }
 
 void example_5_driver() {

@@ -7,7 +7,7 @@ using namespace std;
 using namespace hit;
 
 // defined in example_1_ckks.cpp
-extern vector<double> randomVector(int dim, double maxNorm);
+extern vector<double> random_vector(int dim, double maxNorm);
 // defined in example_2_plaintext.cpp
 extern vector<double> poly_eval_plaintext(vector<double> xs);
 extern CKKSCiphertext poly_eval_homomorphic_v1(CKKSEvaluator &eval, CKKSCiphertext &ct);
@@ -60,7 +60,7 @@ void example_3_driver() {
 
 	// Generate a plaintext with `num_slots` random coefficients, each with absolute value < `plaintext_inf_norm`
 	int plaintext_inf_norm = 10;
-	vector<double> plaintext = randomVector(num_slots, plaintext_inf_norm);
+	vector<double> plaintext = random_vector(num_slots, plaintext_inf_norm);
 
 	// Encrypt the plaintext. This evaluator only tracks ciphertext metadata;
 	// the CKKSCiphertext does not contain a real ciphertext or the plaintext.

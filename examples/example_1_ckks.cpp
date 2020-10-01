@@ -136,7 +136,7 @@ using namespace std;
 using namespace hit;
 
 // generate a random vector of the given dimension, where each value is in the range [-maxNorm, maxNorm].
-vector<double> randomVector(int dim, double maxNorm) {
+vector<double> random_vector(int dim, double maxNorm) {
     vector<double> x;
     x.reserve(dim);
 

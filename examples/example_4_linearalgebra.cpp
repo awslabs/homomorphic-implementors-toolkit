@@ -7,7 +7,7 @@ using namespace std;
 using namespace hit;
 
 // defined in example_1_ckks.cpp
-extern vector<double> randomVector(int dim, double maxNorm);
+extern vector<double> random_vector(int dim, double maxNorm);
 
 /* This example explores HIT's API for linear algebra operations
  * on encrypted data. This API is an implementation of <TODO link to paper>.
@@ -87,7 +87,7 @@ void example_4_driver() {
 	int plaintext_inf_norm = 10;
 	int mat_height = 150;
 	int mat_width = 300;
-	vector<double> mat_data = randomVector(mat_height*mat_width, plaintext_inf_norm);
+	vector<double> mat_data = random_vector(mat_height*mat_width, plaintext_inf_norm);
 	Matrix mat = Matrix(mat_height, mat_width, mat_data);
 
 	// We can now encrypt this matrix with respect to both units
@@ -164,7 +164,7 @@ void example_4_driver() {
  */
 	// Let's create a 150-dimensional vector
 	int rvec_size = 150;
-	vector<double> rvec_data = randomVector(rvec_size, plaintext_inf_norm);
+	vector<double> rvec_data = random_vector(rvec_size, plaintext_inf_norm);
 	Vector rvec = Vector(rvec_data);
 
 	// We can now encrypt this row vector with respect to one of the units
@@ -218,7 +218,7 @@ void example_4_driver() {
  */
 	// Let's create a 300-dimensional vector
 	int cvec_size = 300;
-	vector<double> cvec_data = randomVector(cvec_size, plaintext_inf_norm);
+	vector<double> cvec_data = random_vector(cvec_size, plaintext_inf_norm);
 	Vector cvec = Vector(cvec_data);
 
 	// We can now encrypt a column vector with respect to one of the units
@@ -380,7 +380,7 @@ void example_4_driver() {
 	// Recall that `enc_mat1` encrypts a 150x300 matrix with a 64x128 encoding unit
 	// Call this matrix B. Now let's make a 20x150 matrix A, and homomorphically
 	// compute 2*A*B.
-    vector<double> mat_data_a = randomVector(20*150, plaintext_inf_norm);
+    vector<double> mat_data_a = random_vector(20*150, plaintext_inf_norm);
 	Matrix mat_a = Matrix(20, 150, mat_data_a);
 
 	// To compute the homomorphic product A*B, we actually need to encrypt A^T

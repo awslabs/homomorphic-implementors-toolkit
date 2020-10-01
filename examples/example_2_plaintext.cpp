@@ -7,7 +7,7 @@ using namespace std;
 using namespace hit;
 
 // defined in example_1_ckks.cpp
-extern vector<double> randomVector(int dim, double maxNorm);
+extern vector<double> random_vector(int dim, double maxNorm);
 
 /* The Homomorphic Implementor's Tookit (HIT) is a library to simplify the
  * design and implementation of homomorphic circuits for the CKKS homomorphic
@@ -143,7 +143,7 @@ void example_2_driver() {
 
 	// Generate a plaintext with `num_slots` random coefficients, each with absolute value < `plaintext_inf_norm`
 	int plaintext_inf_norm = 10;
-	vector<double> plaintext = randomVector(num_slots, plaintext_inf_norm);
+	vector<double> plaintext = random_vector(num_slots, plaintext_inf_norm);
 
 	// First, we will evaluate the plaintext function on the plaintext input
 	vector<double> expected_result = poly_eval_plaintext(plaintext);

@@ -1,3 +1,5 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
 
 #include <iostream>
 
@@ -10,19 +12,19 @@ extern void example_4_driver();
 extern void example_5_driver();
 
 int main() {
-	cout << "Running example 1: " << endl;
+	VLOG(LOG_VERBOSE) << "Running example 1: " << endl;
 	example_1_driver();
-	cout << endl << endl;
-	cout << "Running example 2: " << endl;
+	VLOG(LOG_VERBOSE) << endl << endl;
+	VLOG(LOG_VERBOSE) << "Running example 2: " << endl;
 	example_2_driver();
-	cout << endl << endl;
-	cout << "Running example 3: " << endl;
+	VLOG(LOG_VERBOSE) << endl << endl;
+	VLOG(LOG_VERBOSE) << "Running example 3: " << endl;
 	example_3_driver();
-	cout << endl << endl;
-	cout << "Running example 4: " << endl;
+	VLOG(LOG_VERBOSE) << endl << endl;
+	VLOG(LOG_VERBOSE) << "Running example 4: " << endl;
 	example_4_driver();
-	cout << endl << endl;
-	cout << "Running example 5: " << endl;
+	VLOG(LOG_VERBOSE) << endl << endl;
+	VLOG(LOG_VERBOSE) << "Running example 5: " << endl;
 	example_5_driver();
-	cout << "Done with all examples!" << endl;
+	VLOG(LOG_VERBOSE) << "Done with all examples!" << endl;
 }
