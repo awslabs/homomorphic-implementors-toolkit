@@ -18,7 +18,7 @@ using namespace seal;
 
 namespace hit {
 
-    vector<double> CKKSEvaluator::decrypt(const CKKSCiphertext&) const {
+    vector<double> CKKSEvaluator::decrypt(const CKKSCiphertext&, bool) const {
         throw invalid_argument("decrypt can only be called with Homomorphic or Debug evaluators");
     }
 
@@ -319,7 +319,6 @@ namespace hit {
             throw invalid_argument("Argument to rescale_to_next_inplace must have squared scale");
         }
         rescale_to_next_inplace_internal(ct);
-        ct.needs_rescale_ = false;
         rescale_metata_to_next(ct);
         print_stats(ct);
     }
@@ -337,6 +336,7 @@ namespace hit {
     void CKKSEvaluator::reduce_metadata_to_level(CKKSCiphertext &ct, int level) {
         while (ct.he_level() > level) {
             ct.scale_ *= ct.scale();
+            ct.needs_rescale_ = true;
             rescale_metata_to_next(ct);
         }
     }
@@ -345,6 +345,7 @@ namespace hit {
         uint64_t prime = get_last_prime_internal(ct);
         ct.he_level_--;
         ct.scale_ /= prime;
+        ct.needs_rescale_ = false;
     }
 
     // default implementation for evaluators which don't use SEAL
