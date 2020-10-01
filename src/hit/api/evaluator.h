@@ -30,9 +30,6 @@
  * we denote using the terms above.
  */
 
-
-#define ContextDataPtr std::shared_ptr<const seal::SEALContext::ContextData>
-
 namespace hit {
 
     class CKKSEvaluator : public CKKSInstance {
@@ -371,26 +368,29 @@ namespace hit {
         void relinearize_inplace(CKKSCiphertext &ct);
 
        protected:
-        virtual void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) = 0;
-        virtual void rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) = 0;
-        virtual void negate_inplace_internal(CKKSCiphertext &ct) = 0;
-        virtual void add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) = 0;
-        virtual void add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) = 0;
-        virtual void add_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain) = 0;
-        virtual void sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) = 0;
-        virtual void sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) = 0;
-        virtual void sub_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain) = 0;
-        virtual void multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) = 0;
-        virtual void multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) = 0;
-        virtual void multiply_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain) = 0;
-        virtual void square_inplace_internal(CKKSCiphertext &ct) = 0;
-        virtual void reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level) = 0;
-        virtual void rescale_to_next_inplace_internal(CKKSCiphertext &ct) = 0;
-        virtual void relinearize_inplace_internal(CKKSCiphertext &ct) = 0;
+        virtual void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps);
+        virtual void rotate_left_inplace_internal(CKKSCiphertext &ct, int steps);
+        virtual void negate_inplace_internal(CKKSCiphertext &ct);
+        virtual void add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
+        virtual void add_plain_inplace_internal(CKKSCiphertext &ct, double scalar);
+        virtual void add_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain);
+        virtual void sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
+        virtual void sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar);
+        virtual void sub_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain);
+        virtual void multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
+        virtual void multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar);
+        virtual void multiply_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain);
+        virtual void square_inplace_internal(CKKSCiphertext &ct);
+        virtual void reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level);
+        virtual void rescale_to_next_inplace_internal(CKKSCiphertext &ct);
+        virtual void relinearize_inplace_internal(CKKSCiphertext &ct);
+        virtual void print_stats(const CKKSCiphertext &ct) const;
+        virtual uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const;
+
+        void reduce_metadata_to_level(CKKSCiphertext &ct, int level);
+        void rescale_metata_to_next(CKKSCiphertext &ct);
 
         CKKSEvaluator() = default;
-
-        ContextDataPtr getContextData(const CKKSCiphertext &ct);
 
         mutable std::shared_mutex mutex_;
     };

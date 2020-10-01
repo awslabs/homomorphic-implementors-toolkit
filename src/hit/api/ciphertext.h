@@ -65,7 +65,7 @@ namespace hit {
         seal::Ciphertext seal_ct;
 
         // `scale` is used by the ScaleEstimator evaluator
-        double scale_ = 0;
+        double scale_ = pow(2,30);
 
         // flag indicating whether this CT has been initialized or not
         // CKKSCiphertexts are initialized upon encryption

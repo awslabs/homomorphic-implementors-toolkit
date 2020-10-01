@@ -232,11 +232,8 @@ namespace hit {
         return decoded_output;
     }
 
-    void HomomorphicEval::reset() {
-    }
-
-    int HomomorphicEval::get_SEAL_level(const CKKSCiphertext &ct) const {
-        return context->get_context_data(ct.seal_ct.parms_id())->chain_index();
+    uint64_t HomomorphicEval::get_last_prime_internal(const CKKSCiphertext &ct) const {
+        return get_last_prime(context, ct.he_level());
     }
 
     void HomomorphicEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
@@ -253,13 +250,6 @@ namespace hit {
     }
 
     void HomomorphicEval::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        // check that ciphertexts are at the same level to avoid an obscure SEAL error
-        if (get_SEAL_level(ct1) != get_SEAL_level(ct2)) {
-            stringstream buffer;
-            buffer << "Error in HomomorphicEval::add: input levels do not match: " << get_SEAL_level(ct1)
-                   << " != " << get_SEAL_level(ct2);
-            throw invalid_argument(buffer.str());
-        }
         seal_evaluator->add_inplace(ct1.seal_ct, ct2.seal_ct);
     }
 
@@ -270,23 +260,12 @@ namespace hit {
     }
 
     void HomomorphicEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        if (plain.size() != ct.num_slots()) {
-            throw invalid_argument(
-                "Error in HomomorphicEval::add_plain_internal: plaintext size does not match ciphertext size");
-        }
         Plaintext temp;
         encoder->encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
         seal_evaluator->add_plain_inplace(ct.seal_ct, temp);
     }
 
     void HomomorphicEval::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        // check that ciphertexts are at the same level to avoid an obscure SEAL error
-        if (get_SEAL_level(ct1) != get_SEAL_level(ct2)) {
-            stringstream buffer;
-            buffer << "Error in HomomorphicEval::sub: input levels do not match: " << get_SEAL_level(ct1)
-                   << " != " << get_SEAL_level(ct2);
-            throw invalid_argument(buffer.str());
-        }
         seal_evaluator->sub_inplace(ct1.seal_ct, ct2.seal_ct);
     }
 
@@ -297,27 +276,13 @@ namespace hit {
     }
 
     void HomomorphicEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        if (plain.size() != ct.num_slots()) {
-            throw invalid_argument(
-                "Error in HomomorphicEval::sub_plain_internal: plaintext size does not match ciphertext size");
-        }
         Plaintext temp;
         encoder->encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
         seal_evaluator->sub_plain_inplace(ct.seal_ct, temp);
     }
 
     void HomomorphicEval::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        // check that ciphertexts are at the same level to avoid an obscure SEAL error
-        if (get_SEAL_level(ct1) != get_SEAL_level(ct2)) {
-            stringstream buffer;
-            buffer << "Error in HomomorphicEval::multiply: input levels do not match: " << get_SEAL_level(ct1)
-                   << " != " << get_SEAL_level(ct2);
-            throw invalid_argument(buffer.str());
-        }
         seal_evaluator->multiply_inplace(ct1.seal_ct, ct2.seal_ct);
-        if (update_metadata_) {
-            ct1.scale_ = ct1.seal_ct.scale();
-        }
     }
 
     /* WARNING: Multiplying by 0 results in non-constant time behavior! Only multiply by 0 if the scalar is truly
@@ -334,40 +299,20 @@ namespace hit {
             // with our mirror calculation
             ct.seal_ct.scale() = previous_scale * previous_scale;
         }
-        if (update_metadata_) {
-            ct.scale_ = ct.seal_ct.scale();
-        }
     }
 
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        if (plain.size() != ct.num_slots()) {
-            throw invalid_argument(
-                "Error in HomomorphicEval::multiply_plain_internal: plaintext size does not match ciphertext "
-                "size");
-        }
         Plaintext temp;
         encoder->encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
         seal_evaluator->multiply_plain_inplace(ct.seal_ct, temp);
-        if (update_metadata_) {
-            ct.scale_ = ct.seal_ct.scale();
-        }
     }
 
     void HomomorphicEval::square_inplace_internal(CKKSCiphertext &ct) {
         seal_evaluator->square_inplace(ct.seal_ct);
-        if (update_metadata_) {
-            ct.scale_ = ct.seal_ct.scale();
-        }
     }
 
     void HomomorphicEval::reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level) {
-        if (get_SEAL_level(ct) < level) {
-            stringstream buffer;
-            buffer << "Error in reduce_level_to: input is at a lower level than target. Input level: "
-                   << get_SEAL_level(ct) << ", target level: " << level;
-            throw invalid_argument(buffer.str());
-        }
-        while (get_SEAL_level(ct) > level) {
+        while (ct.he_level() > level) {
             multiply_plain_inplace(ct, 1);
             rescale_to_next_inplace(ct);
         }
@@ -375,11 +320,6 @@ namespace hit {
 
     void HomomorphicEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
         seal_evaluator->rescale_to_next_inplace(ct.seal_ct);
-
-        if (update_metadata_) {
-            ct.scale_ = ct.seal_ct.scale();
-            ct.he_level_ = get_SEAL_level(ct);
-        }
     }
 
     void HomomorphicEval::relinearize_inplace_internal(CKKSCiphertext &ct) {

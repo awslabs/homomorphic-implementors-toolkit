@@ -14,10 +14,10 @@ namespace hit {
     /* This evaluator tracks the plaintext computation */
     class OpCount : public CKKSEvaluator {
        public:
-        OpCount();
+        OpCount() = default;
 
         /* For documentation on the API, see ../evaluator.h */
-        ~OpCount() override;
+        ~OpCount() override = default;
 
         OpCount(const OpCount &) = delete;
         OpCount &operator=(const OpCount &) = delete;
@@ -28,9 +28,6 @@ namespace hit {
         void print_op_count() const;
 
         CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1) override;
-
-        // reuse this evaluator for another computation
-        void reset();
 
        protected:
         void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) override;
@@ -73,6 +70,9 @@ namespace hit {
         int reduce_levels_ = 0;
         int reduce_level_muls_ = 0;
         int encryptions_ = 0;
+        int rescales_ = 0;
+        int relins_ = 0;
+        const int num_slots_ = 4096;
 
         inline void count_multiple_ops() {
             std::scoped_lock lock(mutex_);
@@ -88,7 +88,5 @@ namespace hit {
             std::scoped_lock lock(mutex_);
             rotations_++;
         }
-
-        DepthFinder *depth_finder;
     };
 }  // namespace hit

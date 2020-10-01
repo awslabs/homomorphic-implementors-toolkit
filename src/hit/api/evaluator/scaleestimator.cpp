@@ -22,8 +22,6 @@ namespace hit {
 
     ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth) {
         plaintext_eval = new PlaintextEval(num_slots);
-        depth_finder = new DepthFinder();
-        depth_finder->top_he_level_ = multiplicative_depth;
         log_scale_ = defaultScaleBits;
 
         shared_param_init(num_slots, multiplicative_depth, defaultScaleBits, false);
@@ -36,10 +34,8 @@ namespace hit {
         }
     }
 
-    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth, const HomomorphicEval &homom_eval): has_shared_params_(true) {
+    ScaleEstimator::ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval): has_shared_params_(true) {
         plaintext_eval = new PlaintextEval(num_slots);
-        depth_finder = new DepthFinder();
-        depth_finder->top_he_level_ = multiplicative_depth;
         log_scale_ = defaultScaleBits;
 
         // instead of calling shared_param_init to create a new instance, use the instance provided
@@ -57,7 +53,6 @@ namespace hit {
     }
 
     ScaleEstimator::~ScaleEstimator() {
-        delete depth_finder;
         delete plaintext_eval;
 
         // if we are using shared parameters, these values are freed by the homomorphic evaluator
@@ -105,30 +100,23 @@ namespace hit {
         return destination;
     }
 
-    void ScaleEstimator::reset() {
-        {
-            scoped_lock lock(mutex_);
-            estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
-            auto context_data = context->first_context_data();
-            for (const auto &prime : context_data->parms().coeff_modulus()) {
-                estimated_max_log_scale_ += log2(prime.value());
-            }
-        }
-        plaintext_eval->reset();
-        depth_finder->reset();
+    uint64_t ScaleEstimator::get_last_prime_internal(const CKKSCiphertext &ct) const {
+        return get_last_prime(context, ct.he_level());
     }
 
     // print some debug info
-    void ScaleEstimator::print_stats(const CKKSCiphertext &ct) {
+    void ScaleEstimator::print_stats(const CKKSCiphertext &ct) const {
         if (!VLOG_IS_ON(LOG_VERBOSE)) {
             return;
         }
         double exact_plaintext_max_val = l_inf_norm(ct.raw_pt);
         double log_modulus = 0;
-        auto context_data = getContextData(ct);
+        auto context_data = get_context_data(context, ct.he_level());
         for (const auto &prime : context_data->parms().coeff_modulus()) {
             log_modulus += log2(prime.value());
         }
+        plaintext_eval->print_stats(ct);
+        VLOG(LOG_VERBOSE) << "    + Level: " << ct.he_level();
         VLOG(LOG_VERBOSE) << "    + Plaintext logmax: " << log2(exact_plaintext_max_val)
                           << " bits (scaled: " << log2(ct.scale()) + log2(exact_plaintext_max_val) << " bits)";
         VLOG(LOG_VERBOSE) << "    + Total modulus size: " << setprecision(4) << log_modulus << " bits";
@@ -168,153 +156,106 @@ namespace hit {
     }
 
     void ScaleEstimator::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
-        depth_finder->rotate_right_inplace_internal(ct, steps);
         plaintext_eval->rotate_right_inplace_internal(ct, steps);
-        print_stats(ct);
     }
 
     void ScaleEstimator::rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) {
-        depth_finder->rotate_left_inplace_internal(ct, steps);
         plaintext_eval->rotate_left_inplace_internal(ct, steps);
-        print_stats(ct);
     }
 
     void ScaleEstimator::negate_inplace_internal(CKKSCiphertext &ct) {
-        depth_finder->negate_inplace_internal(ct);
         plaintext_eval->negate_inplace_internal(ct);
-        print_stats(ct);
     }
 
     void ScaleEstimator::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        depth_finder->add_inplace_internal(ct1, ct2);
         plaintext_eval->add_inplace_internal(ct1, ct2);
-
         update_max_log_scale(ct1);
-        print_stats(ct1);
     }
 
     void ScaleEstimator::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        depth_finder->add_plain_inplace_internal(ct, scalar);
         plaintext_eval->add_plain_inplace_internal(ct, scalar);
-
         update_max_log_scale(ct);
-        print_stats(ct);
     }
 
     void ScaleEstimator::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        depth_finder->add_plain_inplace_internal(ct, plain);
         plaintext_eval->add_plain_inplace_internal(ct, plain);
-
         update_max_log_scale(ct);
-        print_stats(ct);
     }
 
     void ScaleEstimator::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        depth_finder->sub_inplace_internal(ct1, ct2);
         plaintext_eval->sub_inplace_internal(ct1, ct2);
-
         update_max_log_scale(ct1);
-        print_stats(ct1);
     }
 
     void ScaleEstimator::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        depth_finder->sub_plain_inplace_internal(ct, scalar);
         plaintext_eval->sub_plain_inplace_internal(ct, scalar);
-
         update_max_log_scale(ct);
-        print_stats(ct);
     }
 
     void ScaleEstimator::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        depth_finder->sub_plain_inplace_internal(ct, plain);
         plaintext_eval->sub_plain_inplace_internal(ct, plain);
-
         update_max_log_scale(ct);
-        print_stats(ct);
+    }
+
+    void ScaleEstimator::temp_square_scale(CKKSCiphertext &ct) {
+        double input_scale = ct.scale();
+        ct.scale_ *= ct.scale();
+        update_max_log_scale(ct);
+        ct.scale_ = input_scale;
     }
 
     void ScaleEstimator::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        depth_finder->multiply_inplace_internal(ct1, ct2);
         plaintext_eval->multiply_inplace_internal(ct1, ct2);
-
-        ct1.scale_ *= ct2.scale();
-        update_max_log_scale(ct1);
-
-        print_stats(ct1);
+        temp_square_scale(ct1);
     }
 
     void ScaleEstimator::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        depth_finder->multiply_plain_inplace_internal(ct, scalar);
         plaintext_eval->multiply_plain_inplace_internal(ct, scalar);
-
-        ct.scale_ *= ct.scale();
-        update_max_log_scale(ct);
-        print_stats(ct);
+        temp_square_scale(ct);
     }
 
     void ScaleEstimator::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        depth_finder->multiply_plain_inplace_internal(ct, plain);
         plaintext_eval->multiply_plain_inplace_internal(ct, plain);
-
-        double plain_max = 0;
-        for (int i = 0; i < ct.num_slots(); i++) {
-            plain_max = max(plain_max, abs(plain[i]));
-        }
-        ct.scale_ *= ct.scale();
-        update_max_log_scale(ct);
-        print_stats(ct);
+        temp_square_scale(ct);
     }
 
     void ScaleEstimator::square_inplace_internal(CKKSCiphertext &ct) {
-        depth_finder->square_inplace_internal(ct);
         plaintext_eval->square_inplace_internal(ct);
-
-        ct.scale_ *= ct.scale();
-        update_max_log_scale(ct);
-        print_stats(ct);
+        temp_square_scale(ct);
     }
 
     void ScaleEstimator::reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level) {
-        int level_diff = ct.he_level() - level;
-
         if (level < 0) {
             throw invalid_argument("reduce_level_to: level must be >= 0.");
         }
 
-        depth_finder->reduce_level_to_inplace_internal(ct, level);
         plaintext_eval->reduce_level_to_inplace_internal(ct, level);
 
-        // reset he_level for dest
-        ct.he_level_ += level_diff;
-        while (ct.he_level() > level) {
-            uint64_t prime = get_last_prime(context, ct.he_level());
-            ct.he_level_--;
-            ct.scale_ = (ct.scale() * ct.scale()) / prime;
-        }
-        // ct's level is now reset to level
+        int input_level = ct.he_level();
+        double input_scale = ct.scale();
 
-        // recursive call updated he_level, so we need to update maxLogScale
+        // update the metadata so that we can update the max_log_scale
+        reduce_metadata_to_level(ct, level);
         update_max_log_scale(ct);
-        print_stats(ct);
+
+        // internal functions should not update the ciphertext metadata
+        ct.he_level_ = input_level;
+        ct.scale_ = input_scale;
     }
 
     void ScaleEstimator::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        // get the last prime *before* making any recursive calls.
-        // in particular, the DepthFinder call will change the he_level
-        // of the ciphertext, causing `getContextData` to get the wrong
-        // prime, resulting in mayhem.
-        auto context_data = getContextData(ct);
-        uint64_t prime = context_data->parms().coeff_modulus().back().value();
-
-        depth_finder->rescale_to_next_inplace_internal(ct);
         plaintext_eval->rescale_to_next_inplace_internal(ct);
 
-        ct.scale_ /= prime;
-        update_max_log_scale(ct);
-        print_stats(ct);
-    }
+        int input_level = ct.he_level();
+        double input_scale = ct.scale();
 
-    void ScaleEstimator::relinearize_inplace_internal(CKKSCiphertext &) {
+        // update the metadata so that we can update the max_log_scale
+        rescale_metata_to_next(ct);
+        update_max_log_scale(ct);
+
+        // internal functions should not update the ciphertext metadata
+        ct.he_level_ = input_level;
+        ct.scale_ = input_scale;
     }
 
     void ScaleEstimator::update_plaintext_max_val(const vector<double> &coeffs) {
@@ -325,10 +266,8 @@ namespace hit {
         // and if the scale is ~2^60, encoding will (rightly) fail
         int top_he_level = context->first_context_data()->chain_index();
         if (top_he_level == 0) {
-            {
-                scoped_lock lock(mutex_);
-                estimated_max_log_scale_ = min(estimated_max_log_scale_, PLAINTEXT_LOG_MAX - log2(x));
-            }
+            scoped_lock lock(mutex_);
+            estimated_max_log_scale_ = min(estimated_max_log_scale_, PLAINTEXT_LOG_MAX - log2(x));
         }
     }
 

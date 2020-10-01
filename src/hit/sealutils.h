@@ -25,6 +25,11 @@ namespace hit {
     std::ostream &operator<<(std::ostream &stream, seal::parms_id_type parms_id);
 
     /*
+    Helper function: Get the context data for the ciphertext's level
+    */
+    std::shared_ptr<const seal::SEALContext::ContextData> get_context_data(const std::shared_ptr<seal::SEALContext> &context, int level);
+
+    /*
     Helper function: Fetch the last prime given SEALContext and heLevel.
     */
     std::uint64_t get_last_prime(const std::shared_ptr<seal::SEALContext> &context, int he_level);

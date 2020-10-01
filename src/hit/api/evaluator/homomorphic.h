@@ -61,11 +61,9 @@ namespace hit {
          * Usually, decrypting a ciphertext not at level 0 indicates you are doing something
          * inefficient. However for testing purposes, it may be useful, so you will want to
          * suppress the warning.
+         * TODO: log level?
          */
         std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
-
-        // reuse this evaluator for another computation
-        void reset();
 
        protected:
         void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) override;
@@ -103,13 +101,10 @@ namespace hit {
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
        private:
+
+        uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
+
         void deserialize_common(std::istream &params_stream);
-
-        /* Helper function: Return the HE level of the SEAL ciphertext.
-         */
-        int get_SEAL_level(const CKKSCiphertext &ct) const;
-
-        bool update_metadata_ = true;
 
         friend class DebugEval;
     };

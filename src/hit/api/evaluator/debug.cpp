@@ -16,9 +16,9 @@ using namespace seal;
 
 namespace hit {
 
-    void DebugEval::constructor_common(int num_slots, int multiplicative_depth) {
+    void DebugEval::constructor_common(int num_slots) {
         // use the _private_ ScaleEstimator constructor to avoid creating two sets of CKKS params
-        scale_estimator = new ScaleEstimator(num_slots, multiplicative_depth, *homomorphic_eval);
+        scale_estimator = new ScaleEstimator(num_slots, *homomorphic_eval);
         context = homomorphic_eval->context;
         log_scale_ = homomorphic_eval->log_scale_;
         encoder = homomorphic_eval->encoder;
@@ -75,15 +75,13 @@ namespace hit {
     DebugEval::DebugEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,
                          const vector<int> &galois_steps) {
         homomorphic_eval = new HomomorphicEval(num_slots, multiplicative_depth, log_scale, use_seal_params, galois_steps);
-        homomorphic_eval->update_metadata_ = false;
-        constructor_common(num_slots, multiplicative_depth);
+        constructor_common(num_slots);
     }
 
     DebugEval::DebugEval(istream &params_stream, istream &galois_key_stream,
                          istream &relin_key_stream, istream &secret_key_stream) {
         homomorphic_eval = new HomomorphicEval(params_stream, galois_key_stream, relin_key_stream, secret_key_stream);
-        homomorphic_eval->update_metadata_ = false;
-        constructor_common(homomorphic_eval->encoder->slot_count(), homomorphic_eval->context->first_context_data()->chain_index());
+        constructor_common(homomorphic_eval->encoder->slot_count());
     }
 
     DebugEval::~DebugEval() {
@@ -140,32 +138,15 @@ namespace hit {
         return homomorphic_eval->decrypt(encrypted);
     }
 
-    void DebugEval::reset() {
-        homomorphic_eval->reset();
-        scale_estimator->reset();
-    }
-
-    // Verify that the ciphertext is either at its expected scale (based on its level),
-    // or is at the square of its expected scale.
-    void DebugEval::check_scale(const CKKSCiphertext &ct) const {
-        auto context_data = context->first_context_data();
-        double expected_scale = pow(2,log_scale_);
-        while (context_data->chain_index() > ct.he_level()) {
-            expected_scale = (expected_scale * expected_scale) /
-                            static_cast<double>(context_data->parms().coeff_modulus().back().value());
-            context_data = context_data->next_context_data();
-        }
-        if (ct.seal_ct.scale() != expected_scale && ct.seal_ct.scale() != expected_scale * expected_scale) {
-            throw invalid_argument("CHECK_SCALE: Expected " + to_string(expected_scale) + "^{1,2}, got " +
-                                   to_string(ct.seal_ct.scale()));
-        }
-        if (ct.seal_ct.scale() != ct.scale()) {
-            throw invalid_argument("HIT scale calculation does not match SEAL.");
-        }
+    uint64_t DebugEval::get_last_prime_internal(const CKKSCiphertext &ct) const {
+        return homomorphic_eval->get_last_prime_internal(ct);
     }
 
     // print some debug info
     void DebugEval::print_stats(const CKKSCiphertext &ct) const {
+        homomorphic_eval->print_stats(ct);
+        scale_estimator->print_stats(ct);
+
         double norm = 0;
 
         // decrypt to compute the approximate plaintext
@@ -253,140 +234,80 @@ namespace hit {
     }
 
     void DebugEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
-        check_scale(ct);
         homomorphic_eval->rotate_right_inplace_internal(ct, steps);
         scale_estimator->rotate_right_inplace_internal(ct, steps);
-
-        print_stats(ct);
-        check_scale(ct);
     }
 
     void DebugEval::rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) {
-        check_scale(ct);
         homomorphic_eval->rotate_left_inplace_internal(ct, steps);
         scale_estimator->rotate_left_inplace_internal(ct, steps);
-
-        print_stats(ct);
-        check_scale(ct);
     }
 
     void DebugEval::negate_inplace_internal(CKKSCiphertext &ct) {
-        check_scale(ct);
         homomorphic_eval->negate_inplace_internal(ct);
         scale_estimator->negate_inplace_internal(ct);
-
-        print_stats(ct);
-        check_scale(ct);
     }
 
     void DebugEval::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        check_scale(ct1);
-        check_scale(ct2);
         homomorphic_eval->add_inplace_internal(ct1, ct2);
         scale_estimator->add_inplace_internal(ct1, ct2);
-
-        print_stats(ct1);
-        check_scale(ct1);
     }
 
     void DebugEval::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        check_scale(ct);
         homomorphic_eval->add_plain_inplace_internal(ct, scalar);
         scale_estimator->add_plain_inplace_internal(ct, scalar);
-
-        print_stats(ct);
-        check_scale(ct);
     }
 
     void DebugEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        check_scale(ct);
         homomorphic_eval->add_plain_inplace_internal(ct, plain);
         scale_estimator->add_plain_inplace_internal(ct, plain);
-
-        print_stats(ct);
-        check_scale(ct);
     }
 
     void DebugEval::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        check_scale(ct1);
-        check_scale(ct2);
         homomorphic_eval->sub_inplace_internal(ct1, ct2);
         scale_estimator->sub_inplace_internal(ct1, ct2);
-
-        print_stats(ct1);
-        check_scale(ct1);
     }
 
     void DebugEval::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        check_scale(ct);
         homomorphic_eval->sub_plain_inplace_internal(ct, scalar);
         scale_estimator->sub_plain_inplace_internal(ct, scalar);
-
-        print_stats(ct);
-        check_scale(ct);
     }
 
     void DebugEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        check_scale(ct);
         homomorphic_eval->sub_plain_inplace_internal(ct, plain);
         scale_estimator->sub_plain_inplace_internal(ct, plain);
-
-        print_stats(ct);
-        check_scale(ct);
     }
 
     void DebugEval::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        check_scale(ct1);
-        check_scale(ct2);
         homomorphic_eval->multiply_inplace_internal(ct1, ct2);
         scale_estimator->multiply_inplace_internal(ct1, ct2);
-
-        print_stats(ct1);
-        check_scale(ct1);
     }
 
     void DebugEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        check_scale(ct);
         homomorphic_eval->multiply_plain_inplace_internal(ct, scalar);
         scale_estimator->multiply_plain_inplace_internal(ct, scalar);
-
-        print_stats(ct);
-        check_scale(ct);
     }
 
     void DebugEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        check_scale(ct);
         homomorphic_eval->multiply_plain_inplace_internal(ct, plain);
         scale_estimator->multiply_plain_inplace_internal(ct, plain);
-
-        print_stats(ct);
-        check_scale(ct);
     }
 
     void DebugEval::square_inplace_internal(CKKSCiphertext &ct) {
-        check_scale(ct);
         homomorphic_eval->square_inplace_internal(ct);
         scale_estimator->square_inplace_internal(ct);
-
-        print_stats(ct);
-        check_scale(ct);
     }
 
     void DebugEval::reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level) {
-        check_scale(ct);
         homomorphic_eval->reduce_level_to_inplace_internal(ct, level);
         scale_estimator->reduce_level_to_inplace_internal(ct, level);
-
-        print_stats(ct);
-        check_scale(ct);
     }
 
     void DebugEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        auto context_data = getContextData(ct);
+        auto context_data = get_context_data(context, ct.he_level());
         uint64_t p = context_data->parms().coeff_modulus().back().value();
         double prime_bit_len = log2(p);
 
-        check_scale(ct);
         homomorphic_eval->rescale_to_next_inplace_internal(ct);
         scale_estimator->rescale_to_next_inplace_internal(ct);
 
@@ -396,17 +317,10 @@ namespace hit {
         // to an integer.
         VLOG(LOG_VERBOSE) << "    + Scaled plaintext down by the ~" << prime_bit_len << "-bit prime " << hex << p
                           << dec;
-
-        print_stats(ct);
-        check_scale(ct);
     }
 
     void DebugEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
-        check_scale(ct);
         homomorphic_eval->relinearize_inplace_internal(ct);
         scale_estimator->relinearize_inplace_internal(ct);
-
-        print_stats(ct);
-        check_scale(ct);
     }
 }  // namespace hit
