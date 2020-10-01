@@ -49,8 +49,11 @@ namespace hit {
         EncryptedMatrix encrypt_matrix(const Matrix &mat, const EncodingUnit &unit, int level = -1);
 
         /* Decrypt a matrix with any ciphertext degree and any scale.
+         * This function will log a message if you try to decrypt a ciphertext which
+         * is not at level 0. Sometimes it is expected for a ciphertext to be at a higher
+         * level, so you can suppress the warning by explicitly setting `suppress_warnings` to true.
          */
-        Matrix decrypt(const EncryptedMatrix &enc_mat) const;
+        Matrix decrypt(const EncryptedMatrix &enc_mat, bool suppress_warnings = false) const;
 
         /* Uniform encryption API, identical to encrypt_matrix
          */
@@ -72,8 +75,11 @@ namespace hit {
         EncryptedRowVector encrypt_row_vector(const Vector &vec, const EncodingUnit &unit, int level = -1);
 
         /* Decrypt a row vector with any ciphertext degree and any scale.
+         * This function will log a message if you try to decrypt a ciphertext which
+         * is not at level 0. Sometimes it is expected for a ciphertext to be at a higher
+         * level, so you can suppress the warning by explicitly setting `suppress_warnings` to true.
          */
-        Vector decrypt(const EncryptedRowVector &enc_vec) const;
+        Vector decrypt(const EncryptedRowVector &enc_vec, bool suppress_warnings = false) const;
 
         /* Encrypt a vector representing a linear algebra column vector.
          * We first encode the vector as a matrix
@@ -82,8 +88,11 @@ namespace hit {
         EncryptedColVector encrypt_col_vector(const Vector &vec, const EncodingUnit &unit, int level = -1);
 
         /* Decrypt a column vector with any ciphertext degree and any scale.
+         * This function will log a message if you try to decrypt a ciphertext which
+         * is not at level 0. Sometimes it is expected for a ciphertext to be at a higher
+         * level, so you can suppress the warning by explicitly setting `suppress_warnings` to true.
          */
-        Vector decrypt(const EncryptedColVector &enc_vec) const;
+        Vector decrypt(const EncryptedColVector &enc_vec, bool suppress_warnings = false) const;
 
 
         /**************************************

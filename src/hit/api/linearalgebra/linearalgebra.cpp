@@ -32,9 +32,13 @@ namespace hit {
         return EncryptedMatrix(mat.size1(), mat.size2(), unit, mat_cts);
     }
 
-    Matrix LinearAlgebra::decrypt(const EncryptedMatrix &enc_mat) const {
+    Matrix LinearAlgebra::decrypt(const EncryptedMatrix &enc_mat, bool suppress_warnings) const {
         if (!enc_mat.initialized()) {
             throw invalid_argument("Cannot decrypt uninitialized enc_matrix");
+        }
+
+        if (!suppress_warnings) {
+            decryption_warning(enc_mat.he_level());
         }
 
         vector<vector<Matrix>> mat_pieces(enc_mat.cts.size());
@@ -42,7 +46,7 @@ namespace hit {
             vector<Matrix> row_pieces(enc_mat.cts[0].size());
             for (int j = 0; j < enc_mat.cts[0].size(); j++) {
                 row_pieces[j] = Matrix(enc_mat.encoding_unit().encoding_height(),
-                                       enc_mat.encoding_unit().encoding_width(), eval.decrypt(enc_mat.cts[i][j]));
+                                       enc_mat.encoding_unit().encoding_width(), eval.decrypt(enc_mat.cts[i][j], true));
             }
             mat_pieces[i] = row_pieces;
         }
@@ -73,15 +77,19 @@ namespace hit {
         return EncryptedRowVector(vec.size(), unit, mat_cts);
     }
 
-    Vector LinearAlgebra::decrypt(const EncryptedRowVector &enc_vec) const {
+    Vector LinearAlgebra::decrypt(const EncryptedRowVector &enc_vec, bool suppress_warnings) const {
         if (!enc_vec.initialized()) {
             throw invalid_argument("Cannot decrypt uninitialized row vector");
+        }
+
+        if (!suppress_warnings) {
+            decryption_warning(enc_vec.he_level());
         }
 
         vector<Matrix> mat_pieces(enc_vec.cts.size());
         for (int i = 0; i < enc_vec.cts.size(); i++) {
             mat_pieces[i] = Matrix(enc_vec.encoding_unit().encoding_height(), enc_vec.encoding_unit().encoding_width(),
-                                   eval.decrypt(enc_vec.cts[i]));
+                                   eval.decrypt(enc_vec.cts[i], true));
         }
         return decode_row_vector(mat_pieces, enc_vec.width());
     }
@@ -104,15 +112,19 @@ namespace hit {
         return EncodingUnit(encoding_height, eval.num_slots() / encoding_height);
     }
 
-    Vector LinearAlgebra::decrypt(const EncryptedColVector &enc_vec) const {
+    Vector LinearAlgebra::decrypt(const EncryptedColVector &enc_vec, bool suppress_warnings) const {
         if (!enc_vec.initialized()) {
             throw invalid_argument("Cannot decrypt uninitialized column vector");
+        }
+
+        if (!suppress_warnings) {
+            decryption_warning(enc_vec.he_level());
         }
 
         vector<Matrix> mat_pieces(enc_vec.cts.size());
         for (int i = 0; i < enc_vec.cts.size(); i++) {
             mat_pieces[i] = Matrix(enc_vec.encoding_unit().encoding_height(), enc_vec.encoding_unit().encoding_width(),
-                                   eval.decrypt(enc_vec.cts[i]));
+                                   eval.decrypt(enc_vec.cts[i], true));
         }
         return decode_col_vector(mat_pieces, enc_vec.height());
     }
@@ -306,12 +318,13 @@ namespace hit {
             throw invalid_argument("LinearAlgebra::hadamard_multiply: arguments are not at the same level");
         }
         if (enc_mat.scale() != enc_vec.scale()) {
-            throw invalid_argument("LinearAlgebra::hadamard_multiply: arguments do not have the same scale");
+            throw invalid_argument("LinearAlgebra::hadamard_multiply: arguments do not have the same scale: " +
+                                   to_string(log2(enc_mat.scale())) + " != " + to_string(log2(enc_vec.scale())));
         }
-        if (enc_mat.needs_rescale() != enc_vec.needs_rescale()) {
+        if (enc_mat.needs_rescale() || enc_vec.needs_rescale()) {
             throw invalid_argument("LinearAlgebra::hadamard_multiply: arguments must have nominal scale");
         }
-        if (enc_mat.needs_relin() != enc_vec.needs_relin()) {
+        if (enc_mat.needs_relin() || enc_vec.needs_relin()) {
             throw invalid_argument("LinearAlgebra::hadamard_multiply: arguments must be linear ciphertexts");
         }
 
@@ -334,12 +347,13 @@ namespace hit {
             throw invalid_argument("LinearAlgebra::multiply: arguments are not at the same level");
         }
         if (enc_mat.scale() != enc_vec.scale()) {
-            throw invalid_argument("LinearAlgebra::multiply: arguments do not have the same scale");
+            throw invalid_argument("LinearAlgebra::multiply: arguments do not have the same scale: " +
+                                   to_string(log2(enc_mat.scale())) + " != " + to_string(log2(enc_vec.scale())));
         }
-        if (enc_mat.needs_rescale() != enc_vec.needs_rescale()) {
+        if (enc_mat.needs_rescale() || enc_vec.needs_rescale()) {
             throw invalid_argument("LinearAlgebra::multiply: arguments must have nominal scale");
         }
-        if (enc_mat.needs_relin() != enc_vec.needs_relin()) {
+        if (enc_mat.needs_relin() || enc_vec.needs_relin()) {
             throw invalid_argument("LinearAlgebra::multiply: arguments must be linear ciphertexts");
         }
         EncryptedMatrix hadmard_prod = hadamard_multiply(enc_vec, enc_mat);
@@ -354,12 +368,13 @@ namespace hit {
             throw invalid_argument("LinearAlgebra::multiply: arguments are not at the same level");
         }
         if (enc_mat.scale() != enc_vec.scale()) {
-            throw invalid_argument("LinearAlgebra::multiply: arguments do not have the same scale");
+            throw invalid_argument("LinearAlgebra::multiply: arguments do not have the same scale: " +
+                                   to_string(log2(enc_mat.scale())) + " != " + to_string(log2(enc_vec.scale())));
         }
-        if (enc_mat.needs_rescale() != enc_vec.needs_rescale()) {
+        if (enc_mat.needs_rescale() || enc_vec.needs_rescale()) {
             throw invalid_argument("LinearAlgebra::multiply: arguments must have nominal scale");
         }
-        if (enc_mat.needs_relin() != enc_vec.needs_relin()) {
+        if (enc_mat.needs_relin() || enc_vec.needs_relin()) {
             throw invalid_argument("LinearAlgebra::multiply: arguments must be linear ciphertexts");
         }
         EncryptedMatrix hadmard_prod = hadamard_multiply(enc_mat, enc_vec);
@@ -502,10 +517,10 @@ namespace hit {
             throw invalid_argument("Arguments to LinearAlgebra::multiply do not have compatible dimensions: " +
                                    dim_string(enc_mat_a_trans) + " vs " + dim_string(enc_mat_b));
         }
-        if (enc_mat_a_trans.needs_rescale() != enc_mat_b.needs_rescale()) {
+        if (enc_mat_a_trans.needs_rescale() || enc_mat_b.needs_rescale()) {
             throw invalid_argument("LinearAlgebra::multiply: arguments must have nominal scale");
         }
-        if (enc_mat_a_trans.needs_relin() != enc_mat_b.needs_relin()) {
+        if (enc_mat_a_trans.needs_relin() || enc_mat_b.needs_relin()) {
             throw invalid_argument("LinearAlgebra::multiply: arguments must be linear ciphertexts");
         }
 

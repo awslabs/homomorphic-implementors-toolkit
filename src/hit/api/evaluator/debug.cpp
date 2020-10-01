@@ -97,8 +97,8 @@ namespace hit {
         return destination;
     }
 
-    vector<double> DebugEval::decrypt(const CKKSCiphertext &encrypted) const {
-        return homomorphic_eval->decrypt(encrypted);
+    vector<double> DebugEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const {
+        return homomorphic_eval->decrypt(encrypted, suppress_warnings);
     }
 
     int DebugEval::num_slots() const {
@@ -117,7 +117,7 @@ namespace hit {
         double norm = 0;
 
         // decrypt to compute the approximate plaintext
-        vector<double> homom_plaintext = decrypt(ct);
+        vector<double> homom_plaintext = decrypt(ct, true);
         vector<double> exact_plaintext = ct.raw_pt;
 
         norm = relative_error(exact_plaintext, homom_plaintext);

@@ -210,4 +210,12 @@ namespace hit {
         return size;
     }
 
+    void decryption_warning(int level) {
+        if (level != 0) {
+            LOG(WARNING) << "Decrypting a ciphertext at level " << level
+                         << "; consider starting with a smaller modulus"
+                         << " to improve performance.";
+        }
+    }
+
 }  // namespace hit

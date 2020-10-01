@@ -63,7 +63,7 @@ namespace hit {
          * suppress the warning.
          * TODO: log level?
          */
-        std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
+        std::vector<double> decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings = false) const override;
 
         std::shared_ptr<seal::SEALContext> context;
 

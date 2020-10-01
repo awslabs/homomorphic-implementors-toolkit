@@ -48,7 +48,7 @@ namespace hit {
          * inefficient. However for testing purposes, it may be useful, so you will want to
          * suppress the warning.
          */
-        std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
+        std::vector<double> decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings = false) const override;
 
         int num_slots() const override;
 

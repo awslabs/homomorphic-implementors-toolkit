@@ -276,17 +276,15 @@ namespace hit {
         return destination;
     }
 
-    vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted) const {
+    vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const {
         if (seal_decryptor == nullptr) {
             throw invalid_argument("Decryption is only possible from a deserialized instance when the secret key is provided.");
         }
 
         Plaintext temp;
 
-        int lvl = encrypted.he_level();
-        if (lvl != 0) {
-            LOG(WARNING) << "Decrypting a ciphertext at level " << lvl << "; consider starting with a smaller modulus"
-                         << " to improve performance.";
+        if (!suppress_warnings) {
+            decryption_warning(encrypted.he_level());
         }
 
         seal_decryptor->decrypt(encrypted.seal_ct, temp);

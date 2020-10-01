@@ -77,4 +77,6 @@ namespace hit {
         }
     }
 
+    void decryption_warning(int level);
+
 }  // namespace hit
