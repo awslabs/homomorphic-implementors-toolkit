@@ -125,7 +125,7 @@ namespace hit {
     }
 
     void PlaintextEval::negate_inplace_internal(CKKSCiphertext &ct) {
-        map_inplace(ct.raw_pt, std::negate<>());
+        map_inplace(ct.raw_pt, negate<>());
     }
 
     void PlaintextEval::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
