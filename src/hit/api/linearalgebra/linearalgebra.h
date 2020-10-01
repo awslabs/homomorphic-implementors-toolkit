@@ -440,6 +440,18 @@ namespace hit {
                     "Arguments to LinearAlgebra::hadamard_multiply do not have the same dimensions: " +
                     dim_string(arg1) + " " + dim_string(arg2));
             }
+            if (arg1.he_level() != arg2.he_level()) {
+                throw std::invalid_argument("LinearAlgebra::hadamard_multiply: arguments are not at the same level");
+            }
+            if (arg1.scale() != arg2.scale()) {
+                throw std::invalid_argument("LinearAlgebra::hadamard_multiply: arguments do not have the same scale");
+            }
+            if (arg1.needs_rescale() != arg2.needs_rescale()) {
+                throw std::invalid_argument("LinearAlgebra::hadamard_multiply: arguments must have nominal scale");
+            }
+            if (arg1.needs_relin() != arg2.needs_relin()) {
+                throw std::invalid_argument("LinearAlgebra::hadamard_multiply: arguments must be linear ciphertexts");
+            }
             for (size_t i = 0; i < arg1.num_cts(); i++) {
                 eval.multiply_inplace(arg1[i], arg2[i]);
             }
@@ -486,6 +498,12 @@ namespace hit {
         void hadamard_square_inplace(T &arg) {
             if (!arg.initialized()) {
                 throw std::invalid_argument("LinearAlgebra::hadamard_square: argument not initialized.");
+            }
+            if (arg.needs_rescale()) {
+                throw std::invalid_argument("LinearAlgebra::hadamard_square: argument must have nominal scale");
+            }
+            if (arg.needs_relin()) {
+                throw std::invalid_argument("LinearAlgebra::hadamard_square: argument must be a linear ciphertext");
             }
 
             for (size_t i = 0; i < arg.num_cts(); i++) {
