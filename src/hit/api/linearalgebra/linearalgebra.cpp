@@ -251,7 +251,7 @@ namespace hit {
     EncryptedMatrix LinearAlgebra::hadamard_multiply(const EncryptedRowVector &enc_vec,
                                                      const EncryptedMatrix &enc_mat) {
         if (!enc_vec.initialized() || !enc_mat.initialized()) {
-            throw std::invalid_argument("LinearAlgebra::hadamard_multiply: arguments not initialized.");
+            throw invalid_argument("LinearAlgebra::hadamard_multiply: arguments not initialized.");
         }
         if (enc_mat.height() != enc_vec.width() || enc_mat.encoding_unit() != enc_vec.encoding_unit()) {
             throw invalid_argument("Dimension mismatch in LinearAlgebra::hadamard_multiply: " + dim_string(enc_mat) +
@@ -265,7 +265,7 @@ namespace hit {
             iterIdxs[i] = i;
         }
 
-        std::for_each(execution::par, begin(iterIdxs), end(iterIdxs),
+        for_each(execution::par, begin(iterIdxs), end(iterIdxs),
                       [&](int j) { cts_transpose[j] = matrix_rowvec_hadamard_mul_loop(enc_vec, enc_mat, j);
         });
 
@@ -296,7 +296,7 @@ namespace hit {
     EncryptedMatrix LinearAlgebra::hadamard_multiply(const EncryptedMatrix &enc_mat,
                                                      const EncryptedColVector &enc_vec) {
         if (!enc_vec.initialized() || !enc_mat.initialized()) {
-            throw std::invalid_argument("LinearAlgebra::hadamard_multiply: arguments not initialized.");
+            throw invalid_argument("LinearAlgebra::hadamard_multiply: arguments not initialized.");
         }
         if (enc_mat.width() != enc_vec.height() || enc_mat.encoding_unit() != enc_vec.encoding_unit()) {
             throw invalid_argument("Dimension mismatch in LinearAlgebra::hadamard_multiply: " + dim_string(enc_mat) +
@@ -322,7 +322,7 @@ namespace hit {
             iterIdxs[i] = i;
         }
 
-        std::for_each(execution::par, begin(iterIdxs), end(iterIdxs),
+        for_each(execution::par, begin(iterIdxs), end(iterIdxs),
                       [&](int i) { cts[i] = matrix_colvec_hadamard_mul_loop(enc_mat, enc_vec, i);
         });
 
@@ -482,7 +482,7 @@ namespace hit {
             iterIdxs[i] = i;
         }
 
-        std::for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int k) {
+        for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int k) {
             row_results[k] = matrix_matrix_mul_loop(enc_mat_a_trans, enc_mat_b, scalar, k, transpose_unit);
         });
 
@@ -492,10 +492,10 @@ namespace hit {
     EncryptedMatrix LinearAlgebra::multiply(const EncryptedMatrix &enc_mat_a_trans, const EncryptedMatrix &enc_mat_b,
                                             double scalar) {
         if (!enc_mat_a_trans.initialized() || !enc_mat_b.initialized()) {
-            throw std::invalid_argument("Arguments to LinearAlgebra::multiply are not initialized");
+            throw invalid_argument("Arguments to LinearAlgebra::multiply are not initialized");
         }
         if (enc_mat_a_trans.he_level() != enc_mat_b.he_level() + 1) {
-            throw std::invalid_argument("Second argument to LinearAlgebra::multiply must be one level below first argument");
+            throw invalid_argument("Second argument to LinearAlgebra::multiply must be one level below first argument");
         }
         if (enc_mat_a_trans.height() != enc_mat_b.height() ||
             enc_mat_a_trans.encoding_unit() != enc_mat_b.encoding_unit()) {
@@ -651,7 +651,7 @@ namespace hit {
             iterIdxs[i] = i;
         }
 
-        std::for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int i) {
+        for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int i) {
             cts[i] = sum_cols_core(eval.add_many(enc_mat.cts[i]), enc_mat.encoding_unit(), scalar);
         });
 
@@ -751,7 +751,7 @@ namespace hit {
             iterIdxs[i] = i;
         }
 
-        std::for_each(execution::par, begin(iterIdxs), end(iterIdxs),
+        for_each(execution::par, begin(iterIdxs), end(iterIdxs),
                       [&](int j) { cts[j] = sum_rows_core(enc_mat, j);
         });
 

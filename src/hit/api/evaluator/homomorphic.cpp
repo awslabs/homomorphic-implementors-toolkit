@@ -84,7 +84,7 @@ namespace hit {
             standard_params_ = false;
         }
         encoder = new CKKSEncoder(context);
-        seal_evaluator = new seal::Evaluator(context);
+        seal_evaluator = new Evaluator(context);
 
         int num_galois_keys = galois_steps.size();
         LOG(INFO) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth << ", including "
@@ -174,7 +174,7 @@ namespace hit {
                 print_elapsed_time(start);
             }
         }
-        seal_evaluator = new seal::Evaluator(context);
+        seal_evaluator = new Evaluator(context);
         encoder = new CKKSEncoder(context);
 
 

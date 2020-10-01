@@ -360,13 +360,13 @@ namespace hit {
     void CKKSEvaluator::negate_inplace_internal(CKKSCiphertext&) { };
     void CKKSEvaluator::add_inplace_internal(CKKSCiphertext&, const CKKSCiphertext&) { };
     void CKKSEvaluator::add_plain_inplace_internal(CKKSCiphertext&, double) { };
-    void CKKSEvaluator::add_plain_inplace_internal(CKKSCiphertext&, const std::vector<double>&) { };
+    void CKKSEvaluator::add_plain_inplace_internal(CKKSCiphertext&, const vector<double>&) { };
     void CKKSEvaluator::sub_inplace_internal(CKKSCiphertext&, const CKKSCiphertext&) { };
     void CKKSEvaluator::sub_plain_inplace_internal(CKKSCiphertext&, double) { };
-    void CKKSEvaluator::sub_plain_inplace_internal(CKKSCiphertext&, const std::vector<double>&) { };
+    void CKKSEvaluator::sub_plain_inplace_internal(CKKSCiphertext&, const vector<double>&) { };
     void CKKSEvaluator::multiply_inplace_internal(CKKSCiphertext&, const CKKSCiphertext&) { };
     void CKKSEvaluator::multiply_plain_inplace_internal(CKKSCiphertext&, double) { };
-    void CKKSEvaluator::multiply_plain_inplace_internal(CKKSCiphertext&, const std::vector<double>&) { };
+    void CKKSEvaluator::multiply_plain_inplace_internal(CKKSCiphertext&, const vector<double>&) { };
     void CKKSEvaluator::square_inplace_internal(CKKSCiphertext&) { };
     void CKKSEvaluator::reduce_level_to_inplace_internal(CKKSCiphertext&, int) { };
     void CKKSEvaluator::rescale_to_next_inplace_internal(CKKSCiphertext&) { };

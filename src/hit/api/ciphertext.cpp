@@ -12,7 +12,7 @@ using namespace seal;
 
 namespace hit {
 
-    void CKKSCiphertext::read_from_proto(const shared_ptr<seal::SEALContext> &context, const protobuf::Ciphertext &proto_ct) {
+    void CKKSCiphertext::read_from_proto(const shared_ptr<SEALContext> &context, const protobuf::Ciphertext &proto_ct) {
         initialized = proto_ct.initialized();
         scale_ = proto_ct.scale();
         he_level_ = proto_ct.he_level();

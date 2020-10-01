@@ -7,6 +7,7 @@
 #include <execution>
 
 using namespace std;
+using namespace seal;
 
 namespace hit {
     EncryptedColVector::EncryptedColVector(int height, const EncodingUnit &unit, vector<CKKSCiphertext> &cts)
@@ -14,7 +15,7 @@ namespace hit {
         validate_init();
     }
 
-    void EncryptedColVector::read_from_proto(const shared_ptr<seal::SEALContext> &context,
+    void EncryptedColVector::read_from_proto(const shared_ptr<SEALContext> &context,
                                              const protobuf::EncryptedColVector &encrypted_col_vector) {
         height_ = encrypted_col_vector.height();
         unit = EncodingUnit(encrypted_col_vector.unit());
@@ -23,12 +24,12 @@ namespace hit {
         validate_init();
     }
 
-    EncryptedColVector::EncryptedColVector(const shared_ptr<seal::SEALContext> &context,
+    EncryptedColVector::EncryptedColVector(const shared_ptr<SEALContext> &context,
                                            const protobuf::EncryptedColVector &encrypted_col_vector) {
         read_from_proto(context, encrypted_col_vector);
     }
 
-    EncryptedColVector::EncryptedColVector(const shared_ptr<seal::SEALContext> &context,
+    EncryptedColVector::EncryptedColVector(const shared_ptr<SEALContext> &context,
                                            istream &stream) {
         protobuf::EncryptedColVector proto_vec;
         proto_vec.ParseFromIstream(&stream);
