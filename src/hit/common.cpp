@@ -54,7 +54,7 @@ namespace hit {
 
     void print_elapsed_time(timepoint start) {
         timepoint end = chrono::steady_clock::now();
-        LOG(INFO) << elapsed_time_to_str(start, end);
+        VLOG(VLOG_STATUS) << elapsed_time_to_str(start, end);
     }
 
     // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
@@ -93,10 +93,13 @@ namespace hit {
         }
 
         if (expected_l2_norm <= max_allowed_l2_norm) {
-            LOG(INFO) << "WEIRD NORM SITUATION: " << expected_l2_norm << "\t" << actual_l2_norm;
+            // An unexpected situation.
+            LOG(WARNING) << "The expected result's norm is nearly zero (2^" << setprecision(8) << log2(expected_l2_norm)
+                         << "), but the actual result's norm is non-zero (2^"  << log2(actual_l2_norm) << ")";
         }
         if (diff_l2_norm > MAX_NORM) {
-            LOG(INFO) << "LogL2Norm: " << setprecision(8) << log2(expected_l2_norm);
+            LOG(WARNING) << "Relative norm is somewhat large (2^" << setprecision(8) << log2(diff_l2_norm)
+                         << "); there may be an error in the computation.";
         }
         return diff_l2_norm;
     }

@@ -66,48 +66,44 @@ namespace hit {
         params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulusVector));
         timepoint start = chrono::steady_clock::now();
         if (use_seal_params) {
-            VLOG(LOG_VERBOSE) << "Creating encryption context...";
+            VLOG(VLOG_STATUS) << "Creating encryption context...";
             context = SEALContext::Create(params);
-            if (VLOG_IS_ON(LOG_VERBOSE)) {
-                print_elapsed_time(start);
-            }
+            print_elapsed_time(start);
             standard_params_ = true;
         } else {
             LOG(WARNING) << "YOU ARE NOT USING SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security"
                          << "DO NOT USE IN PRODUCTION";
             // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-            VLOG(LOG_VERBOSE) << "Creating encryption context...";
+            VLOG(VLOG_STATUS) << "Creating encryption context...";
             context = SEALContext::Create(params, true, sec_level_type::none);
-            if (VLOG_IS_ON(LOG_VERBOSE)) {
-                print_elapsed_time(start);
-            }
+            print_elapsed_time(start);
             standard_params_ = false;
         }
         encoder = new CKKSEncoder(context);
         seal_evaluator = new Evaluator(context);
 
         int num_galois_keys = galois_steps.size();
-        LOG(INFO) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth << ", including "
+        VLOG(VLOG_STATUS) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth << ", including "
                   << (num_galois_keys != 0 ? to_string(num_galois_keys) : "all") << " Galois keys." << endl;
 
         double keys_size_bytes = estimate_key_size(galois_steps.size(), num_slots, multiplicative_depth);
-        LOG(INFO) << "Estimated size is " << setprecision(3);
+        VLOG(VLOG_STATUS) << "Estimated size is " << setprecision(3);
         // using base-10 (SI) units, rather than base-2 units.
         double unit_multiplier = 1000;
         double bytes_per_kb = unit_multiplier;
         double bytes_per_mb = bytes_per_kb * unit_multiplier;
         double bytes_per_gb = bytes_per_mb * unit_multiplier;
         if (keys_size_bytes < bytes_per_kb) {
-            LOG(INFO) << keys_size_bytes << " bytes";
+            VLOG(VLOG_STATUS) << keys_size_bytes << " bytes";
         } else if (keys_size_bytes < bytes_per_mb) {
-            LOG(INFO) << keys_size_bytes / bytes_per_kb << " kilobytes (base 10)";
+            VLOG(VLOG_STATUS) << keys_size_bytes / bytes_per_kb << " kilobytes (base 10)";
         } else if (keys_size_bytes < bytes_per_gb) {
-            LOG(INFO) << keys_size_bytes / bytes_per_mb << " megabytes (base 10)";
+            VLOG(VLOG_STATUS) << keys_size_bytes / bytes_per_mb << " megabytes (base 10)";
         } else {
-            LOG(INFO) << keys_size_bytes / bytes_per_gb << " gigabytes (base 10)";
+            VLOG(VLOG_STATUS) << keys_size_bytes / bytes_per_gb << " gigabytes (base 10)";
         }
 
-        LOG(INFO) << "Generating keys...";
+        VLOG(VLOG_STATUS) << "Generating keys...";
         start = chrono::steady_clock::now();
 
         // generate keys
@@ -158,20 +154,16 @@ namespace hit {
         standard_params_ = ckks_params.standardparams();
         timepoint start = chrono::steady_clock::now();
         if (standard_params_) {
-            VLOG(LOG_VERBOSE) << "Creating encryption context...";
+            VLOG(VLOG_STATUS) << "Creating encryption context...";
             context = SEALContext::Create(params);
-            if (VLOG_IS_ON(LOG_VERBOSE)) {
-                print_elapsed_time(start);
-            }
+            print_elapsed_time(start);
         } else {
             LOG(WARNING) << "YOU ARE NOT USING SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security."
                          << " DO NOT USE IN PRODUCTION";
             // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-            VLOG(LOG_VERBOSE) << "Creating encryption context...";
+            VLOG(VLOG_STATUS) << "Creating encryption context...";
             context = SEALContext::Create(params, true, sec_level_type::none);
-            if (VLOG_IS_ON(LOG_VERBOSE)) {
-                print_elapsed_time(start);
-            }
+            print_elapsed_time(start);
         }
         seal_evaluator = new Evaluator(context);
         encoder = new CKKSEncoder(context);
@@ -188,12 +180,10 @@ namespace hit {
         deserialize_common(params_stream);
 
         timepoint start = chrono::steady_clock::now();
-        VLOG(LOG_VERBOSE) << "Reading keys...";
+        VLOG(VLOG_STATUS) << "Reading keys...";
         galois_keys.load(context, galois_key_stream);
         relin_keys.load(context, relin_key_stream);
-        if (VLOG_IS_ON(LOG_VERBOSE)) {
-            print_elapsed_time(start);
-        }
+        print_elapsed_time(start);
     }
 
     /* A full instance */
@@ -202,13 +192,11 @@ namespace hit {
         deserialize_common(params_stream);
 
         timepoint start = chrono::steady_clock::now();
-        VLOG(LOG_VERBOSE) << "Reading keys...";
+        VLOG(VLOG_STATUS) << "Reading keys...";
         sk.load(context, secret_key_stream);
         galois_keys.load(context, galois_key_stream);
         relin_keys.load(context, relin_key_stream);
-        if (VLOG_IS_ON(LOG_VERBOSE)) {
-            print_elapsed_time(start);
-        }
+        print_elapsed_time(start);
         seal_decryptor = new Decryptor(context, sk);
     }
 

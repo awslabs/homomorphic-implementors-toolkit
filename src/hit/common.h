@@ -12,7 +12,9 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 
-#define LOG_VERBOSE 1
+#define VLOG_EVAL 1
+#define VLOG_VERBOSE_EVAL 1
+#define VLOG_STATUS 1
 
 #define INVALID_PARAMETER_EXCEPTION 10
 

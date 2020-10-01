@@ -51,7 +51,7 @@ namespace hit {
     // print some debug info
     void DepthFinder::print_stats(         // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
         const CKKSCiphertext &ct) const {  // NOLINT(readability-convert-member-functions-to-static)
-        VLOG(LOG_VERBOSE) << "    + Level: " << ct.he_level();
+        VLOG(VLOG_EVAL) << "    + Level: " << ct.he_level();
     }
 
     int DepthFinder::num_slots() const {

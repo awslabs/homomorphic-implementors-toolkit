@@ -20,52 +20,50 @@ namespace hit {
         scale_estimator = new ScaleEstimator(num_slots, *homomorphic_eval);
         log_scale_ = homomorphic_eval->log_scale_;
 
-        if (VLOG_IS_ON(LOG_VERBOSE)) {
-            print_parameters(homomorphic_eval->context);
+        print_parameters(homomorphic_eval->context);
 
-            // There are convenience method for accessing the SEALContext::ContextData for
-            // some of the most important levels:
+        // There are convenience method for accessing the SEALContext::ContextData for
+        // some of the most important levels:
 
-            //     SEALContext::key_context_data(): access to key level ContextData
-            //     SEALContext::first_context_data(): access to highest data level ContextData
-            //     SEALContext::last_context_data(): access to lowest level ContextData
+        //     SEALContext::key_context_data(): access to key level ContextData
+        //     SEALContext::first_context_data(): access to highest data level ContextData
+        //     SEALContext::last_context_data(): access to lowest level ContextData
 
-            // We iterate over the chain and print the parms_id for each set of parameters.
-            LOG(INFO) << "Print the modulus switching chain.";
+        // We iterate over the chain and print the parms_id for each set of parameters.
+        VLOG(VLOG_VERBOSE_EVAL) << "Print the modulus switching chain.";
 
-            // First print the key level parameter information.
-            auto context_data = homomorphic_eval->context->key_context_data();
-            LOG(INFO) << "----> Level (chain index): " << context_data->chain_index() << " ...... key_context_data()";
-            LOG(INFO) << "      parms_id: " << context_data->parms_id();
-            stringstream key_level_primes;
-            for (const auto &prime : context_data->parms().coeff_modulus()) {
-                key_level_primes << prime.value() << " ";
-            }
-            LOG(INFO) << "      coeff_modulus primes: " << hex << key_level_primes.str() << dec;
-            LOG(INFO) << "\\";
-
-            // Next iterate over the remaining (data) levels.
-            context_data = homomorphic_eval->context->first_context_data();
-            while (context_data) {
-                LOG(INFO) << " \\--> Level (chain index): " << context_data->chain_index();
-                if (context_data->parms_id() == homomorphic_eval->context->first_parms_id()) {
-                    LOG(INFO) << " ...... first_context_data()";
-                } else if (context_data->parms_id() == homomorphic_eval->context->last_parms_id()) {
-                    LOG(INFO) << " ...... last_context_data()";
-                }
-                LOG(INFO) << "      parms_id: " << context_data->parms_id() << endl;
-                stringstream data_level_primes;
-                for (const auto &prime : context_data->parms().coeff_modulus()) {
-                    data_level_primes << prime.value() << " ";
-                }
-                LOG(INFO) << "      coeff_modulus primes: " << hex << data_level_primes.str() << dec;
-                LOG(INFO) << "\\";
-
-                // Step forward in the chain.
-                context_data = context_data->next_context_data();
-            }
-            LOG(INFO) << " End of chain reached" << endl;
+        // First print the key level parameter information.
+        auto context_data = homomorphic_eval->context->key_context_data();
+        VLOG(VLOG_VERBOSE_EVAL) << "----> Level (chain index): " << context_data->chain_index() << " ...... key_context_data()";
+        VLOG(VLOG_VERBOSE_EVAL) << "      parms_id: " << context_data->parms_id();
+        stringstream key_level_primes;
+        for (const auto &prime : context_data->parms().coeff_modulus()) {
+            key_level_primes << prime.value() << " ";
         }
+        VLOG(VLOG_VERBOSE_EVAL) << "      coeff_modulus primes: " << hex << key_level_primes.str() << dec;
+        VLOG(VLOG_VERBOSE_EVAL) << "\\";
+
+        // Next iterate over the remaining (data) levels.
+        context_data = homomorphic_eval->context->first_context_data();
+        while (context_data) {
+            VLOG(VLOG_VERBOSE_EVAL) << " \\--> Level (chain index): " << context_data->chain_index();
+            if (context_data->parms_id() == homomorphic_eval->context->first_parms_id()) {
+                VLOG(VLOG_VERBOSE_EVAL) << " ...... first_context_data()";
+            } else if (context_data->parms_id() == homomorphic_eval->context->last_parms_id()) {
+                VLOG(VLOG_VERBOSE_EVAL) << " ...... last_context_data()";
+            }
+            VLOG(VLOG_VERBOSE_EVAL) << "      parms_id: " << context_data->parms_id() << endl;
+            stringstream data_level_primes;
+            for (const auto &prime : context_data->parms().coeff_modulus()) {
+                data_level_primes << prime.value() << " ";
+            }
+            VLOG(VLOG_VERBOSE_EVAL) << "      coeff_modulus primes: " << hex << data_level_primes.str() << dec;
+            VLOG(VLOG_VERBOSE_EVAL) << "\\";
+
+            // Step forward in the chain.
+            context_data = context_data->next_context_data();
+        }
+        VLOG(VLOG_VERBOSE_EVAL) << " End of chain reached" << endl;
     }
 
     DebugEval::DebugEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,
@@ -128,21 +126,19 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
 
-        VLOG(LOG_VERBOSE) << setprecision(8) << "    + Approximation norm: " << norm;
+        VLOG(VLOG_EVAL) << setprecision(8) << "    + Approximation norm: " << norm;
 
         int max_print_size = 8;
-        if (VLOG_IS_ON(LOG_VERBOSE)) {
-            stringstream verbose_info;
-            verbose_info << "    + Homom Result:   < ";
-            for (int i = 0; i < min(max_print_size, static_cast<int>(homom_plaintext.size())); i++) {
-                verbose_info << setprecision(8) << homom_plaintext[i] << ", ";
-            }
-            if (homom_plaintext.size() > max_print_size) {
-                verbose_info << "... ";
-            }
-            verbose_info << ">";
-            VLOG(LOG_VERBOSE) << verbose_info.str();
+        stringstream verbose_info;
+        verbose_info << "    + Homom Result:   < ";
+        for (int i = 0; i < min(max_print_size, static_cast<int>(homom_plaintext.size())); i++) {
+            verbose_info << setprecision(8) << homom_plaintext[i] << ", ";
         }
+        if (homom_plaintext.size() > max_print_size) {
+            verbose_info << "... ";
+        }
+        verbose_info << ">";
+        VLOG(VLOG_EVAL) << verbose_info.str();
 
         if (norm > MAX_NORM) {
             stringstream buffer;
@@ -162,7 +158,7 @@ namespace hit {
                 expect_debug_result << "..., ";
             }
             expect_debug_result << ">";
-            LOG(INFO) << expect_debug_result.str();
+            VLOG(VLOG_EVAL) << expect_debug_result.str();
 
             stringstream actual_debug_result;
             actual_debug_result << "    + DEBUG Actual result:   <";
@@ -176,7 +172,7 @@ namespace hit {
                 actual_debug_result << "..., ";
             }
             actual_debug_result << ">";
-            LOG(INFO) << actual_debug_result.str();
+            VLOG(VLOG_EVAL) << actual_debug_result.str();
 
             Plaintext encoded_plain;
             homomorphic_eval->encoder->encode(ct.raw_pt, pow(2,log_scale_), encoded_plain);
@@ -193,8 +189,8 @@ namespace hit {
             double norm2 = relative_error(exact_plaintext, truncated_decoded_plain);
             double norm3 = relative_error(truncated_decoded_plain, homom_plaintext);
 
-            LOG(INFO) << "Encoding norm: " << norm2;
-            LOG(INFO) << "Encryption norm: " << norm3;
+            VLOG(VLOG_EVAL) << "Encoding norm: " << norm2;
+            VLOG(VLOG_EVAL) << "Encryption norm: " << norm3;
 
             throw invalid_argument(buffer.str());
         }
@@ -282,8 +278,8 @@ namespace hit {
         // To get decimal places, add `<< fixed << setprecision(2)` before printing the log.
         // Note that you'll need a lot of decimal places because these values are very close
         // to an integer.
-        VLOG(LOG_VERBOSE) << "    + Scaled plaintext down by the ~" << prime_bit_len << "-bit prime " << hex << p
-                          << dec;
+        VLOG(VLOG_EVAL) << "    + Scaled plaintext down by the ~" << prime_bit_len << "-bit prime " << hex << p
+                        << dec;
     }
 
     void DebugEval::relinearize_inplace_internal(CKKSCiphertext &ct) {

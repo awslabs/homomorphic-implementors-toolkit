@@ -26,15 +26,15 @@ namespace hit {
 
     void OpCount::print_op_count() const {
         shared_lock lock(mutex_);
-        LOG(INFO) << "Multiplications: " << multiplies_;
-        LOG(INFO) << "ReduceLevelMuls: " << reduce_level_muls_;
-        LOG(INFO) << "Additions: " << additions_;
-        LOG(INFO) << "Negations: " << negations_;
-        LOG(INFO) << "Rotations: " << rotations_;
-        LOG(INFO) << "ReduceLevels: " << reduce_levels_;
-        LOG(INFO) << "Encryptions: " << encryptions_;
-        LOG(INFO) << "Rescales: " << rescales_;
-        LOG(INFO) << "Relinearizations: " << relins_;
+        VLOG(VLOG_EVAL) << "Multiplications: " << multiplies_;
+        VLOG(VLOG_EVAL) << "ReduceLevelMuls: " << reduce_level_muls_;
+        VLOG(VLOG_EVAL) << "Additions: " << additions_;
+        VLOG(VLOG_EVAL) << "Negations: " << negations_;
+        VLOG(VLOG_EVAL) << "Rotations: " << rotations_;
+        VLOG(VLOG_EVAL) << "ReduceLevels: " << reduce_levels_;
+        VLOG(VLOG_EVAL) << "Encryptions: " << encryptions_;
+        VLOG(VLOG_EVAL) << "Rescales: " << rescales_;
+        VLOG(VLOG_EVAL) << "Relinearizations: " << relins_;
     }
 
     int OpCount::num_slots() const {

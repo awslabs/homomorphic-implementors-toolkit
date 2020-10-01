@@ -54,10 +54,10 @@ namespace hit {
             default:
                 throw invalid_argument("unsupported scheme");
         }
-        LOG(INFO) << "/";
-        LOG(INFO) << "| Encryption parameters :";
-        LOG(INFO) << "|   scheme: " << scheme_name;
-        LOG(INFO) << "|   poly_modulus_degree: " << context_data.parms().poly_modulus_degree();
+        VLOG(VLOG_VERBOSE_EVAL) << "/";
+        VLOG(VLOG_VERBOSE_EVAL) << "| Encryption parameters :";
+        VLOG(VLOG_VERBOSE_EVAL) << "|   scheme: " << scheme_name;
+        VLOG(VLOG_VERBOSE_EVAL) << "|   poly_modulus_degree: " << context_data.parms().poly_modulus_degree();
 
         /*
         Print the size of the true (product) coefficient modulus.
@@ -72,16 +72,16 @@ namespace hit {
         }
         coeff_modulus_size_info << coeff_modulus.back().bit_count();
         coeff_modulus_size_info << ") bits";
-        LOG(INFO) << coeff_modulus_size_info.str();
+        VLOG(VLOG_VERBOSE_EVAL) << coeff_modulus_size_info.str();
 
         /*
         For the BFV scheme print the plain_modulus parameter.
         */
         if (context_data.parms().scheme() == scheme_type::BFV) {
-            LOG(INFO) << "|   plain_modulus: " << context_data.parms().plain_modulus().value();
+            VLOG(VLOG_VERBOSE_EVAL) << "|   plain_modulus: " << context_data.parms().plain_modulus().value();
         }
 
-        LOG(INFO) << "\\";
+        VLOG(VLOG_VERBOSE_EVAL) << "\\";
     }
 
     /*

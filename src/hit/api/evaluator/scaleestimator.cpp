@@ -122,9 +122,6 @@ namespace hit {
 
     // print some debug info
     void ScaleEstimator::print_stats(const CKKSCiphertext &ct) const {
-        if (!VLOG_IS_ON(LOG_VERBOSE)) {
-            return;
-        }
         double exact_plaintext_max_val = l_inf_norm(ct.raw_pt);
         double log_modulus = 0;
         auto context_data = get_context_data(context, ct.he_level());
@@ -132,11 +129,11 @@ namespace hit {
             log_modulus += log2(prime.value());
         }
         plaintext_eval->print_stats(ct);
-        VLOG(LOG_VERBOSE) << "    + Level: " << ct.he_level();
-        VLOG(LOG_VERBOSE) << "    + Plaintext logmax: " << log2(exact_plaintext_max_val)
+        VLOG(VLOG_EVAL) << "    + Level: " << ct.he_level();
+        VLOG(VLOG_EVAL) << "    + Plaintext logmax: " << log2(exact_plaintext_max_val)
                           << " bits (scaled: " << log2(ct.scale()) + log2(exact_plaintext_max_val) << " bits)";
-        VLOG(LOG_VERBOSE) << "    + Total modulus size: " << setprecision(4) << log_modulus << " bits";
-        VLOG(LOG_VERBOSE) << "    + Theoretical max log scale: " << get_estimated_max_log_scale() << " bits";
+        VLOG(VLOG_EVAL) << "    + Total modulus size: " << setprecision(4) << log_modulus << " bits";
+        VLOG(VLOG_EVAL) << "    + Theoretical max log scale: " << get_estimated_max_log_scale() << " bits";
     }
 
     // At all times, we need ct.scale*l_inf_norm(ct.getPlaintext()) <~ q/4

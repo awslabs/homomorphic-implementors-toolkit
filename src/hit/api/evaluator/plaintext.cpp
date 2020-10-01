@@ -51,9 +51,7 @@ namespace hit {
     // print some debug info
     void PlaintextEval::print_stats(       // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
         const CKKSCiphertext &ct) const {  // NOLINT(readability-convert-member-functions-to-static)
-        if (!VLOG_IS_ON(LOG_VERBOSE)) {
-            return;
-        }
+
         // extract just the elements we care about from the real plaintext
         vector<double> exact_plaintext = ct.plaintext();
 
@@ -67,7 +65,7 @@ namespace hit {
             exact_plaintext_info << "... ";
         }
         exact_plaintext_info << ">";
-        VLOG(LOG_VERBOSE) << exact_plaintext_info.str();
+        VLOG(VLOG_EVAL) << exact_plaintext_info.str();
     }
 
     void PlaintextEval::update_max_log_plain_val(const CKKSCiphertext &ct) {
