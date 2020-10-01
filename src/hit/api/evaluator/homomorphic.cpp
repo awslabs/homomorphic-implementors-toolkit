@@ -112,6 +112,7 @@ namespace hit {
                 print_elapsed_time(start);
             }
         }
+        seal_evaluator = new seal::Evaluator(context);
         encoder = new CKKSEncoder(context);
 
 
@@ -147,6 +148,7 @@ namespace hit {
         if (VLOG_IS_ON(LOG_VERBOSE)) {
             print_elapsed_time(start);
         }
+        seal_decryptor = new Decryptor(context, sk);
     }
 
     HomomorphicEval::~HomomorphicEval() {
