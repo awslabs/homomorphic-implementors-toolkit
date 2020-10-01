@@ -131,6 +131,7 @@
  * use it for encryption and decryption.
  */
 #include "hit/hit.h"
+#include <glog/logging.h>
 
 using namespace std;
 using namespace hit;
@@ -162,20 +163,20 @@ void example_1_driver() {
 
 	// Generate a plaintext with `num_slots` random coefficients, each with absolute value < `plaintext_inf_norm`
 	int plaintext_inf_norm = 10;
-	vector<double> plaintext = randomVector(num_slots, plaintext_inf_norm);
+	vector<double> plaintext = random_vector(num_slots, plaintext_inf_norm);
 
 	// Encrypt the plaintext. By default, the ciphertext is created at the maximum
 	// level allowed by the parameters, which is `max_depth`.
 	CKKSCiphertext ciphertext1 = inst.encrypt(plaintext);
 
 	// We can verify the number of plaintext coefficients in the ciphertext
-	cout << "Ciphertext1 encrypts " << ciphertext1.num_slots() << " coefficients; expected " << num_slots << endl;
+	LOG(INFO) << "Ciphertext1 encrypts " << ciphertext1.num_slots() << " coefficients; expected " << num_slots;
 
 	// At any point, we can check the level of a ciphertext
-	cout << "Ciphertext1 is at level " << ciphertext1.he_level() << "; expected " << max_depth << endl;
+	LOG(INFO) << "Ciphertext1 is at level " << ciphertext1.he_level() << "; expected " << max_depth;
 
 	// We can also check the scale of the ciphertext
-	cout << "Ciphertext1 has a scale of " << log2(ciphertext1.scale()) << " bits; expected " << log_scale << endl;
+	LOG(INFO) << "Ciphertext1 has a scale of " << log2(ciphertext1.scale()) << " bits; expected " << log_scale;
 
 	// Finally, we can decrypt a ciphertext to recover a plaintext which is close to the input
 	vector<double> recovered_pt1 = inst.decrypt(ciphertext1);
@@ -183,7 +184,7 @@ void example_1_driver() {
 	// Compute the |expected-actual|/|expected|, where |*| denotes the 2-norm.
 	// If the decrypted value was identical to the input plaintext, this would be exactly;
 	// instead we see that the 2-norm of the difference is small but non-zero.
-	cout << "Relative difference between input and decrypted output: " << relative_error(plaintext, recovered_pt1) << endl;
+	LOG(INFO) << "Relative difference between input and decrypted output: " << relative_error(plaintext, recovered_pt1);
 
 	// Decryption issues a log message because `ciphertext1` is not at level 0, which is where
 	// we expect most decryption to happen since we usually decrypt only at the end of a computation.
@@ -196,10 +197,10 @@ void example_1_driver() {
 
 	// Instead of being encrypted at level 1, which is the highest possible level for these parameters,
 	// ciphertext2 is encrypted at level 0.
-	cout << "Ciphertext2 is at level " << ciphertext2.he_level() << " rather than the default, level " << max_depth << endl;
+	LOG(INFO) << "Ciphertext2 is at level " << ciphertext2.he_level() << " rather than the default, level " << max_depth;
 
 	// No log message is generated here since the input is at level 0.
 	vector<double> recovered_pt2 = inst.decrypt(ciphertext2);
 
-	cout << "Decryption level doesn't affect noise, the relative difference is similar: " << relative_error(plaintext, recovered_pt2) << endl;
+	LOG(INFO) << "Decryption level doesn't affect noise, the relative difference is similar: " << relative_error(plaintext, recovered_pt2);
 }

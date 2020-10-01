@@ -10,7 +10,7 @@ add_executable(hit-examples
   example_5_serialization.cpp
 )
 set_common_flags(hit-examples)
-target_link_libraries(hit-examples aws-hit)
+target_link_libraries(hit-examples aws-hit glog::glog)
 
 add_custom_target(
   run_hit_examples

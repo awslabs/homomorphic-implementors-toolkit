@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <iostream>
+#include <glog/logging.h>
 
 using namespace std;
 
@@ -11,20 +12,21 @@ extern void example_3_driver();
 extern void example_4_driver();
 extern void example_5_driver();
 
-int main() {
-	VLOG(LOG_VERBOSE) << "Running example 1: " << endl;
+int main(int, char **argv) {
+	google::InitGoogleLogging(argv[0]);
+	LOG(INFO) << "Running example 1: " << endl;
 	example_1_driver();
-	VLOG(LOG_VERBOSE) << endl << endl;
-	VLOG(LOG_VERBOSE) << "Running example 2: " << endl;
+	LOG(INFO) << endl << endl;
+	LOG(INFO) << "Running example 2: " << endl;
 	example_2_driver();
-	VLOG(LOG_VERBOSE) << endl << endl;
-	VLOG(LOG_VERBOSE) << "Running example 3: " << endl;
+	LOG(INFO) << endl << endl;
+	LOG(INFO) << "Running example 3: " << endl;
 	example_3_driver();
-	VLOG(LOG_VERBOSE) << endl << endl;
-	VLOG(LOG_VERBOSE) << "Running example 4: " << endl;
+	LOG(INFO) << endl << endl;
+	LOG(INFO) << "Running example 4: " << endl;
 	example_4_driver();
-	VLOG(LOG_VERBOSE) << endl << endl;
-	VLOG(LOG_VERBOSE) << "Running example 5: " << endl;
+	LOG(INFO) << endl << endl;
+	LOG(INFO) << "Running example 5: " << endl;
 	example_5_driver();
-	VLOG(LOG_VERBOSE) << "Done with all examples!" << endl;
+	LOG(INFO) << "Done with all examples!" << endl;
 }

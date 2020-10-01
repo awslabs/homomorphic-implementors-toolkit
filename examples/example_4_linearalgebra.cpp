@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hit/hit.h"
+#include <glog/logging.h>
 
 using namespace std;
 using namespace hit;
@@ -93,32 +94,32 @@ void example_4_driver() {
 	// We can now encrypt this matrix with respect to both units
 	EncryptedMatrix enc_mat1 = la_inst.encrypt(mat, unit_64x128);
 	// The ciphertext knows the plaintext's original height and width.
-	cout << "enc_mat1 has dimension " << enc_mat1.height() << "x" << enc_mat1.width() << endl;
+	LOG(INFO) << "enc_mat1 has dimension " << enc_mat1.height() << "x" << enc_mat1.width();
 	// We can also see how many encoding units it took to tile this matrix in each direction
-	cout << "enc_mat1 is encoded as a " << enc_mat1.num_vertical_units() << "x"
-	     << enc_mat1.num_horizontal_units() << " grid of encoding units." << endl;
+	LOG(INFO) << "enc_mat1 is encoded as a " << enc_mat1.num_vertical_units() << "x"
+	     << enc_mat1.num_horizontal_units() << " grid of encoding units.";
 	// Even though an EncryptedMatrix may be composed of several ciphertexts, HIT keeps
 	// these individual ciphertext properties consistent, so we ask for the ciphertext
 	// properties of the encrypted matrix as a whole:
-	cout << "enc_mat1 is encrypted at level " << enc_mat1.he_level()
-	     << ", and has a scale of " << log2(enc_mat1.scale()) << " bits" << endl;
+	LOG(INFO) << "enc_mat1 is encrypted at level " << enc_mat1.he_level()
+	     << ", and has a scale of " << log2(enc_mat1.scale()) << " bits";
 
 	// We can now repeat with the other encoding unit
 	// This time, rather than encrypting at the default level (3, since it is the maximum
 	// level allowed by the parameters), we will encrypt at a lower level.
 	EncryptedMatrix enc_mat2 = la_inst.encrypt(mat, unit_256x32, 2);
 	// Even though we used a different encoding unit, the matrix dimensions are unchanged
-	cout << "enc_mat2 has dimension " << enc_mat2.height() << "x" << enc_mat2.width() << endl;
+	LOG(INFO) << "enc_mat2 has dimension " << enc_mat2.height() << "x" << enc_mat2.width();
 	// but the encoding unit grid has changed size.
 	// We can also see how many encoding units it took to tile this matrix in each direction
-	cout << "enc_mat2 is encoded as a " << enc_mat2.num_vertical_units() << "x"
-	     << enc_mat2.num_horizontal_units() << " grid of encoding units." << endl;
+	LOG(INFO) << "enc_mat2 is encoded as a " << enc_mat2.num_vertical_units() << "x"
+	     << enc_mat2.num_horizontal_units() << " grid of encoding units.";
 
 	// Finally, because we built this LinearAlgebra instance on the debug instance type,
 	// we can obtain the plaintext matrix (decoded to an object the same size as the input)
 	Matrix recovered_mat = enc_mat2.plaintext();
-	cout << "The plaintext inside enc_mat2 has dimension " << recovered_mat.size1() << "x"
-	     << recovered_mat.size2() << endl;
+	LOG(INFO) << "The plaintext inside enc_mat2 has dimension " << recovered_mat.size1() << "x"
+	     << recovered_mat.size2();
 
 /* ******** Row Vectors ********
  * We encode a row vector as *columns* of an encoding unit. First, we transpose the row
@@ -170,19 +171,19 @@ void example_4_driver() {
 	// We can now encrypt this row vector with respect to one of the units
 	EncryptedRowVector enc_rvec = la_inst.encrypt<EncryptedRowVector>(rvec, unit_64x128);
 	// The ciphertext knows the plaintext's original width.
-	cout << "enc_rvec has dimension " << enc_rvec.width() << endl;
+	LOG(INFO) << "enc_rvec has dimension " << enc_rvec.width();
 	// We can also see how many encoding units it took to tile this vector
-	cout << "enc_rvec is encoded with " << enc_rvec.num_units() << " encoding units." << endl;
+	LOG(INFO) << "enc_rvec is encoded with " << enc_rvec.num_units() << " encoding units.";
 	// Even though an EncryptedRowVector may be composed of several ciphertexts, HIT keeps
 	// these individual ciphertext properties consistent, so we ask for the ciphertext
 	// properties of the encrypted row vector as a whole:
-	cout << "enc_rvec is encrypted at level " << enc_rvec.he_level()
-	     << ", and has a scale of " << log2(enc_rvec.scale()) << " bits" << endl;
+	LOG(INFO) << "enc_rvec is encrypted at level " << enc_rvec.he_level()
+	     << ", and has a scale of " << log2(enc_rvec.scale()) << " bits";
 
 	// Finally, because we built this LinearAlgebra instance on the debug instance type,
 	// we can obtain the plaintext row vector (decoded to an object the same size as the input)
 	Vector recovered_rvec = enc_rvec.plaintext();
-	cout << "The plaintext inside enc_rvec has dimension " << recovered_rvec.size() << endl;
+	LOG(INFO) << "The plaintext inside enc_rvec has dimension " << recovered_rvec.size();
 
 /* ******** Column Vectors ********
  * We encode a column vector as *rows* of an encoding unit. First, we transpose the column
@@ -224,19 +225,19 @@ void example_4_driver() {
 	// We can now encrypt a column vector with respect to one of the units
 	EncryptedColVector enc_cvec = la_inst.encrypt<EncryptedColVector>(cvec, unit_64x128);
 	// The ciphertext knows the plaintext's original height.
-	cout << "enc_cvec has dimension " << enc_cvec.height() << endl;
+	LOG(INFO) << "enc_cvec has dimension " << enc_cvec.height();
 	// We can also see how many encoding units it took to tile this vector
-	cout << "enc_cvec is encoded with " << enc_cvec.num_units() << " encoding units." << endl;
+	LOG(INFO) << "enc_cvec is encoded with " << enc_cvec.num_units() << " encoding units.";
 	// Even though an EncryptedColVector may be composed of several ciphertexts, HIT keeps
 	// these individual ciphertext properties consistent, so we ask for the ciphertext
 	// properties of the encrypted row vector as a whole:
-	cout << "enc_cvec is encrypted at level " << enc_cvec.he_level()
-	     << ", and has a scale of " << log2(enc_cvec.scale()) << " bits" << endl;
+	LOG(INFO) << "enc_cvec is encrypted at level " << enc_cvec.he_level()
+	     << ", and has a scale of " << log2(enc_cvec.scale()) << " bits";
 
 	// Finally, because we built this LinearAlgebra instance on the debug instance type,
 	// we can obtain the plaintext row vector (decoded to an object the same size as the input)
 	Vector recovered_cvec = enc_cvec.plaintext();
-	cout << "The plaintext inside enc_cvec has dimension " << recovered_cvec.size() << endl;
+	LOG(INFO) << "The plaintext inside enc_cvec has dimension " << recovered_cvec.size();
 
 /* ******** Linear Algebra Operations ********
  * HIT's linear algebra API hides the complexity of this encoding so users
@@ -265,16 +266,16 @@ void example_4_driver() {
 	EncryptedRowVector mat_cvec_prod1 = la_inst.multiply(enc_mat1, enc_cvec);
 	// This type of product returns "a linear ciphertext with a squared scale at level i-1."
 	// Let's verify that:
-	cout << "Ciphertext metadata for matrix/col-vec multiplication:" << endl;
-	cout << "  Expected scale of ~" << 2*log_scale << " bits, the product has a scale of ~" << log2(mat_cvec_prod1.scale()) << " bits" << endl;
-	cout << "  Expected product level to be " << enc_mat1.he_level()-1 << "; actual level is " << mat_cvec_prod1.he_level() << endl;
+	LOG(INFO) << "Ciphertext metadata for matrix/col-vec multiplication:";
+	LOG(INFO) << "  Expected scale of ~" << 2*log_scale << " bits, the product has a scale of ~" << log2(mat_cvec_prod1.scale()) << " bits";
+	LOG(INFO) << "  Expected product level to be " << enc_mat1.he_level()-1 << "; actual level is " << mat_cvec_prod1.he_level();
 
 	// Similarly, a row-vector times a matrix results in a column vector:
 	EncryptedColVector rvec_mat_prod1 = la_inst.multiply(enc_rvec, enc_mat1);
 	// A linear ciphertext with a nominal scale at level i-1.
-	cout << "Ciphertext metadata for row-vec/matrix multiplication:" << endl;
-	cout << "  Expected scale of ~" << 2*log_scale << " bits, the product has a scale of ~" << log2(rvec_mat_prod1.scale()) << " bits" << endl;
-	cout << "  Expected product level to be " << enc_mat1.he_level() << "; actual level is " << rvec_mat_prod1.he_level() << endl;
+	LOG(INFO) << "Ciphertext metadata for row-vec/matrix multiplication:";
+	LOG(INFO) << "  Expected scale of ~" << 2*log_scale << " bits, the product has a scale of ~" << log2(rvec_mat_prod1.scale()) << " bits";
+	LOG(INFO) << "  Expected product level to be " << enc_mat1.he_level() << "; actual level is " << rvec_mat_prod1.he_level();
 
 /* That was easy! However, these operations are complex enough that it is sometimes
  * advantageous to break them down into multiple homomorphic operations rather than
@@ -326,9 +327,9 @@ void example_4_driver() {
 	EncryptedRowVector mat_cvec_prod2 = la_inst.sum_cols(mat_cvec_hprod);
 	// This encrypts the same value as mat_cvec_prod1
 	// We used a debug instance, so we can compare the plaintexts:
-	cout << "Matrix/column-vector alternate computation works if "
+	LOG(INFO) << "Matrix/column-vector alternate computation works if "
 	     << relative_error(mat_cvec_prod1.plaintext(), mat_cvec_prod2.plaintext())
-	     << " is <<1." << endl;
+	     << " is <<1.";
 
 	// For the row-vector/matrix product, the idea is similar, but we use `sum_rows`
 	// instead:
@@ -340,9 +341,9 @@ void example_4_driver() {
 	// To demonstrate all of our options, we'll decrypt for this comparison
 	// Note that the norm will be larger due to the error caused by homomorphic operations
 	// and the CKKS encoding process.
-	cout << "Row-vector/Matrix alternate computation works if "
+	LOG(INFO) << "Row-vector/Matrix alternate computation works if "
 	     << relative_error(la_inst.decrypt(rvec_mat_prod1), la_inst.decrypt(rvec_mat_prod2))
-	     << " is <<1." << endl;
+	     << " is <<1.";
 
 /* Why would we ever want to use this more tedious API? `sum_rows` and `sum_cols`
  * are relatively expensive operations, but we can frequently reduce the number
@@ -403,11 +404,11 @@ void example_4_driver() {
 	// We can also decrypt the result to see what happened on ciphertexts
 	Matrix actual_result_homomorphic = la_inst.decrypt(mat_prod_ab);
 
-	cout << "Matrix/Matrix plaintext algorithm is correct if "
+	LOG(INFO) << "Matrix/Matrix plaintext algorithm is correct if "
 	     << relative_error(expected_result, actual_result_plaintext)
-	     << " is <<1." << endl;
+	     << " is <<1.";
 
-	cout << "Matrix/Matrix homomorphic algorithm is correct if "
+	LOG(INFO) << "Matrix/Matrix homomorphic algorithm is correct if "
 	     << relative_error(expected_result, actual_result_homomorphic)
-	     << " is <<1." << endl;
+	     << " is <<1.";
 }
