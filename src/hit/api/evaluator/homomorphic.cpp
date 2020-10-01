@@ -48,26 +48,26 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
 
-        int numPrimes = multiplicative_depth + 2;
-        vector<int> modulusVector = gen_modulus_vec(numPrimes, log_scale_);
-        int modBits = 0;
+        int num_primes = multiplicative_depth + 2;
+        vector<int> modulusVector = gen_modulus_vec(num_primes, log_scale_);
+        int mod_bits = 0;
         for(const auto &bits : modulusVector) {
-            modBits += bits;
+            mod_bits += bits;
         }
-        int min_poly_degree = modulus_to_poly_degree(modBits);
+        int min_poly_degree = modulus_to_poly_degree(mod_bits);
         if (poly_modulus_degree < min_poly_degree) {
             stringstream buffer;
-            buffer << "Invalid parameters: Ciphertexts for this combination of numPrimes and log_scale have more than "
+            buffer << "Invalid parameters: Ciphertexts for this combination of num_primes and log_scale have more than "
                    << num_slots << " plaintext slots.";
             throw invalid_argument(buffer.str());
         }
-        params = new EncryptionParameters(scheme_type::CKKS);
-        params->set_poly_modulus_degree(poly_modulus_degree);
-        params->set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulusVector));
+        EncryptionParameters params = EncryptionParameters(scheme_type::CKKS);
+        params.set_poly_modulus_degree(poly_modulus_degree);
+        params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulusVector));
         timepoint start = chrono::steady_clock::now();
         if (use_seal_params) {
             VLOG(LOG_VERBOSE) << "Creating encryption context...";
-            context = SEALContext::Create(*params);
+            context = SEALContext::Create(params);
             if (VLOG_IS_ON(LOG_VERBOSE)) {
                 print_elapsed_time(start);
             }
@@ -77,7 +77,7 @@ namespace hit {
                          << "DO NOT USE IN PRODUCTION";
             // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
             VLOG(LOG_VERBOSE) << "Creating encryption context...";
-            context = SEALContext::Create(*params, true, sec_level_type::none);
+            context = SEALContext::Create(params, true, sec_level_type::none);
             if (VLOG_IS_ON(LOG_VERBOSE)) {
                 print_elapsed_time(start);
             }
@@ -131,11 +131,10 @@ namespace hit {
     }
 
     HomomorphicEval::~HomomorphicEval() {
+        delete encoder;
+        delete seal_evaluator;
         delete seal_encryptor;
         delete seal_decryptor;
-        delete seal_evaluator;
-        delete encoder;
-        delete params;
     }
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {
@@ -152,15 +151,15 @@ namespace hit {
             modulus_vector.push_back(val);
         }
 
-        params = new EncryptionParameters(scheme_type::CKKS);
-        params->set_poly_modulus_degree(poly_modulus_degree);
-        params->set_coeff_modulus(modulus_vector);
+        EncryptionParameters params = EncryptionParameters(scheme_type::CKKS);
+        params.set_poly_modulus_degree(poly_modulus_degree);
+        params.set_coeff_modulus(modulus_vector);
 
         standard_params_ = ckks_params.standardparams();
         timepoint start = chrono::steady_clock::now();
         if (standard_params_) {
             VLOG(LOG_VERBOSE) << "Creating encryption context...";
-            context = SEALContext::Create(*params);
+            context = SEALContext::Create(params);
             if (VLOG_IS_ON(LOG_VERBOSE)) {
                 print_elapsed_time(start);
             }
@@ -169,7 +168,7 @@ namespace hit {
                          << " DO NOT USE IN PRODUCTION";
             // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
             VLOG(LOG_VERBOSE) << "Creating encryption context...";
-            context = SEALContext::Create(*params, true, sec_level_type::none);
+            context = SEALContext::Create(params, true, sec_level_type::none);
             if (VLOG_IS_ON(LOG_VERBOSE)) {
                 print_elapsed_time(start);
             }

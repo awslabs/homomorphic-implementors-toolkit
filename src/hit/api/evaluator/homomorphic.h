@@ -105,11 +105,10 @@ namespace hit {
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
        private:
-        seal::EncryptionParameters *params = nullptr;
-        seal::CKKSEncoder *encoder = nullptr;
-        seal::Evaluator *seal_evaluator;
-        seal::Encryptor *seal_encryptor = nullptr;
-        seal::Decryptor *seal_decryptor = nullptr;
+        seal::CKKSEncoder *encoder = nullptr;      // no default constructor
+        seal::Evaluator *seal_evaluator = nullptr; // no default constructor
+        seal::Encryptor *seal_encryptor = nullptr; // no default constructor
+        seal::Decryptor *seal_decryptor = nullptr; // no default constructor
         seal::PublicKey pk;
         seal::SecretKey sk;
         seal::GaloisKeys galois_keys;

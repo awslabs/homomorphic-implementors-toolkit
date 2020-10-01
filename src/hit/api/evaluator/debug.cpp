@@ -77,7 +77,7 @@ namespace hit {
     DebugEval::DebugEval(istream &params_stream, istream &galois_key_stream,
                          istream &relin_key_stream, istream &secret_key_stream) {
         homomorphic_eval = new HomomorphicEval(params_stream, galois_key_stream, relin_key_stream, secret_key_stream);
-        constructor_common(homomorphic_eval->encoder->slot_count());
+        constructor_common(homomorphic_eval->num_slots());
     }
 
     DebugEval::~DebugEval() {

@@ -43,12 +43,12 @@ namespace hit {
             throw invalid_argument(buffer.str());
         }
 
-        params = new EncryptionParameters(scheme_type::CKKS);
-        params->set_poly_modulus_degree(poly_modulus_degree);
-        params->set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulusVector));
+        EncryptionParameters params = EncryptionParameters(scheme_type::CKKS);
+        params.set_poly_modulus_degree(poly_modulus_degree);
+        params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulusVector));
 
         // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-        context = SEALContext::Create(*params, true, sec_level_type::none);
+        context = SEALContext::Create(params, true, sec_level_type::none);
 
         // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
@@ -62,7 +62,6 @@ namespace hit {
         plaintext_eval = new PlaintextEval(num_slots);
 
         // instead of creating a new instance, use the instance provided
-        params = homom_eval.params;
         context = homom_eval.context;
 
         // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
@@ -75,12 +74,6 @@ namespace hit {
 
     ScaleEstimator::~ScaleEstimator() {
         delete plaintext_eval;
-
-        // if we are using shared parameters, these values are freed by the homomorphic evaluator
-        // if we free them here, we double-free and get corruption.
-        if (!has_shared_params_) {
-            delete params;
-        }
     }
 
     CKKSCiphertext ScaleEstimator::encrypt(const vector<double> &coeffs, int level) {

@@ -82,7 +82,6 @@ namespace hit {
         void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
 
        private:
-        seal::EncryptionParameters *params = nullptr;
         const int log_scale_ = 0;
         const int num_slots_ = 0;
         ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval);

@@ -18,7 +18,7 @@ using namespace seal;
 
 namespace hit {
 
-    vector<double> CKKSEvaluator::decrypt(const CKKSCiphertext&, bool) const {
+    vector<double> CKKSEvaluator::decrypt(const CKKSCiphertext&) const {
         throw invalid_argument("decrypt can only be called with Homomorphic or Debug evaluators");
     }
 
