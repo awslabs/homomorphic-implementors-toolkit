@@ -7,6 +7,7 @@
 
 #include "homomorphic.h"
 #include "../../common.h"
+#include "hit/protobuf/ckksparams.pb.h"
 
 #include <future>
 
@@ -16,8 +17,10 @@
 using namespace std;
 using namespace seal;
 
-namespace hit {
+// SEAL throws an error for 21, but allows 22
+#define MIN_LOG_SCALE 22
 
+namespace hit {
     /* Note: there is a flag to update_metadata of ciphertexts
      * however, *this evaluator must not depend on those values* (specifically: he_level() and scale()).
      * Instead, it must depend on SEAL's metadata for ciphertext level and scale.
@@ -28,8 +31,59 @@ namespace hit {
      */
 
     HomomorphicEval::HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,
-                                     const vector<int> &galois_steps) {
-        shared_param_init(num_slots, multiplicative_depth, log_scale, use_seal_params);
+                                     const vector<int> &galois_steps): log_scale_(log_scale) {
+
+        if (!is_pow2(num_slots) || num_slots < 4096) {
+            throw invalid_argument("Invalid parameters: num_slots must be a power of 2, and at least 4096. Got " + to_string(num_slots));
+        }
+
+        int poly_modulus_degree = num_slots * 2;
+        if (log_scale_ < MIN_LOG_SCALE) {
+            stringstream buffer;
+            buffer << "Invalid parameters: Implied log_scale is " << log_scale_ << ", which is less than the minimum, "
+                   << MIN_LOG_SCALE << ". Either increase the number of slots or decrease the number of primes."
+                   << endl;
+            buffer << "poly_modulus_degree is " << poly_modulus_degree << ", which limits the modulus to "
+                   << poly_degree_to_max_mod_bits(poly_modulus_degree) << " bits";
+            throw invalid_argument(buffer.str());
+        }
+
+        int numPrimes = multiplicative_depth + 2;
+        vector<int> modulusVector = gen_modulus_vec(numPrimes, log_scale_);
+        int modBits = 0;
+        for(const auto &bits : modulusVector) {
+            modBits += bits;
+        }
+        int min_poly_degree = modulus_to_poly_degree(modBits);
+        if (poly_modulus_degree < min_poly_degree) {
+            stringstream buffer;
+            buffer << "Invalid parameters: Ciphertexts for this combination of numPrimes and log_scale have more than "
+                   << num_slots << " plaintext slots.";
+            throw invalid_argument(buffer.str());
+        }
+        params = new EncryptionParameters(scheme_type::CKKS);
+        params->set_poly_modulus_degree(poly_modulus_degree);
+        params->set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulusVector));
+        timepoint start = chrono::steady_clock::now();
+        if (use_seal_params) {
+            VLOG(LOG_VERBOSE) << "Creating encryption context...";
+            context = SEALContext::Create(*params);
+            if (VLOG_IS_ON(LOG_VERBOSE)) {
+                print_elapsed_time(start);
+            }
+            standard_params_ = true;
+        } else {
+            LOG(WARNING) << "YOU ARE NOT USING SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security"
+                         << "DO NOT USE IN PRODUCTION";
+            // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
+            VLOG(LOG_VERBOSE) << "Creating encryption context...";
+            context = SEALContext::Create(*params, true, sec_level_type::none);
+            if (VLOG_IS_ON(LOG_VERBOSE)) {
+                print_elapsed_time(start);
+            }
+            standard_params_ = false;
+        }
+        encoder = new CKKSEncoder(context);
         seal_evaluator = new seal::Evaluator(context);
 
         int num_galois_keys = galois_steps.size();
@@ -54,7 +108,7 @@ namespace hit {
         }
 
         LOG(INFO) << "Generating keys...";
-        timepoint start = chrono::steady_clock::now();
+        start = chrono::steady_clock::now();
 
         // generate keys
         // This call generates a KeyGenerator with fresh randomness
@@ -74,6 +128,14 @@ namespace hit {
 
         seal_encryptor = new Encryptor(context, pk);
         seal_decryptor = new Decryptor(context, sk);
+    }
+
+    HomomorphicEval::~HomomorphicEval() {
+        delete seal_encryptor;
+        delete seal_decryptor;
+        delete seal_evaluator;
+        delete encoder;
+        delete params;
     }
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {
@@ -151,21 +213,25 @@ namespace hit {
         seal_decryptor = new Decryptor(context, sk);
     }
 
-    HomomorphicEval::~HomomorphicEval() {
-        delete seal_encryptor;
-        delete seal_decryptor;
-        delete seal_evaluator;
-        delete encoder;
-        delete params;
-    }
-
     void HomomorphicEval::save(ostream &params_stream, ostream &galois_key_stream, ostream &relin_key_stream,
                                ostream *secret_key_stream) {
         if (secret_key_stream != nullptr) {
             sk.save(*secret_key_stream);
         }
 
-        protobuf::CKKSParams ckks_params = save_ckks_params();
+        protobuf::CKKSParams ckks_params;
+        auto context_data = context->key_context_data();
+        ckks_params.set_numslots(context_data->parms().poly_modulus_degree() / 2);
+        ckks_params.set_logscale(log_scale_);
+        ckks_params.set_standardparams(standard_params_);
+
+        ostringstream sealpkBuf;
+        pk.save(sealpkBuf);
+        ckks_params.set_pubkey(sealpkBuf.str());
+
+        for (const auto &prime : context_data->parms().coeff_modulus()) {
+            ckks_params.add_modulusvec(prime.value());
+        }
         ckks_params.SerializeToOstream(&params_stream);
 
         // There is a SEAL limitation that prevents saving large files with compression
@@ -230,6 +296,10 @@ namespace hit {
         encoder->decode(temp, decoded_output);
 
         return decoded_output;
+    }
+
+    int HomomorphicEval::num_slots() const {
+        return encoder->slot_count();
     }
 
     uint64_t HomomorphicEval::get_last_prime_internal(const CKKSCiphertext &ct) const {

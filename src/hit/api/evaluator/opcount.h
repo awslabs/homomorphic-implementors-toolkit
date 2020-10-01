@@ -62,6 +62,8 @@ namespace hit {
 
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
+        int num_slots() const override;
+
        private:
         int multiplies_ = 0;
         int additions_ = 0;

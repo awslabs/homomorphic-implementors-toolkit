@@ -50,6 +50,8 @@ namespace hit {
          */
         std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
 
+        int num_slots() const override;
+
        protected:
         void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) override;
 
@@ -84,6 +86,7 @@ namespace hit {
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
        private:
+        int log_scale_;
 
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 

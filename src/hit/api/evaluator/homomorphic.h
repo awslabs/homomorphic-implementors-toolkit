@@ -65,6 +65,10 @@ namespace hit {
          */
         std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
 
+        std::shared_ptr<seal::SEALContext> context;
+
+        int num_slots() const override;
+
        protected:
         void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) override;
 
@@ -101,11 +105,24 @@ namespace hit {
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
        private:
+        seal::EncryptionParameters *params = nullptr;
+        seal::CKKSEncoder *encoder = nullptr;
+        seal::Evaluator *seal_evaluator;
+        seal::Encryptor *seal_encryptor = nullptr;
+        seal::Decryptor *seal_decryptor = nullptr;
+        seal::PublicKey pk;
+        seal::SecretKey sk;
+        seal::GaloisKeys galois_keys;
+        seal::RelinKeys relin_keys;
+        bool standard_params_;
+
+        int log_scale_;
 
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 
         void deserialize_common(std::istream &params_stream);
 
         friend class DebugEval;
+        friend class ScaleEstimator;
     };
 }  // namespace hit

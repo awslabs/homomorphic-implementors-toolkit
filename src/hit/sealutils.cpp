@@ -15,6 +15,23 @@ using namespace seal;
 
 namespace hit {
     /*
+    Helper function: Generate a list of bit-lengths for the modulus primes.
+    */
+    vector<int> gen_modulus_vec(int num_primes, int log_scale) {
+        vector<int> modulusVector(num_primes);
+        // the SEAL examples recommend the last modulus be 60 bits; it's unclear why,
+        // and also unclear how closely that choice is related to log_scale (they use 40 in their examples)
+        modulusVector[0] = 60;
+        for (int i = 1; i < num_primes-1; i++) {
+            modulusVector[i] = log_scale;
+        }
+        // The special modulus has to be as large as the largest prime in the chain.
+        modulusVector[num_primes-1] = 60;
+
+        return modulusVector;
+    }
+
+    /*
     Helper function: Prints the parameters in a SEALContext.
 
     Copied from SEAL ./native/examples/examples.h
@@ -110,5 +127,34 @@ namespace hit {
     */
     uint64_t get_last_prime(const shared_ptr<SEALContext> &context, int he_level) {
         return get_context_data(context, he_level)->parms().coeff_modulus().back().value();
+    }
+
+    uint64_t estimate_key_size(int num_galois_shift, int plaintext_slots, int depth) {
+        // number of bytes in each coefficient (a 64-bit value)
+        int coefficientSizeBytes = 8;
+        // size of a single polynomial with one modulus
+        // each coefficient is 64 bits, and there are plaintext_slots*2 coefficients.
+        uint64_t poly_size_bytes = 2 * coefficientSizeBytes * plaintext_slots;
+        // size of a single ciphertext with one modulus
+        // a (fresh) ciphertext is a pair of polynomials
+        uint64_t ct_size_bytes = 2 * poly_size_bytes;
+        // size of the secret key in bytes
+        // a secret key is a single polynomial with (depth+2) moduli
+        // The reason is that the biggest ciphertext for a depth d computation
+        // has d+1 moduli, and SEAL requires an extra modulus for keys.
+        uint64_t sk_bytes = (depth + 2) * poly_size_bytes;
+        // size of the public key in bytes
+        // a public key is just a ciphertext with the (depth+2) moduli
+        uint64_t pk_bytes = (depth + 2) * ct_size_bytes;
+        // size of relinearization keys
+        // each relinearization key is a vector of (depth+1) ciphertexts where each has (depth+2) moduli
+        uint64_t rk_bytes = (depth + 1) * pk_bytes;
+        // size of Galois keys
+        // Galois keys are a vector of relinearization keys
+        // there are at most 2*lg(plaintext_slots)+1 keys, but there may be fewer if you have addional
+        // information about what shifts are needed during a computation.
+        uint64_t gk_bytes = num_galois_shift * rk_bytes;
+
+        return sk_bytes + pk_bytes + rk_bytes + gk_bytes;
     }
 }  // namespace hit

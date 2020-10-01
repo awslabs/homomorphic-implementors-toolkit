@@ -54,6 +54,10 @@ namespace hit {
         VLOG(LOG_VERBOSE) << "    + Level: " << ct.he_level();
     }
 
+    int DepthFinder::num_slots() const {
+        return num_slots_;
+    }
+
     void DepthFinder::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
         /* The DepthFinder is always created as a "depth 0" evaluator, meaning that with
          * the current implementation, top_he_level_ is *always* 0.

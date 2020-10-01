@@ -15,17 +15,13 @@ using namespace std;
 using namespace seal;
 
 namespace hit {
-
     void DebugEval::constructor_common(int num_slots) {
         // use the _private_ ScaleEstimator constructor to avoid creating two sets of CKKS params
         scale_estimator = new ScaleEstimator(num_slots, *homomorphic_eval);
-        context = homomorphic_eval->context;
         log_scale_ = homomorphic_eval->log_scale_;
-        encoder = homomorphic_eval->encoder;
-        seal_encryptor = homomorphic_eval->seal_encryptor;
 
         if (VLOG_IS_ON(LOG_VERBOSE)) {
-            print_parameters(context);
+            print_parameters(homomorphic_eval->context);
 
             // There are convenience method for accessing the SEALContext::ContextData for
             // some of the most important levels:
@@ -38,7 +34,7 @@ namespace hit {
             LOG(INFO) << "Print the modulus switching chain.";
 
             // First print the key level parameter information.
-            auto context_data = context->key_context_data();
+            auto context_data = homomorphic_eval->context->key_context_data();
             LOG(INFO) << "----> Level (chain index): " << context_data->chain_index() << " ...... key_context_data()";
             LOG(INFO) << "      parms_id: " << context_data->parms_id();
             stringstream key_level_primes;
@@ -49,12 +45,12 @@ namespace hit {
             LOG(INFO) << "\\";
 
             // Next iterate over the remaining (data) levels.
-            context_data = context->first_context_data();
+            context_data = homomorphic_eval->context->first_context_data();
             while (context_data) {
                 LOG(INFO) << " \\--> Level (chain index): " << context_data->chain_index();
-                if (context_data->parms_id() == context->first_parms_id()) {
+                if (context_data->parms_id() == homomorphic_eval->context->first_parms_id()) {
                     LOG(INFO) << " ...... first_context_data()";
-                } else if (context_data->parms_id() == context->last_parms_id()) {
+                } else if (context_data->parms_id() == homomorphic_eval->context->last_parms_id()) {
                     LOG(INFO) << " ...... last_context_data()";
                 }
                 LOG(INFO) << "      parms_id: " << context_data->parms_id() << endl;
@@ -96,46 +92,17 @@ namespace hit {
 
     CKKSCiphertext DebugEval::encrypt(const vector<double> &coeffs, int level) {
         scale_estimator->update_plaintext_max_val(coeffs);
-
-        int num_slots_ = encoder->slot_count();
-        if (coeffs.size() != num_slots_) {
-            // bad things can happen if you don't plan for your input to be smaller than the ciphertext
-            // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
-            throw invalid_argument(
-                "You can only encrypt vectors which have exactly as many coefficients as the number of plaintext "
-                "slots: Expected " +
-                to_string(num_slots_) + ", got " + to_string(coeffs.size()));
-        }
-
-        if (level == -1) {
-            level = context->first_context_data()->chain_index();
-        }
-
-        auto context_data = context->first_context_data();
-        double scale = pow(2, log_scale_);
-        while (context_data->chain_index() > level) {
-            // order of operations is very important: floating point arithmetic is not associative
-            scale = (scale * scale) / static_cast<double>(context_data->parms().coeff_modulus().back().value());
-            context_data = context_data->next_context_data();
-        }
-
-        CKKSCiphertext destination;
-        destination.he_level_ = level;
-        destination.scale_ = scale;
+        CKKSCiphertext destination = homomorphic_eval->encrypt(coeffs, level);
         destination.raw_pt = coeffs;
-
-        Plaintext temp;
-        encoder->encode(coeffs, context_data->parms_id(), scale, temp);
-        seal_encryptor->encrypt(temp, destination.seal_ct);
-
-        destination.num_slots_ = num_slots_;
-        destination.initialized = true;
-
         return destination;
     }
 
     vector<double> DebugEval::decrypt(const CKKSCiphertext &encrypted) const {
         return homomorphic_eval->decrypt(encrypted);
+    }
+
+    int DebugEval::num_slots() const {
+        return homomorphic_eval->num_slots();
     }
 
     uint64_t DebugEval::get_last_prime_internal(const CKKSCiphertext &ct) const {
@@ -304,7 +271,7 @@ namespace hit {
     }
 
     void DebugEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        auto context_data = get_context_data(context, ct.he_level());
+        auto context_data = get_context_data(homomorphic_eval->context, ct.he_level());
         uint64_t p = context_data->parms().coeff_modulus().back().value();
         double prime_bit_len = log2(p);
 

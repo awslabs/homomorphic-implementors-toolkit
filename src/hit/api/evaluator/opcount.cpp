@@ -37,6 +37,10 @@ namespace hit {
         LOG(INFO) << "Relinearizations: " << relins_;
     }
 
+    int OpCount::num_slots() const {
+        return num_slots_;
+    }
+
     void OpCount::rotate_right_inplace_internal(CKKSCiphertext&, int) {
         count_rotation_ops();
     }

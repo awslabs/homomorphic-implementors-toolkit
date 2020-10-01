@@ -44,6 +44,10 @@ namespace hit {
         return destination;
     }
 
+    int PlaintextEval::num_slots() const {
+        return num_slots_;
+    }
+
     // print some debug info
     void PlaintextEval::print_stats(       // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
         const CKKSCiphertext &ct) const {  // NOLINT(readability-convert-member-functions-to-static)

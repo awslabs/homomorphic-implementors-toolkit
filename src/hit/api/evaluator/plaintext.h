@@ -62,6 +62,8 @@ namespace hit {
 
         void square_inplace_internal(CKKSCiphertext &ct) override;
 
+        int num_slots() const override;
+
        private:
         const int num_slots_ = 0;
 

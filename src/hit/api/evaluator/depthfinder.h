@@ -40,6 +40,8 @@ namespace hit {
          */
         int get_multiplicative_depth() const;
 
+        int num_slots() const override;
+
        protected:
         void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
 

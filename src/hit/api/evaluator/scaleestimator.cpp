@@ -20,11 +20,35 @@ namespace hit {
     // encoding/decoding, this should be set to as high as possible.
     int defaultScaleBits = 30;
 
-    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth) {
+    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth): log_scale_(defaultScaleBits), num_slots_(num_slots) {
         plaintext_eval = new PlaintextEval(num_slots);
-        log_scale_ = defaultScaleBits;
 
-        shared_param_init(num_slots, multiplicative_depth, defaultScaleBits, false);
+        if (!is_pow2(num_slots) || num_slots < 4096) {
+            throw invalid_argument("Invalid parameters: num_slots must be a power of 2, and at least 4096. Got " + to_string(num_slots));
+        }
+
+        int num_primes = multiplicative_depth + 2;
+        vector<int> modulusVector = gen_modulus_vec(num_primes, log_scale_);
+
+        int modBits = 0;
+        for(const auto &bits : modulusVector) {
+            modBits += bits;
+        }
+        int min_poly_degree = modulus_to_poly_degree(modBits);
+        int poly_modulus_degree = num_slots * 2;
+        if (poly_modulus_degree < min_poly_degree) {
+            stringstream buffer;
+            buffer << "Invalid parameters: Ciphertexts for this combination of num_primes and log_scale have more than "
+                   << num_slots << " plaintext slots.";
+            throw invalid_argument(buffer.str());
+        }
+
+        params = new EncryptionParameters(scheme_type::CKKS);
+        params->set_poly_modulus_degree(poly_modulus_degree);
+        params->set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulusVector));
+
+        // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
+        context = SEALContext::Create(*params, true, sec_level_type::none);
 
         // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
@@ -34,15 +58,12 @@ namespace hit {
         }
     }
 
-    ScaleEstimator::ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval): has_shared_params_(true) {
+    ScaleEstimator::ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval): log_scale_(homom_eval.log_scale_), num_slots_(num_slots),  has_shared_params_(true) {
         plaintext_eval = new PlaintextEval(num_slots);
-        log_scale_ = defaultScaleBits;
 
-        // instead of calling shared_param_init to create a new instance, use the instance provided
+        // instead of creating a new instance, use the instance provided
         params = homom_eval.params;
-        encoder = homom_eval.encoder;
         context = homom_eval.context;
-        log_scale_ = homom_eval.log_scale_;
 
         // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
@@ -59,14 +80,12 @@ namespace hit {
         // if we free them here, we double-free and get corruption.
         if (!has_shared_params_) {
             delete params;
-            delete encoder;
         }
     }
 
     CKKSCiphertext ScaleEstimator::encrypt(const vector<double> &coeffs, int level) {
         update_plaintext_max_val(coeffs);
 
-        int num_slots_ = encoder->slot_count();
         // in ENC_META, CKKSInstance sets num_slots_ to 4096 and doesn't actually attempt to calcuate the correct value.
         // We have to ignore that case here. Otherwise, input size should exactly equal the number of slots.
         if (coeffs.size() != num_slots_) {
@@ -83,7 +102,7 @@ namespace hit {
         }
 
         auto context_data = context->first_context_data();
-        double scale = pow(2,log_scale_);
+        double scale = pow(2, log_scale_);
         while (context_data->chain_index() > level) {
             // order of operations is very important: floating point arithmetic is not associative
             scale = (scale * scale) / static_cast<double>(context_data->parms().coeff_modulus().back().value());
@@ -102,6 +121,10 @@ namespace hit {
 
     uint64_t ScaleEstimator::get_last_prime_internal(const CKKSCiphertext &ct) const {
         return get_last_prime(context, ct.he_level());
+    }
+
+    int ScaleEstimator::num_slots() const {
+        return num_slots_;
     }
 
     // print some debug info
@@ -282,7 +305,7 @@ namespace hit {
          * log2(p_1)=log2(p_k)=60 and log2(p_i)=s=log(scale). Thus s must be less
          * than (maxModBits-120)/(k-2)
          */
-        int max_mod_bits = poly_degree_to_max_mod_bits(2*encoder->slot_count());
+        int max_mod_bits = poly_degree_to_max_mod_bits(2*num_slots_);
         auto estimated_log_scale = static_cast<double>(PLAINTEXT_LOG_MAX);
         {
             shared_lock lock(mutex_);
