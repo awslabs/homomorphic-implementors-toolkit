@@ -14,19 +14,9 @@ using namespace std;
 
 namespace hit {
 
-    // This is an approximation of -infity, since infNorm(x) >= 0 = 2^-infinity
-    const double INITIAL_PLAINTEXT_MAX_LOG = -100;
-
     PlaintextEval::PlaintextEval(int num_slots) : num_slots_(num_slots) {
         if (!is_pow2(num_slots)) {
-            throw invalid_argument("Numer of plaintext slots must be a power of two; got " + to_string(num_slots));
-        }
-    }
-
-    void PlaintextEval::reset() {
-        {
-            scoped_lock lock(mutex_);
-            plaintext_max_log_ = INITIAL_PLAINTEXT_MAX_LOG;
+            throw invalid_argument("Number of plaintext slots must be a power of two; got " + to_string(num_slots));
         }
     }
 
@@ -52,6 +42,10 @@ namespace hit {
         destination.initialized = true;
 
         return destination;
+    }
+
+    int PlaintextEval::num_slots() const {
+        return num_slots_;
     }
 
     // print some debug info
@@ -87,16 +81,15 @@ namespace hit {
     void PlaintextEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
         vector<double> rot_temp;
         // reserve a full-size vector
-        int num_slots = ct.num_slots();
-        rot_temp.reserve(num_slots);
+        rot_temp.reserve(num_slots_);
 
         // the `for` loop adds elements to the back of the vector
         // we start by adding elements from the end of `ct.raw_pt`
-        for (int i = num_slots - steps; i < num_slots; i++) {
+        for (int i = num_slots_ - steps; i < num_slots_; i++) {
             rot_temp.push_back(ct.raw_pt[i]);
         }
         // next start at the front of `ct.raw_pt` and add until full
-        for (int i = 0; i < num_slots - steps; i++) {
+        for (int i = 0; i < num_slots_ - steps; i++) {
             rot_temp.push_back(ct.raw_pt[i]);
         }
 
@@ -108,10 +101,9 @@ namespace hit {
     void PlaintextEval::rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) {
         vector<double> rot_temp;
         // reserve a full-size vector
-        int num_slots = ct.num_slots();
-        rot_temp.reserve(num_slots);
+        rot_temp.reserve(num_slots_);
         // start filling from the offset
-        for (int i = steps; i < num_slots; i++) {
+        for (int i = steps; i < num_slots_; i++) {
             rot_temp.push_back(ct.raw_pt[i]);
         }
         // next, add the remaining elements from the front of `ct.raw_pt`
@@ -136,13 +128,11 @@ namespace hit {
 
     void PlaintextEval::negate_inplace_internal(CKKSCiphertext &ct) {
         map_inplace(ct.raw_pt, std::negate<>());
-        print_stats(ct);
     }
 
     void PlaintextEval::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         zip_with_inplace(ct1.raw_pt, ct2.plaintext(), plus<>());
         update_max_log_plain_val(ct1);
-        print_stats(ct1);
     }
 
     void PlaintextEval::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
@@ -150,7 +140,6 @@ namespace hit {
             coeff += scalar;
         }
         update_max_log_plain_val(ct);
-        print_stats(ct);
     }
 
     void PlaintextEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
@@ -163,13 +152,11 @@ namespace hit {
 
         zip_with_inplace(ct.raw_pt, plain, plus<>());
         update_max_log_plain_val(ct);
-        print_stats(ct);
     }
 
     void PlaintextEval::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         zip_with_inplace(ct1.raw_pt, ct2.raw_pt, minus<>());
         update_max_log_plain_val(ct1);
-        print_stats(ct1);
     }
 
     void PlaintextEval::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
@@ -177,7 +164,6 @@ namespace hit {
             coeff -= scalar;
         }
         update_max_log_plain_val(ct);
-        print_stats(ct);
     }
 
     void PlaintextEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
@@ -190,7 +176,6 @@ namespace hit {
 
         zip_with_inplace(ct.raw_pt, plain, minus<>());
         update_max_log_plain_val(ct);
-        print_stats(ct);
     }
 
     void PlaintextEval::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
@@ -199,7 +184,6 @@ namespace hit {
         }
         zip_with_inplace(ct1.raw_pt, ct2.raw_pt, multiplies<>());
         update_max_log_plain_val(ct1);
-        print_stats(ct1);
     }
 
     void PlaintextEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
@@ -207,7 +191,6 @@ namespace hit {
             coeff *= scalar;
         }
         update_max_log_plain_val(ct);
-        print_stats(ct);
     }
 
     void PlaintextEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
@@ -220,28 +203,11 @@ namespace hit {
 
         zip_with_inplace(ct.raw_pt, plain, multiplies<>());
         update_max_log_plain_val(ct);
-        print_stats(ct);
     }
 
     void PlaintextEval::square_inplace_internal(CKKSCiphertext &ct) {
         zip_with_inplace(ct.raw_pt, ct.raw_pt, multiplies<>());
         update_max_log_plain_val(ct);
-        print_stats(ct);
-    }
-
-    void PlaintextEval::reduce_level_to_inplace_internal(CKKSCiphertext &ct, int) {
-        // does not change plaintext_max_log_
-        print_stats(ct);
-    }
-
-    void PlaintextEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        // does not change plaintext_max_log_
-        print_stats(ct);
-    }
-
-    void PlaintextEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
-        // does not change plaintext_max_log_
-        print_stats(ct);
     }
 
     double PlaintextEval::get_exact_max_log_plain_val() const {

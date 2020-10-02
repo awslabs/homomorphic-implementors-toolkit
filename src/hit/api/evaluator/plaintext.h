@@ -12,8 +12,6 @@ namespace hit {
     /* This evaluator tracks the plaintext computation */
     class PlaintextEval : public CKKSEvaluator {
        public:
-        explicit PlaintextEval(const std::shared_ptr<seal::SEALContext> &context);
-
         /* The number of slots is a proxy for the dimension of the underlying cyclotomic ring.
          * This limits the maximum size of the plaintext vector to `num_slots`, and also limits
          * the maximum size of the modulus. For a fixed multiplicative depth, this imposes a
@@ -31,19 +29,11 @@ namespace hit {
         PlaintextEval(PlaintextEval &&) = delete;
         PlaintextEval &operator=(PlaintextEval &&) = delete;
 
-        // return the base-2 log of the maximum plaintext value in the computation
-        // this is useful for putting an upper bound on the scale parameter
+        // Return the base-2 log of the maximum plaintext value in the computation.
+        // This is useful for putting an upper bound on the scale parameter.
         double get_exact_max_log_plain_val() const;
 
-        // primarily used to indicate the maximum value for each *input* to the function.
-        // For circuits which are a no-op, this function is the only way the evaluator
-        // can learn the maximum plaintext values.
-        // void update_plaintext_max_val(double x);
-
         CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1) override;
-
-        // reuse this evaluator for another computation
-        void reset();
 
        protected:
         void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) override;
@@ -72,20 +62,16 @@ namespace hit {
 
         void square_inplace_internal(CKKSCiphertext &ct) override;
 
-        void reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level) override;
-
-        void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
-
-        void relinearize_inplace_internal(CKKSCiphertext &ct) override;
+        int num_slots() const override;
 
        private:
         const int num_slots_ = 0;
 
         void update_max_log_plain_val(const CKKSCiphertext &ct);
 
-        void print_stats(const CKKSCiphertext &ct) const;
+        void print_stats(const CKKSCiphertext &ct) const override;
 
-        double plaintext_max_log_;
+        double plaintext_max_log_ = -100;
 
         friend class ScaleEstimator;
     };

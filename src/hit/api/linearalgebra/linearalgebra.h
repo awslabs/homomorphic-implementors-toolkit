@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "../../CKKSInstance.h"
 #include "../ciphertext.h"
 #include "../evaluator.h"
 #include "hit/protobuf/encoding_unit.pb.h"

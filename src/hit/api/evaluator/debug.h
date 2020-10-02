@@ -50,6 +50,8 @@ namespace hit {
          */
         std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
 
+        int num_slots() const override;
+
        protected:
         void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) override;
 
@@ -83,15 +85,15 @@ namespace hit {
 
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
-        // reuse this evaluator for another computation
-        void reset();
-
        private:
+        int log_scale_;
+
+        uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
+
         HomomorphicEval *homomorphic_eval;
         ScaleEstimator *scale_estimator;
 
-        void print_stats(const CKKSCiphertext &ct) const;
-        void check_scale(const CKKSCiphertext &ct) const;
-        void constructor_common(int num_slots, int multiplicative_depth);
+        void print_stats(const CKKSCiphertext &ct) const override;
+        void constructor_common(int num_slots);
     };
 }  // namespace hit

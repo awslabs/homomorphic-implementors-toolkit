@@ -61,11 +61,13 @@ namespace hit {
          * Usually, decrypting a ciphertext not at level 0 indicates you are doing something
          * inefficient. However for testing purposes, it may be useful, so you will want to
          * suppress the warning.
+         * TODO: log level?
          */
         std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
 
-        // reuse this evaluator for another computation
-        void reset();
+        std::shared_ptr<seal::SEALContext> context;
+
+        int num_slots() const override;
 
        protected:
         void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) override;
@@ -103,14 +105,23 @@ namespace hit {
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
        private:
+        seal::CKKSEncoder *encoder = nullptr;      // no default constructor
+        seal::Evaluator *seal_evaluator = nullptr; // no default constructor
+        seal::Encryptor *seal_encryptor = nullptr; // no default constructor
+        seal::Decryptor *seal_decryptor = nullptr; // no default constructor
+        seal::PublicKey pk;
+        seal::SecretKey sk;
+        seal::GaloisKeys galois_keys;
+        seal::RelinKeys relin_keys;
+        bool standard_params_;
+
+        int log_scale_;
+
+        uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
+
         void deserialize_common(std::istream &params_stream);
 
-        /* Helper function: Return the HE level of the SEAL ciphertext.
-         */
-        int get_SEAL_level(const CKKSCiphertext &ct) const;
-
-        bool update_metadata_ = true;
-
         friend class DebugEval;
+        friend class ScaleEstimator;
     };
 }  // namespace hit

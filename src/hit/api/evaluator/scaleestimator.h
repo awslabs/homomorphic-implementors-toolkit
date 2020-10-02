@@ -46,8 +46,9 @@ namespace hit {
 
         CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1) override;
 
-        // reuse this evaluator for another computation
-        void reset();
+        std::shared_ptr<seal::SEALContext> context;
+
+        int num_slots() const override;
 
        protected:
         void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) override;
@@ -80,19 +81,23 @@ namespace hit {
 
         void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
 
-        void relinearize_inplace_internal(CKKSCiphertext &ct) override;
-
        private:
-        ScaleEstimator(int num_slots, int multiplicative_depth, const HomomorphicEval &homom_eval);
+        const int log_scale_ = 0;
+        const int num_slots_ = 0;
+        ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval);
         bool has_shared_params_ = false;
 
         PlaintextEval *plaintext_eval;
-        DepthFinder *depth_finder;
 
         double estimated_max_log_scale_;
 
-        void print_stats(const CKKSCiphertext &ct);
+        // This helper function squares the scale of the input and then updates
+        // the max_log_scale.
+        void temp_square_scale(CKKSCiphertext &ct);
+        void print_stats(const CKKSCiphertext &ct) const override;
         void update_max_log_scale(const CKKSCiphertext &ct);
+
+        uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 
         // primarily used to indicate the maximum value for each *input* to the function.
         // For circuits which are a no-op, this function is the only way the evaluator

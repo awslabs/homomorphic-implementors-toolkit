@@ -9,6 +9,7 @@
 #include "common.h"
 
 using namespace std;
+using namespace seal;
 
 namespace hit {
     EncryptedRowVector::EncryptedRowVector(int width, const EncodingUnit &unit, vector<CKKSCiphertext> &cts)
@@ -16,7 +17,7 @@ namespace hit {
         validate_init();
     }
 
-    void EncryptedRowVector::read_from_proto(const shared_ptr<seal::SEALContext> &context,
+    void EncryptedRowVector::read_from_proto(const shared_ptr<SEALContext> &context,
                                              const protobuf::EncryptedRowVector &encrypted_row_vector) {
         width_ = encrypted_row_vector.width();
         unit = EncodingUnit(encrypted_row_vector.unit());
@@ -26,12 +27,12 @@ namespace hit {
         validate_init();
     }
 
-    EncryptedRowVector::EncryptedRowVector(const shared_ptr<seal::SEALContext> &context,
+    EncryptedRowVector::EncryptedRowVector(const shared_ptr<SEALContext> &context,
                                            const protobuf::EncryptedRowVector &encrypted_row_vector) {
         read_from_proto(context, encrypted_row_vector);
     }
 
-    EncryptedRowVector::EncryptedRowVector(const shared_ptr<seal::SEALContext> &context,
+    EncryptedRowVector::EncryptedRowVector(const shared_ptr<SEALContext> &context,
                                            istream &stream) {
         protobuf::EncryptedRowVector proto_vec;
         proto_vec.ParseFromIstream(&stream);
