@@ -34,18 +34,18 @@ namespace hit {
                                      const vector<int> &galois_steps): log_scale_(log_scale) {
 
         if (!is_pow2(num_slots) || num_slots < 4096) {
-            throw invalid_argument("Invalid parameters: num_slots must be a power of 2, and at least 4096. Got " + to_string(num_slots));
+            LOG(FATAL) << "Invalid parameters when creating HomomorphicEval instance: "
+                       << "num_slots must be a power of 2, and at least 4096. Got " << num_slots;
         }
 
         int poly_modulus_degree = num_slots * 2;
         if (log_scale_ < MIN_LOG_SCALE) {
-            stringstream buffer;
-            buffer << "Invalid parameters: Implied log_scale is " << log_scale_ << ", which is less than the minimum, "
-                   << MIN_LOG_SCALE << ". Either increase the number of slots or decrease the number of primes."
-                   << endl;
-            buffer << "poly_modulus_degree is " << poly_modulus_degree << ", which limits the modulus to "
-                   << poly_degree_to_max_mod_bits(poly_modulus_degree) << " bits";
-            throw invalid_argument(buffer.str());
+            LOG(FATAL) << "Invalid parameters when creating HomomorphicEval instance: "
+                       << "log_scale is " << log_scale_ << ", which is less than the minimum "
+                       << MIN_LOG_SCALE << ". Either increase the number of slots or decrease the number of primes."
+                       << endl
+                       << "poly_modulus_degree is " << poly_modulus_degree << ", which limits the modulus to "
+                       << poly_degree_to_max_mod_bits(poly_modulus_degree) << " bits";
         }
 
         int num_primes = multiplicative_depth + 2;
@@ -56,10 +56,9 @@ namespace hit {
         }
         int min_poly_degree = modulus_to_poly_degree(mod_bits);
         if (poly_modulus_degree < min_poly_degree) {
-            stringstream buffer;
-            buffer << "Invalid parameters: Ciphertexts for this combination of num_primes and log_scale have more than "
-                   << num_slots << " plaintext slots.";
-            throw invalid_argument(buffer.str());
+            LOG(FATAL) << "Invalid parameters when creating HomomorphicEval instance: "
+                       << "Parameters for depth " << multiplicative_depth << " circuits and scale "
+                       << log_scale << " bits require more than " << num_slots << " plaintext slots.";
         }
         EncryptionParameters params = EncryptionParameters(scheme_type::CKKS);
         params.set_poly_modulus_degree(poly_modulus_degree);
@@ -232,10 +231,10 @@ namespace hit {
         if (coeffs.size() != num_slots_) {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
-            throw invalid_argument(
-                "You can only encrypt vectors which have exactly as many coefficients as the number of plaintext "
-                "slots: Expected " +
-                to_string(num_slots_) + ", got " + to_string(coeffs.size()));
+            LOG(FATAL) << "You can only encrypt vectors which have exactly as many "
+                       << " coefficients as the number of plaintext slots: Expected "
+                       << num_slots_ << " coefficients, but " + << coeffs.size()
+                       << " were provided";
         }
 
         if (level == -1) {
@@ -266,7 +265,7 @@ namespace hit {
 
     vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const {
         if (seal_decryptor == nullptr) {
-            throw invalid_argument("Decryption is only possible from a deserialized instance when the secret key is provided.");
+            LOG(FATAL) << "Decryption is only possible from a deserialized instance when the secret key is provided.";
         }
 
         Plaintext temp;

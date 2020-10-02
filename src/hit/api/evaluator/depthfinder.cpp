@@ -23,14 +23,14 @@ namespace hit {
         }
 
         if (level < -1) {
-            throw invalid_argument("You can only specify non-negative encryption levels. Got: " + to_string(level));
+            LOG(FATAL) << "Encryption level must be non-negative, got " << level;
         }
 
         if (level == -1 && encryption_mode_ == EXPLICIT_LEVEL) {
-            throw invalid_argument("You have previously called `encrypt` with an explicit encryption level; you cannot use the default level now.");
+            LOG(FATAL) << "You have previously called `encrypt` with an explicit encryption level; you cannot use the default level now with the DepthFinder evaluator.";
         }
         if (level != -1 && encryption_mode_ == IMPLICIT_LEVEL) {
-            throw invalid_argument("You have previously called `encrypt` without an explicit encryption level; you cannot use explicit levels now.");
+            LOG(FATAL) << "You have previously called `encrypt` without an explicit encryption level; you cannot use explicit levels now with the DepthFinder evaluator.");
         }
 
         if (level == -1) {

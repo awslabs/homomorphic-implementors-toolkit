@@ -120,10 +120,8 @@ namespace hit {
 
         norm = relative_error(exact_plaintext, homom_plaintext);
         if (abs(log2(ct.scale()) - log2(ct.seal_ct.scale())) > 0.1) {
-            stringstream buffer;
-            buffer << "INTERNAL ERROR: SCALE COMPUTATION IS INCORRECT: " << log2(ct.scale())
-                   << " != " << ct.seal_ct.scale();
-            throw invalid_argument(buffer.str());
+            LOG(FATAL) << "Internal error: HIT scale does not match SEAL scale: "
+                       << log2(ct.scale()) << " != " << ct.seal_ct.scale();
         }
 
         VLOG(VLOG_EVAL) << setprecision(8) << "    + Approximation norm: " << norm;
@@ -141,10 +139,6 @@ namespace hit {
         VLOG(VLOG_EVAL) << verbose_info.str();
 
         if (norm > MAX_NORM) {
-            stringstream buffer;
-            buffer << "DebugEvaluator: plaintext and ciphertext divergence: " << norm << " > " << MAX_NORM
-                   << ". Scale is " << log_scale_ << " bits.";
-
             max_print_size = 32;
             stringstream expect_debug_result;
             expect_debug_result << "    + DEBUG Expected result: <";
@@ -158,7 +152,7 @@ namespace hit {
                 expect_debug_result << "..., ";
             }
             expect_debug_result << ">";
-            VLOG(VLOG_EVAL) << expect_debug_result.str();
+            LOG(ERROR) << expect_debug_result.str();
 
             stringstream actual_debug_result;
             actual_debug_result << "    + DEBUG Actual result:   <";
@@ -172,7 +166,7 @@ namespace hit {
                 actual_debug_result << "..., ";
             }
             actual_debug_result << ">";
-            VLOG(VLOG_EVAL) << actual_debug_result.str();
+            LOG(ERROR) << actual_debug_result.str();
 
             Plaintext encoded_plain;
             homomorphic_eval->encoder->encode(ct.raw_pt, pow(2,log_scale_), encoded_plain);
@@ -189,10 +183,12 @@ namespace hit {
             double norm2 = relative_error(exact_plaintext, truncated_decoded_plain);
             double norm3 = relative_error(truncated_decoded_plain, homom_plaintext);
 
-            VLOG(VLOG_EVAL) << "Encoding norm: " << norm2;
-            VLOG(VLOG_EVAL) << "Encryption norm: " << norm3;
+            LOG(ERROR) << "Encoding norm: " << norm2;
+            LOG(ERROR) << "Encryption norm: " << norm3;
 
-            throw invalid_argument(buffer.str());
+            LOG(FATAL) << "Plaintext and ciphertext divergence: " << norm
+                       << " > " << MAX_NORM << ". Scale is " << log_scale_
+                       << " bits.";
         }
     }
 
@@ -267,8 +263,7 @@ namespace hit {
     }
 
     void DebugEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        auto context_data = get_context_data(homomorphic_eval->context, ct.he_level());
-        uint64_t p = context_data->parms().coeff_modulus().back().value();
+        uint64_t p = get_last_prime(homomorphic_eval->context, ct.he_level());
         double prime_bit_len = log2(p);
 
         homomorphic_eval->rescale_to_next_inplace_internal(ct);

@@ -16,7 +16,7 @@ namespace hit {
 
     PlaintextEval::PlaintextEval(int num_slots) : num_slots_(num_slots) {
         if (!is_pow2(num_slots)) {
-            throw invalid_argument("Number of plaintext slots must be a power of two; got " + to_string(num_slots));
+            LOG(FATAL) << "Number of plaintext slots must be a power of two; got " << num_slots;
         }
     }
 
@@ -24,10 +24,10 @@ namespace hit {
         if (coeffs.size() != num_slots_) {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
-            throw invalid_argument(
-                "You can only encrypt vectors which have exactly as many coefficients as the number of plaintext "
-                "slots: Expected " +
-                to_string(num_slots_) + ", got " + to_string(coeffs.size()));
+            LOG(FATAL) << "You can only encrypt vectors which have exactly as many "
+                       << " coefficients as the number of plaintext slots: Expected "
+                       << num_slots_ << " coefficients, but " + << coeffs.size()
+                       << " were provided";
         }
 
         {
@@ -141,13 +141,6 @@ namespace hit {
     }
 
     void PlaintextEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        if (plain.size() != ct.num_slots()) {
-            stringstream buffer;
-            buffer << "plaintext.add_plain_internal: public input has the wrong size: " << plain.size()
-                   << " != " << ct.num_slots();
-            throw invalid_argument(buffer.str());
-        }
-
         zip_with_inplace(ct.raw_pt, plain, plus<>());
         update_max_log_plain_val(ct);
     }
@@ -165,21 +158,11 @@ namespace hit {
     }
 
     void PlaintextEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        if (plain.size() != ct.num_slots()) {
-            stringstream buffer;
-            buffer << "plaintext.sub_plain_internal: public input has the wrong size: " << plain.size()
-                   << " != " << ct.num_slots();
-            throw invalid_argument(buffer.str());
-        }
-
         zip_with_inplace(ct.raw_pt, plain, minus<>());
         update_max_log_plain_val(ct);
     }
 
     void PlaintextEval::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        if (ct1.num_slots() != ct2.num_slots()) {
-            throw invalid_argument("INTERNAL ERROR: Plaintext size mismatch");
-        }
         zip_with_inplace(ct1.raw_pt, ct2.raw_pt, multiplies<>());
         update_max_log_plain_val(ct1);
     }
@@ -192,13 +175,6 @@ namespace hit {
     }
 
     void PlaintextEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        if (plain.size() != ct.num_slots()) {
-            stringstream buffer;
-            buffer << "plaintext.multiply_plain_internal: public input has the wrong size: " << plain.size()
-                   << " != " << ct.num_slots();
-            throw invalid_argument(buffer.str());
-        }
-
         zip_with_inplace(ct.raw_pt, plain, multiplies<>());
         update_max_log_plain_val(ct);
     }
