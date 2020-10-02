@@ -22,8 +22,9 @@
  * the homomorphic encryption (HE) API such as `add` and `multiply`. These gates
  * are chained together to form a circuit which can be evaluated by a homomorphic
  * encryption scheme. An important property of the circuit is it's
- * *multiplicative depth*, which is the longest chain of consecutive
- * multiplications in the circuit. As an example, consider the following two
+ * *multiplicative depth*, which is the number of multiplications along the path
+ * through the circuit with the _most_ multiplications.
+ * As an example, consider the following two
  * circuits consisting of only addition (+) and multiplication (*) gates and the
  * inputs x, y, and z:
  *
