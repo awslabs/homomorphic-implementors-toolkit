@@ -201,7 +201,7 @@ namespace hit {
          * Input Linear Algebra Constraints:
          *       Both inputs must have matching dimensions.
          * Input Ciphertext Constraints: None
-         * Output (Inplace): An encrypted matrix with the same ciphertext
+         * Output (Inplace): An encrypted row vector with the same ciphertext
          *                   properties as the encrypted input.
          */
         void add_plain_inplace(EncryptedRowVector &enc_vec1, const Vector &vec2);
@@ -214,7 +214,8 @@ namespace hit {
          * Output Linear Algebra Properties:
          *       Same as input.
          * Output Ciphertext Properties:
-         *       An encrypted matrix with the same ciphertext properties as the encrypted input.
+         *       An encrypted column vector with the same ciphertext
+         *       properties as the encrypted input.
          */
         void add_plain_inplace(EncryptedColVector &enc_vec1, const Vector &vec2);
 
@@ -248,6 +249,172 @@ namespace hit {
                 add_inplace(temp, args[i]);
             }
             return temp;
+        }
+
+
+        /* Subtract one encrypted linear algebra object from another, component-wise.
+         * Template Instantiations:
+         *   - EncryptedMatrix sub(const EncryptedMatrix&, const EncryptedMatrix&)
+         *   - EncryptedRowVector sub(const EncryptedRowVector&, const EncryptedRowVector&)
+         *   - EncryptedColVector sub(const EncryptedColVector&, const EncryptedColVector&)
+         * Input Linear Algebra Constraints:
+         *       Both inputs must have matching dimensions and be encoded with the same unit.
+         * Input Ciphertext Constraints:
+         *       Inputs must be at the same level and have matching scales.
+         *       Note that ciphertext degrees do not need to match.
+         * Output Linear Algebra Properties:
+         *       Same as inputs.
+         * Output Ciphertext Properties:
+         *       A ciphertext whose level and scale is the same as the inputs, and whose
+         *       degree is the maximum of the two input degrees.
+         */
+        template <typename T>
+        T sub(const T &arg1, const T &arg2) {
+            T temp = arg1;
+            sub_inplace(temp, arg2);
+            return temp;
+        }
+
+
+        /* Subtract one encrypted linear algebra object from another, component-wise.
+         * Template Instantiations:
+         *   - void sub_inplace(const EncryptedMatrix&, const EncryptedMatrix&)
+         *   - void sub_inplace(const EncryptedRowVector&, const EncryptedRowVector&)
+         *   - void sub_inplace(const EncryptedColVector&, const EncryptedColVector&)
+         * Input Linear Algebra Constraints:
+         *       Both inputs must have matching dimensions and be encoded with the same unit.
+         * Input Ciphertext Constraints:
+         *       Inputs must be at the same level and have matching scales.
+         *       Note that ciphertext degrees do not need to match.
+         * Output Linear Algebra Properties:
+         *       Same as input.
+         * Output Ciphertext Properties:
+         *       A ciphertext whose level and scale is the same as the inputs,
+         *       and whose degree is the maximum of the two input degrees.
+         */
+        template <typename T>
+        void sub_inplace(T &arg1, const T &arg2) {
+            if (!arg1.initialized() || !arg2.initialized()) {
+                LOG(ERROR) << "Inputs to sub_inplace are not initialized";
+                throw std::invalid_argument("An error occurred. See the log for details.");
+            }
+            if (!arg1.same_size(arg2)) {
+                LOG(ERROR) << "Inputs to sub_inplace do not have the same dimensions: "
+                           << dim_string(arg1) << " vs " << dim_string(arg2);
+                throw std::invalid_argument("An error occurred. See the log for details.");
+            }
+            if (arg1.he_level() != arg2.he_level()) {
+                LOG(ERROR) << "Inputs to sub_inplace do not have the same level: "
+                           << arg1.he_level() << "!=" << arg2.he_level();
+                throw std::invalid_argument("An error occurred. See the log for details.");
+            }
+            if (arg1.scale() != arg2.scale()) {
+                LOG(ERROR) << "Inputs to sub_inplace do not have the same scale: "
+                           << log2(arg1.scale()) << "bits !=" << log2(arg2.scale()) << " bits";
+                throw std::invalid_argument("An error occurred. See the log for details.");
+            }
+            for (size_t i = 0; i < arg1.num_cts(); i++) {
+                eval.sub_inplace(arg1[i], arg2[i]);
+            }
+        }
+
+
+        /* Subtract a public plaintext from an encrypted linear algebra object, component-wise.
+         * Template Instantiations:
+         *   - EncryptedMatrix sub_plain(const EncryptedMatrix&, const Matrix&)
+         *   - EncryptedRowVector sub_plain(const EncryptedRowVector&, const Vector&)
+         *   - EncryptedColVector sub_plain(const EncryptedColVector&, const Vector&)
+         * Input Linear Algebra Constraints:
+         *       Both inputs must have matching dimensions.
+         * Input Ciphertext Constraints: None
+         * Output Linear Algebra Properties:
+         *       Same as input.
+         * Output Ciphertext Properties:
+         *       A encrypted object with the same ciphertext properties as the encrypted input.
+         */
+        template <typename T1, typename T2>
+        T1 sub_plain(const T1 &arg1, const T2 &arg2) {
+            T1 temp = arg1;
+            sub_plain_inplace(temp, arg2);
+            return temp;
+        }
+
+
+        /* Subtract a public matrix from an encrypted matrix, component-wise.
+         * Input Linear Algebra Constraints:
+         *       Both inputs must have matching dimensions.
+         * Input Ciphertext Constraints: None
+         * Output Linear Algebra Properties:
+         *       Same as input.
+         * Output Ciphertext Properties:
+         *       An encrypted matrix with the same ciphertext properties as the encrypted input.
+         */
+        void sub_plain_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2);
+
+
+        /* Subtract a public row vector from an encrypted row vector, component-wise.
+         * Input Linear Algebra Constraints:
+         *       Both inputs must have matching dimensions.
+         * Input Ciphertext Constraints: None
+         * Output (Inplace): An encrypted row vector with the same ciphertext
+         *                   properties as the encrypted input.
+         */
+        void sub_plain_inplace(EncryptedRowVector &enc_vec1, const Vector &vec2);
+
+
+        /* Subtract a public column vector from an encrypted column vector, component-wise.
+         * Input Linear Algebra Constraints:
+         *       Both inputs must have matching dimensions.
+         * Input Ciphertext Constraints: None
+         * Output Linear Algebra Properties:
+         *       Same as input.
+         * Output Ciphertext Properties:
+         *       An encrypted column vector with the same ciphertext properties as the encrypted input.
+         */
+        void sub_plain_inplace(EncryptedColVector &enc_vec1, const Vector &vec2);
+
+
+        /* Negate an encrypted linear algebra object.
+         * Template Instantiations:
+         *   - EncryptedMatrix negate(const EncryptedMatrix&)
+         *   - EncryptedRowVector negate(const EncryptedRowVector&)
+         *   - EncryptedColVector negate(const EncryptedColVector&)
+         * Input Linear Algebra Constraints: None
+         * Input Ciphertext Constraints: None
+         * Output Linear Algebra Properties:
+         *      Same encoding unit as input.
+         * Output Ciphertext Properties:
+         *      Same properties as the input.
+         */
+        template <typename T>
+        T negate(const T &arg) {
+            T temp = arg;
+            negate_inplace(temp);
+            return temp;
+        }
+
+
+        /* Negate an encrypted linear algebra object.
+         * Template Instantiations:
+         *   - void negate_inplace(const EncryptedMatrix&)
+         *   - void negate_inplace(const EncryptedRowVector&)
+         *   - void negate_inplace(const EncryptedColVector&)
+         * Input Linear Algebra Constraints: None
+         * Input Ciphertext Constraints: None
+         * Output Linear Algebra Properties:
+         *      Same encoding unit as input.
+         * Output Ciphertext Properties:
+         *      Same properties as the input.
+         */
+        template <typename T>
+        void negate_inplace(T &arg) {
+            if (!arg.initialized()) {
+                LOG(ERROR) << "Encrypted input to sub_plain is not initialized.";
+                throw std::invalid_argument("An error occurred. See the log for details.");
+            }
+            for (size_t i = 0; i < arg.num_cts(); i++) {
+                eval.negate_inplace(arg[i]);
+            }
         }
 
 
@@ -361,6 +528,26 @@ namespace hit {
 
         /* Add a scalar to each coefficient of the encrypted value.
          * Template Instantiations:
+         *   - EncryptedMatrix add_plain(const EncryptedMatrix&, double scalar)
+         *   - EncryptedRowVector add_plain(const EncryptedRowVector&, double scalar)
+         *   - EncryptedColVector add_plain(const EncryptedColVector&, double scalar)
+         * Input Linear Algebra Constraints: None
+         * Input Ciphertext Constraints: None
+         * Output Linear Algebra Properties:
+         *      Same encoding unit as input.
+         * Output Ciphertext Properties:
+         *      Same properties as the input.
+         */
+        template <typename T>
+        T add_plain(const T &arg1, double scalar) {
+            T temp = arg1;
+            add_plain_inplace(temp, scalar);
+            return temp;
+        }
+
+
+        /* Add a scalar to each coefficient of the encrypted value.
+         * Template Instantiations:
          *   - void add_plain_inplace(const EncryptedMatrix&, double scalar)
          *   - void add_plain_inplace(const EncryptedRowVector&, double scalar)
          *   - void add_plain_inplace(const EncryptedColVector&, double scalar)
@@ -382,11 +569,11 @@ namespace hit {
         }
 
 
-        /* Add a scalar to each coefficient of the encrypted value.
+        /* Subtract a scalar from each coefficient of the encrypted value.
          * Template Instantiations:
-         *   - EncryptedMatrix add_plain(const EncryptedMatrix&, double scalar)
-         *   - EncryptedRowVector add_plain(const EncryptedRowVector&, double scalar)
-         *   - EncryptedColVector add_plain(const EncryptedColVector&, double scalar)
+         *   - EncryptedMatrix sub_plain(const EncryptedMatrix&, double scalar)
+         *   - EncryptedRowVector sub_plain(const EncryptedRowVector&, double scalar)
+         *   - EncryptedColVector sub_plain(const EncryptedColVector&, double scalar)
          * Input Linear Algebra Constraints: None
          * Input Ciphertext Constraints: None
          * Output Linear Algebra Properties:
@@ -395,10 +582,34 @@ namespace hit {
          *      Same properties as the input.
          */
         template <typename T>
-        T add_plain(const T &arg1, double scalar) {
+        T sub_plain(const T &arg1, double scalar) {
             T temp = arg1;
-            add_plain_inplace(temp, scalar);
+            sub_plain_inplace(temp, scalar);
             return temp;
+        }
+
+
+        /* Subtract a scalar from each coefficient of the encrypted value.
+         * Template Instantiations:
+         *   - void sub_plain_inplace(const EncryptedMatrix&, double scalar)
+         *   - void sub_plain_inplace(const EncryptedRowVector&, double scalar)
+         *   - void sub_plain_inplace(const EncryptedColVector&, double scalar)
+         * Input Linear Algebra Constraints: None
+         * Input Ciphertext Constraints: None
+         * Output Linear Algebra Properties:
+         *      Same encoding unit as input.
+         * Output Ciphertext Properties:
+         *      Same properties as the input.
+         */
+        template <typename T>
+        void sub_plain_inplace(T &arg, double scalar) {
+            if (!arg.initialized()) {
+                LOG(ERROR) << "Encrypted input to sub_plain is not initialized.";
+                throw std::invalid_argument("An error occurred. See the log for details.");
+            }
+            for (size_t i = 0; i < arg.num_cts(); i++) {
+                eval.sub_plain_inplace(arg[i], scalar);
+            }
         }
 
 

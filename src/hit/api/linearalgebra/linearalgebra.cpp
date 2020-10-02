@@ -140,6 +140,13 @@ namespace hit {
     template EncryptedMatrix LinearAlgebra::add_plain(const EncryptedMatrix &, const Matrix &);
     template EncryptedMatrix LinearAlgebra::add_plain(const EncryptedMatrix &, double);
     template void LinearAlgebra::add_plain_inplace(EncryptedMatrix &enc_mat, double scalar);
+    template EncryptedMatrix LinearAlgebra::sub(const EncryptedMatrix &, const EncryptedMatrix &);
+    template void LinearAlgebra::sub_inplace(EncryptedMatrix &, const EncryptedMatrix &);
+    template EncryptedMatrix LinearAlgebra::negate(const EncryptedMatrix &);
+    template void LinearAlgebra::negate_inplace(EncryptedMatrix &);
+    template EncryptedMatrix LinearAlgebra::sub_plain(const EncryptedMatrix &, const Matrix &);
+    template EncryptedMatrix LinearAlgebra::sub_plain(const EncryptedMatrix &, double);
+    template void LinearAlgebra::sub_plain_inplace(EncryptedMatrix &enc_mat, double scalar);
     template EncryptedMatrix LinearAlgebra::multiply_plain(const EncryptedMatrix &, double);
     template EncryptedMatrix LinearAlgebra::reduce_level_to(const EncryptedMatrix &, int);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedMatrix &, int);
@@ -167,6 +174,13 @@ namespace hit {
     template EncryptedRowVector LinearAlgebra::add_plain(const EncryptedRowVector &, const Vector &);
     template EncryptedRowVector LinearAlgebra::add_plain(const EncryptedRowVector &, double);
     template void LinearAlgebra::add_plain_inplace(EncryptedRowVector &enc_vec, double scalar);
+    template EncryptedRowVector LinearAlgebra::sub(const EncryptedRowVector &, const EncryptedRowVector &);
+    template void LinearAlgebra::sub_inplace(EncryptedRowVector &, const EncryptedRowVector &);
+    template EncryptedRowVector LinearAlgebra::negate(const EncryptedRowVector &);
+    template void LinearAlgebra::negate_inplace(EncryptedRowVector &);
+    template EncryptedRowVector LinearAlgebra::sub_plain(const EncryptedRowVector &, const Vector &);
+    template EncryptedRowVector LinearAlgebra::sub_plain(const EncryptedRowVector &, double);
+    template void LinearAlgebra::sub_plain_inplace(EncryptedRowVector &enc_vec, double scalar);
     template EncryptedRowVector LinearAlgebra::multiply_plain(const EncryptedRowVector &, double);
     template EncryptedRowVector LinearAlgebra::reduce_level_to(const EncryptedRowVector &, int);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedRowVector &, int);
@@ -196,6 +210,13 @@ namespace hit {
     template EncryptedColVector LinearAlgebra::add_plain(const EncryptedColVector &, const Vector &);
     template EncryptedColVector LinearAlgebra::add_plain(const EncryptedColVector &, double);
     template void LinearAlgebra::add_plain_inplace(EncryptedColVector &enc_vec, double scalar);
+    template EncryptedColVector LinearAlgebra::sub(const EncryptedColVector &, const EncryptedColVector &);
+    template void LinearAlgebra::sub_inplace(EncryptedColVector &, const EncryptedColVector &);
+    template EncryptedColVector LinearAlgebra::negate(const EncryptedColVector &);
+    template void LinearAlgebra::negate_inplace(EncryptedColVector &);
+    template EncryptedColVector LinearAlgebra::sub_plain(const EncryptedColVector &, const Vector &);
+    template EncryptedColVector LinearAlgebra::sub_plain(const EncryptedColVector &, double);
+    template void LinearAlgebra::sub_plain_inplace(EncryptedColVector &enc_vec, double scalar);
     template EncryptedColVector LinearAlgebra::multiply_plain(const EncryptedColVector &, double);
     template EncryptedColVector LinearAlgebra::reduce_level_to(const EncryptedColVector &, int);
     template void LinearAlgebra::reduce_level_to_inplace(EncryptedColVector &, int);
@@ -222,7 +243,7 @@ namespace hit {
             LOG_AND_THROW_STREAM("Encrypted input to add_plain is not initialized");
         }
         if (enc_mat1.height() != mat2.size1() || enc_mat1.width() != mat2.size2()) {
-            LOG_AND_THROW_STREAM("Arguments to add_inplace must have the same dimensions; "
+            LOG_AND_THROW_STREAM("Arguments to add_plain must have the same dimensions; "
                        << "ciphertext encrypts a " << enc_mat1.height() << "x" << enc_mat1.width() << " matrix, "
                        << "plaintext is " << mat2.size1() << "x" << mat2.size2());
         }
@@ -240,7 +261,7 @@ namespace hit {
             LOG_AND_THROW_STREAM("Encrypted input to add_plain is not initialized");
         }
         if (enc_vec1.width() != vec2.size()) {
-            LOG_AND_THROW_STREAM("Arguments to add_inplace must have the same dimensions; "
+            LOG_AND_THROW_STREAM("Arguments to add_plain must have the same dimensions; "
                        << "ciphertext encrypts a " << enc_vec1.width() << " vector, "
                        << "plaintext has " << vec2.size() << " coefficients");
         }
@@ -256,7 +277,7 @@ namespace hit {
             LOG_AND_THROW_STREAM("Encrypted input to add_plain is not initialized");
         }
         if (enc_vec1.height() != vec2.size()) {
-            LOG_AND_THROW_STREAM("Arguments to add_inplace must have the same dimensions; "
+            LOG_AND_THROW_STREAM("Arguments to add_plain must have the same dimensions; "
                        << "ciphertext encrypts a " << enc_vec1.height() << " vector, "
                        << "plaintext has " << vec2.size() << " coefficients");
         }
@@ -264,6 +285,62 @@ namespace hit {
 
         for (int i = 0; i < enc_vec1.cts.size(); i++) {
             eval.add_plain_inplace(enc_vec1.cts[i], encoded_vector[i].data());
+        }
+    }
+
+    void LinearAlgebra::sub_plain_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2) {
+        if (!enc_mat1.initialized()) {
+            LOG(ERROR) << "Encrypted input to sub_plain is not initialized" << endl;
+            throw invalid_argument("An error occurred. See the log for details.");
+        }
+        if (enc_mat1.height() != mat2.size1() || enc_mat1.width() != mat2.size2()) {
+            LOG(ERROR) << "Arguments to sub_plain must have the same dimensions; "
+                       << "ciphertext encrypts a " << enc_mat1.height() << "x" << enc_mat1.width() << " matrix, "
+                       << "plaintext is " << mat2.size1() << "x" << mat2.size2();
+            throw invalid_argument("An error occurred. See the log for details.");
+        }
+        vector<vector<Matrix>> encoded_matrix = encode_matrix(mat2, enc_mat1.encoding_unit());
+
+        for (int i = 0; i < enc_mat1.cts.size(); i++) {
+            for (int j = 0; j < enc_mat1.cts[0].size(); j++) {
+                eval.sub_plain_inplace(enc_mat1.cts[i][j], encoded_matrix[i][j].data());
+            }
+        }
+    }
+
+    void LinearAlgebra::sub_plain_inplace(EncryptedRowVector &enc_vec1, const Vector &vec2) {
+        if (!enc_vec1.initialized()) {
+            LOG(ERROR) << "Encrypted input to sub_plain is not initialized" << endl;
+            throw invalid_argument("An error occurred. See the log for details.");
+        }
+        if (enc_vec1.width() != vec2.size()) {
+            LOG(ERROR) << "Arguments to sub_plain must have the same dimensions; "
+                       << "ciphertext encrypts a " << enc_vec1.width() << " vector, "
+                       << "plaintext has " << vec2.size() << " coefficients";
+            throw invalid_argument("An error occurred. See the log for details.");
+        }
+        vector<Matrix> encoded_vector = encode_row_vector(vec2, enc_vec1.encoding_unit());
+
+        for (int i = 0; i < enc_vec1.cts.size(); i++) {
+            eval.sub_plain_inplace(enc_vec1.cts[i], encoded_vector[i].data());
+        }
+    }
+
+    void LinearAlgebra::sub_plain_inplace(EncryptedColVector &enc_vec1, const Vector &vec2) {
+        if (!enc_vec1.initialized()) {
+            LOG(ERROR) << "Encrypted input to sub_plain is not initialized" << endl;
+            throw invalid_argument("An error occurred. See the log for details.");
+        }
+        if (enc_vec1.height() != vec2.size()) {
+            LOG(ERROR) << "Arguments to sub_plain must have the same dimensions; "
+                       << "ciphertext encrypts a " << enc_vec1.height() << " vector, "
+                       << "plaintext has " << vec2.size() << " coefficients";
+            throw invalid_argument("An error occurred. See the log for details.");
+        }
+        vector<Matrix> encoded_vector = encode_col_vector(vec2, enc_vec1.encoding_unit());
+
+        for (int i = 0; i < enc_vec1.cts.size(); i++) {
+            eval.sub_plain_inplace(enc_vec1.cts[i], encoded_vector[i].data());
         }
     }
 

@@ -99,13 +99,6 @@ namespace hit {
         void rotate_left_inplace(CKKSCiphertext &ct, int steps);
 
 
-        /* Negate each plaintext coefficient.
-         * Input: An arbitrary ciphertext (any degree and any scale)
-         * Output (Inplace): A ciphertext with the same properties as the input.
-         */
-        void negate_inplace(CKKSCiphertext &ct);
-
-
         /* Add a scalar to each plaintext slot.
          * Input: An arbitrary ciphertext (any degree and any scale) and a public scalar
          * Output: A ciphertext with the same properties as the input.
@@ -167,6 +160,13 @@ namespace hit {
          * Output: A ciphertext with the same properties as the input.
          */
         CKKSCiphertext negate(const CKKSCiphertext &ct);
+
+
+        /* Negate each plaintext coefficient.
+         * Input: An arbitrary ciphertext (any degree and any scale)
+         * Output (Inplace): A ciphertext with the same properties as the input.
+         */
+        void negate_inplace(CKKSCiphertext &ct);
 
 
         /* Subtract a scalar from each plaintext slot.
