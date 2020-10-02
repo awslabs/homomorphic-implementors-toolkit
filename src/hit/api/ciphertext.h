@@ -35,6 +35,12 @@ namespace hit {
         int num_slots() const override;
         int he_level() const override;
         double scale() const override;
+        // Output true if the ciphertext has squared scale and is
+        // therefore in need of a rescale, false otherwise.
+        bool needs_rescale() const override;
+        // Output true if the ciphertext is quadratic and is
+        // therefore in need of relinearization, false otherwise.
+        bool needs_relin() const override;
         std::vector<double> plaintext() const override;
 
         // all evaluators need access for encryption and decryption
@@ -44,6 +50,7 @@ namespace hit {
         friend class PlaintextEval;
         friend class OpCount;
         friend class ScaleEstimator;
+        friend class CKKSEvaluator;
 
        private:
 
@@ -69,5 +76,8 @@ namespace hit {
 
         // number of plaintext slots
         size_t num_slots_ = 0;
+
+        bool needs_relin_ = false;
+        bool needs_rescale_ = false;
     };
 }  // namespace hit

@@ -215,6 +215,7 @@ TEST(DepthFinderTest, RescaleToNextInPlace) {
     DepthFinder ckks_instance = DepthFinder();
     CKKSCiphertext ciphertext1;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
+    ckks_instance.multiply_plain_inplace(ciphertext1, 1);
     int he_level = ciphertext1.he_level();
     ckks_instance.rescale_to_next_inplace(ciphertext1);
     ASSERT_EQ(he_level - 1, ciphertext1.he_level());
@@ -225,6 +226,7 @@ TEST(DepthFinderTest, RescaleToNextInPlace_ExplicitLevel) {
     DepthFinder ckks_instance = DepthFinder();
     CKKSCiphertext ciphertext1;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1, 1);
+    ckks_instance.multiply_plain_inplace(ciphertext1, 1);
     int he_level = ciphertext1.he_level();
     ckks_instance.rescale_to_next_inplace(ciphertext1);
     ASSERT_EQ(he_level - 1, ciphertext1.he_level());

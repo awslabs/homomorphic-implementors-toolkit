@@ -22,6 +22,14 @@ namespace hit {
         virtual double scale() const = 0;
         virtual PlaintextType plaintext() const = 0;
 
+        // Output true if the ciphertext has squared scale and is
+        // therefore in need of a rescale, false otherwise.
+        virtual bool needs_rescale() const = 0;
+
+        // Output true if the ciphertext is quadratic and is
+        // therefore in need of relinearization, false otherwise.
+        virtual bool needs_relin() const = 0;
+
         virtual ~CiphertextMetadata<PlaintextType>() = default;
     };
 }  // namespace hit

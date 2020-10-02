@@ -77,6 +77,12 @@ namespace hit {
         int he_level() const override;
         // CKKS scale of this matrix
         double scale() const override;
+        // Output true if the ciphertext has squared scale and is
+        // therefore in need of a rescale, false otherwise.
+        bool needs_rescale() const override;
+        // Output true if the ciphertext is quadratic and is
+        // therefore in need of relinearization, false otherwise.
+        bool needs_relin() const override;
         // Underlying plaintext matrix. This is only available with the Plaintext, Debug, and ScaleEstimator evaluators
         Matrix plaintext() const override;
 

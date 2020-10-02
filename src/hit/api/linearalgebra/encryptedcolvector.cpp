@@ -75,6 +75,14 @@ namespace hit {
         return cts[0].scale();
     }
 
+    bool EncryptedColVector::needs_rescale() const {
+        return cts[0].needs_rescale();
+    }
+
+    bool EncryptedColVector::needs_relin() const {
+        return cts[0].needs_relin();
+    }
+
     Vector EncryptedColVector::plaintext() const {
         vector<Matrix> plaintext_pieces(cts.size());
 

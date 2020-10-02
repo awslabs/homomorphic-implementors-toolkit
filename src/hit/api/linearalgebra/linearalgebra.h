@@ -44,11 +44,12 @@ namespace hit {
 
         /* Encrypt a matrix after encoding it with the provided encoding unit.
          * Matrix is encrypted at the specified level, or at the highest level allowed by the
-         * encryption parameters if no level is specified.
+         * encryption parameters if no level is specified. We encode the matrix
+         * as described in encryptedmatrix.h.
          */
         EncryptedMatrix encrypt_matrix(const Matrix &mat, const EncodingUnit &unit, int level = -1);
 
-        /* Decrypt a matrix.
+        /* Decrypt a matrix with any ciphertext degree and any scale.
          */
         Matrix decrypt(const EncryptedMatrix &enc_mat) const;
 
@@ -67,21 +68,21 @@ namespace hit {
 
         /* Encrypt a vector representing a linear algebra row vector.
          * We first encode the vector as a matrix
-         * where each column is `vec`; see the paper for details.
+         * where each column is `vec`; see encryptedrowvector.h for details.
          */
         EncryptedRowVector encrypt_row_vector(const Vector &vec, const EncodingUnit &unit, int level = -1);
 
-        /* Decrypt a row vector.
+        /* Decrypt a row vector with any ciphertext degree and any scale.
          */
         Vector decrypt(const EncryptedRowVector &enc_vec) const;
 
         /* Encrypt a vector representing a linear algebra column vector.
          * We first encode the vector as a matrix
-         * where each row is `vec`; see the paper for details.
+         * where each row is `vec`; see encryptedcolvector.h for details.
          */
         EncryptedColVector encrypt_col_vector(const Vector &vec, const EncodingUnit &unit, int level = -1);
 
-        /* Decrypt a column vector.
+        /* Decrypt a column vector with any ciphertext degree and any scale.
          */
         Vector decrypt(const EncryptedColVector &enc_vec) const;
 
@@ -140,6 +141,12 @@ namespace hit {
                 throw std::invalid_argument(
                     "Arguments to LinearAlgebra::add_inplace do not have the same dimensions: " + dim_string(arg1) +
                     " " + dim_string(arg2));
+            }
+            if (arg1.he_level() != arg2.he_level()) {
+                throw std::invalid_argument("Arguments to LinearAlgebra::add_inplace do not have the same level");
+            }
+            if (arg1.scale() != arg2.scale()) {
+                throw std::invalid_argument("Arguments to LinearAlgebra::add_inplace do not have the same scale");
             }
             for (size_t i = 0; i < arg1.num_cts(); i++) {
                 eval.add_inplace(arg1[i], arg2[i]);
@@ -279,7 +286,9 @@ namespace hit {
             if (!arg.initialized()) {
                 throw std::invalid_argument("LinearAlgebra::multiply_inplace: argument not initialized.");
             }
-
+            if(arg.needs_rescale()) {
+                throw std::invalid_argument("LinearAlgebra::multiply_inplace: scale must be nominal.");
+            }
             for (size_t i = 0; i < arg.num_cts(); i++) {
                 eval.multiply_plain_inplace(arg[i], scalar);
             }
@@ -315,7 +324,7 @@ namespace hit {
          * Output Linear Algebra Properties:
          *       An g-dimensional column vector matrix encoded with the same unit as the input.
          * Output Ciphertext Properties:
-         *       A linear ciphertext with a nominal scale at level i-1.
+         *       A linear ciphertext with a squared scale at level i.
          */
         EncryptedColVector multiply(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat);
 
@@ -431,6 +440,18 @@ namespace hit {
                     "Arguments to LinearAlgebra::hadamard_multiply do not have the same dimensions: " +
                     dim_string(arg1) + " " + dim_string(arg2));
             }
+            if (arg1.he_level() != arg2.he_level()) {
+                throw std::invalid_argument("LinearAlgebra::hadamard_multiply: arguments are not at the same level");
+            }
+            if (arg1.scale() != arg2.scale()) {
+                throw std::invalid_argument("LinearAlgebra::hadamard_multiply: arguments do not have the same scale");
+            }
+            if (arg1.needs_rescale() != arg2.needs_rescale()) {
+                throw std::invalid_argument("LinearAlgebra::hadamard_multiply: arguments must have nominal scale");
+            }
+            if (arg1.needs_relin() != arg2.needs_relin()) {
+                throw std::invalid_argument("LinearAlgebra::hadamard_multiply: arguments must be linear ciphertexts");
+            }
             for (size_t i = 0; i < arg1.num_cts(); i++) {
                 eval.multiply_inplace(arg1[i], arg2[i]);
             }
@@ -477,6 +498,12 @@ namespace hit {
         void hadamard_square_inplace(T &arg) {
             if (!arg.initialized()) {
                 throw std::invalid_argument("LinearAlgebra::hadamard_square: argument not initialized.");
+            }
+            if (arg.needs_rescale()) {
+                throw std::invalid_argument("LinearAlgebra::hadamard_square: argument must have nominal scale");
+            }
+            if (arg.needs_relin()) {
+                throw std::invalid_argument("LinearAlgebra::hadamard_square: argument must be a linear ciphertext");
             }
 
             for (size_t i = 0; i < arg.num_cts(); i++) {

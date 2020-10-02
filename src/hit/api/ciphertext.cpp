@@ -87,6 +87,14 @@ namespace hit {
         return scale_;
     }
 
+    bool CKKSCiphertext::needs_rescale() const {
+        return needs_rescale_;
+    }
+
+    bool CKKSCiphertext::needs_relin() const {
+        return needs_relin_;
+    }
+
     vector<double> CKKSCiphertext::plaintext() const {
         if (raw_pt.empty()) {
             throw invalid_argument("Ciphertext does not contain a plaintext.");
