@@ -24,7 +24,7 @@
  *  - Whether the scale factor is 'nominal' (roughly the same as it was when freshly encrypted)
  *    or 'squared' (roughly the square of the nominal scale). The "roughly" here is important:
  *    ciphertexts at different levels both with nominal scale in reality have *different* scales.
- *    See <TODO> for details.
+ *    See the examples/example_1_ckks for details.
  * Each homomorphic operation accepts ciphertexts with some subset of these properties, which
  * we denote using the terms above.
  */

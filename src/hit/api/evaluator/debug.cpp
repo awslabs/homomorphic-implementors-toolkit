@@ -30,40 +30,40 @@ namespace hit {
         //     SEALContext::last_context_data(): access to lowest level ContextData
 
         // We iterate over the chain and print the parms_id for each set of parameters.
-        VLOG(VLOG_VERBOSE_EVAL) << "Print the modulus switching chain.";
+        VLOG(VLOG_VERBOSE) << "Print the modulus switching chain.";
 
         // First print the key level parameter information.
         auto context_data = homomorphic_eval->context->key_context_data();
-        VLOG(VLOG_VERBOSE_EVAL) << "----> Level (chain index): " << context_data->chain_index() << " ...... key_context_data()";
-        VLOG(VLOG_VERBOSE_EVAL) << "      parms_id: " << context_data->parms_id();
+        VLOG(VLOG_VERBOSE) << "----> Level (chain index): " << context_data->chain_index() << " ...... key_context_data()";
+        VLOG(VLOG_VERBOSE) << "      parms_id: " << context_data->parms_id();
         stringstream key_level_primes;
         for (const auto &prime : context_data->parms().coeff_modulus()) {
             key_level_primes << prime.value() << " ";
         }
-        VLOG(VLOG_VERBOSE_EVAL) << "      coeff_modulus primes: " << hex << key_level_primes.str() << dec;
-        VLOG(VLOG_VERBOSE_EVAL) << "\\";
+        VLOG(VLOG_VERBOSE) << "      coeff_modulus primes: " << hex << key_level_primes.str() << dec;
+        VLOG(VLOG_VERBOSE) << "\\";
 
         // Next iterate over the remaining (data) levels.
         context_data = homomorphic_eval->context->first_context_data();
         while (context_data) {
-            VLOG(VLOG_VERBOSE_EVAL) << " \\--> Level (chain index): " << context_data->chain_index();
+            VLOG(VLOG_VERBOSE) << " \\--> Level (chain index): " << context_data->chain_index();
             if (context_data->parms_id() == homomorphic_eval->context->first_parms_id()) {
-                VLOG(VLOG_VERBOSE_EVAL) << " ...... first_context_data()";
+                VLOG(VLOG_VERBOSE) << " ...... first_context_data()";
             } else if (context_data->parms_id() == homomorphic_eval->context->last_parms_id()) {
-                VLOG(VLOG_VERBOSE_EVAL) << " ...... last_context_data()";
+                VLOG(VLOG_VERBOSE) << " ...... last_context_data()";
             }
-            VLOG(VLOG_VERBOSE_EVAL) << "      parms_id: " << context_data->parms_id() << endl;
+            VLOG(VLOG_VERBOSE) << "      parms_id: " << context_data->parms_id() << endl;
             stringstream data_level_primes;
             for (const auto &prime : context_data->parms().coeff_modulus()) {
                 data_level_primes << prime.value() << " ";
             }
-            VLOG(VLOG_VERBOSE_EVAL) << "      coeff_modulus primes: " << hex << data_level_primes.str() << dec;
-            VLOG(VLOG_VERBOSE_EVAL) << "\\";
+            VLOG(VLOG_VERBOSE) << "      coeff_modulus primes: " << hex << data_level_primes.str() << dec;
+            VLOG(VLOG_VERBOSE) << "\\";
 
             // Step forward in the chain.
             context_data = context_data->next_context_data();
         }
-        VLOG(VLOG_VERBOSE_EVAL) << " End of chain reached" << endl;
+        VLOG(VLOG_VERBOSE) << " End of chain reached" << endl;
     }
 
     DebugEval::DebugEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,

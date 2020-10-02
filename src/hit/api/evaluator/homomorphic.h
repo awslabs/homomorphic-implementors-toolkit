@@ -59,9 +59,8 @@ namespace hit {
 
         /* A warning will show in log if you decrypt when the ciphertext is not at level 0
          * Usually, decrypting a ciphertext not at level 0 indicates you are doing something
-         * inefficient. However for testing purposes, it may be useful, so you will want to
-         * suppress the warning.
-         * TODO: log level?
+         * inefficient. However you may want to suppress the warning for testing either by
+         * setting suppress_warnings=true or by setting the log level to 0.
          */
         std::vector<double> decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings = false) const override;
 

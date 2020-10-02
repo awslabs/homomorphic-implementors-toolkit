@@ -13,8 +13,7 @@
 #include <boost/numeric/ublas/vector.hpp>
 
 #define VLOG_EVAL 1
-#define VLOG_VERBOSE_EVAL 1
-#define VLOG_STATUS 1
+#define VLOG_VERBOSE 2
 
 #define INVALID_PARAMETER_EXCEPTION 10
 
@@ -36,7 +35,7 @@ namespace hit {
 
     uint64_t elapsed_time_in_ms(timepoint start, timepoint end);
     std::string elapsed_time_to_str(timepoint start, timepoint end, TimeScale = TS_DYNAMIC);
-    void print_elapsed_time(timepoint start);
+    void print_elapsed_time(timepoint start, const std::string &str = "");
 
     // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
     double relative_error(const std::vector<double> &expected, const std::vector<double> &actual);

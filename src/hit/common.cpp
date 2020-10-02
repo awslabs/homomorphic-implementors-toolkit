@@ -52,9 +52,9 @@ namespace hit {
         return buffer.str();
     }
 
-    void print_elapsed_time(timepoint start) {
+    void print_elapsed_time(timepoint start, const string &str) {
         timepoint end = chrono::steady_clock::now();
-        VLOG(VLOG_STATUS) << elapsed_time_to_str(start, end);
+        VLOG(VLOG_VERBOSE) << str << elapsed_time_to_str(start, end);
     }
 
     // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
@@ -216,9 +216,9 @@ namespace hit {
 
     void decryption_warning(int level) {
         if (level != 0) {
-            LOG(WARNING) << "Decrypting a ciphertext at level " << level
-                         << "; consider starting with a smaller modulus"
-                         << " to improve performance.";
+            VLOG(VLOG_EVAL) << "Decrypting a ciphertext at level " << level
+                       << "; consider starting with a smaller modulus"
+                       << " to improve performance.";
         }
     }
 
