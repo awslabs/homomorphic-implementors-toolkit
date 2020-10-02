@@ -10,16 +10,16 @@ find_package(GoogleTestLib REQUIRED)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/api)
 list(APPEND HIT_TEST_FILES "testutil.cpp")
-add_executable(hit-unit-test ${HIT_TEST_FILES})
+add_executable(hit-unit-tests ${HIT_TEST_FILES})
 
-target_link_libraries(hit-unit-test PUBLIC aws-hit gtest gtest_main)
-set_common_flags(hit-unit-test)
+target_link_libraries(hit-unit-tests PUBLIC aws-hit gtest gtest_main)
+set_common_flags(hit-unit-tests)
 
-add_custom_target(NAME hit-unit-test COMMAND hit-unit-test)
+add_custom_target(NAME hit-unit-tests COMMAND hit-unit-tests)
 
 add_custom_target(
   run_hit_tests
-  COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/hit-unit-test
+  COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/hit-unit-tests
   WORKING_DIRECTORY ${HELR_ROOT_DIR}
-  DEPENDS hit-unit-test
+  DEPENDS hit-unit-tests
   USES_TERMINAL)
