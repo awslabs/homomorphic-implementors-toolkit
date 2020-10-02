@@ -61,9 +61,8 @@ namespace hit {
     double relative_error(const vector<double> &expected, const vector<double> &actual) {
         int len = expected.size();
         if (len != actual.size()) {
-            stringstream buffer;
-            buffer << "relative_error inputs do not have the same size: " << len << " != " << actual.size();
-            throw invalid_argument(buffer.str());
+            LOG(FATAL) << "Inputs to relative error do not have the same size: "
+                       << len << " != " << actual.size();
         }
 
         Vector expected_vec = Vector(expected);
@@ -94,11 +93,14 @@ namespace hit {
 
         if (expected_l2_norm <= max_allowed_l2_norm) {
             // An unexpected situation.
-            LOG(WARNING) << "The expected result's norm is nearly zero (2^" << setprecision(8) << log2(expected_l2_norm)
-                         << "), but the actual result's norm is non-zero (2^"  << log2(actual_l2_norm) << ")";
+            LOG(WARNING) << "The expected result's norm is nearly zero (2^"
+                         << setprecision(8) << log2(expected_l2_norm)
+                         << "), but the actual result's norm is non-zero (2^"
+                         << log2(actual_l2_norm) << ")";
         }
         if (diff_l2_norm > MAX_NORM) {
-            LOG(WARNING) << "Relative norm is somewhat large (2^" << setprecision(8) << log2(diff_l2_norm)
+            LOG(WARNING) << "Relative norm is somewhat large (2^"
+                         << setprecision(8) << log2(diff_l2_norm)
                          << "); there may be an error in the computation.";
         }
         return diff_l2_norm;
@@ -149,9 +151,7 @@ namespace hit {
                 // (which corresponds to the 262144th cyclotomic ring)
                 return 1761;
             default:
-                stringstream buffer;
-                buffer << "poly_modulus_degree=" << poly_modulus_degree << " not supported";
-                throw invalid_argument(buffer.str());
+                LOG(FATAL) << "poly_modulus_degree " << poly_modulus_degree << " not supported";
         }
     }
 
@@ -194,10 +194,8 @@ namespace hit {
         // else if(mod_bits <= 3524) { return 131072; }
         // else if(mod_bits <= 7050) { return 262144; }
         else {
-            stringstream buffer;
-            buffer << "This computation is too big to handle right now: cannot determine a valid ring size for a "
-                   << mod_bits << "-bit modulus";
-            throw invalid_argument(buffer.str());
+            LOG(FATAL) << "This computation is too big to handle right now: cannot determine a valid ring size for a "
+                       << mod_bits << "-bit modulus";
         }
     }
 

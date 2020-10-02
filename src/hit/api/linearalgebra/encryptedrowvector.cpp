@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <execution>
+#include <glog/logging.h>
 
 #include "common.h"
 

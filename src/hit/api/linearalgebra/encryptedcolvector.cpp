@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <execution>
+#include <glog/logging.h>
 
 using namespace std;
 using namespace seal;

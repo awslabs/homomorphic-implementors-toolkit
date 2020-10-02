@@ -30,7 +30,7 @@ namespace hit {
             LOG(FATAL) << "You have previously called `encrypt` with an explicit encryption level; you cannot use the default level now with the DepthFinder evaluator.";
         }
         if (level != -1 && encryption_mode_ == IMPLICIT_LEVEL) {
-            LOG(FATAL) << "You have previously called `encrypt` without an explicit encryption level; you cannot use explicit levels now with the DepthFinder evaluator.");
+            LOG(FATAL) << "You have previously called `encrypt` without an explicit encryption level; you cannot use explicit levels now with the DepthFinder evaluator.";
         }
 
         if (level == -1) {

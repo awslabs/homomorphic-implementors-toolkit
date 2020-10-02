@@ -39,24 +39,13 @@ namespace hit {
     void print_parameters(const shared_ptr<SEALContext> &context) {
         // Verify parameters
         if (!context) {
-            throw invalid_argument("context is not set");
+            LOG(FATAL) << "context is not set";
         }
         const auto &context_data = *context->key_context_data();
 
-        /*
-        Which scheme are we using?
-        */
-        string scheme_name;
-        switch (context_data.parms().scheme()) {
-            case scheme_type::CKKS:
-                scheme_name = "CKKS";
-                break;
-            default:
-                throw invalid_argument("unsupported scheme");
-        }
         VLOG(VLOG_VERBOSE_EVAL) << "/";
         VLOG(VLOG_VERBOSE_EVAL) << "| Encryption parameters :";
-        VLOG(VLOG_VERBOSE_EVAL) << "|   scheme: " << scheme_name;
+        VLOG(VLOG_VERBOSE_EVAL) << "|   scheme: CKKS";
         VLOG(VLOG_VERBOSE_EVAL) << "|   poly_modulus_degree: " << context_data.parms().poly_modulus_degree();
 
         /*

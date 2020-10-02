@@ -202,7 +202,7 @@ namespace hit {
          *        Note that ciphertext degrees do not need to match.
          * Output: A ciphertext whose level and scale is the same as the inputs, and whose
          *         degree is the maximum of the two input degrees (see NOTE).
-         * NOTE: This operation throws an invalid_argument exception if the result is a constant
+         * NOTE: This operation throws an exception if the result is a constant
          *       ciphertext, since this results in a "transparent ciphertext" which does not
          *       require the secret key to decrypt. One way this can happen is if one ciphertext
          *       is a scalar shift of the other. In this case, the ciphertexts only differ in
@@ -215,7 +215,7 @@ namespace hit {
          *        Note that ciphertext degrees do not need to match.
          * Output (Inplace): A ciphertext whose level and scale is the same as the inputs, and whose
          *                   degree is the maximum of the two input degrees (see NOTE).
-         * NOTE: This operation throws an invalid_argument exception if the result is a constant
+         * NOTE: This operation throws an exception if the result is a constant
          *       ciphertext, since this results in a "transparent ciphertext" which does not
          *       require the secret key to decrypt. One way this can happen is if one ciphertext
          *       is a scalar shift of the other. In this case, the ciphertexts only differ in

@@ -8,6 +8,7 @@
 
 #include "api/ciphertext.h"
 #include "seal/seal.h"
+#include "common.h"
 
 namespace hit {
     /*

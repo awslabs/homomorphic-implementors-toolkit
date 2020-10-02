@@ -6,6 +6,7 @@
 #include <glog/logging.h>
 
 #include <iomanip>
+#include "../../common.h"
 
 using namespace std;
 using namespace seal;

@@ -14,6 +14,7 @@
 #include "encryptedrowvector.h"
 #include "encryptedcolvector.h"
 #include "../../common.h"
+#include <glog/logging.h>
 
 /* The LinearAlgebra API lifts the Evaluator API to linear algebra objects like row/column vectors and matrices.
  * It provides a simple API for performing many common linear algebra tasks, and automatic encoding and decoding
@@ -24,6 +25,8 @@
  * we have a list of encoding units which encode a vector, rather than a grid of encoding units. See the paper for
  * more details.
  */
+
+// using namespace google;
 
 namespace hit {
 
@@ -463,12 +466,12 @@ namespace hit {
             }
             if (arg1.needs_rescale() || arg2.needs_rescale()) {
                 LOG(FATAL) << "Inputs to hadamard_multiply must have nominal scale: "
-                           << "Vector: " << arg1.needs_rescale() <<
+                           << "Vector: " << arg1.needs_rescale()
                            << ", Matrix: " << arg2.needs_rescale();
             }
             if (arg1.needs_relin() || arg2.needs_relin()) {
                 LOG(FATAL) << "Inputs to hadamard_multiply must be linear ciphertexts: "
-                           << "Vector: " << arg1.needs_relin() <<
+                           << "Vector: " << arg1.needs_relin()
                            << ", Matrix: " << arg2.needs_relin();
             }
 

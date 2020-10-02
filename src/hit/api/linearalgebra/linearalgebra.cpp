@@ -9,6 +9,7 @@
 using namespace std;
 
 namespace hit {
+
     template <>
     EncryptedRowVector LinearAlgebra::encrypt(const Vector &vec, const EncodingUnit &unit, int level) {
         return encrypt_row_vector(vec, unit, level);
@@ -254,9 +255,9 @@ namespace hit {
         if (!enc_vec1.initialized()) {
             LOG(FATAL) << "Encrypted input to add_plain is not initialized" << endl;
         }
-        if (enc_vec1.width() != vec2.size()) {
+        if (enc_vec1.height() != vec2.size()) {
             LOG(FATAL) << "Arguments to add_inplace must have the same dimensions; "
-                       << "ciphertext encrypts a " << enc_vec1.width() << " vector, "
+                       << "ciphertext encrypts a " << enc_vec1.height() << " vector, "
                        << "plaintext has " << vec2.size() << " coefficients";
         }
         vector<Matrix> encoded_vector = encode_col_vector(vec2, enc_vec1.encoding_unit());
@@ -299,12 +300,12 @@ namespace hit {
         }
         if (enc_mat.needs_rescale() || enc_vec.needs_rescale()) {
             LOG(FATAL) << "Inputs to hadamard_multiply must have nominal scale: "
-                       << "Vector: " << enc_vec.needs_rescale() <<
+                       << "Vector: " << enc_vec.needs_rescale()
                        << ", Matrix: " << enc_mat.needs_rescale();
         }
         if (enc_mat.needs_relin() || enc_vec.needs_relin()) {
             LOG(FATAL) << "Inputs to hadamard_multiply must be linear ciphertexts: "
-                       << "Vector: " << enc_vec.needs_relin() <<
+                       << "Vector: " << enc_vec.needs_relin()
                        << ", Matrix: " << enc_mat.needs_relin();
         }
 
@@ -367,12 +368,12 @@ namespace hit {
         }
         if (enc_mat.needs_rescale() || enc_vec.needs_rescale()) {
             LOG(FATAL) << "Inputs to hadamard_multiply must have nominal scale: "
-                       << "Vector: " << enc_mat.needs_rescale() <<
+                       << "Vector: " << enc_mat.needs_rescale()
                        << ", Matrix: " << enc_vec.needs_rescale();
         }
         if (enc_mat.needs_relin() || enc_vec.needs_relin()) {
             LOG(FATAL) << "Inputs to hadamard_multiply must be linear ciphertexts: "
-                       << "Vector: " << enc_mat.needs_relin() <<
+                       << "Vector: " << enc_mat.needs_relin()
                        << ", Matrix: " << enc_vec.needs_relin();
         }
 
@@ -534,8 +535,7 @@ namespace hit {
             LOG(FATAL) << "Inputs to multiply are not initialized.";
         }
         if (enc_mat_a_trans.encoding_unit() != enc_mat_b.encoding_unit()) {
-            LOG(FATAL) << "Inputs to
-            multiply must have the same units: "
+            LOG(FATAL) << "Inputs to multiply must have the same units: "
                        << dim_string(enc_mat_a_trans.encoding_unit()) << "!="
                        << dim_string(enc_mat_b.encoding_unit());
         }
@@ -549,12 +549,12 @@ namespace hit {
         }
         if (enc_mat_a_trans.needs_rescale() || enc_mat_b.needs_rescale()) {
             LOG(FATAL) << "Inputs to hadamard_multiply must have nominal scale: "
-                       << "Vector: " << enc_mat_a_trans.needs_rescale() <<
+                       << "Vector: " << enc_mat_a_trans.needs_rescale()
                        << ", Matrix: " << enc_mat_b.needs_rescale();
         }
         if (enc_mat_a_trans.needs_relin() || enc_mat_b.needs_relin()) {
             LOG(FATAL) << "Inputs to hadamard_multiply must be linear ciphertexts: "
-                       << "Vector: " << enc_mat_a_trans.needs_relin() <<
+                       << "Vector: " << enc_mat_a_trans.needs_relin()
                        << ", Matrix: " << enc_mat_b.needs_relin();
         }
 
@@ -632,14 +632,6 @@ namespace hit {
     // This function returns the encoding of the *transpose* of that column vector,
     // which is a *row* vector.
     CKKSCiphertext LinearAlgebra::sum_cols_core(const CKKSCiphertext &ct, const EncodingUnit &unit, double scalar) {
-        // if(!is_pow2(ct.width)) {
-        //   stringstream buffer;
-        //   buffer << "sum_cols called with a non-power-2 width: " << ct.width;
-        //   throw invalid_argument(buffer.str());
-        // }
-        // if(ct.encoding != COL_MAT) {
-        //   throw invalid_argument("sum_cols argument must be a column matrix");
-        // }
         CKKSCiphertext output = ct;
 
         // sum the columns, placing the result in the left-most column

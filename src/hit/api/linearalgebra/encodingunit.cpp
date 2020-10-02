@@ -4,6 +4,7 @@
 #include "encodingunit.h"
 
 #include "common.h"
+#include <glog/logging.h>
 
 using namespace std;
 

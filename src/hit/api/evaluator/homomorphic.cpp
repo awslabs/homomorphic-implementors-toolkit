@@ -233,7 +233,7 @@ namespace hit {
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
             LOG(FATAL) << "You can only encrypt vectors which have exactly as many "
                        << " coefficients as the number of plaintext slots: Expected "
-                       << num_slots_ << " coefficients, but " + << coeffs.size()
+                       << num_slots_ << " coefficients, but " << coeffs.size()
                        << " were provided";
         }
 
