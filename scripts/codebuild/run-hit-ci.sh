@@ -20,6 +20,8 @@ if [ -d ${GLOG_log_dir} ]; then rm -Rf ${GLOG_log_dir}; fi
 mkdir -p ${GLOG_log_dir}
 if [ -d build ]; then rm -Rf build; fi
 mkdir -p build && cd build
+export GLOG_v=0
+export GLOG_logtostderr=true
 cmake -GNinja -DCMAKE_BUILD_TYPE=Release \
     -DHIT_BUILD_TESTS=ON -DHIT_RUN_CLANG_TIDY=ON \
     -DHIT_BUILD_EXAMPLES=ON ../
