@@ -96,8 +96,9 @@ namespace hit {
             // add this additional context.
             Vector raw_plaintext = cts[i].plaintext();
             if (raw_plaintext.size() != unit.encoding_height() * unit.encoding_width()) {
-                LOG(FATAL) << "Internal error: plaintext has " << raw_plaintext.size()
+                LOG(ERROR) << "Internal error: plaintext has " << raw_plaintext.size()
                            << " coefficients, expected " << unit.encoding_height() * unit.encoding_width();
+                throw invalid_argument("An error occurred. See the log for details.");
             }
             Matrix formatted_plaintext = Matrix(unit.encoding_height(), unit.encoding_width(), raw_plaintext.data());
             plaintext_pieces[i] = formatted_plaintext;
@@ -130,10 +131,11 @@ namespace hit {
 
     void EncryptedColVector::validate_init() const {
         if (!initialized()) {
-            LOG(FATAL) << "Invalid ciphertexts in EncryptedColVector: "
+            LOG(ERROR) << "Invalid ciphertexts in EncryptedColVector: "
                        << "Expected " << ceil(height_ / static_cast<double>(unit.encoding_width()))
                        << " ciphertexts, found " << cts.size() << ". "
                        << "Each ciphertext must have the same scale and level.";
+            throw invalid_argument("An error occurred. See the log for details.");
         }
     }
 
@@ -206,7 +208,8 @@ namespace hit {
 
     Vector decode_col_vector(const vector<Matrix> &mats, int trim_length) {
         if (mats.empty()) {
-            LOG(FATAL) << "Internal error: input to decode_col_vector cannot be empty";
+            LOG(ERROR) << "Internal error: input to decode_col_vector cannot be empty";
+            throw invalid_argument("An error occurred. See the log for details.");
         }
 
         if (trim_length < 0) {

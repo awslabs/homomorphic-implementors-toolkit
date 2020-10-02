@@ -37,10 +37,6 @@ namespace hit {
     Copied from SEAL ./native/examples/examples.h
     */
     void print_parameters(const shared_ptr<SEALContext> &context) {
-        // Verify parameters
-        if (!context) {
-            LOG(FATAL) << "context is not set";
-        }
         const auto &context_data = *context->key_context_data();
 
         VLOG(VLOG_VERBOSE_EVAL) << "/";

@@ -5,11 +5,11 @@
 
 #include <algorithm>
 #include <execution>
+#include <glog/logging.h>
 
 using namespace std;
 
 namespace hit {
-
     template <>
     EncryptedRowVector LinearAlgebra::encrypt(const Vector &vec, const EncodingUnit &unit, int level) {
         return encrypt_row_vector(vec, unit, level);
@@ -35,7 +35,8 @@ namespace hit {
 
     Matrix LinearAlgebra::decrypt(const EncryptedMatrix &enc_mat, bool suppress_warnings) const {
         if (!enc_mat.initialized()) {
-            LOG(FATAL) << "Cannot decrypt uninitialized enc_matrix";
+            LOG(ERROR) << "Cannot decrypt uninitialized enc_matrix";
+            throw invalid_argument("An error occurred. See the log for details.");
         }
 
         if (!suppress_warnings) {
@@ -80,7 +81,8 @@ namespace hit {
 
     Vector LinearAlgebra::decrypt(const EncryptedRowVector &enc_vec, bool suppress_warnings) const {
         if (!enc_vec.initialized()) {
-            LOG(FATAL) << "Cannot decrypt uninitialized row vector";
+            LOG(ERROR) << "Cannot decrypt uninitialized row vector";
+            throw invalid_argument("An error occurred. See the log for details.");
         }
 
         if (!suppress_warnings) {
@@ -115,7 +117,8 @@ namespace hit {
 
     Vector LinearAlgebra::decrypt(const EncryptedColVector &enc_vec, bool suppress_warnings) const {
         if (!enc_vec.initialized()) {
-            LOG(FATAL) << "Cannot decrypt uninitialized column vector";
+            LOG(ERROR) << "Cannot decrypt uninitialized column vector";
+            throw invalid_argument("An error occurred. See the log for details.");
         }
 
         if (!suppress_warnings) {
@@ -219,12 +222,14 @@ namespace hit {
 
     void LinearAlgebra::add_plain_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2) {
         if (!enc_mat1.initialized()) {
-            LOG(FATAL) << "Encrypted input to add_plain is not initialized" << endl;
+            LOG(ERROR) << "Encrypted input to add_plain is not initialized" << endl;
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat1.height() != mat2.size1() || enc_mat1.width() != mat2.size2()) {
-            LOG(FATAL) << "Arguments to add_inplace must have the same dimensions; "
+            LOG(ERROR) << "Arguments to add_inplace must have the same dimensions; "
                        << "ciphertext encrypts a " << enc_mat1.height() << "x" << enc_mat1.width() << " matrix, "
                        << "plaintext is " << mat2.size1() << "x" << mat2.size2();
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         vector<vector<Matrix>> encoded_matrix = encode_matrix(mat2, enc_mat1.encoding_unit());
 
@@ -237,12 +242,14 @@ namespace hit {
 
     void LinearAlgebra::add_plain_inplace(EncryptedRowVector &enc_vec1, const Vector &vec2) {
         if (!enc_vec1.initialized()) {
-            LOG(FATAL) << "Encrypted input to add_plain is not initialized" << endl;
+            LOG(ERROR) << "Encrypted input to add_plain is not initialized" << endl;
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_vec1.width() != vec2.size()) {
-            LOG(FATAL) << "Arguments to add_inplace must have the same dimensions; "
+            LOG(ERROR) << "Arguments to add_inplace must have the same dimensions; "
                        << "ciphertext encrypts a " << enc_vec1.width() << " vector, "
                        << "plaintext has " << vec2.size() << " coefficients";
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         vector<Matrix> encoded_vector = encode_row_vector(vec2, enc_vec1.encoding_unit());
 
@@ -253,12 +260,14 @@ namespace hit {
 
     void LinearAlgebra::add_plain_inplace(EncryptedColVector &enc_vec1, const Vector &vec2) {
         if (!enc_vec1.initialized()) {
-            LOG(FATAL) << "Encrypted input to add_plain is not initialized" << endl;
+            LOG(ERROR) << "Encrypted input to add_plain is not initialized" << endl;
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_vec1.height() != vec2.size()) {
-            LOG(FATAL) << "Arguments to add_inplace must have the same dimensions; "
+            LOG(ERROR) << "Arguments to add_inplace must have the same dimensions; "
                        << "ciphertext encrypts a " << enc_vec1.height() << " vector, "
                        << "plaintext has " << vec2.size() << " coefficients";
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         vector<Matrix> encoded_vector = encode_col_vector(vec2, enc_vec1.encoding_unit());
 
@@ -279,34 +288,41 @@ namespace hit {
     EncryptedMatrix LinearAlgebra::hadamard_multiply(const EncryptedRowVector &enc_vec,
                                                      const EncryptedMatrix &enc_mat) {
         if (!enc_vec.initialized() || !enc_mat.initialized()) {
-            LOG(FATAL) << "Inputs to hadamard_multiply are not initialized.";
+            LOG(ERROR) << "Inputs to hadamard_multiply are not initialized.";
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat.encoding_unit() != enc_vec.encoding_unit()) {
-            LOG(FATAL) << "Inputs to hadamard_multiply must have the same units: "
+            LOG(ERROR) << "Inputs to hadamard_multiply must have the same units: "
                        << dim_string(enc_vec.encoding_unit()) << "!="
                        << dim_string(enc_mat.encoding_unit());
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat.height() != enc_vec.width()) {
-            LOG(FATAL) << "Inner dimension mismatch in hadamard_multiply: " + dim_string(enc_vec)
+            LOG(ERROR) << "Inner dimension mismatch in hadamard_multiply: " + dim_string(enc_vec)
                        << " is not compatible with " + dim_string(enc_mat);
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat.he_level() != enc_vec.he_level()) {
-            LOG(FATAL) << "Inputs to hadamard_multiply must have the same level: "
+            LOG(ERROR) << "Inputs to hadamard_multiply must have the same level: "
                        << enc_vec.he_level() << "!=" << enc_mat.he_level();
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat.scale() != enc_vec.scale()) {
-            LOG(FATAL) << "Inputs to hadamard_multiply must have the same scale: "
+            LOG(ERROR) << "Inputs to hadamard_multiply must have the same scale: "
                        << log2(enc_vec.scale()) << "bits != " << log2(enc_mat.scale()) << " bits";
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat.needs_rescale() || enc_vec.needs_rescale()) {
-            LOG(FATAL) << "Inputs to hadamard_multiply must have nominal scale: "
+            LOG(ERROR) << "Inputs to hadamard_multiply must have nominal scale: "
                        << "Vector: " << enc_vec.needs_rescale()
                        << ", Matrix: " << enc_mat.needs_rescale();
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat.needs_relin() || enc_vec.needs_relin()) {
-            LOG(FATAL) << "Inputs to hadamard_multiply must be linear ciphertexts: "
+            LOG(ERROR) << "Inputs to hadamard_multiply must be linear ciphertexts: "
                        << "Vector: " << enc_vec.needs_relin()
                        << ", Matrix: " << enc_mat.needs_relin();
+            throw invalid_argument("An error occurred. See the log for details.");
         }
 
         vector<vector<CKKSCiphertext>> cts_transpose(enc_mat.num_horizontal_units());
@@ -347,34 +363,41 @@ namespace hit {
     EncryptedMatrix LinearAlgebra::hadamard_multiply(const EncryptedMatrix &enc_mat,
                                                      const EncryptedColVector &enc_vec) {
         if (!enc_vec.initialized() || !enc_mat.initialized()) {
-            LOG(FATAL) << "Inputs to hadamard_multiply are not initialized.";
+            LOG(ERROR) << "Inputs to hadamard_multiply are not initialized.";
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat.encoding_unit() != enc_vec.encoding_unit()) {
-            LOG(FATAL) << "Inputs to hadamard_multiply must have the same units: "
+            LOG(ERROR) << "Inputs to hadamard_multiply must have the same units: "
                        << dim_string(enc_mat.encoding_unit()) << "!="
                        << dim_string(enc_vec.encoding_unit());
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat.width() != enc_vec.height()) {
-            LOG(FATAL) << "Inner dimension mismatch in hadamard_multiply: " + dim_string(enc_mat)
+            LOG(ERROR) << "Inner dimension mismatch in hadamard_multiply: " + dim_string(enc_mat)
                        << " is not compatible with " + dim_string(enc_vec);
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat.he_level() != enc_vec.he_level()) {
-            LOG(FATAL) << "Inputs to hadamard_multiply must have the same level: "
+            LOG(ERROR) << "Inputs to hadamard_multiply must have the same level: "
                        << enc_mat.he_level() << "!=" << enc_vec.he_level();
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat.scale() != enc_vec.scale()) {
-            LOG(FATAL) << "Inputs to hadamard_multiply must have the same scale: "
+            LOG(ERROR) << "Inputs to hadamard_multiply must have the same scale: "
                        << log2(enc_mat.scale()) << "bits != " << log2(enc_vec.scale()) << " bits";
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat.needs_rescale() || enc_vec.needs_rescale()) {
-            LOG(FATAL) << "Inputs to hadamard_multiply must have nominal scale: "
+            LOG(ERROR) << "Inputs to hadamard_multiply must have nominal scale: "
                        << "Vector: " << enc_mat.needs_rescale()
                        << ", Matrix: " << enc_vec.needs_rescale();
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat.needs_relin() || enc_vec.needs_relin()) {
-            LOG(FATAL) << "Inputs to hadamard_multiply must be linear ciphertexts: "
+            LOG(ERROR) << "Inputs to hadamard_multiply must be linear ciphertexts: "
                        << "Vector: " << enc_mat.needs_relin()
                        << ", Matrix: " << enc_vec.needs_relin();
+            throw invalid_argument("An error occurred. See the log for details.");
         }
 
         vector<vector<CKKSCiphertext>> cts(enc_mat.num_vertical_units());
@@ -532,30 +555,36 @@ namespace hit {
     EncryptedMatrix LinearAlgebra::multiply(const EncryptedMatrix &enc_mat_a_trans, const EncryptedMatrix &enc_mat_b,
                                             double scalar) {
         if (!enc_mat_a_trans.initialized() || !enc_mat_b.initialized()) {
-            LOG(FATAL) << "Inputs to multiply are not initialized.";
+            LOG(ERROR) << "Inputs to multiply are not initialized.";
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat_a_trans.encoding_unit() != enc_mat_b.encoding_unit()) {
-            LOG(FATAL) << "Inputs to multiply must have the same units: "
+            LOG(ERROR) << "Inputs to multiply must have the same units: "
                        << dim_string(enc_mat_a_trans.encoding_unit()) << "!="
                        << dim_string(enc_mat_b.encoding_unit());
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat_a_trans.he_level() != enc_mat_b.he_level() + 1) {
-            LOG(FATAL) << "Second argument to matrix multiply must be one level below first argument: "
+            LOG(ERROR) << "Second argument to matrix multiply must be one level below first argument: "
                        << enc_mat_a_trans.he_level() << "!=" << enc_mat_b.he_level() << "+1";
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat_a_trans.height() != enc_mat_b.height()) {
-            LOG(FATAL) << "Inputs to matrix multiply do not have compatible dimensions: "
+            LOG(ERROR) << "Inputs to matrix multiply do not have compatible dimensions: "
                        << dim_string(enc_mat_a_trans) + " vs " + dim_string(enc_mat_b);
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat_a_trans.needs_rescale() || enc_mat_b.needs_rescale()) {
-            LOG(FATAL) << "Inputs to hadamard_multiply must have nominal scale: "
+            LOG(ERROR) << "Inputs to hadamard_multiply must have nominal scale: "
                        << "Vector: " << enc_mat_a_trans.needs_rescale()
                        << ", Matrix: " << enc_mat_b.needs_rescale();
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat_a_trans.needs_relin() || enc_mat_b.needs_relin()) {
-            LOG(FATAL) << "Inputs to hadamard_multiply must be linear ciphertexts: "
+            LOG(ERROR) << "Inputs to hadamard_multiply must be linear ciphertexts: "
                        << "Vector: " << enc_mat_a_trans.needs_relin()
                        << ", Matrix: " << enc_mat_b.needs_relin();
+            throw invalid_argument("An error occurred. See the log for details.");
         }
 
         // Multiply each row of A by the matrix B. The result is a list of column vectors.
@@ -679,10 +708,12 @@ namespace hit {
     // Repeat for each encoding unit row.
     EncryptedRowVector LinearAlgebra::sum_cols(const EncryptedMatrix &enc_mat, double scalar) {
         if(enc_mat.needs_relin()) {
-            LOG(FATAL) << "Input to sum_cols must be a linear ciphertext";
+            LOG(ERROR) << "Input to sum_cols must be a linear ciphertext";
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         if(enc_mat.needs_rescale()) {
-            LOG(FATAL) << "Input to sum_cols must have nominal scale";
+            LOG(ERROR) << "Input to sum_cols must have nominal scale";
+            throw invalid_argument("An error occurred. See the log for details.");
         }
 
         vector<CKKSCiphertext> cts(enc_mat.num_vertical_units());
@@ -706,13 +737,15 @@ namespace hit {
         for (int i = 0; i < enc_mats[0].num_vertical_units(); i++) {
             for (int k = 0; k < enc_mats.size(); k++) {
                 if (enc_mats[k].encoding_unit() != enc_mats[0].encoding_unit()) {
-                    LOG(FATAL) << "Inputs to sum_cols_many must have the same encoding unit, but "
+                    LOG(ERROR) << "Inputs to sum_cols_many must have the same encoding unit, but "
                                << dim_string(enc_mats[k].encoding_unit()) << "!="
                                << dim_string(enc_mats[0].encoding_unit());
+                    throw invalid_argument("An error occurred. See the log for details.");
                 }
                 if (enc_mats[k].height() != enc_mats[0].height()) {
-                    LOG(FATAL) << "Inputs to sum_cols_many must have the same height, but "
+                    LOG(ERROR) << "Inputs to sum_cols_many must have the same height, but "
                                << enc_mats[k].height() << "!=" << enc_mats[0].height();
+                    throw invalid_argument("An error occurred. See the log for details.");
                 }
 
                 for (int j = 0; j < enc_mats[k].cts[i].size(); j++) {
@@ -733,13 +766,15 @@ namespace hit {
 
         for (const auto &enc_mat : enc_mats) {
             if (enc_mat.encoding_unit() != enc_mats[0].encoding_unit()) {
-                LOG(FATAL) << "Inputs to sum_rows_many must have the same encoding unit, but "
+                LOG(ERROR) << "Inputs to sum_rows_many must have the same encoding unit, but "
                            << dim_string(enc_mat.encoding_unit()) << "!="
                            << dim_string(enc_mats[0].encoding_unit());
+                throw invalid_argument("An error occurred. See the log for details.");
             }
             if (enc_mat.width() != enc_mats[0].width()) {
-                LOG(FATAL) << "Inputs to sum_rows_many must have the same width, but "
+                LOG(ERROR) << "Inputs to sum_rows_many must have the same width, but "
                            << enc_mat.width() << "!=" << enc_mats[0].width();
+                throw invalid_argument("An error occurred. See the log for details.");
             }
 
             for (int i = 0; i < enc_mat.num_vertical_units(); i++) {
@@ -790,7 +825,8 @@ namespace hit {
     // Repeat for each encoding unit column.
     EncryptedColVector LinearAlgebra::sum_rows(const EncryptedMatrix &enc_mat) {
         if(enc_mat.needs_relin()) {
-            LOG(FATAL) << "Input to sum_rows must be a linear ciphertext";
+            LOG(ERROR) << "Input to sum_rows must be a linear ciphertext";
+            throw invalid_argument("An error occurred. See the log for details.");
         }
         vector<CKKSCiphertext> cts(enc_mat.num_horizontal_units());
 

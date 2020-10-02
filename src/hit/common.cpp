@@ -61,8 +61,9 @@ namespace hit {
     double relative_error(const vector<double> &expected, const vector<double> &actual) {
         int len = expected.size();
         if (len != actual.size()) {
-            LOG(FATAL) << "Inputs to relative error do not have the same size: "
+            LOG(ERROR) << "Inputs to relative error do not have the same size: "
                        << len << " != " << actual.size();
+            throw invalid_argument("An error occurred. See the log for details.");
         }
 
         Vector expected_vec = Vector(expected);
@@ -151,7 +152,8 @@ namespace hit {
                 // (which corresponds to the 262144th cyclotomic ring)
                 return 1761;
             default:
-                LOG(FATAL) << "poly_modulus_degree " << poly_modulus_degree << " not supported";
+                LOG(ERROR) << "poly_modulus_degree " << poly_modulus_degree << " not supported";
+                throw invalid_argument("An error occurred. See the log for details.");
         }
     }
 
@@ -194,8 +196,9 @@ namespace hit {
         // else if(mod_bits <= 3524) { return 131072; }
         // else if(mod_bits <= 7050) { return 262144; }
         else {
-            LOG(FATAL) << "This computation is too big to handle right now: cannot determine a valid ring size for a "
+            LOG(ERROR) << "This computation is too big to handle right now: cannot determine a valid ring size for a "
                        << mod_bits << "-bit modulus";
+            throw invalid_argument("An error occurred. See the log for details.");
         }
     }
 
