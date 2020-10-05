@@ -36,7 +36,8 @@ TEST(LinearAlgebraTest, EncryptMatrix) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     test_encrypt_matrix(linear_algebra, 64, 64, unit1);
     test_encrypt_matrix(linear_algebra, 32, 32, unit1);
@@ -81,7 +82,8 @@ TEST(LinearAlgebraTest, EncryptRowVector) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     test_encrypt_row_vector(linear_algebra, 64, unit1);
     test_encrypt_row_vector(linear_algebra, 32, unit1);
@@ -111,7 +113,8 @@ TEST(LinearAlgebraTest, EncryptColVector) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     test_encrypt_col_vector(linear_algebra, 64, unit1);
     test_encrypt_col_vector(linear_algebra, 32, unit1);
@@ -132,9 +135,11 @@ TEST(LinearAlgebraTest, AddMatrixMatrix_InvalidCase) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
-    int unit2_height = 128;  // a 128x32 encoding unit
+    // a 128x32 encoding unit
+    int unit2_height = 128;
     EncodingUnit unit2 = linear_algebra.make_unit(unit2_height);
 
     Matrix mat1 = random_mat(200, 300);
@@ -160,7 +165,8 @@ TEST(LinearAlgebraTest, AddMatrixMatrix) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     int height = 200;
     int width = 300;
@@ -182,9 +188,11 @@ TEST(LinearAlgebraTest, AddRowRow_InvalidCase) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
-    int unit2_height = 128;  // a 128x32 encoding unit
+    // a 128x32 encoding unit
+    int unit2_height = 128;
     EncodingUnit unit2 = linear_algebra.make_unit(unit2_height);
 
     Vector vec1 = random_vec(200);
@@ -205,7 +213,8 @@ TEST(LinearAlgebraTest, AddRowRow) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     int width = 300;
 
@@ -226,9 +235,11 @@ TEST(LinearAlgebraTest, AddColCol_InvalidCase) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
-    int unit2_height = 128;  // a 128x32 encoding unit
+    // a 128x32 encoding unit
+    int unit2_height = 128;
     EncodingUnit unit2 = linear_algebra.make_unit(unit2_height);
 
     Vector vec1 = random_vec(200);
@@ -249,7 +260,8 @@ TEST(LinearAlgebraTest, AddColCol) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     int width = 300;
 
@@ -270,7 +282,8 @@ TEST(LinearAlgebraTest, AddMatrixPlaintextMatrix_InvalidCase) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
     Matrix mat1 = random_mat(200, 300);
@@ -290,7 +303,8 @@ TEST(LinearAlgebraTest, AddMatrixPlaintextMatrix) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     int height = 200;
     int width = 300;
@@ -311,7 +325,8 @@ TEST(LinearAlgebraTest, AddRowPlaintextRow_InvalidCase) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
     Vector vec1 = random_vec(200);
@@ -327,7 +342,8 @@ TEST(LinearAlgebraTest, AddRowPlaintextRow) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     int width = 300;
 
@@ -347,7 +363,8 @@ TEST(LinearAlgebraTest, AddColPlaintextCol_InvalidCase) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
     Vector vec1 = random_vec(200);
@@ -363,7 +380,8 @@ TEST(LinearAlgebraTest, AddColPlaintextCol) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     int width = 300;
 
@@ -383,7 +401,8 @@ TEST(LinearAlgebraTest, AddMatrixScalar) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     int height = 200;
     int width = 300;
@@ -405,7 +424,8 @@ TEST(LinearAlgebraTest, AddRowScalar) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     int width = 300;
 
@@ -426,7 +446,8 @@ TEST(LinearAlgebraTest, AddColScalar) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     int height = 300;
 
@@ -447,9 +468,11 @@ TEST(LinearAlgebraTest, AddMultipleMatrix_InvalidCase) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
-    int unit2_height = 128;  // a 128x32 encoding unit
+    // a 128x32 encoding unit
+    int unit2_height = 128;
     EncodingUnit unit2 = linear_algebra.make_unit(unit2_height);
 
     Matrix mat1 = random_mat(200, 300);
@@ -479,7 +502,8 @@ TEST(LinearAlgebraTest, AddMultipleMatrix) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     int height = 200;
     int width = 300;
@@ -504,9 +528,11 @@ TEST(LinearAlgebraTest, AddMultipleRow_InvalidCase) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
-    int unit2_height = 128;  // a 128x32 encoding unit
+    // a 128x32 encoding unit
+    int unit2_height = 128;
     EncodingUnit unit2 = linear_algebra.make_unit(unit2_height);
 
     Vector vec1 = random_vec(200);
@@ -530,7 +556,8 @@ TEST(LinearAlgebraTest, AddMultipleRow) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     int width = 300;
 
@@ -554,9 +581,11 @@ TEST(LinearAlgebraTest, AddMultipleCol_InvalidCase) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
-    int unit2_height = 128;  // a 128x32 encoding unit
+    // a 128x32 encoding unit
+    int unit2_height = 128;
     EncodingUnit unit2 = linear_algebra.make_unit(unit2_height);
 
     Vector vec1 = random_vec(200);
@@ -580,7 +609,8 @@ TEST(LinearAlgebraTest, AddMultipleCol) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     int width = 300;
 
@@ -600,11 +630,422 @@ TEST(LinearAlgebraTest, AddMultipleCol) {
     ASSERT_FALSE(ciphertext.needs_rescale());
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TEST(LinearAlgebraTest, SubMatrixMatrix_InvalidCase) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+    // a 128x32 encoding unit
+    int unit2_height = 128;
+    EncodingUnit unit2 = linear_algebra.make_unit(unit2_height);
+
+    Matrix mat1 = random_mat(200, 300);
+    Matrix mat2 = random_mat(200, 301);
+    Matrix mat3 = random_mat(201, 300);
+    EncryptedMatrix ciphertext1 = linear_algebra.encrypt_matrix(mat1, unit1);
+    EncryptedMatrix ciphertext2 = linear_algebra.encrypt_matrix(mat2, unit1);
+    EncryptedMatrix ciphertext3 = linear_algebra.encrypt_matrix(mat3, unit1);
+    EncryptedMatrix ciphertext4 = linear_algebra.encrypt_matrix(mat1, unit2);
+
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because widths do not match.
+        (linear_algebra.sub_inplace(ciphertext1, ciphertext2)), invalid_argument);
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because heights do not match.
+        (linear_algebra.sub_inplace(ciphertext1, ciphertext3)), invalid_argument);
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because encoding units do not match.
+        (linear_algebra.sub_inplace(ciphertext1, ciphertext4)), invalid_argument);
+}
+
+TEST(LinearAlgebraTest, SubMatrixMatrix) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+    int height = 200;
+    int width = 300;
+
+    Matrix mat1 = random_mat(height, width);
+    Matrix mat2 = random_mat(height, width);
+    EncryptedMatrix ciphertext1 = linear_algebra.encrypt_matrix(mat1, unit1);
+    EncryptedMatrix ciphertext2 = linear_algebra.encrypt_matrix(mat2, unit1);
+
+    EncryptedMatrix ciphertext3 = linear_algebra.sub(ciphertext1, ciphertext2);
+    Matrix actual_result = linear_algebra.decrypt(ciphertext3);
+    Matrix expected_result = mat1 - mat2;
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
+    ASSERT_FALSE(ciphertext3.needs_relin());
+    ASSERT_FALSE(ciphertext3.needs_rescale());
+}
+
+TEST(LinearAlgebraTest, SubRowRow_InvalidCase) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+    // a 128x32 encoding unit
+    int unit2_height = 128;
+    EncodingUnit unit2 = linear_algebra.make_unit(unit2_height);
+
+    Vector vec1 = random_vec(200);
+    Vector vec2 = random_vec(201);
+    EncryptedRowVector ciphertext1 = linear_algebra.encrypt_row_vector(vec1, unit1);
+    EncryptedRowVector ciphertext2 = linear_algebra.encrypt_row_vector(vec2, unit1);
+    EncryptedRowVector ciphertext3 = linear_algebra.encrypt_row_vector(vec1, unit2);
+
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because sizes do not match.
+        (linear_algebra.sub_inplace(ciphertext1, ciphertext2)), invalid_argument);
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because encoding units do not match.
+        (linear_algebra.sub_inplace(ciphertext1, ciphertext3)), invalid_argument);
+}
+
+TEST(LinearAlgebraTest, SubRowRow) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+    int width = 300;
+
+    Vector vec1 = random_vec(width);
+    Vector vec2 = random_vec(width);
+    EncryptedRowVector ciphertext1 = linear_algebra.encrypt_row_vector(vec1, unit1);
+    EncryptedRowVector ciphertext2 = linear_algebra.encrypt_row_vector(vec2, unit1);
+
+    EncryptedRowVector ciphertext3 = linear_algebra.sub(ciphertext1, ciphertext2);
+    Vector actual_result = linear_algebra.decrypt(ciphertext3);
+    Vector expected_result = vec1 - vec2;
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
+    ASSERT_FALSE(ciphertext3.needs_relin());
+    ASSERT_FALSE(ciphertext3.needs_rescale());
+}
+
+TEST(LinearAlgebraTest, SubColCol_InvalidCase) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+    // a 128x32 encoding unit
+    int unit2_height = 128;
+    EncodingUnit unit2 = linear_algebra.make_unit(unit2_height);
+
+    Vector vec1 = random_vec(200);
+    Vector vec2 = random_vec(201);
+    EncryptedColVector ciphertext1 = linear_algebra.encrypt_col_vector(vec1, unit1);
+    EncryptedColVector ciphertext2 = linear_algebra.encrypt_col_vector(vec2, unit1);
+    EncryptedColVector ciphertext3 = linear_algebra.encrypt_col_vector(vec1, unit2);
+
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because sizes do not match.
+        (linear_algebra.sub_inplace(ciphertext1, ciphertext2)), invalid_argument);
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because encoding units do not match.
+        (linear_algebra.sub_inplace(ciphertext1, ciphertext3)), invalid_argument);
+}
+
+TEST(LinearAlgebraTest, SubColCol) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+    int width = 300;
+
+    Vector vec1 = random_vec(width);
+    Vector vec2 = random_vec(width);
+    EncryptedColVector ciphertext1 = linear_algebra.encrypt_col_vector(vec1, unit1);
+    EncryptedColVector ciphertext2 = linear_algebra.encrypt_col_vector(vec2, unit1);
+
+    EncryptedColVector ciphertext3 = linear_algebra.sub(ciphertext1, ciphertext2);
+    Vector actual_result = linear_algebra.decrypt(ciphertext3);
+    Vector expected_result = vec1 - vec2;
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
+    ASSERT_FALSE(ciphertext3.needs_relin());
+    ASSERT_FALSE(ciphertext3.needs_rescale());
+}
+
+TEST(LinearAlgebraTest, SubMatrixPlaintextMatrix_InvalidCase) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+
+    Matrix mat1 = random_mat(200, 300);
+    Matrix mat2 = random_mat(200, 301);
+    Matrix mat3 = random_mat(201, 300);
+    EncryptedMatrix ciphertext1 = linear_algebra.encrypt_matrix(mat1, unit1);
+
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because widths do not match.
+        (linear_algebra.sub_plain_inplace(ciphertext1, mat2)), invalid_argument);
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because heights do not match.
+        (linear_algebra.sub_plain_inplace(ciphertext1, mat3)), invalid_argument);
+}
+
+TEST(LinearAlgebraTest, SubMatrixPlaintextMatrix) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+    int height = 200;
+    int width = 300;
+
+    Matrix mat1 = random_mat(height, width);
+    Matrix mat2 = random_mat(height, width);
+    EncryptedMatrix ciphertext1 = linear_algebra.encrypt_matrix(mat1, unit1);
+
+    EncryptedMatrix ciphertext3 = linear_algebra.sub_plain(ciphertext1, mat2);
+    Matrix actual_result = linear_algebra.decrypt(ciphertext3);
+    Matrix expected_result = mat1 - mat2;
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
+    ASSERT_FALSE(ciphertext3.needs_relin());
+    ASSERT_FALSE(ciphertext3.needs_rescale());
+}
+
+TEST(LinearAlgebraTest, SubRowPlaintextRow_InvalidCase) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+
+    Vector vec1 = random_vec(200);
+    Vector vec2 = random_vec(201);
+    EncryptedRowVector ciphertext1 = linear_algebra.encrypt_row_vector(vec1, unit1);
+
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because sizes do not match.
+        (linear_algebra.sub_plain_inplace(ciphertext1, vec2)), invalid_argument);
+}
+
+TEST(LinearAlgebraTest, SubRowPlaintextRow) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+    int width = 300;
+
+    Vector vec1 = random_vec(width);
+    Vector vec2 = random_vec(width);
+    EncryptedRowVector ciphertext1 = linear_algebra.encrypt_row_vector(vec1, unit1);
+
+    EncryptedRowVector ciphertext3 = linear_algebra.sub_plain(ciphertext1, vec2);
+    Vector actual_result = linear_algebra.decrypt(ciphertext3);
+    Vector expected_result = vec1 - vec2;
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
+    ASSERT_FALSE(ciphertext3.needs_relin());
+    ASSERT_FALSE(ciphertext3.needs_rescale());
+}
+
+TEST(LinearAlgebraTest, SubColPlaintextCol_InvalidCase) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+
+    Vector vec1 = random_vec(200);
+    Vector vec2 = random_vec(201);
+    EncryptedColVector ciphertext1 = linear_algebra.encrypt_col_vector(vec1, unit1);
+
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because sizes do not match.
+        (linear_algebra.sub_plain_inplace(ciphertext1, vec2)), invalid_argument);
+}
+
+TEST(LinearAlgebraTest, SubColPlaintextCol) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+    int width = 300;
+
+    Vector vec1 = random_vec(width);
+    Vector vec2 = random_vec(width);
+    EncryptedColVector ciphertext1 = linear_algebra.encrypt_col_vector(vec1, unit1);
+
+    EncryptedColVector ciphertext3 = linear_algebra.sub_plain(ciphertext1, vec2);
+    Vector actual_result = linear_algebra.decrypt(ciphertext3);
+    Vector expected_result = vec1 - vec2;
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
+    ASSERT_FALSE(ciphertext3.needs_relin());
+    ASSERT_FALSE(ciphertext3.needs_rescale());
+}
+
+TEST(LinearAlgebraTest, SubMatrixScalar) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+    int height = 200;
+    int width = 300;
+
+    Matrix mat1 = random_mat(height, width);
+    double scalar = 3.14;
+    Matrix mat2 = Matrix(height, width, vector<double>(height * width, scalar));
+    EncryptedMatrix ciphertext1 = linear_algebra.encrypt_matrix(mat1, unit1);
+
+    EncryptedMatrix ciphertext3 = linear_algebra.sub_plain(ciphertext1, scalar);
+    Matrix actual_result = linear_algebra.decrypt(ciphertext3);
+    Matrix expected_result = mat1 - mat2;
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
+    ASSERT_FALSE(ciphertext3.needs_relin());
+    ASSERT_FALSE(ciphertext3.needs_rescale());
+}
+
+TEST(LinearAlgebraTest, SubRowScalar) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+    int width = 300;
+
+    Vector vec1 = random_vec(width);
+    double scalar = 3.14;
+    Vector vec2 = Vector(vector<double>(width, scalar));
+    EncryptedRowVector ciphertext1 = linear_algebra.encrypt_row_vector(vec1, unit1);
+
+    EncryptedRowVector ciphertext3 = linear_algebra.sub_plain(ciphertext1, scalar);
+    Vector actual_result = linear_algebra.decrypt(ciphertext3);
+    Vector expected_result = vec1 - vec2;
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
+    ASSERT_FALSE(ciphertext3.needs_relin());
+    ASSERT_FALSE(ciphertext3.needs_rescale());
+}
+
+TEST(LinearAlgebraTest, SubColScalar) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+    int height = 300;
+
+    Vector vec1 = random_vec(height);
+    double scalar = 3.14;
+    Vector vec2 = Vector(vector<double>(height, scalar));
+    EncryptedColVector ciphertext1 = linear_algebra.encrypt_col_vector(vec1, unit1);
+
+    EncryptedColVector ciphertext3 = linear_algebra.sub_plain(ciphertext1, scalar);
+    Vector actual_result = linear_algebra.decrypt(ciphertext3);
+    Vector expected_result = vec1 - vec2;
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
+    ASSERT_FALSE(ciphertext3.needs_relin());
+    ASSERT_FALSE(ciphertext3.needs_rescale());
+}
+
+TEST(LinearAlgebraTest, NegateMatrix) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+    int height = 200;
+    int width = 300;
+
+    Matrix mat1 = random_mat(height, width);
+    EncryptedMatrix ciphertext1 = linear_algebra.encrypt_matrix(mat1, unit1);
+
+    EncryptedMatrix ciphertext3 = linear_algebra.negate(ciphertext1);
+    Matrix actual_result = linear_algebra.decrypt(ciphertext3);
+    Matrix expected_result = -mat1;
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
+    ASSERT_FALSE(ciphertext3.needs_relin());
+    ASSERT_FALSE(ciphertext3.needs_rescale());
+}
+
+TEST(LinearAlgebraTest, NegateRow) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+    int width = 300;
+
+    Vector vec1 = random_vec(width);
+    EncryptedRowVector ciphertext1 = linear_algebra.encrypt_row_vector(vec1, unit1);
+
+    EncryptedRowVector ciphertext3 = linear_algebra.negate(ciphertext1);
+    Vector actual_result = linear_algebra.decrypt(ciphertext3);
+    Vector expected_result = -vec1;
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
+    ASSERT_FALSE(ciphertext3.needs_relin());
+    ASSERT_FALSE(ciphertext3.needs_rescale());
+}
+
+TEST(LinearAlgebraTest, NegateCol) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+    int height = 300;
+
+    Vector vec1 = random_vec(height);
+    EncryptedColVector ciphertext1 = linear_algebra.encrypt_col_vector(vec1, unit1);
+
+    EncryptedColVector ciphertext3 = linear_algebra.negate(ciphertext1);
+    Vector actual_result = linear_algebra.decrypt(ciphertext3);
+    Vector expected_result = -vec1;
+    ASSERT_LT(relative_error(actual_result, expected_result), MAX_NORM);
+    ASSERT_FALSE(ciphertext3.needs_relin());
+    ASSERT_FALSE(ciphertext3.needs_rescale());
+}
+
 TEST(LinearAlgebraTest, MultiplyMatrixScalar) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     int height = 200;
     int width = 300;
@@ -625,7 +1066,8 @@ TEST(LinearAlgebraTest, MultiplyRowScalar) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     int width = 300;
 
@@ -645,7 +1087,8 @@ TEST(LinearAlgebraTest, MultiplyColScalar) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     int height = 300;
 
@@ -665,9 +1108,11 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrix_InvalidCase) {
     HomomorphicEval ckks_instance = HomomorphicEval(8192, THREE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x128 encoding unit
+    // a 64x128 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
-    int unit2_height = 128;  // a 128x64 encoding unit
+    // a 128x64 encoding unit
+    int unit2_height = 128;
     EncodingUnit unit2 = linear_algebra.make_unit(unit2_height);
 
     Matrix mat1 = random_mat(55, 78);
@@ -711,7 +1156,8 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrix) {
     HomomorphicEval ckks_instance = HomomorphicEval(8192, THREE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x128 encoding unit
+    // a 64x128 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
     int unit1_width = 8192 / unit1_height;
@@ -783,7 +1229,8 @@ TEST(LinearAlgebraTest, MultiplyRowMatrix) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
     int unit1_width = NUM_OF_SLOTS / unit1_height;
@@ -823,9 +1270,11 @@ TEST(LinearAlgebraTest, MultiplyMatrixCol_InvalidCase) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
-    int unit2_height = 128;  // a 128x32 encoding unit
+    // a 128x32 encoding unit
+    int unit2_height = 128;
     EncodingUnit unit2 = linear_algebra.make_unit(unit2_height);
 
     Vector vec1 = random_vec(79);
@@ -866,7 +1315,8 @@ TEST(LinearAlgebraTest, MultiplyMatrixCol) {
     HomomorphicEval ckks_instance = HomomorphicEval(8192, TWO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
     int unit1_width = 8192 / unit1_height;
@@ -907,7 +1357,8 @@ TEST(LinearAlgebraTest, ReduceLevelToMinMatrix) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
     Matrix mat = random_mat(64, 64);
@@ -929,7 +1380,8 @@ TEST(LinearAlgebraTest, ReduceLevelToMinRow) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
     Vector vec = random_vec(64);
@@ -951,7 +1403,8 @@ TEST(LinearAlgebraTest, ReduceLevelToMinCol) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
     Vector vec = random_vec(64);
@@ -973,7 +1426,8 @@ TEST(LinearAlgebraTest, ReduceLevelToMatrix) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
     Matrix mat = random_mat(64, 64);
@@ -987,7 +1441,8 @@ TEST(LinearAlgebraTest, ReduceLevelToRow) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
     Vector vec = random_vec(64);
@@ -1001,7 +1456,8 @@ TEST(LinearAlgebraTest, ReduceLevelToCol) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
     Vector vec = random_vec(64);
@@ -1015,7 +1471,8 @@ TEST(LinearAlgebraTest, RescaleToNextMatrix) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
     Matrix mat = random_mat(64, 64);
@@ -1032,7 +1489,8 @@ TEST(LinearAlgebraTest, RescaleToNextRow) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
     Vector vec = random_vec(64);
@@ -1049,7 +1507,8 @@ TEST(LinearAlgebraTest, RescaleToNextCol) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
     Vector vec = random_vec(64);
@@ -1091,7 +1550,8 @@ TEST(LinearAlgebraTest, SumRows) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     test_sum_rows(linear_algebra, 39, 37, unit1);
     test_sum_rows(linear_algebra, 35, 64, unit1);
@@ -1122,7 +1582,8 @@ TEST(LinearAlgebraTest, SumRowsMany) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
     test_sum_rows_many(linear_algebra, 64, 64, 64, 64, unit1);
@@ -1166,7 +1627,8 @@ TEST(LinearAlgebraTest, SumCols) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     test_sum_cols(linear_algebra, 39, 37, PI, unit1);
     test_sum_cols(linear_algebra, 35, 64, PI, unit1);
@@ -1197,7 +1659,8 @@ TEST(LinearAlgebraTest, SumColsMany) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
     test_sum_cols_many(linear_algebra, 64, 64, 64, 64, unit1);
@@ -1235,7 +1698,8 @@ TEST(LinearAlgebraTest, HadamardMulMatrixMatrix) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     test_hadamard_mul_matrix_matrix(linear_algebra, 39, 37, unit1);
     test_hadamard_mul_matrix_matrix(linear_algebra, 35, 64, unit1);
@@ -1272,7 +1736,8 @@ TEST(LinearAlgebraTest, HadamardMulRowRow) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     test_hadamard_mul_row_row(linear_algebra, 31, unit1);
     test_hadamard_mul_row_row(linear_algebra, 64, unit1);
@@ -1303,7 +1768,8 @@ TEST(LinearAlgebraTest, HadamardMulColCol) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     test_hadamard_mul_col_col(linear_algebra, 31, unit1);
     test_hadamard_mul_col_col(linear_algebra, 64, unit1);
@@ -1331,7 +1797,8 @@ TEST(LinearAlgebraTest, HadamardMulMatrixSquare) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     test_hadamard_mul_matrix_square(linear_algebra, 39, 37, unit1);
     test_hadamard_mul_matrix_square(linear_algebra, 35, 64, unit1);
@@ -1365,7 +1832,8 @@ TEST(LinearAlgebraTest, HadamardMulRowSquare) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     test_hadamard_mul_row_square(linear_algebra, 31, unit1);
     test_hadamard_mul_row_square(linear_algebra, 64, unit1);
@@ -1394,7 +1862,8 @@ TEST(LinearAlgebraTest, HadamardMulColSquare) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
     test_hadamard_mul_col_square(linear_algebra, 31, unit1);
     test_hadamard_mul_col_square(linear_algebra, 64, unit1);
@@ -1406,7 +1875,8 @@ TEST(LinearAlgebraTest, ReduceLevelToMin_Matrix) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit = linear_algebra.make_unit(unit1_height);
 
     Matrix mat1 = random_mat(128, 128);
@@ -1427,7 +1897,8 @@ TEST(LinearAlgebraTest, ReduceLevelToMin_ColVec) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit = linear_algebra.make_unit(unit1_height);
 
     Vector vec1 = random_vec(128);
@@ -1448,7 +1919,8 @@ TEST(LinearAlgebraTest, ReduceLevelToMin_RowVec) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit = linear_algebra.make_unit(unit1_height);
 
     Vector vec1 = random_vec(128);
@@ -1469,7 +1941,8 @@ TEST(LinearAlgebraTest, ReduceLevelTo_Matrix) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit = linear_algebra.make_unit(unit1_height);
 
     Matrix mat1 = random_mat(128, 128);
@@ -1485,7 +1958,8 @@ TEST(LinearAlgebraTest, ReduceLevelTo_ColVec) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit = linear_algebra.make_unit(unit1_height);
 
     Vector vec1 = random_vec(128);
@@ -1501,7 +1975,8 @@ TEST(LinearAlgebraTest, ReduceLevelTo_RowVec) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit = linear_algebra.make_unit(unit1_height);
 
     Vector vec1 = random_vec(128);
@@ -1517,7 +1992,8 @@ TEST(LinearAlgebraTest, RescaleToNext_Matrix) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit = linear_algebra.make_unit(unit1_height);
 
     Matrix mat1 = random_mat(128, 128);
@@ -1539,7 +2015,8 @@ TEST(LinearAlgebraTest, RescaleToNext_ColVec) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit = linear_algebra.make_unit(unit1_height);
 
     Vector vec1 = random_vec(128);
@@ -1561,7 +2038,8 @@ TEST(LinearAlgebraTest, RescaleToNext_RowVec) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 64;  // a 64x64 encoding unit
+    // a 64x64 encoding unit
+    int unit1_height = 64;
     EncodingUnit unit = linear_algebra.make_unit(unit1_height);
 
     Vector vec1 = random_vec(128);
