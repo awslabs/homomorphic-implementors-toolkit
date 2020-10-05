@@ -23,20 +23,14 @@ namespace hit {
         }
 
         if (level < -1) {
-            stringstream err_stream;
-            err_stream << "Encryption level must be non-negative, got " << level;
-            LOG_AND_THROW(err_stream);
+            LOG_AND_THROW_STREAM("Encryption level must be non-negative, got " << level);
         }
 
         if (level == -1 && encryption_mode_ == EXPLICIT_LEVEL) {
-            stringstream err_stream;
-            err_stream << "You have previously called `encrypt` with an explicit encryption level; you cannot use the default level now with the DepthFinder evaluator.";
-            LOG_AND_THROW(err_stream);
+            LOG_AND_THROW_STREAM("You have previously called `encrypt` with an explicit encryption level; you cannot use the default level now with the DepthFinder evaluator.");
         }
         if (level != -1 && encryption_mode_ == IMPLICIT_LEVEL) {
-            stringstream err_stream;
-            err_stream << "You have previously called `encrypt` without an explicit encryption level; you cannot use explicit levels now with the DepthFinder evaluator.";
-            LOG_AND_THROW(err_stream);
+            LOG_AND_THROW_STREAM("You have previously called `encrypt` without an explicit encryption level; you cannot use explicit levels now with the DepthFinder evaluator.");
         }
 
         if (level == -1) {

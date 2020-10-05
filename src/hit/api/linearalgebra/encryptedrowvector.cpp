@@ -90,10 +90,8 @@ namespace hit {
             // add this additional context.
             Vector raw_plaintext = cts[i].plaintext();
             if (raw_plaintext.size() != unit.encoding_height() * unit.encoding_width()) {
-                stringstream err_stream;
-                err_stream << "Internal error: plaintext has " << raw_plaintext.size()
-                           << " coefficients, expected " << unit.encoding_height() * unit.encoding_width();
-                LOG_AND_THROW(err_stream);
+                LOG_AND_THROW_STREAM("Internal error: plaintext has " << raw_plaintext.size()
+                           << " coefficients, expected " << unit.encoding_height() * unit.encoding_width());
             }
             Matrix formatted_plaintext = Matrix(unit.encoding_height(), unit.encoding_width(), raw_plaintext.data());
             plaintext_pieces[i] = formatted_plaintext;
@@ -135,12 +133,10 @@ namespace hit {
 
     void EncryptedRowVector::validate_init() const {
         if (!initialized()) {
-            stringstream err_stream;
-            err_stream << "Invalid ciphertexts in EncryptedRowVector: "
+            LOG_AND_THROW_STREAM("Invalid ciphertexts in EncryptedRowVector: "
                        << "Expected " << ceil(width_ / static_cast<double>(unit.encoding_height()))
                        << " ciphertexts, found " << cts.size() << ". "
-                       << "Each ciphertext must have the same scale and level.";
-            LOG_AND_THROW(err_stream);
+                       << "Each ciphertext must have the same scale and level.");
         }
     }
 
@@ -213,9 +209,7 @@ namespace hit {
 
     Vector decode_row_vector(const vector<Matrix> &mats, int trim_length) {
         if (mats.empty()) {
-            stringstream err_stream;
-            err_stream << "Internal error: input to decode_row_vector cannot be empty";
-            LOG_AND_THROW(err_stream);
+            LOG_AND_THROW_STREAM("Internal error: input to decode_row_vector cannot be empty");
         }
 
         if (trim_length < 0) {

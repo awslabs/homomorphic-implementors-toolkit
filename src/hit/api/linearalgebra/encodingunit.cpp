@@ -65,10 +65,8 @@ namespace hit {
 
     void EncodingUnit::validate_init() const {
         if (!initialized()) {
-            stringstream err_stream;
-            err_stream << "Encoding unit dimensions must be a positive powers of two, got "
-                       << encoding_height_ << "x" << encoding_width_;
-            LOG_AND_THROW(err_stream);
+            LOG_AND_THROW_STREAM("Encoding unit dimensions must be a positive powers of two, got "
+                       << encoding_height_ << "x" << encoding_width_);
         }
     }
 

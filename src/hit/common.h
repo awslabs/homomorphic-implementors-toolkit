@@ -24,7 +24,12 @@
 // less than this many bits
 #define PLAINTEXT_LOG_MAX 59
 
-#define LOG_AND_THROW(s) {LOG(ERROR) << s.str(); throw invalid_argument(s.str());}
+#define LOG_AND_THROW_STREAM(stream_contents) { \
+    std::stringstream err_stream; \
+    err_stream << stream_contents; \
+    LOG(ERROR) << err_stream.str(); \
+    throw std::invalid_argument(err_stream.str()); \
+}
 
 namespace hit {
     using Matrix = boost::numeric::ublas::matrix<double, boost::numeric::ublas::row_major, std::vector<double>>;

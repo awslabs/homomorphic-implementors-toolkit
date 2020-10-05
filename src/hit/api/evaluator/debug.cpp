@@ -120,10 +120,8 @@ namespace hit {
 
         norm = relative_error(exact_plaintext, homom_plaintext);
         if (abs(log2(ct.scale()) - log2(ct.seal_ct.scale())) > 0.1) {
-            stringstream err_stream;
-            err_stream << "Internal error: HIT scale does not match SEAL scale: "
-                       << log2(ct.scale()) << " != " << ct.seal_ct.scale();
-            LOG_AND_THROW(err_stream);
+            LOG_AND_THROW_STREAM("Internal error: HIT scale does not match SEAL scale: "
+                       << log2(ct.scale()) << " != " << ct.seal_ct.scale());
         }
 
         VLOG(VLOG_EVAL) << setprecision(8) << "    + Approximation norm: " << norm;
@@ -188,11 +186,9 @@ namespace hit {
             LOG(ERROR) << "Encoding norm: " << norm2;
             LOG(ERROR) << "Encryption norm: " << norm3;
 
-            stringstream err_stream;
-            err_stream << "Plaintext and ciphertext divergence: " << norm
+            LOG_AND_THROW_STREAM("Plaintext and ciphertext divergence: " << norm
                        << " > " << MAX_NORM << ". Scale is " << log_scale_
-                       << " bits. See error log for more details.";
-            LOG_AND_THROW(err_stream);
+                       << " bits. See error log for more details.");
         }
     }
 
