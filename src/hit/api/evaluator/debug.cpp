@@ -52,7 +52,7 @@ namespace hit {
             } else if (context_data->parms_id() == homomorphic_eval->context->last_parms_id()) {
                 VLOG(VLOG_VERBOSE) << " ...... last_context_data()";
             }
-            VLOG(VLOG_VERBOSE) << "      parms_id: " << context_data->parms_id() << endl;
+            VLOG(VLOG_VERBOSE) << "      parms_id: " << context_data->parms_id();
             stringstream data_level_primes;
             for (const auto &prime : context_data->parms().coeff_modulus()) {
                 data_level_primes << prime.value() << " ";
@@ -63,7 +63,7 @@ namespace hit {
             // Step forward in the chain.
             context_data = context_data->next_context_data();
         }
-        VLOG(VLOG_VERBOSE) << " End of chain reached" << endl;
+        VLOG(VLOG_VERBOSE) << " End of chain reached";
     }
 
     DebugEval::DebugEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,

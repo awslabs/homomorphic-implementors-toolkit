@@ -219,7 +219,7 @@ namespace hit {
 
     void LinearAlgebra::add_plain_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2) {
         if (!enc_mat1.initialized()) {
-            LOG_AND_THROW_STREAM("Encrypted input to add_plain is not initialized" << endl);
+            LOG_AND_THROW_STREAM("Encrypted input to add_plain is not initialized");
         }
         if (enc_mat1.height() != mat2.size1() || enc_mat1.width() != mat2.size2()) {
             LOG_AND_THROW_STREAM("Arguments to add_inplace must have the same dimensions; "
@@ -237,7 +237,7 @@ namespace hit {
 
     void LinearAlgebra::add_plain_inplace(EncryptedRowVector &enc_vec1, const Vector &vec2) {
         if (!enc_vec1.initialized()) {
-            LOG_AND_THROW_STREAM("Encrypted input to add_plain is not initialized" << endl);
+            LOG_AND_THROW_STREAM("Encrypted input to add_plain is not initialized");
         }
         if (enc_vec1.width() != vec2.size()) {
             LOG_AND_THROW_STREAM("Arguments to add_inplace must have the same dimensions; "
@@ -253,7 +253,7 @@ namespace hit {
 
     void LinearAlgebra::add_plain_inplace(EncryptedColVector &enc_vec1, const Vector &vec2) {
         if (!enc_vec1.initialized()) {
-            LOG_AND_THROW_STREAM("Encrypted input to add_plain is not initialized" << endl);
+            LOG_AND_THROW_STREAM("Encrypted input to add_plain is not initialized");
         }
         if (enc_vec1.height() != vec2.size()) {
             LOG_AND_THROW_STREAM("Arguments to add_inplace must have the same dimensions; "

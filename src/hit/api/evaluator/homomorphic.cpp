@@ -40,12 +40,11 @@ namespace hit {
 
         int poly_modulus_degree = num_slots * 2;
         if (log_scale_ < MIN_LOG_SCALE) {
+            LOG(ERROR) << "poly_modulus_degree is " << poly_modulus_degree << ", which limits the modulus to "
+                       << poly_degree_to_max_mod_bits(poly_modulus_degree) << " bits";
             LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
                        << "log_scale is " << log_scale_ << ", which is less than the minimum "
-                       << MIN_LOG_SCALE << ". Either increase the number of slots or decrease the number of primes."
-                       << endl
-                       << "poly_modulus_degree is " << poly_modulus_degree << ", which limits the modulus to "
-                       << poly_degree_to_max_mod_bits(poly_modulus_degree) << " bits");
+                       << MIN_LOG_SCALE << ". Either increase the number of slots or decrease the number of primes.");
         }
 
         int num_primes = multiplicative_depth + 2;
@@ -81,7 +80,7 @@ namespace hit {
 
         int num_galois_keys = galois_steps.size();
         VLOG(VLOG_VERBOSE) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth << ", including "
-                  << (num_galois_keys != 0 ? to_string(num_galois_keys) : "all") << " Galois keys." << endl;
+                  << (num_galois_keys != 0 ? to_string(num_galois_keys) : "all") << " Galois keys.";
 
         double keys_size_bytes = estimate_key_size(galois_steps.size(), num_slots, multiplicative_depth);
         VLOG(VLOG_VERBOSE) << "Estimated size is " << setprecision(3);
