@@ -295,23 +295,27 @@ namespace hit {
         template <typename T>
         void sub_inplace(T &arg1, const T &arg2) {
             if (!arg1.initialized() || !arg2.initialized()) {
-                LOG(ERROR) << "Inputs to sub_inplace are not initialized";
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                stringstream err_stream;
+                err_stream << "Inputs to sub_inplace are not initialized";
+                LOG_AND_THROW(err_stream);
             }
             if (!arg1.same_size(arg2)) {
-                LOG(ERROR) << "Inputs to sub_inplace do not have the same dimensions: "
+                stringstream err_stream;
+                err_stream << "Inputs to sub_inplace do not have the same dimensions: "
                            << dim_string(arg1) << " vs " << dim_string(arg2);
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                LOG_AND_THROW(err_stream);
             }
             if (arg1.he_level() != arg2.he_level()) {
-                LOG(ERROR) << "Inputs to sub_inplace do not have the same level: "
+                stringstream err_stream;
+                err_stream << "Inputs to sub_inplace do not have the same level: "
                            << arg1.he_level() << "!=" << arg2.he_level();
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                LOG_AND_THROW(err_stream);
             }
             if (arg1.scale() != arg2.scale()) {
-                LOG(ERROR) << "Inputs to sub_inplace do not have the same scale: "
+                stringstream err_stream;
+                err_stream << "Inputs to sub_inplace do not have the same scale: "
                            << log2(arg1.scale()) << "bits !=" << log2(arg2.scale()) << " bits";
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                LOG_AND_THROW(err_stream);
             }
             for (size_t i = 0; i < arg1.num_cts(); i++) {
                 eval.sub_inplace(arg1[i], arg2[i]);
@@ -409,8 +413,9 @@ namespace hit {
         template <typename T>
         void negate_inplace(T &arg) {
             if (!arg.initialized()) {
-                LOG(ERROR) << "Encrypted input to sub_plain is not initialized.";
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                stringstream err_stream;
+                err_stream << "Encrypted input to sub_plain is not initialized.";
+                LOG_AND_THROW(err_stream);
             }
             for (size_t i = 0; i < arg.num_cts(); i++) {
                 eval.negate_inplace(arg[i]);

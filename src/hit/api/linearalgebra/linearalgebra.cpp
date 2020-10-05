@@ -290,14 +290,16 @@ namespace hit {
 
     void LinearAlgebra::sub_plain_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2) {
         if (!enc_mat1.initialized()) {
-            LOG(ERROR) << "Encrypted input to sub_plain is not initialized";
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Encrypted input to sub_plain is not initialized" << endl;
+            LOG_AND_THROW(err_stream);
         }
         if (enc_mat1.height() != mat2.size1() || enc_mat1.width() != mat2.size2()) {
-            LOG(ERROR) << "Arguments to sub_plain must have the same dimensions; "
+            stringstream err_stream;
+            err_stream << "Arguments to sub_plain must have the same dimensions; "
                        << "ciphertext encrypts a " << enc_mat1.height() << "x" << enc_mat1.width() << " matrix, "
                        << "plaintext is " << mat2.size1() << "x" << mat2.size2();
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
         vector<vector<Matrix>> encoded_matrix = encode_matrix(mat2, enc_mat1.encoding_unit());
 
@@ -310,14 +312,16 @@ namespace hit {
 
     void LinearAlgebra::sub_plain_inplace(EncryptedRowVector &enc_vec1, const Vector &vec2) {
         if (!enc_vec1.initialized()) {
-            LOG(ERROR) << "Encrypted input to sub_plain is not initialized";
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Encrypted input to sub_plain is not initialized" << endl;
+            LOG_AND_THROW(err_stream);
         }
         if (enc_vec1.width() != vec2.size()) {
-            LOG(ERROR) << "Arguments to sub_plain must have the same dimensions; "
+            stringstream err_stream;
+            err_stream << "Arguments to sub_plain must have the same dimensions; "
                        << "ciphertext encrypts a " << enc_vec1.width() << " vector, "
                        << "plaintext has " << vec2.size() << " coefficients";
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
         vector<Matrix> encoded_vector = encode_row_vector(vec2, enc_vec1.encoding_unit());
 
@@ -328,14 +332,16 @@ namespace hit {
 
     void LinearAlgebra::sub_plain_inplace(EncryptedColVector &enc_vec1, const Vector &vec2) {
         if (!enc_vec1.initialized()) {
-            LOG(ERROR) << "Encrypted input to sub_plain is not initialized";
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Encrypted input to sub_plain is not initialized" << endl;
+            LOG_AND_THROW(err_stream);
         }
         if (enc_vec1.height() != vec2.size()) {
-            LOG(ERROR) << "Arguments to sub_plain must have the same dimensions; "
+            stringstream err_stream;
+            err_stream << "Arguments to sub_plain must have the same dimensions; "
                        << "ciphertext encrypts a " << enc_vec1.height() << " vector, "
                        << "plaintext has " << vec2.size() << " coefficients";
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
         vector<Matrix> encoded_vector = encode_col_vector(vec2, enc_vec1.encoding_unit());
 
