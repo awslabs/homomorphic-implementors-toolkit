@@ -290,7 +290,7 @@ namespace hit {
 
     void LinearAlgebra::sub_plain_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2) {
         if (!enc_mat1.initialized()) {
-            LOG(ERROR) << "Encrypted input to sub_plain is not initialized" << endl;
+            LOG(ERROR) << "Encrypted input to sub_plain is not initialized";
             throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_mat1.height() != mat2.size1() || enc_mat1.width() != mat2.size2()) {
@@ -310,7 +310,7 @@ namespace hit {
 
     void LinearAlgebra::sub_plain_inplace(EncryptedRowVector &enc_vec1, const Vector &vec2) {
         if (!enc_vec1.initialized()) {
-            LOG(ERROR) << "Encrypted input to sub_plain is not initialized" << endl;
+            LOG(ERROR) << "Encrypted input to sub_plain is not initialized";
             throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_vec1.width() != vec2.size()) {
@@ -328,7 +328,7 @@ namespace hit {
 
     void LinearAlgebra::sub_plain_inplace(EncryptedColVector &enc_vec1, const Vector &vec2) {
         if (!enc_vec1.initialized()) {
-            LOG(ERROR) << "Encrypted input to sub_plain is not initialized" << endl;
+            LOG(ERROR) << "Encrypted input to sub_plain is not initialized";
             throw invalid_argument("An error occurred. See the log for details.");
         }
         if (enc_vec1.height() != vec2.size()) {
