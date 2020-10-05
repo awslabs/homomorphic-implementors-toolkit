@@ -4,6 +4,7 @@
 #include "encodingunit.h"
 
 #include "common.h"
+#include <glog/logging.h>
 
 using namespace std;
 
@@ -64,7 +65,8 @@ namespace hit {
 
     void EncodingUnit::validate_init() const {
         if (!initialized()) {
-            throw invalid_argument("Encoding unit dimensions must be a power of two.");
+            LOG_AND_THROW_STREAM("Encoding unit dimensions must be a positive powers of two, got "
+                       << encoding_height_ << "x" << encoding_width_);
         }
     }
 

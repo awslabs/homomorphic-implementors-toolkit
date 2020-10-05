@@ -16,7 +16,7 @@ namespace hit {
 
     PlaintextEval::PlaintextEval(int num_slots) : num_slots_(num_slots) {
         if (!is_pow2(num_slots)) {
-            throw invalid_argument("Number of plaintext slots must be a power of two; got " + to_string(num_slots));
+            LOG_AND_THROW_STREAM("Number of plaintext slots must be a power of two; got " << num_slots);
         }
     }
 
@@ -24,10 +24,10 @@ namespace hit {
         if (coeffs.size() != num_slots_) {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
-            throw invalid_argument(
-                "You can only encrypt vectors which have exactly as many coefficients as the number of plaintext "
-                "slots: Expected " +
-                to_string(num_slots_) + ", got " + to_string(coeffs.size()));
+            LOG_AND_THROW_STREAM("You can only encrypt vectors which have exactly as many "
+                       << " coefficients as the number of plaintext slots: Expected "
+                       << num_slots_ << " coefficients, but " << coeffs.size()
+                       << " were provided");
         }
 
         {
@@ -51,9 +51,7 @@ namespace hit {
     // print some debug info
     void PlaintextEval::print_stats(       // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
         const CKKSCiphertext &ct) const {  // NOLINT(readability-convert-member-functions-to-static)
-        if (!VLOG_IS_ON(LOG_VERBOSE)) {
-            return;
-        }
+
         // extract just the elements we care about from the real plaintext
         vector<double> exact_plaintext = ct.plaintext();
 
@@ -67,7 +65,7 @@ namespace hit {
             exact_plaintext_info << "... ";
         }
         exact_plaintext_info << ">";
-        VLOG(LOG_VERBOSE) << exact_plaintext_info.str();
+        VLOG(VLOG_EVAL) << exact_plaintext_info.str();
     }
 
     void PlaintextEval::update_max_log_plain_val(const CKKSCiphertext &ct) {
@@ -143,13 +141,6 @@ namespace hit {
     }
 
     void PlaintextEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        if (plain.size() != ct.num_slots()) {
-            stringstream buffer;
-            buffer << "plaintext.add_plain_internal: public input has the wrong size: " << plain.size()
-                   << " != " << ct.num_slots();
-            throw invalid_argument(buffer.str());
-        }
-
         zip_with_inplace(ct.raw_pt, plain, plus<>());
         update_max_log_plain_val(ct);
     }
@@ -167,21 +158,11 @@ namespace hit {
     }
 
     void PlaintextEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        if (plain.size() != ct.num_slots()) {
-            stringstream buffer;
-            buffer << "plaintext.sub_plain_internal: public input has the wrong size: " << plain.size()
-                   << " != " << ct.num_slots();
-            throw invalid_argument(buffer.str());
-        }
-
         zip_with_inplace(ct.raw_pt, plain, minus<>());
         update_max_log_plain_val(ct);
     }
 
     void PlaintextEval::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        if (ct1.num_slots() != ct2.num_slots()) {
-            throw invalid_argument("INTERNAL ERROR: Plaintext size mismatch");
-        }
         zip_with_inplace(ct1.raw_pt, ct2.raw_pt, multiplies<>());
         update_max_log_plain_val(ct1);
     }
@@ -194,13 +175,6 @@ namespace hit {
     }
 
     void PlaintextEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        if (plain.size() != ct.num_slots()) {
-            stringstream buffer;
-            buffer << "plaintext.multiply_plain_internal: public input has the wrong size: " << plain.size()
-                   << " != " << ct.num_slots();
-            throw invalid_argument(buffer.str());
-        }
-
         zip_with_inplace(ct.raw_pt, plain, multiplies<>());
         update_max_log_plain_val(ct);
     }

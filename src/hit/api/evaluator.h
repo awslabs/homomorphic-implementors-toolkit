@@ -24,7 +24,7 @@
  *  - Whether the scale factor is 'nominal' (roughly the same as it was when freshly encrypted)
  *    or 'squared' (roughly the square of the nominal scale). The "roughly" here is important:
  *    ciphertexts at different levels both with nominal scale in reality have *different* scales.
- *    See <TODO> for details.
+ *    See the examples/example_1_ckks for details.
  * Each homomorphic operation accepts ciphertexts with some subset of these properties, which
  * we denote using the terms above.
  */
@@ -51,7 +51,10 @@ namespace hit {
         // the ciphertext will be encrypted at the highest level allowed by the parameters.
         virtual CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level) = 0;
 
-        virtual std::vector<double> decrypt(const CKKSCiphertext &ct) const;
+        // This function will log a message if you try to decrypt a ciphertext which
+        // is not at level 0. Sometimes it is expected for a ciphertext to be at a higher
+        // level, so you can suppress the warning by explicitly setting `suppress_warnings` to true.
+        virtual std::vector<double> decrypt(const CKKSCiphertext &ct, bool suppress_warnings = false) const;
 
         // Get the number of plaintext slots expected by this evaluator
         virtual int num_slots() const = 0;
@@ -199,7 +202,7 @@ namespace hit {
          *        Note that ciphertext degrees do not need to match.
          * Output: A ciphertext whose level and scale is the same as the inputs, and whose
          *         degree is the maximum of the two input degrees (see NOTE).
-         * NOTE: This operation throws an invalid_argument exception if the result is a constant
+         * NOTE: This operation throws an exception if the result is a constant
          *       ciphertext, since this results in a "transparent ciphertext" which does not
          *       require the secret key to decrypt. One way this can happen is if one ciphertext
          *       is a scalar shift of the other. In this case, the ciphertexts only differ in
@@ -212,7 +215,7 @@ namespace hit {
          *        Note that ciphertext degrees do not need to match.
          * Output (Inplace): A ciphertext whose level and scale is the same as the inputs, and whose
          *                   degree is the maximum of the two input degrees (see NOTE).
-         * NOTE: This operation throws an invalid_argument exception if the result is a constant
+         * NOTE: This operation throws an exception if the result is a constant
          *       ciphertext, since this results in a "transparent ciphertext" which does not
          *       require the secret key to decrypt. One way this can happen is if one ciphertext
          *       is a scalar shift of the other. In this case, the ciphertexts only differ in

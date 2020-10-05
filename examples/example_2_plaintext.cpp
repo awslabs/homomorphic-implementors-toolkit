@@ -173,5 +173,5 @@ void example_2_driver() {
  * (i.e., excluding ciphertext maintenance operations) is correct! What if this value was large?
  * The plaintext evaluator has a verbose logging mode which outputs the value of the plaintext after each
  * gate so you can see *exactly* where the computation diverged from your expectation. This logging can
- * be enabled by <TODO>
+ * be enabled by setting the logging level to 1 or 2.
  */

@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <execution>
+#include <glog/logging.h>
 
 using namespace std;
 
@@ -32,9 +33,13 @@ namespace hit {
         return EncryptedMatrix(mat.size1(), mat.size2(), unit, mat_cts);
     }
 
-    Matrix LinearAlgebra::decrypt(const EncryptedMatrix &enc_mat) const {
+    Matrix LinearAlgebra::decrypt(const EncryptedMatrix &enc_mat, bool suppress_warnings) const {
         if (!enc_mat.initialized()) {
-            throw invalid_argument("Cannot decrypt uninitialized enc_matrix");
+            LOG_AND_THROW_STREAM("Cannot decrypt uninitialized enc_matrix");
+        }
+
+        if (!suppress_warnings) {
+            decryption_warning(enc_mat.he_level());
         }
 
         vector<vector<Matrix>> mat_pieces(enc_mat.cts.size());
@@ -42,7 +47,7 @@ namespace hit {
             vector<Matrix> row_pieces(enc_mat.cts[0].size());
             for (int j = 0; j < enc_mat.cts[0].size(); j++) {
                 row_pieces[j] = Matrix(enc_mat.encoding_unit().encoding_height(),
-                                       enc_mat.encoding_unit().encoding_width(), eval.decrypt(enc_mat.cts[i][j]));
+                                       enc_mat.encoding_unit().encoding_width(), eval.decrypt(enc_mat.cts[i][j], true));
             }
             mat_pieces[i] = row_pieces;
         }
@@ -73,15 +78,19 @@ namespace hit {
         return EncryptedRowVector(vec.size(), unit, mat_cts);
     }
 
-    Vector LinearAlgebra::decrypt(const EncryptedRowVector &enc_vec) const {
+    Vector LinearAlgebra::decrypt(const EncryptedRowVector &enc_vec, bool suppress_warnings) const {
         if (!enc_vec.initialized()) {
-            throw invalid_argument("Cannot decrypt uninitialized row vector");
+            LOG_AND_THROW_STREAM("Cannot decrypt uninitialized row vector");
+        }
+
+        if (!suppress_warnings) {
+            decryption_warning(enc_vec.he_level());
         }
 
         vector<Matrix> mat_pieces(enc_vec.cts.size());
         for (int i = 0; i < enc_vec.cts.size(); i++) {
             mat_pieces[i] = Matrix(enc_vec.encoding_unit().encoding_height(), enc_vec.encoding_unit().encoding_width(),
-                                   eval.decrypt(enc_vec.cts[i]));
+                                   eval.decrypt(enc_vec.cts[i], true));
         }
         return decode_row_vector(mat_pieces, enc_vec.width());
     }
@@ -104,15 +113,19 @@ namespace hit {
         return EncodingUnit(encoding_height, eval.num_slots() / encoding_height);
     }
 
-    Vector LinearAlgebra::decrypt(const EncryptedColVector &enc_vec) const {
+    Vector LinearAlgebra::decrypt(const EncryptedColVector &enc_vec, bool suppress_warnings) const {
         if (!enc_vec.initialized()) {
-            throw invalid_argument("Cannot decrypt uninitialized column vector");
+            LOG_AND_THROW_STREAM("Cannot decrypt uninitialized column vector");
+        }
+
+        if (!suppress_warnings) {
+            decryption_warning(enc_vec.he_level());
         }
 
         vector<Matrix> mat_pieces(enc_vec.cts.size());
         for (int i = 0; i < enc_vec.cts.size(); i++) {
             mat_pieces[i] = Matrix(enc_vec.encoding_unit().encoding_height(), enc_vec.encoding_unit().encoding_width(),
-                                   eval.decrypt(enc_vec.cts[i]));
+                                   eval.decrypt(enc_vec.cts[i], true));
         }
         return decode_col_vector(mat_pieces, enc_vec.height());
     }
@@ -205,8 +218,13 @@ namespace hit {
     template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedColVector &, EncryptedColVector &);
 
     void LinearAlgebra::add_plain_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2) {
-        if (!enc_mat1.initialized() || enc_mat1.height() != mat2.size1() || enc_mat1.width() != mat2.size2()) {
-            throw invalid_argument("Arguments to LinearAlgebra::add_inplace do not have the same dimensions.");
+        if (!enc_mat1.initialized()) {
+            LOG_AND_THROW_STREAM("Encrypted input to add_plain is not initialized");
+        }
+        if (enc_mat1.height() != mat2.size1() || enc_mat1.width() != mat2.size2()) {
+            LOG_AND_THROW_STREAM("Arguments to add_inplace must have the same dimensions; "
+                       << "ciphertext encrypts a " << enc_mat1.height() << "x" << enc_mat1.width() << " matrix, "
+                       << "plaintext is " << mat2.size1() << "x" << mat2.size2());
         }
         vector<vector<Matrix>> encoded_matrix = encode_matrix(mat2, enc_mat1.encoding_unit());
 
@@ -218,8 +236,13 @@ namespace hit {
     }
 
     void LinearAlgebra::add_plain_inplace(EncryptedRowVector &enc_vec1, const Vector &vec2) {
-        if (!enc_vec1.initialized() || enc_vec1.width() != vec2.size()) {
-            throw invalid_argument("Arguments to LinearAlgebra::add_inplace do not have the same dimensions.");
+        if (!enc_vec1.initialized()) {
+            LOG_AND_THROW_STREAM("Encrypted input to add_plain is not initialized");
+        }
+        if (enc_vec1.width() != vec2.size()) {
+            LOG_AND_THROW_STREAM("Arguments to add_inplace must have the same dimensions; "
+                       << "ciphertext encrypts a " << enc_vec1.width() << " vector, "
+                       << "plaintext has " << vec2.size() << " coefficients");
         }
         vector<Matrix> encoded_vector = encode_row_vector(vec2, enc_vec1.encoding_unit());
 
@@ -229,8 +252,13 @@ namespace hit {
     }
 
     void LinearAlgebra::add_plain_inplace(EncryptedColVector &enc_vec1, const Vector &vec2) {
-        if (!enc_vec1.initialized() || enc_vec1.height() != vec2.size()) {
-            throw invalid_argument("Arguments to LinearAlgebra::add_inplace do not have the same dimensions.");
+        if (!enc_vec1.initialized()) {
+            LOG_AND_THROW_STREAM("Encrypted input to add_plain is not initialized");
+        }
+        if (enc_vec1.height() != vec2.size()) {
+            LOG_AND_THROW_STREAM("Arguments to add_inplace must have the same dimensions; "
+                       << "ciphertext encrypts a " << enc_vec1.height() << " vector, "
+                       << "plaintext has " << vec2.size() << " coefficients");
         }
         vector<Matrix> encoded_vector = encode_col_vector(vec2, enc_vec1.encoding_unit());
 
@@ -251,11 +279,34 @@ namespace hit {
     EncryptedMatrix LinearAlgebra::hadamard_multiply(const EncryptedRowVector &enc_vec,
                                                      const EncryptedMatrix &enc_mat) {
         if (!enc_vec.initialized() || !enc_mat.initialized()) {
-            throw invalid_argument("LinearAlgebra::hadamard_multiply: arguments not initialized.");
+            LOG_AND_THROW_STREAM("Inputs to hadamard_multiply are not initialized.");
         }
-        if (enc_mat.height() != enc_vec.width() || enc_mat.encoding_unit() != enc_vec.encoding_unit()) {
-            throw invalid_argument("Dimension mismatch in LinearAlgebra::hadamard_multiply: " + dim_string(enc_mat) +
-                                   " vs " + dim_string(enc_vec));
+        if (enc_mat.encoding_unit() != enc_vec.encoding_unit()) {
+            LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have the same units: "
+                       << dim_string(enc_vec.encoding_unit()) << "!="
+                       << dim_string(enc_mat.encoding_unit()));
+        }
+        if (enc_mat.height() != enc_vec.width()) {
+            LOG_AND_THROW_STREAM("Inner dimension mismatch in hadamard_multiply: " + dim_string(enc_vec)
+                       << " is not compatible with " + dim_string(enc_mat));
+        }
+        if (enc_mat.he_level() != enc_vec.he_level()) {
+            LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have the same level: "
+                       << enc_vec.he_level() << "!=" << enc_mat.he_level());
+        }
+        if (enc_mat.scale() != enc_vec.scale()) {
+            LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have the same scale: "
+                       << log2(enc_vec.scale()) << "bits != " << log2(enc_mat.scale()) << " bits");
+        }
+        if (enc_mat.needs_rescale() || enc_vec.needs_rescale()) {
+            LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have nominal scale: "
+                       << "Vector: " << enc_vec.needs_rescale()
+                       << ", Matrix: " << enc_mat.needs_rescale());
+        }
+        if (enc_mat.needs_relin() || enc_vec.needs_relin()) {
+            LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must be linear ciphertexts: "
+                       << "Vector: " << enc_vec.needs_relin()
+                       << ", Matrix: " << enc_mat.needs_relin());
         }
 
         vector<vector<CKKSCiphertext>> cts_transpose(enc_mat.num_horizontal_units());
@@ -296,23 +347,34 @@ namespace hit {
     EncryptedMatrix LinearAlgebra::hadamard_multiply(const EncryptedMatrix &enc_mat,
                                                      const EncryptedColVector &enc_vec) {
         if (!enc_vec.initialized() || !enc_mat.initialized()) {
-            throw invalid_argument("LinearAlgebra::hadamard_multiply: arguments not initialized.");
+            LOG_AND_THROW_STREAM("Inputs to hadamard_multiply are not initialized.");
         }
-        if (enc_mat.width() != enc_vec.height() || enc_mat.encoding_unit() != enc_vec.encoding_unit()) {
-            throw invalid_argument("Dimension mismatch in LinearAlgebra::hadamard_multiply: " + dim_string(enc_mat) +
-                                   " vs " + dim_string(enc_vec));
+        if (enc_mat.encoding_unit() != enc_vec.encoding_unit()) {
+            LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have the same units: "
+                       << dim_string(enc_mat.encoding_unit()) << "!="
+                       << dim_string(enc_vec.encoding_unit()));
+        }
+        if (enc_mat.width() != enc_vec.height()) {
+            LOG_AND_THROW_STREAM("Inner dimension mismatch in hadamard_multiply: " + dim_string(enc_mat)
+                       << " is not compatible with " + dim_string(enc_vec));
         }
         if (enc_mat.he_level() != enc_vec.he_level()) {
-            throw invalid_argument("LinearAlgebra::hadamard_multiply: arguments are not at the same level");
+            LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have the same level: "
+                       << enc_mat.he_level() << "!=" << enc_vec.he_level());
         }
         if (enc_mat.scale() != enc_vec.scale()) {
-            throw invalid_argument("LinearAlgebra::hadamard_multiply: arguments do not have the same scale");
+            LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have the same scale: "
+                       << log2(enc_mat.scale()) << "bits != " << log2(enc_vec.scale()) << " bits");
         }
-        if (enc_mat.needs_rescale() != enc_vec.needs_rescale()) {
-            throw invalid_argument("LinearAlgebra::hadamard_multiply: arguments must have nominal scale");
+        if (enc_mat.needs_rescale() || enc_vec.needs_rescale()) {
+            LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have nominal scale: "
+                       << "Vector: " << enc_mat.needs_rescale()
+                       << ", Matrix: " << enc_vec.needs_rescale());
         }
-        if (enc_mat.needs_relin() != enc_vec.needs_relin()) {
-            throw invalid_argument("LinearAlgebra::hadamard_multiply: arguments must be linear ciphertexts");
+        if (enc_mat.needs_relin() || enc_vec.needs_relin()) {
+            LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must be linear ciphertexts: "
+                       << "Vector: " << enc_mat.needs_relin()
+                       << ", Matrix: " << enc_vec.needs_relin());
         }
 
         vector<vector<CKKSCiphertext>> cts(enc_mat.num_vertical_units());
@@ -330,18 +392,7 @@ namespace hit {
     }
 
     EncryptedColVector LinearAlgebra::multiply(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat) {
-        if (enc_mat.he_level() != enc_vec.he_level()) {
-            throw invalid_argument("LinearAlgebra::multiply: arguments are not at the same level");
-        }
-        if (enc_mat.scale() != enc_vec.scale()) {
-            throw invalid_argument("LinearAlgebra::multiply: arguments do not have the same scale");
-        }
-        if (enc_mat.needs_rescale() != enc_vec.needs_rescale()) {
-            throw invalid_argument("LinearAlgebra::multiply: arguments must have nominal scale");
-        }
-        if (enc_mat.needs_relin() != enc_vec.needs_relin()) {
-            throw invalid_argument("LinearAlgebra::multiply: arguments must be linear ciphertexts");
-        }
+        // input validation by hadamard_multiply
         EncryptedMatrix hadmard_prod = hadamard_multiply(enc_vec, enc_mat);
         // rotation requires a linear ciphertext, but does not require rescaling
         relinearize_inplace(hadmard_prod);
@@ -350,18 +401,7 @@ namespace hit {
 
     EncryptedRowVector LinearAlgebra::multiply(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec,
                                                double scalar) {
-        if (enc_mat.he_level() != enc_vec.he_level()) {
-            throw invalid_argument("LinearAlgebra::multiply: arguments are not at the same level");
-        }
-        if (enc_mat.scale() != enc_vec.scale()) {
-            throw invalid_argument("LinearAlgebra::multiply: arguments do not have the same scale");
-        }
-        if (enc_mat.needs_rescale() != enc_vec.needs_rescale()) {
-            throw invalid_argument("LinearAlgebra::multiply: arguments must have nominal scale");
-        }
-        if (enc_mat.needs_relin() != enc_vec.needs_relin()) {
-            throw invalid_argument("LinearAlgebra::multiply: arguments must be linear ciphertexts");
-        }
+        // input validation by hadamard_multiply
         EncryptedMatrix hadmard_prod = hadamard_multiply(enc_mat, enc_vec);
         relinearize_inplace(hadmard_prod);
         rescale_to_next_inplace(hadmard_prod);
@@ -492,21 +532,30 @@ namespace hit {
     EncryptedMatrix LinearAlgebra::multiply(const EncryptedMatrix &enc_mat_a_trans, const EncryptedMatrix &enc_mat_b,
                                             double scalar) {
         if (!enc_mat_a_trans.initialized() || !enc_mat_b.initialized()) {
-            throw invalid_argument("Arguments to LinearAlgebra::multiply are not initialized");
+            LOG_AND_THROW_STREAM("Inputs to multiply are not initialized.");
+        }
+        if (enc_mat_a_trans.encoding_unit() != enc_mat_b.encoding_unit()) {
+            LOG_AND_THROW_STREAM("Inputs to multiply must have the same units: "
+                       << dim_string(enc_mat_a_trans.encoding_unit()) << "!="
+                       << dim_string(enc_mat_b.encoding_unit()));
         }
         if (enc_mat_a_trans.he_level() != enc_mat_b.he_level() + 1) {
-            throw invalid_argument("Second argument to LinearAlgebra::multiply must be one level below first argument");
+            LOG_AND_THROW_STREAM("Second argument to matrix multiply must be one level below first argument: "
+                       << enc_mat_a_trans.he_level() << "!=" << enc_mat_b.he_level() << "+1");
         }
-        if (enc_mat_a_trans.height() != enc_mat_b.height() ||
-            enc_mat_a_trans.encoding_unit() != enc_mat_b.encoding_unit()) {
-            throw invalid_argument("Arguments to LinearAlgebra::multiply do not have compatible dimensions: " +
-                                   dim_string(enc_mat_a_trans) + " vs " + dim_string(enc_mat_b));
+        if (enc_mat_a_trans.height() != enc_mat_b.height()) {
+            LOG_AND_THROW_STREAM("Inputs to matrix multiply do not have compatible dimensions: "
+                       << dim_string(enc_mat_a_trans) + " vs " + dim_string(enc_mat_b));
         }
-        if (enc_mat_a_trans.needs_rescale() != enc_mat_b.needs_rescale()) {
-            throw invalid_argument("LinearAlgebra::multiply: arguments must have nominal scale");
+        if (enc_mat_a_trans.needs_rescale() || enc_mat_b.needs_rescale()) {
+            LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have nominal scale: "
+                       << "Vector: " << enc_mat_a_trans.needs_rescale()
+                       << ", Matrix: " << enc_mat_b.needs_rescale());
         }
-        if (enc_mat_a_trans.needs_relin() != enc_mat_b.needs_relin()) {
-            throw invalid_argument("LinearAlgebra::multiply: arguments must be linear ciphertexts");
+        if (enc_mat_a_trans.needs_relin() || enc_mat_b.needs_relin()) {
+            LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must be linear ciphertexts: "
+                       << "Vector: " << enc_mat_a_trans.needs_relin()
+                       << ", Matrix: " << enc_mat_b.needs_relin());
         }
 
         // Multiply each row of A by the matrix B. The result is a list of column vectors.
@@ -583,14 +632,6 @@ namespace hit {
     // This function returns the encoding of the *transpose* of that column vector,
     // which is a *row* vector.
     CKKSCiphertext LinearAlgebra::sum_cols_core(const CKKSCiphertext &ct, const EncodingUnit &unit, double scalar) {
-        // if(!is_pow2(ct.width)) {
-        //   stringstream buffer;
-        //   buffer << "sum_cols called with a non-power-2 width: " << ct.width;
-        //   throw invalid_argument(buffer.str());
-        // }
-        // if(ct.encoding != COL_MAT) {
-        //   throw invalid_argument("sum_cols argument must be a column matrix");
-        // }
         CKKSCiphertext output = ct;
 
         // sum the columns, placing the result in the left-most column
@@ -638,10 +679,10 @@ namespace hit {
     // Repeat for each encoding unit row.
     EncryptedRowVector LinearAlgebra::sum_cols(const EncryptedMatrix &enc_mat, double scalar) {
         if(enc_mat.needs_relin()) {
-            throw invalid_argument("Input to sum_cols must be a linear ciphertext");
+            LOG_AND_THROW_STREAM("Input to sum_cols must be a linear ciphertext");
         }
         if(enc_mat.needs_rescale()) {
-            throw invalid_argument("Input to sum_cols must have nominal scale");
+            LOG_AND_THROW_STREAM("Input to sum_cols must have nominal scale");
         }
 
         vector<CKKSCiphertext> cts(enc_mat.num_vertical_units());
@@ -665,10 +706,13 @@ namespace hit {
         for (int i = 0; i < enc_mats[0].num_vertical_units(); i++) {
             for (int k = 0; k < enc_mats.size(); k++) {
                 if (enc_mats[k].encoding_unit() != enc_mats[0].encoding_unit()) {
-                    throw invalid_argument("sum_cols_many args must have the same encoding unit.");
+                    LOG_AND_THROW_STREAM("Inputs to sum_cols_many must have the same encoding unit, but "
+                               << dim_string(enc_mats[k].encoding_unit()) << "!="
+                               << dim_string(enc_mats[0].encoding_unit()));
                 }
                 if (enc_mats[k].height() != enc_mats[0].height()) {
-                    throw invalid_argument("sum_cols_many args must have the same height");
+                    LOG_AND_THROW_STREAM("Inputs to sum_cols_many must have the same height, but "
+                               << enc_mats[k].height() << "!=" << enc_mats[0].height());
                 }
 
                 for (int j = 0; j < enc_mats[k].cts[i].size(); j++) {
@@ -689,11 +733,15 @@ namespace hit {
 
         for (const auto &enc_mat : enc_mats) {
             if (enc_mat.encoding_unit() != enc_mats[0].encoding_unit()) {
-                throw invalid_argument("sum_rows_many args must have the same encoding unit.");
+                LOG_AND_THROW_STREAM("Inputs to sum_rows_many must have the same encoding unit, but "
+                           << dim_string(enc_mat.encoding_unit()) << "!="
+                           << dim_string(enc_mats[0].encoding_unit()));
             }
             if (enc_mat.width() != enc_mats[0].width()) {
-                throw invalid_argument("sum_rows_many args must have the same width");
+                LOG_AND_THROW_STREAM("Inputs to sum_rows_many must have the same width, but "
+                           << enc_mat.width() << "!=" << enc_mats[0].width());
             }
+
             for (int i = 0; i < enc_mat.num_vertical_units(); i++) {
                 concat_cts.push_back(enc_mat.cts[i]);
             }
@@ -742,7 +790,7 @@ namespace hit {
     // Repeat for each encoding unit column.
     EncryptedColVector LinearAlgebra::sum_rows(const EncryptedMatrix &enc_mat) {
         if(enc_mat.needs_relin()) {
-            throw invalid_argument("Input to sum_rows must be a linear ciphertext");
+            LOG_AND_THROW_STREAM("Input to sum_rows must be a linear ciphertext");
         }
         vector<CKKSCiphertext> cts(enc_mat.num_horizontal_units());
 

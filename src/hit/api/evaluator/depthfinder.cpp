@@ -23,14 +23,14 @@ namespace hit {
         }
 
         if (level < -1) {
-            throw invalid_argument("You can only specify non-negative encryption levels. Got: " + to_string(level));
+            LOG_AND_THROW_STREAM("Encryption level must be non-negative, got " << level);
         }
 
         if (level == -1 && encryption_mode_ == EXPLICIT_LEVEL) {
-            throw invalid_argument("You have previously called `encrypt` with an explicit encryption level; you cannot use the default level now.");
+            LOG_AND_THROW_STREAM("You have previously called `encrypt` with an explicit encryption level; you cannot use the default level now with the DepthFinder evaluator.");
         }
         if (level != -1 && encryption_mode_ == IMPLICIT_LEVEL) {
-            throw invalid_argument("You have previously called `encrypt` without an explicit encryption level; you cannot use explicit levels now.");
+            LOG_AND_THROW_STREAM("You have previously called `encrypt` without an explicit encryption level; you cannot use explicit levels now with the DepthFinder evaluator.");
         }
 
         if (level == -1) {
@@ -51,7 +51,7 @@ namespace hit {
     // print some debug info
     void DepthFinder::print_stats(         // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
         const CKKSCiphertext &ct) const {  // NOLINT(readability-convert-member-functions-to-static)
-        VLOG(LOG_VERBOSE) << "    + Level: " << ct.he_level();
+        VLOG(VLOG_EVAL) << "    + Level: " << ct.he_level();
     }
 
     int DepthFinder::num_slots() const {

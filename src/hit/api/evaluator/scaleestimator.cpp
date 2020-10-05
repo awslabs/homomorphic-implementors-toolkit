@@ -24,7 +24,8 @@ namespace hit {
         plaintext_eval = new PlaintextEval(num_slots);
 
         if (!is_pow2(num_slots) || num_slots < 4096) {
-            throw invalid_argument("Invalid parameters: num_slots must be a power of 2, and at least 4096. Got " + to_string(num_slots));
+            LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
+                       << "num_slots must be a power of 2, and at least 4096. Got " << num_slots);
         }
 
         int num_primes = multiplicative_depth + 2;
@@ -37,10 +38,9 @@ namespace hit {
         int min_poly_degree = modulus_to_poly_degree(modBits);
         int poly_modulus_degree = num_slots * 2;
         if (poly_modulus_degree < min_poly_degree) {
-            stringstream buffer;
-            buffer << "Invalid parameters: Ciphertexts for this combination of num_primes and log_scale have more than "
-                   << num_slots << " plaintext slots.";
-            throw invalid_argument(buffer.str());
+            LOG_AND_THROW_STREAM("Invalid parameters when creating ScaleEstimator instance: "
+                       << "Parameters for depth " << multiplicative_depth << " circuits and scale "
+                       << log_scale_ << " bits require more than " << num_slots << " plaintext slots.");
         }
 
         EncryptionParameters params = EncryptionParameters(scheme_type::CKKS);
@@ -79,15 +79,13 @@ namespace hit {
     CKKSCiphertext ScaleEstimator::encrypt(const vector<double> &coeffs, int level) {
         update_plaintext_max_val(coeffs);
 
-        // in ENC_META, CKKSInstance sets num_slots_ to 4096 and doesn't actually attempt to calcuate the correct value.
-        // We have to ignore that case here. Otherwise, input size should exactly equal the number of slots.
         if (coeffs.size() != num_slots_) {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
-            throw invalid_argument(
-                "You can only encrypt vectors which have exactly as many coefficients as the number of plaintext "
-                "slots: Expected " +
-                to_string(num_slots_) + ", got " + to_string(coeffs.size()));
+            LOG_AND_THROW_STREAM("You can only encrypt vectors which have exactly as many "
+                       << " coefficients as the number of plaintext slots: Expected "
+                       << num_slots_ << " coefficients, but " << coeffs.size()
+                       << " were provided");
         }
 
         if (level == -1) {
@@ -122,9 +120,6 @@ namespace hit {
 
     // print some debug info
     void ScaleEstimator::print_stats(const CKKSCiphertext &ct) const {
-        if (!VLOG_IS_ON(LOG_VERBOSE)) {
-            return;
-        }
         double exact_plaintext_max_val = l_inf_norm(ct.raw_pt);
         double log_modulus = 0;
         auto context_data = get_context_data(context, ct.he_level());
@@ -132,11 +127,11 @@ namespace hit {
             log_modulus += log2(prime.value());
         }
         plaintext_eval->print_stats(ct);
-        VLOG(LOG_VERBOSE) << "    + Level: " << ct.he_level();
-        VLOG(LOG_VERBOSE) << "    + Plaintext logmax: " << log2(exact_plaintext_max_val)
+        VLOG(VLOG_EVAL) << "    + Level: " << ct.he_level();
+        VLOG(VLOG_EVAL) << "    + Plaintext logmax: " << log2(exact_plaintext_max_val)
                           << " bits (scaled: " << log2(ct.scale()) + log2(exact_plaintext_max_val) << " bits)";
-        VLOG(LOG_VERBOSE) << "    + Total modulus size: " << setprecision(4) << log_modulus << " bits";
-        VLOG(LOG_VERBOSE) << "    + Theoretical max log scale: " << get_estimated_max_log_scale() << " bits";
+        VLOG(VLOG_EVAL) << "    + Total modulus size: " << setprecision(4) << log_modulus << " bits";
+        VLOG(VLOG_EVAL) << "    + Theoretical max log scale: " << get_estimated_max_log_scale() << " bits";
     }
 
     // At all times, we need ct.scale*l_inf_norm(ct.getPlaintext()) <~ q/4
@@ -152,10 +147,9 @@ namespace hit {
         // update the estimated_max_log_scale_
         auto scale_exp = static_cast<int>(round(log2(ct.scale()) / log2(pow(2,log_scale_))));
         if (scale_exp != 1 && scale_exp != 2) {
-            stringstream buffer;
-            buffer << "INTERNAL ERROR: scale_exp is not 1 or 2: got " << scale_exp << "\t" << log2(ct.scale()) << "\t"
-                   << log2(pow(2,log_scale_));
-            throw invalid_argument(buffer.str());
+            LOG_AND_THROW_STREAM("Internal error: scale_exp is not 1 or 2: got " << scale_exp << ". "
+                       << "HIT ciphertext scale is " << log2(ct.scale())
+                       << " bits, and nominal scale is " << log_scale_ << " bits");
         }
         if (scale_exp > ct.he_level()) {
             auto estimated_scale = (PLAINTEXT_LOG_MAX - log2(l_inf_norm(ct.raw_pt))) / (scale_exp - ct.he_level());
@@ -164,10 +158,9 @@ namespace hit {
                 estimated_max_log_scale_ = min(estimated_max_log_scale_, estimated_scale);
             }
         } else if (scale_exp == ct.he_level() && log2(l_inf_norm(ct.raw_pt)) > PLAINTEXT_LOG_MAX) {
-            stringstream buffer;
-            buffer << "Plaintext exceeded " << PLAINTEXT_LOG_MAX
-                   << " bits, which exceeds SEAL's capacity. Overflow is imminent.";
-            throw invalid_argument(buffer.str());
+            LOG_AND_THROW_STREAM("The maximum value in the plaintext is " << log2(l_inf_norm(ct.raw_pt))
+                       << " bits which exceeds SEAL's capacity of " << PLAINTEXT_LOG_MAX
+                       << " bits. Overflow is imminent.");
         }
     }
 
@@ -242,7 +235,7 @@ namespace hit {
 
     void ScaleEstimator::reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level) {
         if (level < 0) {
-            throw invalid_argument("reduce_level_to: level must be >= 0.");
+            LOG_AND_THROW_STREAM("Target level for level reduction must be non-negative, got " << level);
         }
 
         plaintext_eval->reduce_level_to_inplace_internal(ct, level);

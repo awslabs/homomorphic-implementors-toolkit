@@ -79,12 +79,15 @@ ninja -j $(nproc)
 ninja run_hit_tests
 
 # Run HIT example
-# Before that, GLog variables should be set. Glog reference: https://hpc.nih.gov/development/glog.html
-# Show all VLOG(m) messages for m less or equal the value of this flag.
+# When running code that uses HIT, you can control the output with GLog.
+# In HIT, logging is primarily controlled by VLOG:
+# - To see only critical security warnings and errors, define the environment variable GLOG_v=0 or use the command line argument --v=0
+# - To see evaluation output, define the environment variable GLOG_v=1 or use the command line argument --v=1
+# - To see verbose evaluation output, define the environment variable GLOG_v=2 or use the command line argument --v=2
+# See the GLog documentation for more information: https://hpc.nih.gov/development/glog.html
+
+# As an example, we will set the log level to 1 to show most output:
 export GLOG_v=1
-# Log messages at or above this level.
-# The numbers of severity levels INFO, WARNING, ERROR, and FATAL are 0, 1, 2, and 3, respectively.
-export GLOG_minloglevel=0
 # Set Logging directory.
 export GLOG_log_dir="/tmp/hit_log"
 if [ -d ${GLOG_log_dir} ]; then rm -Rf ${GLOG_log_dir}; fi

@@ -52,18 +52,17 @@ namespace hit {
         return buffer.str();
     }
 
-    void print_elapsed_time(timepoint start) {
+    void print_elapsed_time(timepoint start, const string &str) {
         timepoint end = chrono::steady_clock::now();
-        LOG(INFO) << elapsed_time_to_str(start, end);
+        VLOG(VLOG_VERBOSE) << str << elapsed_time_to_str(start, end);
     }
 
     // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
     double relative_error(const vector<double> &expected, const vector<double> &actual) {
         int len = expected.size();
         if (len != actual.size()) {
-            stringstream buffer;
-            buffer << "relative_error inputs do not have the same size: " << len << " != " << actual.size();
-            throw invalid_argument(buffer.str());
+            LOG_AND_THROW_STREAM("Inputs to relative error do not have the same size: "
+                       << len << " != " << actual.size());
         }
 
         Vector expected_vec = Vector(expected);
@@ -93,10 +92,16 @@ namespace hit {
         }
 
         if (expected_l2_norm <= max_allowed_l2_norm) {
-            LOG(INFO) << "WEIRD NORM SITUATION: " << expected_l2_norm << "\t" << actual_l2_norm;
+            // An unexpected situation.
+            LOG(WARNING) << "The expected result's norm is nearly zero (2^"
+                         << setprecision(8) << log2(expected_l2_norm)
+                         << "), but the actual result's norm is non-zero (2^"
+                         << log2(actual_l2_norm) << ")";
         }
         if (diff_l2_norm > MAX_NORM) {
-            LOG(INFO) << "LogL2Norm: " << setprecision(8) << log2(expected_l2_norm);
+            LOG(WARNING) << "Relative norm is somewhat large (2^"
+                         << setprecision(8) << log2(diff_l2_norm)
+                         << "); there may be an error in the computation.";
         }
         return diff_l2_norm;
     }
@@ -146,9 +151,7 @@ namespace hit {
                 // (which corresponds to the 262144th cyclotomic ring)
                 return 1761;
             default:
-                stringstream buffer;
-                buffer << "poly_modulus_degree=" << poly_modulus_degree << " not supported";
-                throw invalid_argument(buffer.str());
+                LOG_AND_THROW_STREAM("poly_modulus_degree " << poly_modulus_degree << " not supported");
         }
     }
 
@@ -191,10 +194,8 @@ namespace hit {
         // else if(mod_bits <= 3524) { return 131072; }
         // else if(mod_bits <= 7050) { return 262144; }
         else {
-            stringstream buffer;
-            buffer << "This computation is too big to handle right now: cannot determine a valid ring size for a "
-                   << mod_bits << "-bit modulus";
-            throw invalid_argument(buffer.str());
+            LOG_AND_THROW_STREAM("This computation is too big to handle right now: cannot determine a valid ring size for a "
+                       << mod_bits << "-bit modulus");
         }
     }
 
@@ -208,6 +209,14 @@ namespace hit {
         uintmax_t size = s.tellp();
         s.seekp(original_pos);
         return size;
+    }
+
+    void decryption_warning(int level) {
+        if (level != 0) {
+            VLOG(VLOG_EVAL) << "Decrypting a ciphertext at level " << level
+                       << "; consider starting with a smaller modulus"
+                       << " to improve performance.";
+        }
     }
 
 }  // namespace hit

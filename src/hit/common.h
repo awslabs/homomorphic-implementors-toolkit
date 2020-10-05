@@ -12,7 +12,8 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 
-#define LOG_VERBOSE 1
+#define VLOG_EVAL 1
+#define VLOG_VERBOSE 2
 
 #define INVALID_PARAMETER_EXCEPTION 10
 
@@ -22,6 +23,13 @@
 // When computing a bound on the scale, we want the scaled plaintext to be
 // less than this many bits
 #define PLAINTEXT_LOG_MAX 59
+
+#define LOG_AND_THROW_STREAM(stream_contents) { \
+    std::stringstream err_stream; \
+    err_stream << stream_contents; \
+    LOG(ERROR) << err_stream.str(); \
+    throw std::invalid_argument(err_stream.str()); \
+}
 
 namespace hit {
     using Matrix = boost::numeric::ublas::matrix<double, boost::numeric::ublas::row_major, std::vector<double>>;
@@ -34,7 +42,7 @@ namespace hit {
 
     uint64_t elapsed_time_in_ms(timepoint start, timepoint end);
     std::string elapsed_time_to_str(timepoint start, timepoint end, TimeScale = TS_DYNAMIC);
-    void print_elapsed_time(timepoint start);
+    void print_elapsed_time(timepoint start, const std::string &str = "");
 
     // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
     double relative_error(const std::vector<double> &expected, const std::vector<double> &actual);
@@ -76,5 +84,7 @@ namespace hit {
             ciphertext_vector.emplace_back(CKKSCiphertext(context, ciphertext));
         }
     }
+
+    void decryption_warning(int level);
 
 }  // namespace hit

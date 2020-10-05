@@ -34,18 +34,17 @@ namespace hit {
                                      const vector<int> &galois_steps): log_scale_(log_scale) {
 
         if (!is_pow2(num_slots) || num_slots < 4096) {
-            throw invalid_argument("Invalid parameters: num_slots must be a power of 2, and at least 4096. Got " + to_string(num_slots));
+            LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
+                       << "num_slots must be a power of 2, and at least 4096. Got " << num_slots);
         }
 
         int poly_modulus_degree = num_slots * 2;
         if (log_scale_ < MIN_LOG_SCALE) {
-            stringstream buffer;
-            buffer << "Invalid parameters: Implied log_scale is " << log_scale_ << ", which is less than the minimum, "
-                   << MIN_LOG_SCALE << ". Either increase the number of slots or decrease the number of primes."
-                   << endl;
-            buffer << "poly_modulus_degree is " << poly_modulus_degree << ", which limits the modulus to "
-                   << poly_degree_to_max_mod_bits(poly_modulus_degree) << " bits";
-            throw invalid_argument(buffer.str());
+            LOG(ERROR) << "poly_modulus_degree is " << poly_modulus_degree << ", which limits the modulus to "
+                       << poly_degree_to_max_mod_bits(poly_modulus_degree) << " bits";
+            LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
+                       << "log_scale is " << log_scale_ << ", which is less than the minimum "
+                       << MIN_LOG_SCALE << ". Either increase the number of slots or decrease the number of primes.");
         }
 
         int num_primes = multiplicative_depth + 2;
@@ -56,60 +55,51 @@ namespace hit {
         }
         int min_poly_degree = modulus_to_poly_degree(mod_bits);
         if (poly_modulus_degree < min_poly_degree) {
-            stringstream buffer;
-            buffer << "Invalid parameters: Ciphertexts for this combination of num_primes and log_scale have more than "
-                   << num_slots << " plaintext slots.";
-            throw invalid_argument(buffer.str());
+            LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
+                       << "Parameters for depth " << multiplicative_depth << " circuits and scale "
+                       << log_scale << " bits require more than " << num_slots << " plaintext slots.");
         }
         EncryptionParameters params = EncryptionParameters(scheme_type::CKKS);
         params.set_poly_modulus_degree(poly_modulus_degree);
         params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulusVector));
         timepoint start = chrono::steady_clock::now();
         if (use_seal_params) {
-            VLOG(LOG_VERBOSE) << "Creating encryption context...";
             context = SEALContext::Create(params);
-            if (VLOG_IS_ON(LOG_VERBOSE)) {
-                print_elapsed_time(start);
-            }
+            print_elapsed_time(start, "Creating encryption context...");
             standard_params_ = true;
         } else {
             LOG(WARNING) << "YOU ARE NOT USING SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security"
                          << "DO NOT USE IN PRODUCTION";
             // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-            VLOG(LOG_VERBOSE) << "Creating encryption context...";
             context = SEALContext::Create(params, true, sec_level_type::none);
-            if (VLOG_IS_ON(LOG_VERBOSE)) {
-                print_elapsed_time(start);
-            }
+            print_elapsed_time(start, "Creating encryption context...");
             standard_params_ = false;
         }
         encoder = new CKKSEncoder(context);
         seal_evaluator = new Evaluator(context);
 
         int num_galois_keys = galois_steps.size();
-        LOG(INFO) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth << ", including "
-                  << (num_galois_keys != 0 ? to_string(num_galois_keys) : "all") << " Galois keys." << endl;
+        VLOG(VLOG_VERBOSE) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth << ", including "
+                  << (num_galois_keys != 0 ? to_string(num_galois_keys) : "all") << " Galois keys.";
 
         double keys_size_bytes = estimate_key_size(galois_steps.size(), num_slots, multiplicative_depth);
-        LOG(INFO) << "Estimated size is " << setprecision(3);
+        VLOG(VLOG_VERBOSE) << "Estimated size is " << setprecision(3);
         // using base-10 (SI) units, rather than base-2 units.
         double unit_multiplier = 1000;
         double bytes_per_kb = unit_multiplier;
         double bytes_per_mb = bytes_per_kb * unit_multiplier;
         double bytes_per_gb = bytes_per_mb * unit_multiplier;
         if (keys_size_bytes < bytes_per_kb) {
-            LOG(INFO) << keys_size_bytes << " bytes";
+            VLOG(VLOG_VERBOSE) << keys_size_bytes << " bytes";
         } else if (keys_size_bytes < bytes_per_mb) {
-            LOG(INFO) << keys_size_bytes / bytes_per_kb << " kilobytes (base 10)";
+            VLOG(VLOG_VERBOSE) << keys_size_bytes / bytes_per_kb << " kilobytes (base 10)";
         } else if (keys_size_bytes < bytes_per_gb) {
-            LOG(INFO) << keys_size_bytes / bytes_per_mb << " megabytes (base 10)";
+            VLOG(VLOG_VERBOSE) << keys_size_bytes / bytes_per_mb << " megabytes (base 10)";
         } else {
-            LOG(INFO) << keys_size_bytes / bytes_per_gb << " gigabytes (base 10)";
+            VLOG(VLOG_VERBOSE) << keys_size_bytes / bytes_per_gb << " gigabytes (base 10)";
         }
 
-        LOG(INFO) << "Generating keys...";
         start = chrono::steady_clock::now();
-
         // generate keys
         // This call generates a KeyGenerator with fresh randomness
         // The KeyGenerator object contains deterministic keys.
@@ -124,7 +114,7 @@ namespace hit {
         }
         relin_keys = keygen.relin_keys_local();
 
-        print_elapsed_time(start);
+        print_elapsed_time(start, "Generating keys...");
 
         seal_encryptor = new Encryptor(context, pk);
         seal_decryptor = new Decryptor(context, sk);
@@ -158,20 +148,14 @@ namespace hit {
         standard_params_ = ckks_params.standardparams();
         timepoint start = chrono::steady_clock::now();
         if (standard_params_) {
-            VLOG(LOG_VERBOSE) << "Creating encryption context...";
             context = SEALContext::Create(params);
-            if (VLOG_IS_ON(LOG_VERBOSE)) {
-                print_elapsed_time(start);
-            }
+            print_elapsed_time(start, "Creating encryption context...");
         } else {
             LOG(WARNING) << "YOU ARE NOT USING SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security."
                          << " DO NOT USE IN PRODUCTION";
             // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-            VLOG(LOG_VERBOSE) << "Creating encryption context...";
             context = SEALContext::Create(params, true, sec_level_type::none);
-            if (VLOG_IS_ON(LOG_VERBOSE)) {
-                print_elapsed_time(start);
-            }
+            print_elapsed_time(start, "Creating encryption context...");
         }
         seal_evaluator = new Evaluator(context);
         encoder = new CKKSEncoder(context);
@@ -188,12 +172,9 @@ namespace hit {
         deserialize_common(params_stream);
 
         timepoint start = chrono::steady_clock::now();
-        VLOG(LOG_VERBOSE) << "Reading keys...";
         galois_keys.load(context, galois_key_stream);
         relin_keys.load(context, relin_key_stream);
-        if (VLOG_IS_ON(LOG_VERBOSE)) {
-            print_elapsed_time(start);
-        }
+        print_elapsed_time(start, "Reading keys...");
     }
 
     /* A full instance */
@@ -202,13 +183,10 @@ namespace hit {
         deserialize_common(params_stream);
 
         timepoint start = chrono::steady_clock::now();
-        VLOG(LOG_VERBOSE) << "Reading keys...";
         sk.load(context, secret_key_stream);
         galois_keys.load(context, galois_key_stream);
         relin_keys.load(context, relin_key_stream);
-        if (VLOG_IS_ON(LOG_VERBOSE)) {
-            print_elapsed_time(start);
-        }
+        print_elapsed_time(start, "Reading keys...");
         seal_decryptor = new Decryptor(context, sk);
     }
 
@@ -244,10 +222,10 @@ namespace hit {
         if (coeffs.size() != num_slots_) {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
-            throw invalid_argument(
-                "You can only encrypt vectors which have exactly as many coefficients as the number of plaintext "
-                "slots: Expected " +
-                to_string(num_slots_) + ", got " + to_string(coeffs.size()));
+            LOG_AND_THROW_STREAM("You can only encrypt vectors which have exactly as many "
+                       << " coefficients as the number of plaintext slots: Expected "
+                       << num_slots_ << " coefficients, but " << coeffs.size()
+                       << " were provided");
         }
 
         if (level == -1) {
@@ -276,17 +254,15 @@ namespace hit {
         return destination;
     }
 
-    vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted) const {
+    vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const {
         if (seal_decryptor == nullptr) {
-            throw invalid_argument("Decryption is only possible from a deserialized instance when the secret key is provided.");
+            LOG_AND_THROW_STREAM("Decryption is only possible from a deserialized instance when the secret key is provided.");
         }
 
         Plaintext temp;
 
-        int lvl = encrypted.he_level();
-        if (lvl != 0) {
-            LOG(WARNING) << "Decrypting a ciphertext at level " << lvl << "; consider starting with a smaller modulus"
-                         << " to improve performance.";
+        if (!suppress_warnings) {
+            decryption_warning(encrypted.he_level());
         }
 
         seal_decryptor->decrypt(encrypted.seal_ct, temp);

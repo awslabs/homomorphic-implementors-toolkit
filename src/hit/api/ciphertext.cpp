@@ -97,7 +97,7 @@ namespace hit {
 
     vector<double> CKKSCiphertext::plaintext() const {
         if (raw_pt.empty()) {
-            throw invalid_argument("Ciphertext does not contain a plaintext.");
+            LOG_AND_THROW_STREAM("Ciphertext does not contain a plaintext.");
         }
         return raw_pt;
     }

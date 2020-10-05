@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <execution>
+#include <glog/logging.h>
 
 #include "common.h"
 
@@ -89,7 +90,8 @@ namespace hit {
             // add this additional context.
             Vector raw_plaintext = cts[i].plaintext();
             if (raw_plaintext.size() != unit.encoding_height() * unit.encoding_width()) {
-                throw invalid_argument("Plaintext has the wrong number of coefficients.");
+                LOG_AND_THROW_STREAM("Internal error: plaintext has " << raw_plaintext.size()
+                           << " coefficients, expected " << unit.encoding_height() * unit.encoding_width());
             }
             Matrix formatted_plaintext = Matrix(unit.encoding_height(), unit.encoding_width(), raw_plaintext.data());
             plaintext_pieces[i] = formatted_plaintext;
@@ -131,7 +133,10 @@ namespace hit {
 
     void EncryptedRowVector::validate_init() const {
         if (!initialized()) {
-            throw invalid_argument("Invalid cts to EncryptedRowVector.");
+            LOG_AND_THROW_STREAM("Invalid ciphertexts in EncryptedRowVector: "
+                       << "Expected " << ceil(width_ / static_cast<double>(unit.encoding_height()))
+                       << " ciphertexts, found " << cts.size() << ". "
+                       << "Each ciphertext must have the same scale and level.");
         }
     }
 
@@ -204,7 +209,7 @@ namespace hit {
 
     Vector decode_row_vector(const vector<Matrix> &mats, int trim_length) {
         if (mats.empty()) {
-            throw invalid_argument("decode_row_vector: input cannot be empty");
+            LOG_AND_THROW_STREAM("Internal error: input to decode_row_vector cannot be empty");
         }
 
         if (trim_length < 0) {

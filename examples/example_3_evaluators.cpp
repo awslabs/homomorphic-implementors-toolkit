@@ -69,7 +69,7 @@ void example_3_driver() {
 
 	// Now we can evaluate our homomorphic circuit on this input, ignoring the output
 	// While evaluating this circuit, the DepthFinder instance emits logs indicating the level
-	// of the output of each gate, which can be seen <TODO>
+	// of the output of each gate, which can be seen when the logging level is 1 or 2.
 	poly_eval_homomorphic_v1(df_inst, df_ciphertext);
 
 	// Finally, we can ask the evaluator for the circuit's depth.
@@ -98,7 +98,7 @@ void example_3_driver() {
 	// Now we can evaluate our homomorphic circuit on this input, ignoring the output
 	// While evaluating this circuit, the ScaleEstimator instance emits logs for the maximum
 	// plaintext value, number of ciphertext modulus bits, and estimated max log scale at
-	// the output of each gate. This logging can be enabled by setting <TODO>
+	// the output of each gate. This logging is enabled when the logging level is 1 or 2.
 	poly_eval_homomorphic_v1(se_inst, se_ciphertext);
 
 	// After evaluating the circuit on the representative input, we can ask the
@@ -155,10 +155,9 @@ void example_3_driver() {
 	// Now we can evaluate our homomorphic circuit on this input, ignoring the output
 	poly_eval_homomorphic_v1(dbg_inst, dbg_ciphertext);
 
-/* When you set <TODO>, the DebugEval instance logs the first few coefficients of the
+/* When you set the logging level to 1 or 2, the DebugEval instance logs the first few coefficients of the
  * decrypted homomorphic computation at each gate. When the evaluator detects a divergence
  * between the plaintext and homomorphic computations, it prints out additional information.
- * <TODO> be more precise here.
  */
 
 /* ******** OpCount Evaluator ********
@@ -176,6 +175,6 @@ void example_3_driver() {
 	poly_eval_homomorphic_v1(oc_inst, oc_ciphertext);
 
 	// We can now ask the OpCount evaluator to print (to the log) a tally of each type of gate.
-	// This log output is visible when <TODO>
+	// This log output is visible when the log leve is set to 1 or 2.
 	oc_inst.print_op_count();
 }
