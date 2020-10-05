@@ -24,6 +24,8 @@
 // less than this many bits
 #define PLAINTEXT_LOG_MAX 59
 
+#define LOG_AND_THROW(s) {LOG(ERROR) << s.str(); throw invalid_argument(s.str());}
+
 namespace hit {
     using Matrix = boost::numeric::ublas::matrix<double, boost::numeric::ublas::row_major, std::vector<double>>;
     using Vector = boost::numeric::ublas::vector<double, std::vector<double>>;

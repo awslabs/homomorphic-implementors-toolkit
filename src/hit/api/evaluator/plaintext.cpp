@@ -16,8 +16,9 @@ namespace hit {
 
     PlaintextEval::PlaintextEval(int num_slots) : num_slots_(num_slots) {
         if (!is_pow2(num_slots)) {
-            LOG(ERROR) << "Number of plaintext slots must be a power of two; got " << num_slots;
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Number of plaintext slots must be a power of two; got " << num_slots;
+            LOG_AND_THROW(err_stream);
         }
     }
 
@@ -25,11 +26,12 @@ namespace hit {
         if (coeffs.size() != num_slots_) {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
-            LOG(ERROR) << "You can only encrypt vectors which have exactly as many "
+            stringstream err_stream;
+            err_stream << "You can only encrypt vectors which have exactly as many "
                        << " coefficients as the number of plaintext slots: Expected "
                        << num_slots_ << " coefficients, but " << coeffs.size()
                        << " were provided";
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
 
         {

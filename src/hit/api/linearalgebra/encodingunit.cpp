@@ -65,9 +65,10 @@ namespace hit {
 
     void EncodingUnit::validate_init() const {
         if (!initialized()) {
-            LOG(ERROR) << "Encoding unit dimensions must be a positive powers of two, got "
+            stringstream err_stream;
+            err_stream << "Encoding unit dimensions must be a positive powers of two, got "
                        << encoding_height_ << "x" << encoding_width_;
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
     }
 

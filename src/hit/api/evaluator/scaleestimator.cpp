@@ -24,9 +24,10 @@ namespace hit {
         plaintext_eval = new PlaintextEval(num_slots);
 
         if (!is_pow2(num_slots) || num_slots < 4096) {
-            LOG(ERROR) << "Invalid parameters when creating HomomorphicEval instance: "
+            stringstream err_stream;
+            err_stream << "Invalid parameters when creating HomomorphicEval instance: "
                        << "num_slots must be a power of 2, and at least 4096. Got " << num_slots;
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
 
         int num_primes = multiplicative_depth + 2;
@@ -39,10 +40,11 @@ namespace hit {
         int min_poly_degree = modulus_to_poly_degree(modBits);
         int poly_modulus_degree = num_slots * 2;
         if (poly_modulus_degree < min_poly_degree) {
-            LOG(ERROR) << "Invalid parameters when creating ScaleEstimator instance: "
+            stringstream err_stream;
+            err_stream << "Invalid parameters when creating ScaleEstimator instance: "
                        << "Parameters for depth " << multiplicative_depth << " circuits and scale "
                        << log_scale_ << " bits require more than " << num_slots << " plaintext slots.";
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
 
         EncryptionParameters params = EncryptionParameters(scheme_type::CKKS);
@@ -84,11 +86,12 @@ namespace hit {
         if (coeffs.size() != num_slots_) {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
-            LOG(ERROR) << "You can only encrypt vectors which have exactly as many "
+            stringstream err_stream;
+            err_stream << "You can only encrypt vectors which have exactly as many "
                        << " coefficients as the number of plaintext slots: Expected "
                        << num_slots_ << " coefficients, but " << coeffs.size()
                        << " were provided";
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
 
         if (level == -1) {
@@ -150,10 +153,11 @@ namespace hit {
         // update the estimated_max_log_scale_
         auto scale_exp = static_cast<int>(round(log2(ct.scale()) / log2(pow(2,log_scale_))));
         if (scale_exp != 1 && scale_exp != 2) {
-            LOG(ERROR) << "Internal error: scale_exp is not 1 or 2: got " << scale_exp << ". "
+            stringstream err_stream;
+            err_stream << "Internal error: scale_exp is not 1 or 2: got " << scale_exp << ". "
                        << "HIT ciphertext scale is " << log2(ct.scale())
                        << " bits, and nominal scale is " << log_scale_ << " bits";
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
         if (scale_exp > ct.he_level()) {
             auto estimated_scale = (PLAINTEXT_LOG_MAX - log2(l_inf_norm(ct.raw_pt))) / (scale_exp - ct.he_level());
@@ -162,10 +166,11 @@ namespace hit {
                 estimated_max_log_scale_ = min(estimated_max_log_scale_, estimated_scale);
             }
         } else if (scale_exp == ct.he_level() && log2(l_inf_norm(ct.raw_pt)) > PLAINTEXT_LOG_MAX) {
-            LOG(ERROR) << "The maximum value in the plaintext is " << log2(l_inf_norm(ct.raw_pt))
+            stringstream err_stream;
+            err_stream << "The maximum value in the plaintext is " << log2(l_inf_norm(ct.raw_pt))
                        << " bits which exceeds SEAL's capacity of " << PLAINTEXT_LOG_MAX
                        << " bits. Overflow is imminent.";
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
     }
 
@@ -240,8 +245,9 @@ namespace hit {
 
     void ScaleEstimator::reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level) {
         if (level < 0) {
-            LOG(ERROR) << "Target level for level reduction must be non-negative, got " << level;
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Target level for level reduction must be non-negative, got " << level;
+            LOG_AND_THROW(err_stream);
         }
 
         plaintext_eval->reduce_level_to_inplace_internal(ct, level);

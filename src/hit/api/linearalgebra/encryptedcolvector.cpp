@@ -96,9 +96,10 @@ namespace hit {
             // add this additional context.
             Vector raw_plaintext = cts[i].plaintext();
             if (raw_plaintext.size() != unit.encoding_height() * unit.encoding_width()) {
-                LOG(ERROR) << "Internal error: plaintext has " << raw_plaintext.size()
+                stringstream err_stream;
+                err_stream << "Internal error: plaintext has " << raw_plaintext.size()
                            << " coefficients, expected " << unit.encoding_height() * unit.encoding_width();
-                throw invalid_argument("An error occurred. See the log for details.");
+                LOG_AND_THROW(err_stream);
             }
             Matrix formatted_plaintext = Matrix(unit.encoding_height(), unit.encoding_width(), raw_plaintext.data());
             plaintext_pieces[i] = formatted_plaintext;
@@ -131,11 +132,12 @@ namespace hit {
 
     void EncryptedColVector::validate_init() const {
         if (!initialized()) {
-            LOG(ERROR) << "Invalid ciphertexts in EncryptedColVector: "
+            stringstream err_stream;
+            err_stream << "Invalid ciphertexts in EncryptedColVector: "
                        << "Expected " << ceil(height_ / static_cast<double>(unit.encoding_width()))
                        << " ciphertexts, found " << cts.size() << ". "
                        << "Each ciphertext must have the same scale and level.";
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
     }
 
@@ -208,8 +210,9 @@ namespace hit {
 
     Vector decode_col_vector(const vector<Matrix> &mats, int trim_length) {
         if (mats.empty()) {
-            LOG(ERROR) << "Internal error: input to decode_col_vector cannot be empty";
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Internal error: input to decode_col_vector cannot be empty";
+            LOG_AND_THROW(err_stream);
         }
 
         if (trim_length < 0) {

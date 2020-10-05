@@ -19,8 +19,9 @@ using namespace seal;
 namespace hit {
 
     vector<double> CKKSEvaluator::decrypt(const CKKSCiphertext&, bool) const {
-        LOG(ERROR) << "Decrypt can only be called with Homomorphic or Debug evaluators";
-        throw invalid_argument("An error occurred. See the log for details.");
+        stringstream err_stream;
+        err_stream << "Decrypt can only be called with Homomorphic or Debug evaluators";
+        LOG_AND_THROW(err_stream);
     }
 
     CKKSCiphertext CKKSEvaluator::rotate_right(const CKKSCiphertext &ct, int steps) {
@@ -31,12 +32,14 @@ namespace hit {
 
     void CKKSEvaluator::rotate_right_inplace(CKKSCiphertext &ct, int steps) {
         if (steps < 0) {
-            LOG(ERROR) << "rotate_right must have a positive number of steps, got " << steps;
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "rotate_right must have a positive number of steps, got " << steps;
+            LOG_AND_THROW(err_stream);
         }
         if(ct.needs_relin()) {
-            LOG(ERROR) << "Input to rotate_right must be a linear ciphertext";
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Input to rotate_right must be a linear ciphertext";
+            LOG_AND_THROW(err_stream);
         }
         VLOG(VLOG_EVAL) << "Rotate " << abs(steps) << " steps right.";
         rotate_right_inplace_internal(ct, steps);
@@ -51,12 +54,14 @@ namespace hit {
 
     void CKKSEvaluator::rotate_left_inplace(CKKSCiphertext &ct, int steps) {
         if (steps < 0) {
-            LOG(ERROR) << "rotate_left must have a positive number of steps, got " << steps;
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "rotate_left must have a positive number of steps, got " << steps;
+            LOG_AND_THROW(err_stream);
         }
         if(ct.needs_relin()) {
-            LOG(ERROR) << "Input to rotate_left must be a linear ciphertext";
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Input to rotate_left must be a linear ciphertext";
+            LOG_AND_THROW(err_stream);
         }
         VLOG(VLOG_EVAL) << "Rotate " << abs(steps) << " steps left.";
         rotate_left_inplace_internal(ct, steps);
@@ -84,14 +89,16 @@ namespace hit {
     void CKKSEvaluator::add_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         VLOG(VLOG_EVAL) << "Add ciphertexts";
         if(ct1.scale() != ct2.scale()) {
-            LOG(ERROR) << "Inputs to add must have the same scale: "
+            stringstream err_stream;
+            err_stream << "Inputs to add must have the same scale: "
                        << log2(ct1.scale()) << " bits != " << log2(ct2.scale()) << " bits";
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
         if(ct1.he_level() != ct2.he_level()) {
-            LOG(ERROR) << "Inputs to add must be at the same level: "
+            stringstream err_stream;
+            err_stream << "Inputs to add must be at the same level: "
                        << ct1.he_level() << " != " << ct2.he_level();
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
         add_inplace_internal(ct1, ct2);
         print_stats(ct1);
@@ -118,10 +125,11 @@ namespace hit {
     void CKKSEvaluator::add_plain_inplace(CKKSCiphertext &ct, const vector<double> &plain) {
         VLOG(VLOG_EVAL) << "Add plaintext to ciphertext";
         if(plain.size() != ct.num_slots()) {
-            LOG(ERROR) << "Public argument to add_plain must have exactly as many "
+            stringstream err_stream;
+            err_stream << "Public argument to add_plain must have exactly as many "
                        << " coefficients as the ciphertext has plaintext slots: "
                        << "Expected " << ct.num_slots() << " coeffs, got " << plain.size();
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
         add_plain_inplace_internal(ct, plain);
         print_stats(ct);
@@ -129,22 +137,25 @@ namespace hit {
 
     CKKSCiphertext CKKSEvaluator::add_many(const vector<CKKSCiphertext> &cts) {
         if (cts.empty()) {
-            LOG(ERROR) << "add_many: vector may not be empty.";
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "add_many: vector may not be empty.";
+            LOG_AND_THROW(err_stream);
         }
         VLOG(VLOG_EVAL) << "Add ciphertext vector of size " << cts.size();
 
         CKKSCiphertext dest = cts[0];
         for (int i = 1; i < cts.size(); i++) {
             if(cts[i].scale() != dest.scale()) {
-                LOG(ERROR) << "Inputs to add_many must have the same scale: "
+                stringstream err_stream;
+            err_stream << "Inputs to add_many must have the same scale: "
                            << log2(cts[i].scale()) << " bits != " << log2(dest.scale()) << " bits";
-                throw invalid_argument("An error occurred. See the log for details.");
+                LOG_AND_THROW(err_stream);
             }
             if(cts[i].he_level() != dest.he_level()) {
-                LOG(ERROR) << "Inputs to add_many must be at the same level: "
+                stringstream err_stream;
+            err_stream << "Inputs to add_many must be at the same level: "
                        << cts[i].he_level() << " != " << dest.he_level();
-                throw invalid_argument("An error occurred. See the log for details.");
+                LOG_AND_THROW(err_stream);
             }
             add_inplace_internal(dest, cts[i]);
         }
@@ -161,14 +172,16 @@ namespace hit {
     void CKKSEvaluator::sub_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         VLOG(VLOG_EVAL) << "Subtract ciphertexts";
         if(ct1.scale() != ct2.scale()) {
-            LOG(ERROR) << "Inputs to sub must have the same scale: "
+            stringstream err_stream;
+            err_stream << "Inputs to sub must have the same scale: "
                        << log2(ct1.scale()) << " bits != " << log2(ct2.scale()) << " bits";
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
         if(ct1.he_level() != ct2.he_level()) {
-            LOG(ERROR) << "Inputs to sub must be at the same level: "
+            stringstream err_stream;
+            err_stream << "Inputs to sub must be at the same level: "
                        << ct1.he_level() << " != " << ct2.he_level();
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
         sub_inplace_internal(ct1, ct2);
         print_stats(ct1);
@@ -195,10 +208,11 @@ namespace hit {
     void CKKSEvaluator::sub_plain_inplace(CKKSCiphertext &ct, const vector<double> &plain) {
         VLOG(VLOG_EVAL) << "Subtract plaintext from ciphertext";
         if(plain.size() != ct.num_slots()) {
-            LOG(ERROR) << "Public argument to sub_plain must have exactly as many "
+            stringstream err_stream;
+            err_stream << "Public argument to sub_plain must have exactly as many "
                        << " coefficients as the ciphertext has plaintext slots: "
                        << "Expected " << ct.num_slots() << " coeffs, got " << plain.size();
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
         sub_plain_inplace_internal(ct, plain);
         print_stats(ct);
@@ -213,22 +227,26 @@ namespace hit {
     void CKKSEvaluator::multiply_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         VLOG(VLOG_EVAL) << "Multiply ciphertexts";
         if(ct1.needs_relin() || ct2.needs_relin()) {
-            LOG(ERROR) << "Inputs to multiply must be linear ciphertexts";
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Inputs to multiply must be linear ciphertexts";
+            LOG_AND_THROW(err_stream);
         }
         if(ct1.he_level() != ct2.he_level()) {
-            LOG(ERROR) << "Inputs to multiply must be at the same level: "
+            stringstream err_stream;
+            err_stream << "Inputs to multiply must be at the same level: "
                        << ct1.he_level() << " != " << ct2.he_level();
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
         if(ct1.needs_rescale() || ct2.needs_rescale()) {
-            LOG(ERROR) << "Inputs to multiply must have nominal scale";
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Inputs to multiply must have nominal scale";
+            LOG_AND_THROW(err_stream);
         }
         if (ct1.scale() != ct2.scale()) {
-            LOG(ERROR) << "Inputs to multiply must have the same scale: "
+            stringstream err_stream;
+            err_stream << "Inputs to multiply must have the same scale: "
                        << log2(ct1.scale()) << " bits != " << log2(ct2.scale()) << " bits";
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
         multiply_inplace_internal(ct1, ct2);
         ct1.needs_rescale_ = true;
@@ -246,8 +264,9 @@ namespace hit {
     void CKKSEvaluator::multiply_plain_inplace(CKKSCiphertext &ct, double scalar) {
         VLOG(VLOG_EVAL) << "Multiply ciphertext by scalar " << scalar;
         if(ct.needs_rescale()) {
-            LOG(ERROR) << "Encrypted input to multiply_plain must have nominal scale";
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Encrypted input to multiply_plain must have nominal scale";
+            LOG_AND_THROW(err_stream);
         }
         multiply_plain_inplace_internal(ct, scalar);
         ct.needs_rescale_ = true;
@@ -264,14 +283,16 @@ namespace hit {
     void CKKSEvaluator::multiply_plain_inplace(CKKSCiphertext &ct, const vector<double> &plain) {
         VLOG(VLOG_EVAL) << "Multiply by plaintext";
         if (ct.num_slots() != plain.size()) {
-            LOG(ERROR) << "Public argument to multiply_plain must have exactly as many "
+            stringstream err_stream;
+            err_stream << "Public argument to multiply_plain must have exactly as many "
                        << " coefficients as the ciphertext has plaintext slots: "
                        << "Expected " << ct.num_slots() << " coeffs, got " << plain.size();
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
         if(ct.needs_rescale()) {
-            LOG(ERROR) << "Encrypted input to multiply_plain must have nominal scale";
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Encrypted input to multiply_plain must have nominal scale";
+            LOG_AND_THROW(err_stream);
         }
         multiply_plain_inplace_internal(ct, plain);
         ct.needs_rescale_ = true;
@@ -288,12 +309,14 @@ namespace hit {
     void CKKSEvaluator::square_inplace(CKKSCiphertext &ct) {
         VLOG(VLOG_EVAL) << "Square ciphertext";
         if(ct.needs_relin()) {
-            LOG(ERROR) << "Input to square must be a linear ciphertext";
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Input to square must be a linear ciphertext";
+            LOG_AND_THROW(err_stream);
         }
         if(ct.needs_rescale()) {
-            LOG(ERROR) << "Input to square must have nominal scale";
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Input to square must have nominal scale";
+            LOG_AND_THROW(err_stream);
         }
         square_inplace_internal(ct);
         ct.needs_rescale_ = true;
@@ -327,17 +350,20 @@ namespace hit {
     void CKKSEvaluator::reduce_level_to_inplace(CKKSCiphertext &ct, int level) {
         VLOG(VLOG_EVAL) << "Decreasing HE level to " << level;
         if(ct.he_level() < level) {
-            LOG(ERROR) << "Input to reduce_level_to is already below the target level: "
+            stringstream err_stream;
+            err_stream << "Input to reduce_level_to is already below the target level: "
                        << ct.he_level() << "<" << level;
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
         if(ct.needs_relin()) {
-            LOG(ERROR) << "Input to reduce_level_to must be a linear ciphertext";
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Input to reduce_level_to must be a linear ciphertext";
+            LOG_AND_THROW(err_stream);
         }
         if(ct.needs_rescale()) {
-            LOG(ERROR) << "Input to reduce_level_to must have nominal scale";
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Input to reduce_level_to must have nominal scale";
+            LOG_AND_THROW(err_stream);
         }
         reduce_level_to_inplace_internal(ct, level);
         // updates he_level and scale
@@ -354,8 +380,9 @@ namespace hit {
     void CKKSEvaluator::rescale_to_next_inplace(CKKSCiphertext &ct) {
         VLOG(VLOG_EVAL) << "Rescaling ciphertext";
         if(!ct.needs_rescale()) {
-            LOG(ERROR) << "Input to rescale_to_next_inplace must have squared scale";
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Input to rescale_to_next_inplace must have squared scale";
+            LOG_AND_THROW(err_stream);
         }
         rescale_to_next_inplace_internal(ct);
         rescale_metata_to_next(ct);
@@ -365,8 +392,9 @@ namespace hit {
     void CKKSEvaluator::relinearize_inplace(CKKSCiphertext &ct) {
         VLOG(VLOG_EVAL) << "Relinearizing ciphertext";
         if(!ct.needs_relin()) {
-            LOG(ERROR) << "Input to relinearize_inplace must be a linear ciphertext";
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Input to relinearize_inplace must be a linear ciphertext";
+            LOG_AND_THROW(err_stream);
         }
         relinearize_inplace_internal(ct);
         ct.needs_relin_ = false;

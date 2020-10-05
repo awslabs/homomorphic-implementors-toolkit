@@ -144,23 +144,27 @@ namespace hit {
         template <typename T>
         void add_inplace(T &arg1, const T &arg2) {
             if (!arg1.initialized() || !arg2.initialized()) {
-                LOG(ERROR) << "Inputs to add_inplace are not initialized";
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                stringstream err_stream;
+                err_stream << "Inputs to add_inplace are not initialized";
+                LOG_AND_THROW(err_stream);
             }
             if (!arg1.same_size(arg2)) {
-                LOG(ERROR) << "Inputs to add_inplace do not have the same dimensions: "
+                stringstream err_stream;
+                err_stream << "Inputs to add_inplace do not have the same dimensions: "
                            << dim_string(arg1) << " vs " << dim_string(arg2);
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                LOG_AND_THROW(err_stream);
             }
             if (arg1.he_level() != arg2.he_level()) {
-                LOG(ERROR) << "Inputs to add_inplace do not have the same level: "
+                stringstream err_stream;
+                err_stream << "Inputs to add_inplace do not have the same level: "
                            << arg1.he_level() << "!=" << arg2.he_level();
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                LOG_AND_THROW(err_stream);
             }
             if (arg1.scale() != arg2.scale()) {
-                LOG(ERROR) << "Inputs to add_inplace do not have the same scale: "
+                stringstream err_stream;
+                err_stream << "Inputs to add_inplace do not have the same scale: "
                            << log2(arg1.scale()) << "bits !=" << log2(arg2.scale()) << " bits";
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                LOG_AND_THROW(err_stream);
             }
             for (size_t i = 0; i < arg1.num_cts(); i++) {
                 eval.add_inplace(arg1[i], arg2[i]);
@@ -244,8 +248,9 @@ namespace hit {
         template <typename T>
         T add_many(const std::vector<T> &args) {
             if (args.empty()) {
-                LOG(ERROR) << "Vector of summands to add_many cannot be empty.";
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                stringstream err_stream;
+                err_stream << "Vector of summands to add_many cannot be empty.";
+                LOG_AND_THROW(err_stream);
             }
             // no further validation needed since we call a LinearAlgebra function
             T temp = args[0];
@@ -299,12 +304,14 @@ namespace hit {
         template <typename T>
         void multiply_plain_inplace(T &arg, double scalar) {
             if (!arg.initialized()) {
-                LOG(ERROR) << "Encrypted input to multiply_plain is not initialized.";
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                stringstream err_stream;
+                err_stream << "Encrypted input to multiply_plain is not initialized.";
+                LOG_AND_THROW(err_stream);
             }
             if(arg.needs_rescale()) {
-                LOG(ERROR) << "Encrypted input to multiply_plain must have nominal scale.";
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                stringstream err_stream;
+                err_stream << "Encrypted input to multiply_plain must have nominal scale.";
+                LOG_AND_THROW(err_stream);
             }
             for (size_t i = 0; i < arg.num_cts(); i++) {
                 eval.multiply_plain_inplace(arg[i], scalar);
@@ -381,8 +388,9 @@ namespace hit {
         template <typename T>
         void add_plain_inplace(T &arg, double scalar) {
             if (!arg.initialized()) {
-                LOG(ERROR) << "Encrypted input to add_plain is not initialized.";
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                stringstream err_stream;
+                err_stream << "Encrypted input to add_plain is not initialized.";
+                LOG_AND_THROW(err_stream);
             }
             for (size_t i = 0; i < arg.num_cts(); i++) {
                 eval.add_plain_inplace(arg[i], scalar);
@@ -451,41 +459,48 @@ namespace hit {
         template <typename T>
         void hadamard_multiply_inplace(T &arg1, const T &arg2) {
             if (!arg2.initialized() || !arg1.initialized()) {
-                LOG(ERROR) << "Inputs to hadamard_multiply are not initialized.";
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                stringstream err_stream;
+                err_stream << "Inputs to hadamard_multiply are not initialized.";
+                LOG_AND_THROW(err_stream);
             }
             if (arg1.encoding_unit() != arg2.encoding_unit()) {
-                LOG(ERROR) << "Inputs to hadamard_multiply must have the same units: "
+                stringstream err_stream;
+                err_stream << "Inputs to hadamard_multiply must have the same units: "
                            << dim_string(arg1.encoding_unit()) << "!="
                            << dim_string(arg2.encoding_unit());
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                LOG_AND_THROW(err_stream);
             }
             if (!arg1.same_size(arg2)) {
-                LOG(ERROR) << "Dimension mismatch in hadamard_multiply: " + dim_string(arg1)
+                stringstream err_stream;
+                err_stream << "Dimension mismatch in hadamard_multiply: " + dim_string(arg1)
                            << " vs " + dim_string(arg2);
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                LOG_AND_THROW(err_stream);
             }
             if (arg1.he_level() != arg2.he_level()) {
-                LOG(ERROR) << "Inputs to hadamard_multiply must have the same level: "
+                stringstream err_stream;
+                err_stream << "Inputs to hadamard_multiply must have the same level: "
                            << arg1.he_level() << "!=" << arg2.he_level();
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                LOG_AND_THROW(err_stream);
             }
             if (arg1.scale() != arg2.scale()) {
-                LOG(ERROR) << "Inputs to hadamard_multiply must have the same scale: "
+                stringstream err_stream;
+                err_stream << "Inputs to hadamard_multiply must have the same scale: "
                            << log2(arg1.scale()) << "bits != " << log2(arg2.scale()) << " bits";
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                LOG_AND_THROW(err_stream);
             }
             if (arg1.needs_rescale() || arg2.needs_rescale()) {
-                LOG(ERROR) << "Inputs to hadamard_multiply must have nominal scale: "
+                stringstream err_stream;
+                err_stream << "Inputs to hadamard_multiply must have nominal scale: "
                            << "Vector: " << arg1.needs_rescale()
                            << ", Matrix: " << arg2.needs_rescale();
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                LOG_AND_THROW(err_stream);
             }
             if (arg1.needs_relin() || arg2.needs_relin()) {
-                LOG(ERROR) << "Inputs to hadamard_multiply must be linear ciphertexts: "
+                stringstream err_stream;
+                err_stream << "Inputs to hadamard_multiply must be linear ciphertexts: "
                            << "Vector: " << arg1.needs_relin()
                            << ", Matrix: " << arg2.needs_relin();
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                LOG_AND_THROW(err_stream);
             }
 
             for (size_t i = 0; i < arg1.num_cts(); i++) {
@@ -533,16 +548,19 @@ namespace hit {
         template <typename T>
         void hadamard_square_inplace(T &arg) {
             if (!arg.initialized()) {
-                LOG(ERROR) << "Input to hadamard_square is not initialized";
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                stringstream err_stream;
+                err_stream << "Input to hadamard_square is not initialized";
+                LOG_AND_THROW(err_stream);
             }
             if(arg.needs_relin()) {
-                LOG(ERROR) << "Input to hadamard_square must be a linear ciphertext";
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                stringstream err_stream;
+                err_stream << "Input to hadamard_square must be a linear ciphertext";
+                LOG_AND_THROW(err_stream);
             }
             if(arg.needs_rescale()) {
-                LOG(ERROR) << "Input to hadamard_square must have nominal scale";
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                stringstream err_stream;
+                err_stream << "Input to hadamard_square must have nominal scale";
+                LOG_AND_THROW(err_stream);
             }
 
             for (size_t i = 0; i < arg.num_cts(); i++) {
@@ -711,8 +729,9 @@ namespace hit {
         template <typename T1, typename T2>
         void reduce_level_to_min_inplace(T1 &arg1, T2 &arg2) {
             if (!arg1.initialized() || !arg2.initialized()) {
-                LOG(ERROR) << "Inputs to reduce_level_to_min_inplace are not initialized";
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                stringstream err_stream;
+                err_stream << "Inputs to reduce_level_to_min_inplace are not initialized";
+                LOG_AND_THROW(err_stream);
             }
 
             for (size_t i = 0; i < arg1.num_cts(); i++) {
@@ -744,8 +763,9 @@ namespace hit {
         template <typename T>
         void reduce_level_to_inplace(T &arg, int level) {
             if (!arg.initialized()) {
-                LOG(ERROR) << "Input to reduce_level_to is not initialized";
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                stringstream err_stream;
+                err_stream << "Input to reduce_level_to is not initialized";
+                LOG_AND_THROW(err_stream);
             }
 
             for (size_t i = 0; i < arg.num_cts(); i++) {
@@ -777,8 +797,9 @@ namespace hit {
         template <typename T>
         void rescale_to_next_inplace(T &arg) {
             if (!arg.initialized()) {
-                LOG(ERROR) << "Inputs to rescale_to_next is not initialized";
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                stringstream err_stream;
+                err_stream << "Inputs to rescale_to_next is not initialized";
+                LOG_AND_THROW(err_stream);
             }
 
             for (size_t i = 0; i < arg.num_cts(); i++) {
@@ -807,8 +828,9 @@ namespace hit {
         template <typename T>
         void relinearize_inplace(T &arg) {
             if (!arg.initialized()) {
-                LOG(ERROR) << "Inputs to relinearize is not initialized";
-                throw std::invalid_argument("An error occurred. See the log for details.");
+                stringstream err_stream;
+                err_stream << "Inputs to relinearize is not initialized";
+                LOG_AND_THROW(err_stream);
             }
 
             for (size_t i = 0; i < arg.num_cts(); i++) {

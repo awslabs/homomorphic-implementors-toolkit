@@ -117,9 +117,10 @@ namespace hit {
                 // add this additional context.
                 Vector raw_plaintext = cts[i][j].plaintext();
                 if (raw_plaintext.size() != unit.encoding_height() * unit.encoding_width()) {
-                    LOG(ERROR) << "Internal error: plaintext has " << raw_plaintext.size()
+                    stringstream err_stream;
+                    err_stream << "Internal error: plaintext has " << raw_plaintext.size()
                                << " coefficients, expected " << unit.encoding_height() * unit.encoding_width();
-                    throw invalid_argument("An error occurred. See the log for details.");
+                    LOG_AND_THROW(err_stream);
                 }
 
                 Matrix formatted_plaintext =
@@ -167,12 +168,13 @@ namespace hit {
 
     void EncryptedMatrix::validate_init() const {
         if (!initialized()) {
-            LOG(ERROR) << "Invalid ciphertexts in EncryptedMatrix: "
+            stringstream err_stream;
+            err_stream << "Invalid ciphertexts in EncryptedMatrix: "
                        << "Expected a " << ceil(height_ / static_cast<double>(unit.encoding_height()))
                        << "x" << ceil(width_ / static_cast<double>(unit.encoding_width()))
                        << " grid, found a " << cts.size() << "x" << cts[0].size() << " grid. "
                        << "Each ciphertext must have the same scale and level.";
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
     }
 
@@ -252,8 +254,9 @@ namespace hit {
 
     Matrix decode_matrix(const vector<vector<Matrix>> &mats, int trim_height, int trim_width) {
         if (mats.empty() || mats[0].empty()) {
-            LOG(ERROR) << "Internal error: input to decode_col_vector cannot be empty";
-            throw invalid_argument("An error occurred. See the log for details.");
+            stringstream err_stream;
+            err_stream << "Internal error: input to decode_col_vector cannot be empty";
+            LOG_AND_THROW(err_stream);
         }
 
         int height = mats[0][0].size1();
@@ -270,18 +273,20 @@ namespace hit {
         linear_matrix.reserve(trim_height * trim_width);
         for (int i = 0; i < mats.size(); i++) {
             if (mats[i].size() != mats[0].size()) {
-                LOG(ERROR) << "Internal error: all rows in decode_matrix must have the same length; "
+                stringstream err_stream;
+                err_stream << "Internal error: all rows in decode_matrix must have the same length; "
                            << "but " << mats[i].size() << "!=" << mats[0].size();
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
             }
             // for each Matrix row
             for (int j = 0; j < height && i * height + j < trim_height; j++) {
                 for (int k = 0; k < mats[0].size(); k++) {
                     if (mats[i][k].size1() != height || mats[i][k].size2() != width) {
-                        LOG(ERROR) << "Internal error: all matrices in decode_matrix must have the same dimensions; "
+                        stringstream err_stream;
+                        err_stream << "Internal error: all matrices in decode_matrix must have the same dimensions; "
                                    << "expected " << height << "x" << width << ", but got "
                                    << mats[i][k].size1() << "x" << mats[i][k].size2();
-                        throw invalid_argument("An error occurred. See the log for details.");
+                        LOG_AND_THROW(err_stream);
                     }
                     for (int l = 0; l < width && k * width + l < trim_width; l++) {
                         linear_matrix.emplace_back(mats[i][k].data()[j * width + l]);

@@ -61,9 +61,10 @@ namespace hit {
     double relative_error(const vector<double> &expected, const vector<double> &actual) {
         int len = expected.size();
         if (len != actual.size()) {
-            LOG(ERROR) << "Inputs to relative error do not have the same size: "
+            stringstream err_stream;
+            err_stream << "Inputs to relative error do not have the same size: "
                        << len << " != " << actual.size();
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
 
         Vector expected_vec = Vector(expected);
@@ -151,9 +152,11 @@ namespace hit {
                 // SEAL will throw an exception when poly degree is 131072 or larger
                 // (which corresponds to the 262144th cyclotomic ring)
                 return 1761;
-            default:
-                LOG(ERROR) << "poly_modulus_degree " << poly_modulus_degree << " not supported";
-                throw invalid_argument("An error occurred. See the log for details.");
+            default: {
+                stringstream err_stream;
+                err_stream << "poly_modulus_degree " << poly_modulus_degree << " not supported";
+                LOG_AND_THROW(err_stream);
+            }
         }
     }
 
@@ -196,9 +199,10 @@ namespace hit {
         // else if(mod_bits <= 3524) { return 131072; }
         // else if(mod_bits <= 7050) { return 262144; }
         else {
-            LOG(ERROR) << "This computation is too big to handle right now: cannot determine a valid ring size for a "
+            stringstream err_stream;
+            err_stream << "This computation is too big to handle right now: cannot determine a valid ring size for a "
                        << mod_bits << "-bit modulus";
-            throw invalid_argument("An error occurred. See the log for details.");
+            LOG_AND_THROW(err_stream);
         }
     }
 
