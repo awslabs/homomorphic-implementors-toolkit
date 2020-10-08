@@ -12,7 +12,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/api)
 list(APPEND HIT_TEST_FILES "testutil.cpp")
 add_executable(hit-unit-tests ${HIT_TEST_FILES})
 
-target_link_libraries(hit-unit-tests PUBLIC aws-hit gtest gtest_main glog::glog)
+target_link_libraries(hit-unit-tests PUBLIC aws-hit gtest)
 set_common_flags(hit-unit-tests)
 
 add_custom_target(NAME hit-unit-tests COMMAND hit-unit-tests)
