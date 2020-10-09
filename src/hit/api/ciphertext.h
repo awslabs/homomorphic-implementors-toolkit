@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "hit/protobuf/ciphertext.pb.h"  // NOLINT
+#include "hit/protobuf/ciphertext.pb.h"
 #include "metadata.h"
 #include "seal/context.h"
 #include "seal/seal.h"
