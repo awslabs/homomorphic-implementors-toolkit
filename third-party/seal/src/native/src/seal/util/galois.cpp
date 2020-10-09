@@ -15,12 +15,12 @@ namespace seal
         // ensure symbol is created.
         constexpr uint32_t GaloisTool::generator_;
 
-        void GaloisTool::generate_table_ntt(uint32_t galois_elt, Pointer<uint32_t> &result)
+        void GaloisTool::generate_table_ntt(uint32_t galois_elt, Pointer<uint32_t> &result) const
         {
 #ifdef SEAL_DEBUG
             if (!(galois_elt & 1) || (galois_elt >= 2 * (uint64_t(1) << coeff_count_power_)))
             {
-                throw std::invalid_argument("Galois element is not valid");
+                throw invalid_argument("Galois element is not valid");
             }
 #endif
             ReaderLock reader_lock(permutation_tables_locker_.acquire_read());
@@ -30,9 +30,8 @@ namespace seal
             }
             reader_lock.unlock();
 
-            WriterLock writer_lock(permutation_tables_locker_.acquire_write());
-            result = allocate<uint32_t>(coeff_count_, pool_);
-            auto result_ptr = result.get();
+            auto temp(allocate<uint32_t>(coeff_count_, pool_));
+            auto temp_ptr = temp.get();
 
             uint32_t coeff_count_minus_one = safe_cast<uint32_t>(coeff_count_) - 1;
             for (size_t i = coeff_count_; i < coeff_count_ << 1; i++)
@@ -40,10 +39,15 @@ namespace seal
                 uint32_t reversed = reverse_bits<uint32_t>(safe_cast<uint32_t>(i), coeff_count_power_ + 1);
                 uint64_t index_raw = (static_cast<uint64_t>(galois_elt) * static_cast<uint64_t>(reversed)) >> 1;
                 index_raw &= static_cast<uint64_t>(coeff_count_minus_one);
-                *result_ptr++ = reverse_bits<uint32_t>(static_cast<uint32_t>(index_raw), coeff_count_power_);
+                *temp_ptr++ = reverse_bits<uint32_t>(static_cast<uint32_t>(index_raw), coeff_count_power_);
             }
-            writer_lock.unlock();
-            return;
+
+            WriterLock writer_lock(permutation_tables_locker_.acquire_write());
+            if (result)
+            {
+                return;
+            }
+            result.acquire(move(temp));
         }
 
         uint32_t GaloisTool::get_elt_from_step(int step) const
@@ -142,38 +146,38 @@ namespace seal
         }
 
         void GaloisTool::apply_galois(
-            const uint64_t *operand, uint32_t galois_elt, const Modulus &modulus, uint64_t *result) const
+            ConstCoeffIter operand, uint32_t galois_elt, const Modulus &modulus, CoeffIter result) const
         {
 #ifdef SEAL_DEBUG
-            if (operand == nullptr)
+            if (!operand)
             {
-                throw std::invalid_argument("operand");
+                throw invalid_argument("operand");
             }
-            if (result == nullptr)
+            if (!result)
             {
-                throw std::invalid_argument("result");
+                throw invalid_argument("result");
             }
             if (operand == result)
             {
-                throw std::invalid_argument("result cannot point to the same value as operand");
+                throw invalid_argument("result cannot point to the same value as operand");
             }
             // Verify coprime conditions.
             if (!(galois_elt & 1) || (galois_elt >= 2 * (uint64_t(1) << coeff_count_power_)))
             {
-                throw std::invalid_argument("Galois element is not valid");
+                throw invalid_argument("Galois element is not valid");
             }
             if (modulus.is_zero())
             {
-                throw std::invalid_argument("modulus");
+                throw invalid_argument("modulus");
             }
 #endif
             const uint64_t modulus_value = modulus.value();
-            uint64_t coeff_count_minus_one = (uint64_t(1) << coeff_count_power_) - 1;
-            for (uint64_t i = 0; i <= coeff_count_minus_one; i++)
+            const uint64_t coeff_count_minus_one = coeff_count_ - 1;
+            uint64_t index_raw = 0;
+            for (uint64_t i = 0; i <= coeff_count_minus_one; i++, ++operand, index_raw += galois_elt)
             {
-                uint64_t index_raw = i * galois_elt;
                 uint64_t index = index_raw & coeff_count_minus_one;
-                uint64_t result_value = *operand++;
+                uint64_t result_value = *operand;
                 if ((index_raw >> coeff_count_power_) & 1)
                 {
                     // Explicit inline
@@ -185,35 +189,32 @@ namespace seal
             }
         }
 
-        void GaloisTool::apply_galois_ntt(const uint64_t *operand, uint32_t galois_elt, uint64_t *result)
+        void GaloisTool::apply_galois_ntt(ConstCoeffIter operand, uint32_t galois_elt, CoeffIter result) const
         {
 #ifdef SEAL_DEBUG
-            if (operand == nullptr)
+            if (!operand)
             {
-                throw std::invalid_argument("operand");
+                throw invalid_argument("operand");
             }
-            if (result == nullptr)
+            if (!result)
             {
-                throw std::invalid_argument("result");
+                throw invalid_argument("result");
             }
             if (operand == result)
             {
-                throw std::invalid_argument("result cannot point to the same value as operand");
+                throw invalid_argument("result cannot point to the same value as operand");
             }
             // Verify coprime conditions.
             if (!(galois_elt & 1) || (galois_elt >= 2 * (uint64_t(1) << coeff_count_power_)))
             {
-                throw std::invalid_argument("Galois element is not valid");
+                throw invalid_argument("Galois element is not valid");
             }
 #endif
             generate_table_ntt(galois_elt, permutation_tables_[GetIndexFromElt(galois_elt)]);
+            auto table = iter(permutation_tables_[GetIndexFromElt(galois_elt)]);
 
-            auto &table = permutation_tables_[GetIndexFromElt(galois_elt)];
             // Perform permutation.
-            for (size_t i = 0; i < coeff_count_; i++)
-            {
-                result[i] = operand[table[i]];
-            }
+            SEAL_ITERATE(iter(table, result), coeff_count_, [&](auto I) { get<1>(I) = operand[get<0>(I)]; });
         }
     } // namespace util
 } // namespace seal

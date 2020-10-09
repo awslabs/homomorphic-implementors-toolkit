@@ -745,7 +745,7 @@ namespace seal
         }
 
         /**
-        Enables access to private members of seal::Plaintext for .NET wrapper.
+        Enables access to private members of seal::Plaintext for SEAL_C.
         */
         struct PlaintextPrivateHelper;
 
@@ -761,5 +761,8 @@ namespace seal
         double scale_ = 1.0;
 
         IntArray<pt_coeff_type> data_;
+
+        // SecretKey needs access to save_members/load_members
+        friend class SecretKey;
     };
 } // namespace seal

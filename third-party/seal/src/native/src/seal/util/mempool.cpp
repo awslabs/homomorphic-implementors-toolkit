@@ -22,11 +22,11 @@ namespace seal
 
         // Required for C++14 compliance: static constexpr member variables are not necessarily inlined so need to
         // ensure symbol is created.
-        constexpr std::size_t MemoryPool::max_pool_head_count;
+        constexpr size_t MemoryPool::max_pool_head_count;
 
         // Required for C++14 compliance: static constexpr member variables are not necessarily inlined so need to
         // ensure symbol is created.
-        constexpr std::size_t MemoryPool::first_alloc_count;
+        constexpr size_t MemoryPool::first_alloc_count;
 
         MemoryPoolHeadMT::MemoryPoolHeadMT(size_t item_byte_count, bool clear_on_destruction)
             : clear_on_destruction_(clear_on_destruction), locked_(false), item_byte_count_(item_byte_count),
@@ -82,11 +82,7 @@ namespace seal
                 for (auto &alloc : allocs_)
                 {
                     size_t curr_alloc_byte_count = mul_safe(item_byte_count_, alloc.size);
-                    volatile SEAL_BYTE *data_ptr = reinterpret_cast<SEAL_BYTE *>(alloc.data_ptr);
-                    while (curr_alloc_byte_count--)
-                    {
-                        *data_ptr++ = static_cast<SEAL_BYTE>(0);
-                    }
+                    seal_memzero(alloc.data_ptr, curr_alloc_byte_count);
 
                     // Delete this allocation
                     delete[] alloc.data_ptr;
@@ -218,11 +214,7 @@ namespace seal
                 for (auto &alloc : allocs_)
                 {
                     size_t curr_alloc_byte_count = mul_safe(item_byte_count_, alloc.size);
-                    volatile SEAL_BYTE *data_ptr = reinterpret_cast<SEAL_BYTE *>(alloc.data_ptr);
-                    while (curr_alloc_byte_count--)
-                    {
-                        *data_ptr++ = static_cast<SEAL_BYTE>(0);
-                    }
+                    seal_memzero(alloc.data_ptr, curr_alloc_byte_count);
 
                     // Delete this allocation
                     delete[] alloc.data_ptr;

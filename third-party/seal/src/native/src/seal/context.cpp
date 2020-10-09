@@ -271,7 +271,7 @@ namespace seal
             }
 
             // Check that plain_modulus is smaller than total coeff modulus
-            if (!is_less_than_uint_uint(
+            if (!is_less_than_uint(
                     plain_modulus.data(), plain_modulus.uint64_count(), context_data.total_coeff_modulus_.get(),
                     coeff_modulus_size))
             {
@@ -301,19 +301,26 @@ namespace seal
             }
 
             // Calculate coeff_div_plain_modulus (BFV-"Delta") and the remainder upper_half_increment
-            context_data.coeff_div_plain_modulus_ = allocate_uint(coeff_modulus_size, pool_);
+            auto temp_coeff_div_plain_modulus = allocate_uint(coeff_modulus_size, pool_);
+            context_data.coeff_div_plain_modulus_ = allocate<MultiplyUIntModOperand>(coeff_modulus_size, pool_);
             context_data.upper_half_increment_ = allocate_uint(coeff_modulus_size, pool_);
             auto wide_plain_modulus(duplicate_uint_if_needed(
                 plain_modulus.data(), plain_modulus.uint64_count(), coeff_modulus_size, false, pool_));
-            divide_uint_uint(
+            divide_uint(
                 context_data.total_coeff_modulus_.get(), wide_plain_modulus.get(), coeff_modulus_size,
-                context_data.coeff_div_plain_modulus_.get(), context_data.upper_half_increment_.get(), pool_);
+                temp_coeff_div_plain_modulus.get(), context_data.upper_half_increment_.get(), pool_);
 
             // Store the non-RNS form of upper_half_increment for BFV encryption
             context_data.coeff_modulus_mod_plain_modulus_ = context_data.upper_half_increment_[0];
 
             // Decompose coeff_div_plain_modulus into RNS factors
-            coeff_modulus_base->decompose(context_data.coeff_div_plain_modulus_.get(), pool_);
+            coeff_modulus_base->decompose(temp_coeff_div_plain_modulus.get(), pool_);
+
+            for (size_t i = 0; i < coeff_modulus_size; i++)
+            {
+                context_data.coeff_div_plain_modulus_[i].set(
+                    temp_coeff_div_plain_modulus[i], coeff_modulus_base->base()[i]);
+            }
 
             // Decompose upper_half_increment into RNS factors
             coeff_modulus_base->decompose(context_data.upper_half_increment_.get(), pool_);
@@ -333,7 +340,7 @@ namespace seal
             }
             else
             {
-                sub_uint_uint(
+                sub_uint(
                     context_data.total_coeff_modulus(), wide_plain_modulus.get(), coeff_modulus_size,
                     context_data.plain_upper_half_increment_.get());
             }
@@ -362,9 +369,9 @@ namespace seal
             context_data.plain_upper_half_increment_ = allocate_uint(coeff_modulus_size, pool_);
             for (size_t i = 0; i < coeff_modulus_size; i++)
             {
-                uint64_t tmp = (uint64_t(1) << 63) % coeff_modulus[i].value();
+                uint64_t tmp = barrett_reduce_64(uint64_t(1) << 63, coeff_modulus[i]);
                 context_data.plain_upper_half_increment_[i] =
-                    multiply_uint_uint_mod(tmp, sub_safe(coeff_modulus[i].value(), uint64_t(2)), coeff_modulus[i]);
+                    multiply_uint_mod(tmp, sub_safe(coeff_modulus[i].value(), uint64_t(2)), coeff_modulus[i]);
             }
 
             // Compute the upper_half_threshold for this modulus.
@@ -407,14 +414,6 @@ namespace seal
 
         // Create GaloisTool
         context_data.galois_tool_ = allocate<GaloisTool>(pool_, coeff_count_power, pool_);
-
-        // Check whether the coefficient modulus consists of a set of primes that are in decreasing order
-        context_data.qualifiers_.using_descending_modulus_chain = true;
-        for (size_t i = 0; i < coeff_modulus_size - 1; i++)
-        {
-            context_data.qualifiers_.using_descending_modulus_chain &=
-                (coeff_modulus[i].value() > coeff_modulus[i + 1].value());
-        }
 
         // Done with validation and pre-computations
         return context_data;

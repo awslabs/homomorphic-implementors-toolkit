@@ -11,7 +11,7 @@ cmake_minimum_required(VERSION 3.12)
 #   4. SEAL C++ tests                             #
 ###################################################
 
-project(SEAL VERSION 3.5.1 LANGUAGES CXX C)
+project(SEAL VERSION 3.5.9 LANGUAGES CXX C)
 
 # Check operating system: for Windows, use Visual Studio solution/project files.
 if(MSVC)
@@ -70,7 +70,7 @@ endif()
 # [Option] CXX compiler flags
 # For easier adding of CXX compiler flags
 include(CheckCXXCompilerFlag)
-function(enable_cxx_compiler_flag_if_supported flag)
+function(seal_enable_cxx_compiler_flag_if_supported flag)
     string(FIND "${CMAKE_CXX_FLAGS}" "${flag}" flag_already_set)
     if(flag_already_set EQUAL -1)
         message(STATUS "Adding CXX compiler flag: ${flag} ...")
@@ -90,11 +90,11 @@ set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY ON)
 
 # In Debug mode, enable extra compiler flags.
 if(NOT MSVC AND SEAL_DEBUG)
-  enable_cxx_compiler_flag_if_supported("-Wall")
-  enable_cxx_compiler_flag_if_supported("-Wextra")
-  enable_cxx_compiler_flag_if_supported("-Wconversion")
-  enable_cxx_compiler_flag_if_supported("-Wshadow")
-  enable_cxx_compiler_flag_if_supported("-pedantic")
+  seal_enable_cxx_compiler_flag_if_supported("-Wall")
+  seal_enable_cxx_compiler_flag_if_supported("-Wextra")
+  seal_enable_cxx_compiler_flag_if_supported("-Wconversion")
+  seal_enable_cxx_compiler_flag_if_supported("-Wshadow")
+  seal_enable_cxx_compiler_flag_if_supported("-pedantic")
 endif()
 
 # Path for outupt
@@ -114,11 +114,15 @@ set(CMAKE_LIBRARY_RUNTIME_DIRECTORY ${SEAL_SOURCE_DIR}/bin)
 set(SEAL_TARGETS_FILENAME ${SEAL_SOURCE_DIR}/cmake/SEALTargets.cmake)
 set(SEAL_CONFIG_IN_FILENAME ${SEAL_SOURCE_DIR}/cmake/SEALConfig.cmake.in)
 set(SEAL_CONFIG_FILENAME ${SEAL_SOURCE_DIR}/cmake/SEALConfig.cmake)
+set(SEAL_PKGCONFIG_IN_FILENAME ${SEAL_SOURCE_DIR}/seal.pc.in)
+set(SEAL_PKGCONFIG_FILENAME ${SEAL_SOURCE_DIR}/seal-${SEAL_VERSION_MAJOR}.${SEAL_VERSION_MINOR}.pc)
 set(SEAL_CONFIG_VERSION_FILENAME ${SEAL_SOURCE_DIR}/cmake/SEALConfigVersion.cmake)
 set(SEAL_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/SEAL-${SEAL_VERSION_MAJOR}.${SEAL_VERSION_MINOR})
+set(SEAL_PKGCONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 set(SEAL_INCLUDES_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/SEAL-${SEAL_VERSION_MAJOR}.${SEAL_VERSION_MINOR})
 set(SEAL_INCLUDES_BUILD_DIR ${SEAL_SOURCE_DIR}/native/src)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${SEAL_SOURCE_DIR}/bin)
+set(SEAL_THIRDPARTY_DIR ${SEAL_SOURCE_DIR}/thirdparty)
 
 # For extra modules we might have
 list(APPEND CMAKE_MODULE_PATH ${SEAL_SOURCE_DIR}/cmake)
@@ -130,10 +134,20 @@ include(CheckCXXSourceCompiles)
 include(CheckCXXSourceRuns)
 include(CheckTypeSize)
 
-# We clean up native/src/gsl directory which is no longer used in version >= 3.5.0
+################################################
+# Cleaning up artifacts from previous versions #
+################################################
+
+# Remove native/src/gsl directory which is no longer used in version >= 3.5.0
 if(NOT MSVC AND EXISTS ${SEAL_INCLUDES_BUILD_DIR}/gsl)
     message(STATUS "Removing ${SEAL_INCLUDES_BUILD_DIR}/gsl; this is no longer used by Microsoft SEAL >= 3.5.0")
     file(REMOVE_RECURSE ${SEAL_INCLUDES_BUILD_DIR}/gsl)
+endif()
+
+# Remove thirdparty/zlib/src/CMakeCache.txt: the location changed in SEAL >= 3.5.4
+if(NOT MSVC AND EXISTS ${SEAL_THIRDPARTY_DIR}/zlib/src/CMakeCache.txt)
+    message(STATUS "Removing old ${SEAL_THIRDPARTY_DIR}/zlib/src/CMakeCache.txt")
+    file(REMOVE ${SEAL_THIRDPARTY_DIR}/zlib/src/CMakeCache.txt)
 endif()
 
 ##################################
@@ -141,7 +155,7 @@ endif()
 ##################################
 
 # Set the C++ language version
-macro(set_language target)
+macro(seal_set_language target)
     if(SEAL_USE_CXX17)
         target_compile_features(${target} PUBLIC cxx_std_17)
     else()
@@ -150,31 +164,31 @@ macro(set_language target)
 endmacro()
 
 # Set the VERSION property
-macro(set_version target)
+macro(seal_set_version target)
     set_target_properties(${target} PROPERTIES VERSION ${SEAL_VERSION})
 endmacro()
 
 # Set the library filename to reflect version
-macro(set_version_filename target)
+macro(seal_set_version_filename target)
     set_target_properties(${target} PROPERTIES
         OUTPUT_NAME ${target}-${SEAL_VERSION_MAJOR}.${SEAL_VERSION_MINOR})
 endmacro()
 
 # Set the SOVERSION property
-macro(set_soversion target)
+macro(seal_set_soversion target)
     set_target_properties(${target} PROPERTIES
         SOVERSION ${SEAL_VERSION_MAJOR}.${SEAL_VERSION_MINOR})
 endmacro()
 
 # Set include directories for build and install interfaces
-macro(set_include_directories target)
+macro(seal_set_include_directories target)
     target_include_directories(${target} PUBLIC
         $<BUILD_INTERFACE:${SEAL_INCLUDES_BUILD_DIR}>
         $<INSTALL_INTERFACE:${SEAL_INCLUDES_INSTALL_DIR}>)
 endmacro()
 
 # Link a thread library
-macro(link_threads target)
+macro(seal_link_threads target)
     # Require thread library
     if(NOT TARGET Threads::Threads)
         set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
@@ -187,18 +201,39 @@ macro(link_threads target)
 endmacro()
 
 # Include target to given export
-macro(install_target target export)
+macro(seal_install_target target export)
     install(TARGETS ${target} EXPORT ${export}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endmacro()
 
+# Manually combine archives, using ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} to keep temporary files.
+macro(seal_combine_archives target dependency)
+    if(CMAKE_HOST_WIN32)
+        get_filename_component(CXX_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY)
+        set(AR_CMD_PATH "${CXX_DIR}/llvm-ar.exe")
+        file(TO_NATIVE_PATH "${AR_CMD_PATH}" AR_CMD_PATH)
+        set(DEL_CMD "del")
+        set(DEL_CMD_OPTS "")
+    else()
+        set(AR_CMD_PATH "ar")
+        set(DEL_CMD "rm")
+        set(DEL_CMD_OPTS "-rf")
+    endif()
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND "${AR_CMD_PATH}" x $<TARGET_FILE:${target}>
+        COMMAND "${AR_CMD_PATH}" x $<TARGET_FILE:${dependency}>
+        COMMAND "${AR_CMD_PATH}" rcs $<TARGET_FILE:${target}> *.o
+        COMMAND ${DEL_CMD} ${DEL_CMD_OPTS} *.o
+        WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+endmacro()
+
 #########################
 # External dependencies #
 #########################
 
-function(create_cache_entries dir_name)
+function(seal_create_cache_entries dir_name)
     set(cce_file_name ${dir_name}/cache_init.txt)
     file(WRITE  "${cce_file_name}" "set(CMAKE_C_COMPILER \"${CMAKE_C_COMPILER}\" CACHE STRING \"\" FORCE)\n")
     file(APPEND "${cce_file_name}" "set(CMAKE_CXX_COMPILER \"${CMAKE_CXX_COMPILER}\" CACHE STRING \"\" FORCE)\n")
@@ -213,8 +248,6 @@ function(create_cache_entries dir_name)
     file(APPEND "${cce_file_name}" "set(CMAKE_SYSTEM_VERSION ${CMAKE_SYSTEM_VERSION} CACHE STRING \"\" FORCE)\n")
 endfunction()
 
-set(THIRDPARTY_DIR ${SEAL_SOURCE_DIR}/thirdparty)
-
 # [option] SEAL_USE_MSGSL
 set(SEAL_USE_MSGSL_OPTION_STR "Use Microsoft GSL")
 option(SEAL_USE_MSGSL ${SEAL_USE_MSGSL_OPTION_STR} ON)
@@ -227,19 +260,19 @@ if(SEAL_USE_MSGSL AND NOT MSVC)
             COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
             OUTPUT_QUIET
             RESULT_VARIABLE result
-            WORKING_DIRECTORY ${THIRDPARTY_DIR}/msgsl)
+            WORKING_DIRECTORY ${SEAL_THIRDPARTY_DIR}/msgsl)
     else()
-        create_cache_entries(${THIRDPARTY_DIR}/msgsl)
-        if(EXISTS ${THIRDPARTY_DIR}/msgsl/CMakeCache.txt)
+        seal_create_cache_entries(${SEAL_THIRDPARTY_DIR}/msgsl)
+        if(EXISTS ${SEAL_THIRDPARTY_DIR}/msgsl/CMakeCache.txt)
             # Force regenerating make files. When cross compiling we might be
             # compiling more than one platform at a time.
-            file(REMOVE ${THIRDPARTY_DIR}/msgsl/CMakeCache.txt)
+            file(REMOVE ${SEAL_THIRDPARTY_DIR}/msgsl/CMakeCache.txt)
         endif()
         execute_process(
             COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" . -Ccache_init.txt
             OUTPUT_QUIET
             RESULT_VARIABLE result
-            WORKING_DIRECTORY ${THIRDPARTY_DIR}/msgsl)
+            WORKING_DIRECTORY ${SEAL_THIRDPARTY_DIR}/msgsl)
     endif()
     if(result)
         message(WARNING "Failed to download MSGSL (${result}); disabling `SEAL_USE_MSGSL`")
@@ -252,7 +285,7 @@ if(SEAL_USE_MSGSL AND NOT MSVC)
         COMMAND ${CMAKE_COMMAND} --build .
         OUTPUT_QUIET
         RESULT_VARIABLE result
-        WORKING_DIRECTORY ${THIRDPARTY_DIR}/msgsl)
+        WORKING_DIRECTORY ${SEAL_THIRDPARTY_DIR}/msgsl)
     if(result)
         message(WARNING "Failed to build MSGSL (${result}); disabling `SEAL_USE_MSGSL`")
     endif()
@@ -265,9 +298,9 @@ endif()
 # Set up the targets
 if(SEAL_USE_MSGSL AND NOT MSVC)
     add_subdirectory(
-        ${THIRDPARTY_DIR}/msgsl/src
+        ${SEAL_THIRDPARTY_DIR}/msgsl/src
         EXCLUDE_FROM_ALL)
-    set(MSGSL_INCLUDE_DIR ${THIRDPARTY_DIR}/msgsl/src/include)
+    set(MSGSL_INCLUDE_DIR ${SEAL_THIRDPARTY_DIR}/msgsl/src/include)
 endif()
 
 # [option] SEAL_USE_ZLIB
@@ -282,25 +315,24 @@ endif()
 # Download and configure
 if(SEAL_USE_ZLIB AND NOT MSVC)
     message(STATUS "Setting up ZLIB ...")
-
     if(NOT CMAKE_TOOLCHAIN_FILE)
         execute_process(
             COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
             OUTPUT_QUIET
             RESULT_VARIABLE result
-            WORKING_DIRECTORY ${THIRDPARTY_DIR}/zlib)
+            WORKING_DIRECTORY ${SEAL_THIRDPARTY_DIR}/zlib)
     else()
-        create_cache_entries(${THIRDPARTY_DIR}/zlib)
-        if(EXISTS ${THIRDPARTY_DIR}/zlib/CMakeCache.txt)
+        seal_create_cache_entries(${SEAL_THIRDPARTY_DIR}/zlib)
+        if(EXISTS ${SEAL_THIRDPARTY_DIR}/zlib/build/CMakeCache.txt)
             # Force regenerating make files. When cross compiling we might be
             # compiling more than one platform at a time.
-            file(REMOVE ${THIRDPARTY_DIR}/zlib/CMakeCache.txt)
+            file(REMOVE ${SEAL_THIRDPARTY_DIR}/zlib/build/CMakeCache.txt)
         endif()
         execute_process(
             COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" . -Ccache_init.txt
             OUTPUT_QUIET
             RESULT_VARIABLE result
-            WORKING_DIRECTORY ${THIRDPARTY_DIR}/zlib)
+            WORKING_DIRECTORY ${SEAL_THIRDPARTY_DIR}/zlib)
     endif()
     if(result)
         message(WARNING "Failed to download ZLIB (${result}); disabling `SEAL_USE_ZLIB`")
@@ -323,7 +355,7 @@ if(SEAL_USE_ZLIB AND NOT MSVC)
     execute_process(COMMAND ${CMAKE_COMMAND} --build .
         OUTPUT_QUIET
         RESULT_VARIABLE result
-        WORKING_DIRECTORY ${THIRDPARTY_DIR}/zlib)
+        WORKING_DIRECTORY ${SEAL_THIRDPARTY_DIR}/zlib)
     if(result)
         message(WARNING "Failed to build ZLIB (${result}); disabling `SEAL_USE_ZLIB`")
     endif()
@@ -332,13 +364,15 @@ endif()
 # Set up the targets
 if(SEAL_USE_ZLIB AND NOT MSVC)
     add_subdirectory(
-        ${THIRDPARTY_DIR}/zlib/src
+        ${SEAL_THIRDPARTY_DIR}/zlib/src
         EXCLUDE_FROM_ALL)
-    list(APPEND SEAL_ZLIB_INCLUDE_DIRS ${THIRDPARTY_DIR}/zlib/src)
-    list(APPEND SEAL_ZLIB_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/thirdparty/zlib/src)
+    # Set the ZLIB include directory to be relative to this CMakeLists.txt's binary directory
+    # for out-of-source builds.
+    set(SEAL_ZLIB_INCLUDE_DIRS
+        ${SEAL_THIRDPARTY_DIR}/zlib/src
+        ${CMAKE_CURRENT_BINARY_DIR}/thirdparty/zlib/src)
     set_target_properties(zlibstatic PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${SEAL_ZLIB_INCLUDE_DIRS}")
-    set(zlibstatic_LIBRARY_PATH ${THIRDPARTY_DIR}/zlib/src/libz.a)
 endif()
 
 # Google Test
@@ -352,7 +386,7 @@ if(SEAL_BUILD_TESTS AND NOT MSVC)
         COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
         OUTPUT_QUIET
         RESULT_VARIABLE result
-        WORKING_DIRECTORY ${THIRDPARTY_DIR}/googletest)
+        WORKING_DIRECTORY ${SEAL_THIRDPARTY_DIR}/googletest)
     if(result)
         message(WARNING "Failed to download Google Test (${result}); disabling `SEAL_BUILD_TESTS`")
     endif()
@@ -367,7 +401,7 @@ if(SEAL_BUILD_TESTS AND NOT MSVC)
     execute_process(COMMAND ${CMAKE_COMMAND} --build .
         OUTPUT_QUIET
         RESULT_VARIABLE result
-        WORKING_DIRECTORY ${THIRDPARTY_DIR}/googletest)
+        WORKING_DIRECTORY ${SEAL_THIRDPARTY_DIR}/googletest)
     if(result)
         message(WARNING "Failed to build Google Test (${result}); disabling `SEAL_BUILD_TESTS`")
     endif()
@@ -377,8 +411,8 @@ endif()
 if(SEAL_BUILD_TESTS AND NOT MSVC)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     add_subdirectory(
-        ${THIRDPARTY_DIR}/googletest/src
-        ${THIRDPARTY_DIR}/googletest/build
+        ${SEAL_THIRDPARTY_DIR}/googletest/src
+        ${SEAL_THIRDPARTY_DIR}/googletest/build
         EXCLUDE_FROM_ALL)
 endif()
 
@@ -463,6 +497,10 @@ cmake_dependent_option(SEAL_USE__ADDCARRY_U64 ${SEAL_USE__ADDCARRY_U64_OPTION_ST
 
 set(SEAL_USE__SUBBORROW_U64_OPTION_STR "Use _subborrow_u64")
 cmake_dependent_option(SEAL_USE__SUBBORROW_U64 ${SEAL_USE__SUBBORROW_U64_OPTION_STR} ON "SEAL_USE_INTRIN" OFF)
+
+set(SEAL_USE_MEMSET_S_OPTION_STR "Use memset_s")
+set(SEAL_USE_EXPLICIT_BZERO_OPTION_STR "Use explicit_bzero")
+set(SEAL_USE_EXPLICIT_MEMSET_OPTION_STR "Use explicit_memset")
 
 if(SEAL_USE_INTRIN)
     cmake_push_check_state(RESET)
@@ -572,6 +610,37 @@ if(SEAL_USE_INTRIN)
     cmake_pop_check_state()
 endif()
 
+# Check for memset_s
+check_cxx_source_runs("
+    #define __STDC_WANT_LIB_EXT1__ 1
+    #include <string.h>
+    int main(void)
+    {
+        char str[] = \"ghghghghghghghghghghgh\";
+        int r = memset_s(str, sizeof(str), 'a', 5);
+        return r;
+    }"
+    USE_MEMSET_S)
+if(USE_MEMSET_S)
+    set(SEAL_USE_MEMSET_S ON CACHE BOOL ${SEAL_USE_MEMSET_S_OPTION_STR} FORCE)
+endif()
+unset(USE_MEMSET_S CACHE)
+
+# Check for explicit_bzero
+include (CheckSymbolExists)
+check_symbol_exists(explicit_bzero "string.h" USE_EXPLICIT_BZERO)
+if(USE_EXPLICIT_BZERO)
+    set(SEAL_USE_EXPLICIT_BZERO ON CACHE BOOL ${SEAL_USE_EXPLICIT_BZERO_OPTION_STR} FORCE)
+endif()
+unset(USE_EXPLICIT_BZERO)
+
+# Check for explicit_memset
+check_symbol_exists(explicit_memset "string.h" USE_EXPLICIT_MEMSET)
+if(USE_EXPLICIT_MEMSET)
+    set(SEAL_USE_EXPLICIT_MEMSET ON CACHE BOOL ${SEAL_USE_EXPLICIT_MEMSET_OPTION_STR} FORCE)
+endif()
+unset(USE_EXPLICIT_MEMSET)
+
 # Create an object library to compile sources only once
 add_library(seal_obj OBJECT)
 
@@ -579,8 +648,8 @@ add_library(seal_obj OBJECT)
 add_subdirectory(native/src/seal)
 
 # Set C++ language version and include directories for the object library
-set_language(seal_obj)
-set_include_directories(seal_obj)
+seal_set_language(seal_obj)
+seal_set_include_directories(seal_obj)
 
 if(SEAL_USE_MSGSL AND NOT MSVC)
     target_link_libraries(seal_obj PRIVATE GSL)
@@ -592,12 +661,12 @@ endif()
 
 # Always build the static library
 add_library(seal STATIC $<TARGET_OBJECTS:seal_obj>)
-set_version(seal)
-set_version_filename(seal)
-set_language(seal)
-set_include_directories(seal)
-link_threads(seal)
-install_target(seal SEALTargets)
+seal_set_version(seal)
+seal_set_version_filename(seal)
+seal_set_language(seal)
+seal_set_include_directories(seal)
+seal_link_threads(seal)
+seal_install_target(seal SEALTargets)
 
 # Conditionally add MSGSL include directory to build interface
 if(SEAL_USE_MSGSL AND NOT MSVC)
@@ -608,11 +677,11 @@ endif()
 if(BUILD_SHARED_LIBS)
     add_library(seal_shared SHARED $<TARGET_OBJECTS:seal_obj>)
     set_target_properties(seal_shared PROPERTIES OUTPUT_NAME seal)
-    set_version(seal_shared)
-    set_soversion(seal_shared)
-    set_language(seal_shared)
-    set_include_directories(seal_shared)
-    link_threads(seal_shared)
+    seal_set_version(seal_shared)
+    seal_set_soversion(seal_shared)
+    seal_set_language(seal_shared)
+    seal_set_include_directories(seal_shared)
+    seal_link_threads(seal_shared)
 
     # Conditionally add MSGSL include directory to build interface
     if(SEAL_USE_MSGSL AND NOT MSVC)
@@ -624,29 +693,12 @@ if(BUILD_SHARED_LIBS)
         target_link_libraries(seal_shared PRIVATE zlibstatic)
     endif()
 
-    install_target(seal_shared SEALTargets)
+    seal_install_target(seal_shared SEALTargets)
 endif()
 
 # In UNIX-like platforms combine manually seal and zlibstatic into a single archive; not pretty, but works
 if(SEAL_USE_ZLIB AND NOT MSVC)
-    if(CMAKE_HOST_WIN32)
-        get_filename_component(CXX_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY)
-        set(AR_CMD_PATH "${CXX_DIR}/llvm-ar.exe")
-        file(TO_NATIVE_PATH "${AR_CMD_PATH}" AR_CMD_PATH)
-        set(DEL_CMD "del")
-        set(DEL_CMD_OPTS "")
-    else()
-        set(AR_CMD_PATH "ar")
-        set(DEL_CMD "rm")
-        set(DEL_CMD_OPTS "-rf")
-    endif()
-    file(COPY "${zlibstatic_LIBRARY_PATH}" DESTINATION "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
-    add_custom_command(TARGET seal POST_BUILD
-        COMMAND "${AR_CMD_PATH}" x $<TARGET_FILE:seal>
-        COMMAND "${AR_CMD_PATH}" x $<TARGET_FILE_DIR:seal>/libz.a
-        COMMAND "${AR_CMD_PATH}" rcs $<TARGET_FILE:seal> *.o
-        COMMAND ${DEL_CMD} ${DEL_CMD_OPTS} *.o
-        WORKING_DIRECTORY $<TARGET_FILE_DIR:seal>)
+    seal_combine_archives(seal zlibstatic)
 endif()
 
 #########################
@@ -669,14 +721,14 @@ if(SEAL_BUILD_SEAL_C)
 
     # Add source files to library and header files to install
     add_subdirectory(native/src/seal/c)
-    set_version(sealc)
-    set_soversion(sealc)
-    set_language(sealc)
-    set_include_directories(sealc)
+    seal_set_version(sealc)
+    seal_set_soversion(sealc)
+    seal_set_language(sealc)
+    seal_set_include_directories(sealc)
 
     target_link_libraries(sealc PUBLIC seal)
 
-    install_target(sealc SEALTargets)
+    seal_install_target(sealc SEALTargets)
 endif()
 
 #################################
@@ -707,6 +759,13 @@ install(
         ${SEAL_CONFIG_FILENAME}
         ${SEAL_CONFIG_VERSION_FILENAME}
     DESTINATION ${SEAL_CONFIG_INSTALL_DIR})
+
+# Install the pkg-config file
+install(
+    FILES
+        ${SEAL_PKGCONFIG_FILENAME}
+    DESTINATION
+        ${SEAL_PKGCONFIG_INSTALL_DIR})
 
 # We export SEALTargets from the build tree so it can be used by other projects
 # without requiring an install.
@@ -774,26 +833,30 @@ configure_file(
     ${SEAL_SOURCE_DIR}/dotnet/nuget/SEALNet-multi.nuspec
     @ONLY)
 
-set(SEAL_WINDOWS_SEAL_C_PATH ${SEAL_SOURCE_DIR}/lib/x64/$Configuration$/sealc.dll)
-set(SEAL_LINUX_SEAL_C_PATH ${SEAL_SOURCE_DIR}/lib/libsealc.so)
-set(SEAL_MACOS_SEAL_C_PATH ${SEAL_SOURCE_DIR}/lib/libsealc.dylib)
+set(SEAL_WINDOWS_SEAL_C_PATH "")
+set(SEAL_LINUX_SEAL_C_PATH "")
+set(SEAL_MACOS_SEAL_C_PATH "")
+
+# Create pkg-config file
+configure_file(
+     ${SEAL_PKGCONFIG_IN_FILENAME}
+     ${SEAL_PKGCONFIG_FILENAME}
+     @ONLY)
 
 # Supporting local building of NuGet package
 if(MSVC)
-    set(NUGET_SEAL_C_PATH ${SEAL_WINDOWS_SEAL_C_PATH})
+    set(SEAL_WINDOWS_SEAL_C_PATH ${SEAL_SOURCE_DIR}/lib/x64/$Configuration$/sealc.dll)
 elseif(UNIX)
-    set(NUGET_SEAL_C_PATH ${SEAL_LINUX_SEAL_C_PATH})
+    set(SEAL_LINUX_SEAL_C_PATH ${SEAL_SOURCE_DIR}/lib/libsealc.so)
 elseif(APPLE)
-    set(NUGET_SEAL_C_PATH ${SEAL_MACOS_SEAL_C_PATH})
+    set(SEAL_MACOS_SEAL_C_PATH ${SEAL_SOURCE_DIR}/lib/libsealc.dylib)
 endif()
 
-if(NUGET_SEAL_C_PATH)
-    # Create SEALNet.nuspec for a local NuGet pack from SEALNet.nuspec.in
-    configure_file(
-        ${SEAL_SOURCE_DIR}/dotnet/nuget/SEALNet.nuspec.in
-        ${SEAL_SOURCE_DIR}/dotnet/nuget/SEALNet.nuspec
-        @ONLY)
-endif()
+# Create SEALNet.nuspec for a local NuGet pack from SEALNet.nuspec.in
+configure_file(
+    ${SEAL_SOURCE_DIR}/dotnet/nuget/SEALNet.nuspec.in
+    ${SEAL_SOURCE_DIR}/dotnet/nuget/SEALNet.nuspec
+    @ONLY)
 
 # Create SEALNet.targets from SEALNet.targets.in
 configure_file(

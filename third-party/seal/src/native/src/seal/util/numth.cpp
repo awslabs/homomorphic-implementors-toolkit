@@ -263,7 +263,7 @@ namespace seal
                 uint64_t count = 0;
                 do
                 {
-                    x = multiply_uint_uint_mod(x, x, modulus);
+                    x = multiply_uint_mod(x, x, modulus);
                     count++;
                 } while (x != value - 1 && count < r - 1);
                 if (x != value - 1)
@@ -285,7 +285,7 @@ namespace seal
             {
                 throw invalid_argument("ntt_size must be a power of two");
             }
-            if (bit_size >= 63 || bit_size <= 1)
+            if (bit_size > SEAL_MOD_BIT_COUNT_MAX || bit_size < SEAL_MOD_BIT_COUNT_MIN)
             {
                 throw invalid_argument("bit_size is invalid");
             }
@@ -384,8 +384,8 @@ namespace seal
                 attempt_counter++;
 
                 // Set destination to be a random number modulo modulus
-                destination = (static_cast<uint64_t>(rd()) << 32) | static_cast<uint64_t>(rd());
-                destination %= modulus.value();
+                destination =
+                    barrett_reduce_64((static_cast<uint64_t>(rd()) << 32) | static_cast<uint64_t>(rd()), modulus);
 
                 // Raise the random number to power the size of the quotient
                 // to get rid of irrelevant part
@@ -402,7 +402,7 @@ namespace seal
             {
                 return false;
             }
-            uint64_t generator_sq = multiply_uint_uint_mod(root, root, modulus);
+            uint64_t generator_sq = multiply_uint_mod(root, root, modulus);
             uint64_t current_generator = root;
 
             // destination is going to always contain the smallest generator found
@@ -416,7 +416,7 @@ namespace seal
                 }
 
                 // Then move on to the next generator
-                current_generator = multiply_uint_uint_mod(current_generator, generator_sq, modulus);
+                current_generator = multiply_uint_mod(current_generator, generator_sq, modulus);
             }
 
             destination = root;

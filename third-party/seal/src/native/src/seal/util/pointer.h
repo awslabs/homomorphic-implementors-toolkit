@@ -74,32 +74,17 @@ namespace seal
                 return data_ != nullptr;
             }
 
-            SEAL_NODISCARD inline SEAL_BYTE *get() noexcept
+            SEAL_NODISCARD inline SEAL_BYTE *get() const noexcept
             {
                 return data_;
             }
 
-            SEAL_NODISCARD inline const SEAL_BYTE *get() const noexcept
+            SEAL_NODISCARD inline SEAL_BYTE *operator->() const noexcept
             {
                 return data_;
             }
 
-            SEAL_NODISCARD inline SEAL_BYTE *operator->() noexcept
-            {
-                return data_;
-            }
-
-            SEAL_NODISCARD inline const SEAL_BYTE *operator->() const noexcept
-            {
-                return data_;
-            }
-
-            SEAL_NODISCARD inline SEAL_BYTE &operator*()
-            {
-                return *data_;
-            }
-
-            SEAL_NODISCARD inline const SEAL_BYTE &operator*() const
+            SEAL_NODISCARD inline SEAL_BYTE &operator*() const
             {
                 return *data_;
             }
@@ -338,32 +323,17 @@ namespace seal
                 return data_ != nullptr;
             }
 
-            SEAL_NODISCARD inline T *get() noexcept
+            SEAL_NODISCARD inline T *get() const noexcept
             {
                 return data_;
             }
 
-            SEAL_NODISCARD inline const T *get() const noexcept
+            SEAL_NODISCARD inline T *operator->() const noexcept
             {
                 return data_;
             }
 
-            SEAL_NODISCARD inline T *operator->() noexcept
-            {
-                return data_;
-            }
-
-            SEAL_NODISCARD inline const T *operator->() const noexcept
-            {
-                return data_;
-            }
-
-            SEAL_NODISCARD inline T &operator*()
-            {
-                return *data_;
-            }
-
-            SEAL_NODISCARD inline const T &operator*() const
+            SEAL_NODISCARD inline T &operator*() const
             {
                 return *data_;
             }
@@ -1275,50 +1245,6 @@ namespace seal
         {
             using T = typename std::remove_cv<typename std::remove_reference<T_>::type>::type;
             return Pointer<T>(std::forward<InputIt>(first), pool.get_for_byte_count(mul_safe(count, sizeof(T))));
-        }
-
-        template <
-            typename T_, typename = std::enable_if_t<std::is_standard_layout<
-                             typename std::remove_cv<typename std::remove_reference<T_>::type>::type>::value>>
-        SEAL_NODISCARD inline auto duplicate_if_needed(
-            T_ *original, std::size_t count, bool condition, MemoryPool &pool)
-        {
-            using T = typename std::remove_cv<typename std::remove_reference<T_>::type>::type;
-#ifdef SEAL_DEBUG
-            if (original == nullptr && count > 0)
-            {
-                throw std::invalid_argument("original");
-            }
-#endif
-            if (condition == false)
-            {
-                return Pointer<T>::Aliasing(original);
-            }
-            auto allocation(allocate<T>(count, pool));
-            std::copy_n(original, count, allocation.get());
-            return allocation;
-        }
-
-        template <
-            typename T_, typename = std::enable_if_t<std::is_standard_layout<
-                             typename std::remove_cv<typename std::remove_reference<T_>::type>::type>::value>>
-        SEAL_NODISCARD inline auto duplicate_if_needed(
-            const T_ *original, std::size_t count, bool condition, MemoryPool &pool)
-        {
-            using T = typename std::remove_cv<typename std::remove_reference<T_>::type>::type;
-#ifdef SEAL_DEBUG
-            if (original == nullptr && count > 0)
-            {
-                throw std::invalid_argument("original");
-            }
-#endif
-            if (condition == false)
-            {
-                return ConstPointer<T>::Aliasing(original);
-            }
-            auto allocation(allocate<T>(count, pool));
-            std::copy_n(original, count, allocation.get());
-            return ConstPointer<T>(std::move(allocation));
         }
     } // namespace util
 } // namespace seal

@@ -9,44 +9,76 @@
 #include <cstdint>
 #include <limits>
 #include <stdexcept>
+#include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 namespace seal
 {
     namespace util
     {
+        template <typename... Ts>
+        struct VoidType
+        {
+            using type = void;
+        };
+
+        template <typename... Ts>
+        using seal_void_t = typename VoidType<Ts...>::type;
+
+        template <typename ForwardIt, typename Size, typename Func>
+        inline ForwardIt seal_for_each_n(ForwardIt first, Size size, Func &&func)
+        {
+            for (; size--; (void)++first)
+            {
+                func(*first);
+            }
+            return first;
+        }
+
+        template <typename Func, typename Tuple, std::size_t... Is>
+        inline decltype(auto) seal_apply_impl(Func &&func, Tuple &&tp, std::index_sequence<Is...>)
+        {
+            return func(std::get<Is>(std::forward<Tuple>(tp))...);
+        }
+
+        template <typename Func, typename Tuple, std::size_t... Is>
+        inline decltype(auto) seal_apply(Func &&func, Tuple &&tp)
+        {
+            using iseq_t = std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>::value>;
+            return seal_apply_impl(std::forward<Func>(func), std::forward<Tuple>(tp), iseq_t{});
+        }
+
         template <typename T, typename...>
-        struct is_uint64
+        struct IsUInt64
             : std::conditional<
                   std::is_integral<T>::value && std::is_unsigned<T>::value && (sizeof(T) == sizeof(std::uint64_t)),
                   std::true_type, std::false_type>::type
         {};
 
         template <typename T, typename U, typename... Rest>
-        struct is_uint64<T, U, Rest...>
-            : std::conditional<
-                  is_uint64<T>::value && is_uint64<U, Rest...>::value, std::true_type, std::false_type>::type
+        struct IsUInt64<T, U, Rest...>
+            : std::conditional<IsUInt64<T>::value && IsUInt64<U, Rest...>::value, std::true_type, std::false_type>::type
         {};
 
         template <typename T, typename... Rest>
-        constexpr bool is_uint64_v = is_uint64<T, Rest...>::value;
+        constexpr bool is_uint64_v = IsUInt64<T, Rest...>::value;
 
         template <typename T, typename...>
-        struct is_uint32
+        struct IsUInt32
             : std::conditional<
                   std::is_integral<T>::value && std::is_unsigned<T>::value && (sizeof(T) == sizeof(std::uint32_t)),
                   std::true_type, std::false_type>::type
         {};
 
         template <typename T, typename U, typename... Rest>
-        struct is_uint32<T, U, Rest...>
-            : std::conditional<
-                  is_uint32<T>::value && is_uint32<U, Rest...>::value, std::true_type, std::false_type>::type
+        struct IsUInt32<T, U, Rest...>
+            : std::conditional<IsUInt32<T>::value && IsUInt32<U, Rest...>::value, std::true_type, std::false_type>::type
         {};
 
         template <typename T, typename... Rest>
-        constexpr bool is_uint32_v = is_uint32<T, Rest...>::value;
+        constexpr bool is_uint32_v = IsUInt32<T, Rest...>::value;
 
         template <
             typename T, typename S, typename = std::enable_if_t<std::is_integral<T>::value>,
@@ -323,23 +355,15 @@ namespace seal
 
         constexpr int bytes_per_uint64 = sizeof(std::uint64_t);
 
-        constexpr int bytes_per_uint32 = sizeof(std::uint32_t);
-
-        constexpr int uint32_per_uint64 = 2;
-
         constexpr int bits_per_nibble = 4;
 
         constexpr int bits_per_byte = 8;
 
         constexpr int bits_per_uint64 = bytes_per_uint64 * bits_per_byte;
 
-        constexpr int bits_per_uint32 = bytes_per_uint32 * bits_per_byte;
-
         constexpr int nibbles_per_byte = 2;
 
         constexpr int nibbles_per_uint64 = bytes_per_uint64 * nibbles_per_byte;
-
-        constexpr std::uint64_t uint64_high_bit = std::uint64_t(1) << (bits_per_uint64 - 1);
 
         template <typename T, typename = std::enable_if_t<is_uint32_v<T> || is_uint64_v<T>>>
         SEAL_NODISCARD inline constexpr T reverse_bits(T operand) noexcept
@@ -485,28 +509,6 @@ namespace seal
             return -1;
         }
 
-        SEAL_NODISCARD inline SEAL_BYTE *get_uint64_byte(std::uint64_t *value, std::size_t byte_index)
-        {
-#ifdef SEAL_DEBUG
-            if (value == nullptr)
-            {
-                throw std::invalid_argument("value");
-            }
-#endif
-            return reinterpret_cast<SEAL_BYTE *>(value) + byte_index;
-        }
-
-        SEAL_NODISCARD inline const SEAL_BYTE *get_uint64_byte(const std::uint64_t *value, std::size_t byte_index)
-        {
-#ifdef SEAL_DEBUG
-            if (value == nullptr)
-            {
-                throw std::invalid_argument("value");
-            }
-#endif
-            return reinterpret_cast<const SEAL_BYTE *>(value) + byte_index;
-        }
-
         SEAL_NODISCARD inline int get_hex_string_bit_count(const char *hex_string, int char_count)
         {
 #ifdef SEAL_DEBUG
@@ -564,5 +566,7 @@ namespace seal
         {
             return value == T{ 0 };
         }
+
+        void seal_memzero(void *const data, std::size_t size);
     } // namespace util
 } // namespace seal

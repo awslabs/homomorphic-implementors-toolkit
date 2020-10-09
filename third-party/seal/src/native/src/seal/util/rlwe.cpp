@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
+#include "seal/ciphertext.h"
 #include "seal/randomgen.h"
 #include "seal/randomtostd.h"
 #include "seal/util/clipnormal.h"
@@ -108,21 +109,20 @@ namespace seal
             // Set up source of randomness that produces 32 bit random things.
             RandomToStandardAdapter engine(rng);
 
-            // We sample numbers up to 2^63-1 to use barrett_reduce_63
-            constexpr uint64_t max_random = static_cast<uint64_t>(0x7FFFFFFFFFFFFFFFULL);
+            constexpr uint64_t max_random = static_cast<uint64_t>(0xFFFFFFFFFFFFFFFFULL);
             for (size_t j = 0; j < coeff_modulus_size; j++)
             {
                 auto &modulus = coeff_modulus[j];
-                uint64_t max_multiple = max_random - barrett_reduce_63(max_random, modulus) - 1;
+                uint64_t max_multiple = max_random - barrett_reduce_64(max_random, modulus) - 1;
                 for (size_t i = 0; i < coeff_count; i++)
                 {
                     // This ensures uniform distribution.
                     uint64_t rand;
                     do
                     {
-                        rand = (static_cast<uint64_t>(engine()) << 31) | (static_cast<uint64_t>(engine() >> 1));
+                        rand = (static_cast<uint64_t>(engine()) << 32) | static_cast<uint64_t>(engine());
                     } while (rand >= max_multiple);
-                    destination[i + j * coeff_count] = barrett_reduce_63(rand, modulus);
+                    destination[i + j * coeff_count] = barrett_reduce_64(rand, modulus);
                 }
             }
         }
@@ -145,7 +145,7 @@ namespace seal
             auto &coeff_modulus = parms.coeff_modulus();
             size_t coeff_modulus_size = coeff_modulus.size();
             size_t coeff_count = parms.poly_modulus_degree();
-            auto small_ntt_tables = context_data.small_ntt_tables();
+            auto ntt_tables = context_data.small_ntt_tables();
             size_t encrypted_size = public_key.data().size();
 
             // Make destination have right size and parms_id
@@ -166,17 +166,17 @@ namespace seal
             // c[j] = u * public_key[j]
             for (size_t i = 0; i < coeff_modulus_size; i++)
             {
-                ntt_negacyclic_harvey(u.get() + i * coeff_count, small_ntt_tables[i]);
+                ntt_negacyclic_harvey(u.get() + i * coeff_count, ntt_tables[i]);
                 for (size_t j = 0; j < encrypted_size; j++)
                 {
                     dyadic_product_coeffmod(
                         u.get() + i * coeff_count, public_key.data().data(j) + i * coeff_count, coeff_count,
                         coeff_modulus[i], destination.data(j) + i * coeff_count);
 
-                    // addition with e_0, e_1 is in non-NTT form.
+                    // Addition with e_0, e_1 is in non-NTT form.
                     if (!is_ntt_form)
                     {
-                        inverse_ntt_negacyclic_harvey(destination.data(j) + i * coeff_count, small_ntt_tables[i]);
+                        inverse_ntt_negacyclic_harvey(destination.data(j) + i * coeff_count, ntt_tables[i]);
                     }
                 }
             }
@@ -188,12 +188,12 @@ namespace seal
                 sample_poly_normal(rng, parms, u.get());
                 for (size_t i = 0; i < coeff_modulus_size; i++)
                 {
-                    // addition with e_0, e_1 is in NTT form.
+                    // Addition with e_0, e_1 is in NTT form.
                     if (is_ntt_form)
                     {
-                        ntt_negacyclic_harvey(u.get() + i * coeff_count, small_ntt_tables[i]);
+                        ntt_negacyclic_harvey(u.get() + i * coeff_count, ntt_tables[i]);
                     }
-                    add_poly_poly_coeffmod(
+                    add_poly_coeffmod(
                         u.get() + i * coeff_count, destination.data(j) + i * coeff_count, coeff_count, coeff_modulus[i],
                         destination.data(j) + i * coeff_count);
                 }
@@ -218,7 +218,7 @@ namespace seal
             auto &coeff_modulus = parms.coeff_modulus();
             size_t coeff_modulus_size = coeff_modulus.size();
             size_t coeff_count = parms.poly_modulus_degree();
-            auto small_ntt_tables = context_data.small_ntt_tables();
+            auto ntt_tables = context_data.small_ntt_tables();
             size_t encrypted_size = 2;
 
             // If a polynomial is too small to store a seed, disable save_seed.
@@ -232,9 +232,16 @@ namespace seal
             destination.is_ntt_form() = is_ntt_form;
             destination.scale() = 1.0;
 
-            auto rng_error = parms.random_generator()->create();
-            shared_ptr<UniformRandomGenerator> rng_ciphertext;
-            rng_ciphertext = BlakePRNGFactory().create();
+            // Create an instance of a random number generator. We use this for sampling a seed for a second BlakePRNG
+            // used for sampling u (the seed can be public information. This RNG is also used for sampling the error.
+            auto bootstrap_rng = parms.random_generator()->create();
+
+            // Sample a seed for generating uniform randomness for the ciphertext; this seed is public information
+            random_seed_type public_rng_seed;
+            bootstrap_rng->generate(sizeof(random_seed_type), reinterpret_cast<SEAL_BYTE *>(public_rng_seed.data()));
+
+            // Create a BlakePRNG for sampling u
+            auto ciphertext_rng = BlakePRNGFactory(public_rng_seed).create();
 
             // Generate ciphertext: (c[0], c[1]) = ([-(as+e)]_q, a)
             uint64_t *c0 = destination.data();
@@ -243,25 +250,25 @@ namespace seal
             // Sample a uniformly at random
             if (is_ntt_form || !save_seed)
             {
-                // sample the NTT form directly
-                sample_poly_uniform(rng_ciphertext, parms, c1);
+                // Sample the NTT form directly
+                sample_poly_uniform(ciphertext_rng, parms, c1);
             }
             else if (save_seed)
             {
-                // sample non-NTT form and store the seed
-                sample_poly_uniform(rng_ciphertext, parms, c1);
+                // Sample non-NTT form and store the seed
+                sample_poly_uniform(ciphertext_rng, parms, c1);
                 for (size_t i = 0; i < coeff_modulus_size; i++)
                 {
                     // Transform the c1 into NTT representation.
-                    ntt_negacyclic_harvey(c1 + i * coeff_count, small_ntt_tables[i]);
+                    ntt_negacyclic_harvey(c1 + i * coeff_count, ntt_tables[i]);
                 }
             }
 
             // Sample e <-- chi
             auto noise(allocate_poly(coeff_count, coeff_modulus_size, pool));
-            sample_poly_normal(rng_error, parms, noise.get());
+            sample_poly_normal(bootstrap_rng, parms, noise.get());
 
-            // calculate -(a*s + e) (mod q) and store in c[0]
+            // Calculate -(a*s + e) (mod q) and store in c[0]
             for (size_t i = 0; i < coeff_modulus_size; i++)
             {
                 dyadic_product_coeffmod(
@@ -270,13 +277,13 @@ namespace seal
                 if (is_ntt_form)
                 {
                     // Transform the noise e into NTT representation.
-                    ntt_negacyclic_harvey(noise.get() + i * coeff_count, small_ntt_tables[i]);
+                    ntt_negacyclic_harvey(noise.get() + i * coeff_count, ntt_tables[i]);
                 }
                 else
                 {
-                    inverse_ntt_negacyclic_harvey(c0 + i * coeff_count, small_ntt_tables[i]);
+                    inverse_ntt_negacyclic_harvey(c0 + i * coeff_count, ntt_tables[i]);
                 }
-                add_poly_poly_coeffmod(
+                add_poly_coeffmod(
                     noise.get() + i * coeff_count, c0 + i * coeff_count, coeff_count, coeff_modulus[i],
                     c0 + i * coeff_count);
                 negate_poly_coeffmod(c0 + i * coeff_count, coeff_count, coeff_modulus[i], c0 + i * coeff_count);
@@ -287,16 +294,15 @@ namespace seal
                 for (size_t i = 0; i < coeff_modulus_size; i++)
                 {
                     // Transform the c1 into non-NTT representation.
-                    inverse_ntt_negacyclic_harvey(c1 + i * coeff_count, small_ntt_tables[i]);
+                    inverse_ntt_negacyclic_harvey(c1 + i * coeff_count, ntt_tables[i]);
                 }
             }
 
             if (save_seed)
             {
-                random_seed_type seed = rng_ciphertext->seed();
                 // Write random seed to destination.data(1).
                 c1[0] = static_cast<uint64_t>(0xFFFFFFFFFFFFFFFFULL);
-                copy_n(seed.cbegin(), seed.size(), c1 + 1);
+                copy_n(public_rng_seed.cbegin(), public_rng_seed.size(), c1 + 1);
             }
         }
     } // namespace util
