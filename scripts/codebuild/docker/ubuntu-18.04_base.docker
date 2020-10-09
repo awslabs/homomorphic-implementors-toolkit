@@ -11,17 +11,11 @@ RUN set -ex && \
     apt-get update && \
     apt-get -y --no-install-recommends upgrade && \
     apt-get -y --no-install-recommends install \
-    apt-utils \
-    software-properties-common \
-    zlib1g-dev \
     ninja-build \
-    protobuf-compiler \
-    libprotobuf-dev \
-    libboost-all-dev \
-    libcurl4-openssl-dev \
-    libmsgsl-dev \
-    libssl-dev \
     git \
+    libboost-all-dev \
+    libprotobuf-dev \
+    software-properties-common \
     curl \
     ca-certificates && \
     cd /tmp && \
@@ -33,3 +27,13 @@ RUN set -ex && \
     apt-get autoclean && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/*
+
+# curl and ca-certificates are needed to download CMake in the docker image
+# ninja-build is required since we use ninja in run-hit-ci.sh, but ninja is not required in general.
+# software-properties-common is required for the docker image to run `add-apt-repository`
+# libboost-all-dev speeds up the build, since we don't have to download and build boost when building HIT
+
+# apt-utils \
+#     protobuf-compiler \
+#
+#
