@@ -7,7 +7,6 @@ message(STATUS "Downloading Microsoft SEAL in ${CMAKE_CURRENT_LIST_DIR}.")
 
 project(SEAL_DOWNLOAD VERSION 3.5.9)
 
-# https://github.com/protocolbuffers/protobuf/tree/master/src
 include(ExternalProject)
 ExternalProject_Add(EP_SEAL
         URL                  https://github.com/microsoft/SEAL/archive/v${PROJECT_VERSION}.zip
