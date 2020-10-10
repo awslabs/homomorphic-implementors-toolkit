@@ -14,7 +14,6 @@ ExternalProject_Add(EP_PROTOBUF
         URL                  https://github.com/google/protobuf/releases/download/${PROTOBUF_URL_SUFFIX}
         DOWNLOAD_DIR         ${CMAKE_CURRENT_LIST_DIR}/src
         SOURCE_DIR           ${CMAKE_CURRENT_LIST_DIR}/src
-        SOURCE_SUBDIR        ${CMAKE_CURRENT_LIST_DIR}/src/cmake
         CMAKE_ARGS           ""
         CONFIGURE_COMMAND    ""
         BUILD_COMMAND        ""

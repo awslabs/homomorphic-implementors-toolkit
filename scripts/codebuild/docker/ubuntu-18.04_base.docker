@@ -13,8 +13,8 @@ RUN set -ex && \
     apt-get -y --no-install-recommends install \
     ninja-build \
     git \
+    protobuf-compiler \
     libboost-all-dev \
-    libprotobuf-dev \
     software-properties-common \
     curl \
     ca-certificates && \
@@ -34,6 +34,6 @@ RUN set -ex && \
 # libboost-all-dev speeds up the build, since we don't have to download and build boost when building HIT
 
 # apt-utils \
-#     protobuf-compiler \
+#
 #
 #
