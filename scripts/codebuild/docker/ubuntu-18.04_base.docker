@@ -14,6 +14,8 @@ RUN set -ex && \
     ninja-build \
     git \
     protobuf-compiler \
+    build-essential \
+    automake \
     libboost-all-dev \
     software-properties-common \
     curl \
