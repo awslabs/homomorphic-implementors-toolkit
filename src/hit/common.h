@@ -85,6 +85,14 @@ namespace hit {
         }
     }
 
+    inline std::vector<int> gen_for_each_iters(int iters) {
+        std::vector<int> iterIdxs(iters);
+        for (int i = 0; i < iters; i++) {
+            iterIdxs[i] = i;
+        }
+        return iterIdxs;
+    }
+
     void decryption_warning(int level);
 
 }  // namespace hit
