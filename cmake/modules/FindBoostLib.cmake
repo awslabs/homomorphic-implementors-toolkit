@@ -1,12 +1,11 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-message(STATUS "Searching Boost lib.")
 find_package(Boost 1.65 QUIET)
 if (Boost_FOUND)
-    message(STATUS "Boost is found. Skip downloading source code.")
+    message(STATUS "Found Boost installed on the system.")
 else ()
-    message(STATUS "Downloading and installing Boost since it is not found.")
+    message(STATUS "Boost was not found on your system.")
     # Variables
     set(BOOST_USE_STATIC_LIBS false)
     # Set the library prefix and library suffix properly.
