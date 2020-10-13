@@ -24,11 +24,4 @@ function(download_external_project project_dir)
     if(result)
         message(FATAL_ERROR "Failed to build (${result}).")
     endif()
-    message(STATUS "Building ${project_dir}.")
-    execute_process(COMMAND ${CMAKE_COMMAND} --install .
-            RESULT_VARIABLE result
-            WORKING_DIRECTORY ${COMMAND_WORK_DIR})
-    if(result)
-        message(FATAL_ERROR "Failed to install (${result}).")
-    endif()
 endfunction()
