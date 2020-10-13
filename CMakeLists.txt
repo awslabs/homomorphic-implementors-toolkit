@@ -148,15 +148,7 @@ endif ()
 ###############
 
 # Build code in the `examples` directory if enabled.
-# option(HIT_BUILD_EXAMPLES "Build HIT example/demo code." OFF)
-# if (HIT_BUILD_EXAMPLES)
-#     add_subdirectory(examples)
-# endif ()
-
-
-
-
-message(STATUS "SEAL_INCLUDE_DIRS: ${SEAL_INCLUDE_DIRS}")
-message(STATUS "Seal_INCLUDE_DIRS: ${Seal_INCLUDE_DIRS}")
-message(STATUS "Protobuf_INCLUDE_DIRS: ${Protobuf_INCLUDE_DIRS}")
-message(STATUS "SEAL_INCLUDE_INSTALL_DIR: ${SEAL_INCLUDE_INSTALL_DIR}")
+option(HIT_BUILD_EXAMPLES "Build HIT example/demo code." OFF)
+if (HIT_BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif ()
