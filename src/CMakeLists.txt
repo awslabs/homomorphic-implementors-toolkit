@@ -4,6 +4,7 @@
 # Create an object library to compile sources only once
 # Sources are added by the CMakeLists in the source tree via `target_sources`
 add_library(aws_hit_obj OBJECT)
+add_dependencies(aws_hit_obj aws_hit_proto)
 
 # Add source files to library and header files to install
 add_subdirectory(hit)
