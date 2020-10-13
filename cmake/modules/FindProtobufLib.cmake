@@ -59,6 +59,7 @@ else ()
     # add_subdirectory(
     #     ${HIT_THIRD_PARTY_DIR}/protobuf/src/cmake
     #     EXCLUDE_FROM_ALL)
+    set(Protobuf_LIBRARIES "${3P_INSTALL_DIR}/lib/libprotobuf.a")
 endif ()
 message(STATUS "Protobuf found: ${Protobuf_FOUND}")
 message(STATUS "Protobuf version: ${Protobuf_VERSION}")
@@ -73,4 +74,3 @@ message(STATUS "Protobuf_INCLUDE_DIR: ${Protobuf_INCLUDE_DIR}")
 message(STATUS "Protobuf_PROTOC_EXECUTABLE: ${Protobuf_PROTOC_EXECUTABLE}")
 message(STATUS "Protobuf_LIBRARY_DEBUG: ${Protobuf_LIBRARY_DEBUG}")
 
-set(Protobuf_LIBRARIES "${3P_INSTALL_DIR}/lib/libprotobuf.a")
