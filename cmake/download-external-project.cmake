@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 function(download_external_project project_dir)
-    message(STATUS "Downloading ${project_dir}.")
+    message(STATUS "Downloading ${project_dir}...")
     set(EXTERNAL_PROJECT_CMAKE_CACHE_FILE ${HIT_THIRD_PARTY_DIR}/${project_dir}/CMakeCache.txt)
     if(EXISTS ${EXTERNAL_PROJECT_CMAKE_CACHE_FILE})
         message(STATUS "Removing old ${EXTERNAL_PROJECT_CMAKE_CACHE_FILE}")
@@ -17,10 +17,11 @@ function(download_external_project project_dir)
     if(result)
         message(FATAL_ERROR "Failed to download (${result}).")
     endif()
-    message(STATUS "Building ${project_dir}.")
+    message(STATUS "Building ${project_dir}...")
     execute_process(COMMAND ${CMAKE_COMMAND} --build .
             RESULT_VARIABLE result
-            WORKING_DIRECTORY ${COMMAND_WORK_DIR})
+            WORKING_DIRECTORY ${COMMAND_WORK_DIR}
+            OUTPUT_QUIET)
     if(result)
         message(FATAL_ERROR "Failed to build (${result}).")
     endif()
