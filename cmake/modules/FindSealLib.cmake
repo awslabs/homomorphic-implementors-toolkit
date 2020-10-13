@@ -7,7 +7,10 @@ message(STATUS "Downloading and installing Microsoft SEAL.")
 
 # Download and install test dependency - Microsoft SEAL.
 download_external_project("seal")
-# Add seal directly to our build.
-add_subdirectory(
-        ${HIT_THIRD_PARTY_DIR}/seal/src
-        EXCLUDE_FROM_ALL)
+find_package(SEAL 3.5 REQUIRED)
+
+if (SEAL_FOUND)
+    message(STATUS "Installed local copy of SEAL.")
+else ()
+	message(FATAL_ERROR "SEAL is not found.")
+endif ()

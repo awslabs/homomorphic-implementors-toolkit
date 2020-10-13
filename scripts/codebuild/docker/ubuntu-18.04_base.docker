@@ -13,7 +13,6 @@ RUN set -ex && \
     apt-get -y --no-install-recommends install \
     ninja-build \
     git \
-    protobuf-compiler \
     build-essential \
     automake \
     libboost-all-dev \

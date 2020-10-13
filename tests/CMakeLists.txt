@@ -12,10 +12,13 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/api)
 list(APPEND HIT_TEST_FILES "testutil.cpp")
 add_executable(hit-unit-tests ${HIT_TEST_FILES})
 
-target_link_libraries(hit-unit-tests PUBLIC aws-hit gtest)
+message(STATUS "Protobuf_LIBRARIES: ${Protobuf_LIBRARIES}")
+
+target_link_libraries(hit-unit-tests PRIVATE aws-hit ${gtest_LIBRARIES} SEAL::seal)
 set_common_flags(hit-unit-tests)
 
 add_custom_target(NAME hit-unit-tests COMMAND hit-unit-tests)
+
 
 add_custom_target(
   run_hit_tests

@@ -17,6 +17,8 @@ if (NOT CMAKE_BUILD_TYPE)
 endif ()
 message(STATUS "Build type (CMAKE_BUILD_TYPE): ${CMAKE_BUILD_TYPE}")
 
+set(CMAKE_VERBOSE_MAKEFILE "")
+set(VERBOSE "")
 #########
 # Paths #
 #########
@@ -35,7 +37,11 @@ set(HIT_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/HIT)
 set(HIT_INCLUDES_INSTALL_DIR ${CMAKE_INSTALL_INCLUDE_DIR}/hit)
 set(HIT_INCLUDES_BUILD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
-set(HIT_INCLUDES_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/hit)
+
+
+message(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
+set(3P_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/third-party)
+list(APPEND CMAKE_PREFIX_PATH "${3P_INSTALL_DIR}")
 
 ########################
 # Custom Cmake Scripts #
@@ -63,6 +69,11 @@ find_package(TbbLib REQUIRED)
 #####################
 # Compile Protobufs #
 #####################
+include_directories(${Protobuf_INCLUDE_DIRS})
+include_directories(${Protobuf_INCLUDE_DIRS}/SEAL-3.5)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/protobuf)
+
+
 
 set(HIT_PROTOBUF_DST ${CMAKE_CURRENT_BINARY_DIR}/protobuf/hit/protobuf)
 add_subdirectory(protobuf)
@@ -93,6 +104,8 @@ add_subdirectory(src)
 add_library(aws-hit STATIC $<TARGET_OBJECTS:aws_hit_obj> $<TARGET_OBJECTS:aws_hit_proto>)
 target_compile_features(aws-hit PUBLIC cxx_std_17)
 target_include_directories(aws-hit PUBLIC
+        ${Protobuf_INCLUDE_DIRS}
+        ${Protobuf_INCLUDE_DIRS}/SEAL-3.5
         ${CMAKE_CURRENT_BINARY_DIR}/protobuf # to allow e.g., #include "protobuf/foo.ph.h"
         ${HIT_PROTOBUF_DST} # to allow e.g., #include "foo.ph.h", which is how auto-generated protobuf files expect imports to be available
         $<BUILD_INTERFACE:${HIT_INCLUDES_BUILD_DIR}>
@@ -102,7 +115,7 @@ target_include_directories(aws-hit PUBLIC
 set_common_flags(aws-hit)
 
 # Link dependencies
-target_link_libraries(aws-hit PUBLIC seal glog::glog PRIVATE ${Protobuf_LIBRARIES} ${TBB_IMPORTED_TARGETS})
+target_link_libraries(aws-hit PUBLIC SEAL::seal glog::glog ${Protobuf_LIBRARIES} PRIVATE ${TBB_IMPORTED_TARGETS})
 
 install(TARGETS aws-hit EXPORT HITTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -134,7 +147,15 @@ endif ()
 ###############
 
 # Build code in the `examples` directory if enabled.
-option(HIT_BUILD_EXAMPLES "Build HIT example/demo code." OFF)
-if (HIT_BUILD_EXAMPLES)
-    add_subdirectory(examples)
-endif ()
+# option(HIT_BUILD_EXAMPLES "Build HIT example/demo code." OFF)
+# if (HIT_BUILD_EXAMPLES)
+#     add_subdirectory(examples)
+# endif ()
+
+
+
+
+message(STATUS "SEAL_INCLUDE_DIRS: ${SEAL_INCLUDE_DIRS}")
+message(STATUS "Seal_INCLUDE_DIRS: ${Seal_INCLUDE_DIRS}")
+message(STATUS "Protobuf_INCLUDE_DIRS: ${Protobuf_INCLUDE_DIRS}")
+message(STATUS "SEAL_INCLUDE_INSTALL_DIR: ${SEAL_INCLUDE_INSTALL_DIR}")

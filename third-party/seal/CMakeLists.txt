@@ -9,12 +9,9 @@ project(SEAL_DOWNLOAD VERSION 3.5.9)
 
 include(ExternalProject)
 ExternalProject_Add(EP_SEAL
-        URL                  https://github.com/microsoft/SEAL/archive/v${PROJECT_VERSION}.zip
-        DOWNLOAD_DIR         ${CMAKE_CURRENT_LIST_DIR}
-        SOURCE_DIR           ${CMAKE_CURRENT_LIST_DIR}/src
-        CMAKE_ARGS           ""
-        CONFIGURE_COMMAND    ""
-        BUILD_COMMAND        ""
-        INSTALL_COMMAND      ""
-        TEST_COMMAND         ""
-        )
+    URL                  https://github.com/microsoft/SEAL/archive/v${PROJECT_VERSION}.zip
+    DOWNLOAD_DIR         ${CMAKE_CURRENT_LIST_DIR}
+    SOURCE_DIR           ${CMAKE_CURRENT_LIST_DIR}/src
+    CMAKE_ARGS           -DCMAKE_INSTALL_PREFIX=${3P_INSTALL_DIR}
+    TEST_COMMAND         ""
+)
