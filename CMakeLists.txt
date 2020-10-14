@@ -60,9 +60,9 @@ include(enable-clang-tidy)
 # 1. The process starts in cmake/modules/FindFOOLib.cmake
 # 2. For some dependencies, we check if the dependency is available on the system with `find_package`.
 #    If the dependency is found, stop here.
-# 3. Otherwise, we invoke `download_external_project()`. In turn, this
+# 3. Otherwise, we invoke `download_external_project()`. In turn, this calls `cmake` on the make_directory
+#    third-party/FOO/, which includes a CMakeLists.txt with download and build instructions.
 
-# message(FATAL_ERROR "FULL_STOP")
 find_package(BoostLib REQUIRED)
 find_package(SealLib REQUIRED)
 find_package(ProtobufLib REQUIRED)

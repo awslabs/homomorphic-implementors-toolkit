@@ -21,6 +21,6 @@ docker tag ubuntu-18.04:gcc-9x ${ECS_REPO}:ubuntu-18.04_gcc-9x
 docker build -f ubuntu-18.04_clang-10x.docker -t ubuntu-18.04:clang-10x .
 docker tag ubuntu-18.04:clang-10x ${ECS_REPO}:ubuntu-18.04_clang-10x
 
-# docker push ${ECS_REPO}:ubuntu-18.04_base
-# docker push ${ECS_REPO}:ubuntu-18.04_gcc-9x
-# docker push ${ECS_REPO}:ubuntu-18.04_clang-10x
+docker push ${ECS_REPO}:ubuntu-18.04_base
+docker push ${ECS_REPO}:ubuntu-18.04_gcc-9x
+docker push ${ECS_REPO}:ubuntu-18.04_clang-10x

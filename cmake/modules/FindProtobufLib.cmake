@@ -2,7 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 find_package(Protobuf 3.0.0 QUIET)
-if (Protobuf_FOUND)
+find_program(Protoc_FOUND protoc)
+# require both the protobuf library and the protoc compiler to be installed,
+# otherwise build them ourselves. The versions must be compatible,
+# so it's not a good idea to use, e.g., a system-installed protoc and
+# build-from-source protobuf library\
+if (Protobuf_FOUND AND Protoc_FOUND)
     message(STATUS "Protobuf is already installed.")
 else ()
     message(STATUS "Protobuf was not found on your system.")
