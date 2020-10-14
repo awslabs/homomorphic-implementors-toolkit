@@ -109,6 +109,7 @@ add_library(aws-hit STATIC $<TARGET_OBJECTS:aws_hit_obj> $<TARGET_OBJECTS:aws_hi
 target_compile_features(aws-hit PUBLIC cxx_std_17)
 target_include_directories(aws-hit PUBLIC
         ${Protobuf_INCLUDE_DIRS}
+        ${3P_INSTALL_DIR}/include
         ${3P_INSTALL_DIR}/include/SEAL-3.5
         ${CMAKE_CURRENT_BINARY_DIR}/protobuf # to allow e.g., #include "protobuf/foo.ph.h"
         ${HIT_PROTOBUF_DST} # to allow e.g., #include "foo.ph.h", which is how auto-generated protobuf files expect imports to be available
