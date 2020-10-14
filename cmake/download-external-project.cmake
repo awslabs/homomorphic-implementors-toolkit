@@ -9,9 +9,8 @@ function(download_external_project project_dir)
         file(REMOVE ${EXTERNAL_PROJECT_CMAKE_CACHE_FILE})
     endif()
     set(COMMAND_WORK_DIR ${HIT_THIRD_PARTY_DIR}/${project_dir})
-    # include(${COMMAND_WORK_DIR}/CMakeLists.txt RESULT_VARIABLE result)
     execute_process(
-            COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+            COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" . -D3P_INSTALL_DIR=${3P_INSTALL_DIR}
             RESULT_VARIABLE result
             WORKING_DIRECTORY ${COMMAND_WORK_DIR})
     if(result)

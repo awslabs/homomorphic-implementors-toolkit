@@ -17,8 +17,6 @@ if (NOT CMAKE_BUILD_TYPE)
 endif ()
 message(STATUS "Build type (CMAKE_BUILD_TYPE): ${CMAKE_BUILD_TYPE}")
 
-set(CMAKE_VERBOSE_MAKEFILE "")
-set(VERBOSE "")
 #########
 # Paths #
 #########
@@ -37,11 +35,9 @@ set(HIT_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/HIT)
 set(HIT_INCLUDES_INSTALL_DIR ${CMAKE_INSTALL_INCLUDE_DIR}/hit)
 set(HIT_INCLUDES_BUILD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
-
-
-message(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
 set(3P_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/third-party)
 list(APPEND CMAKE_PREFIX_PATH "${3P_INSTALL_DIR}")
+message(STATUS "Installing third-party dependencies to ${3P_INSTALL_DIR}")
 
 ########################
 # Custom Cmake Scripts #
@@ -60,6 +56,13 @@ include(enable-clang-tidy)
 # Third party dependencies #
 ############################
 
+# Using third-party dependencies is a multi-step process.
+# 1. The process starts in cmake/modules/FindFOOLib.cmake
+# 2. For some dependencies, we check if the dependency is available on the system with `find_package`.
+#    If the dependency is found, stop here.
+# 3. Otherwise, we invoke `download_external_project()`. In turn, this
+
+# message(FATAL_ERROR "FULL_STOP")
 find_package(BoostLib REQUIRED)
 find_package(SealLib REQUIRED)
 find_package(ProtobufLib REQUIRED)
@@ -106,7 +109,7 @@ add_library(aws-hit STATIC $<TARGET_OBJECTS:aws_hit_obj> $<TARGET_OBJECTS:aws_hi
 target_compile_features(aws-hit PUBLIC cxx_std_17)
 target_include_directories(aws-hit PUBLIC
         ${Protobuf_INCLUDE_DIRS}
-        ${Protobuf_INCLUDE_DIRS}/SEAL-3.5
+        ${3P_INSTALL_DIR}/include/SEAL-3.5
         ${CMAKE_CURRENT_BINARY_DIR}/protobuf # to allow e.g., #include "protobuf/foo.ph.h"
         ${HIT_PROTOBUF_DST} # to allow e.g., #include "foo.ph.h", which is how auto-generated protobuf files expect imports to be available
         $<BUILD_INTERFACE:${HIT_INCLUDES_BUILD_DIR}>

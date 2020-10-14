@@ -14,7 +14,6 @@ RUN set -ex && \
     ninja-build \
     git \
     build-essential \
-    automake \
     libboost-all-dev \
     software-properties-common \
     curl \
@@ -33,6 +32,9 @@ RUN set -ex && \
 # ninja-build is required since we use ninja in run-hit-ci.sh, but ninja is not required in general.
 # software-properties-common is required for the docker image to run `add-apt-repository`
 # libboost-all-dev speeds up the build, since we don't have to download and build boost when building HIT
+# build-essential (really, `make`) is required to build tbb
+
+
 
 # apt-utils \
 #
