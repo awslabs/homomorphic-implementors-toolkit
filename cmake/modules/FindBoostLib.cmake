@@ -15,10 +15,18 @@ if (Boost_FOUND)
     message(STATUS "Found Boost installed on the system.")
 else ()
     message(STATUS "Boost was not found on your system.")
+    message(STATUS "Installing Boost...")
     # Installation is easy: just unzip the headers to the third-party
     # installation directory
+    execute_process(
+        COMMAND mkdir -p ${3P_INSTALL_DIR}/include
+    )
+    message(STATUS "Made directory...")
     execute_process(
         COMMAND ${CMAKE_COMMAND} -E tar xzf ${HIT_THIRD_PARTY_DIR}/boost/boost_ublas.zip
         RESULT_VARIABLE result
         WORKING_DIRECTORY ${3P_INSTALL_DIR}/include)
+    if(result)
+        message(FATAL_ERROR "Failed to install Boost (${result}).")
+    endif()
 endif ()

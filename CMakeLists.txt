@@ -107,7 +107,8 @@ add_subdirectory(src)
 # Always build the static library
 add_library(aws-hit STATIC $<TARGET_OBJECTS:aws_hit_obj> $<TARGET_OBJECTS:aws_hit_proto>)
 target_compile_features(aws-hit PUBLIC cxx_std_17)
-target_include_directories(aws-hit PUBLIC
+target_include_directories(aws-hit
+    PUBLIC
         ${Protobuf_INCLUDE_DIRS}
         ${3P_INSTALL_DIR}/include
         ${3P_INSTALL_DIR}/include/SEAL-3.5
