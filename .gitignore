@@ -13,8 +13,8 @@ hit_log/*
 
 # Ignore third party.
 third-party/*/**
-!third-party/seal/src/**
 !third-party/*/CMakeLists.txt
+!third-party/boost/boost_ublas.zip
 cmake-build-debug
 
 # Ignore CMake
