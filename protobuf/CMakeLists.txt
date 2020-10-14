@@ -56,10 +56,6 @@ add_library(aws_hit_proto
     ${HIT_PROTOBUF_DST}/encrypted_col_vector.pb.cc
 )
 
-target_include_directories(aws_hit_proto PUBLIC
-    PRIVATE ${Protobuf_INCLUDE_DIRS}
-)
-
 install(
   FILES
     ${HIT_PROTOBUF_DST}/ciphertext.pb.h
