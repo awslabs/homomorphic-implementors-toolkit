@@ -19,7 +19,6 @@ else ()
     # Installation is easy: just unzip the headers to the third-party
     # installation directory
     file(MAKE_DIRECTORY ${3P_INSTALL_DIR}/include)
-    message(STATUS "Made directory...")
     execute_process(
         COMMAND ${CMAKE_COMMAND} -E tar xzf ${HIT_THIRD_PARTY_DIR}/boost/boost_ublas.zip
         RESULT_VARIABLE result

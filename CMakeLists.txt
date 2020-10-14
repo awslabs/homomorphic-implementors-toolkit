@@ -36,8 +36,10 @@ set(HIT_INCLUDES_INSTALL_DIR ${CMAKE_INSTALL_INCLUDE_DIR}/hit)
 set(HIT_INCLUDES_BUILD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
 set(3P_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/third-party)
-list(APPEND CMAKE_PREFIX_PATH "${3P_INSTALL_DIR}")
-message(STATUS "Installing third-party dependencies to ${3P_INSTALL_DIR}")
+
+# This is where most third-party dependencies are installed; adding the path
+# to CMAKE_PREFIX_PATH allows `find_package()` to succeed on these dependencies
+list(APPEND CMAKE_PREFIX_PATH ${3P_INSTALL_DIR})
 
 ########################
 # Custom Cmake Scripts #
@@ -61,7 +63,14 @@ include(enable-clang-tidy)
 # 2. For some dependencies, we check if the dependency is available on the system with `find_package`.
 #    If the dependency is found, stop here.
 # 3. Otherwise, we invoke `download_external_project()`. In turn, this calls `cmake` on the make_directory
-#    third-party/FOO/, which includes a CMakeLists.txt with download and build instructions.
+#    third-party/FOO/, which includes a CMakeLists.txt with download and build instructions. The
+#    invocation of cmake generates the build system for the dependency.
+# 4. Next, `download_external_project()` calls `cmake --build`, which actually builds the dependency
+#    we downloaded and configured in the previous step.
+# 5. Finally, FindFOOLib.cmake applies any one-off fixups to make the dependency usable by HIT.
+# Boost is an exception to the process above, since it is a large header-only library and we only
+# need a tiny fraction of it. The required headers are zipped and included in the repository,
+# so if Boost is not installed on the system, we just extract the headers.
 
 find_package(BoostLib REQUIRED)
 find_package(SealLib REQUIRED)

@@ -7,6 +7,9 @@ project(TBB_DOWNLOAD VERSION 2020.3)
 
 message(STATUS "Downloading TBB in ${CMAKE_CURRENT_LIST_DIR}.")
 
+# suppress a warning about an unused variable
+set(3P_INSTALL_DIR_dummy ${3P_INSTALL_DIR})
+
 include(ExternalProject)
 ExternalProject_Add(EP_TBB
     TMP_DIR              ${CMAKE_CURRENT_LIST_DIR}/tmp

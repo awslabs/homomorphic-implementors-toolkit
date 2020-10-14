@@ -1,8 +1,6 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-set(LIB_NAME glog)
-
 find_package(glog 0.3.5 QUIET)
 if (glog_FOUND)
     message(STATUS "GLog is already installed.")
