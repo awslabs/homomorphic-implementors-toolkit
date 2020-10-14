@@ -58,7 +58,7 @@ add_library(aws_hit_proto
 
 target_include_directories(aws_hit_proto PUBLIC
     PRIVATE ${Protobuf_INCLUDE_DIRS}
-    )
+)
 
 install(
   FILES
