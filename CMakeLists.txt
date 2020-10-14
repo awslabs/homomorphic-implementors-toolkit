@@ -77,8 +77,6 @@ include_directories(${3P_INSTALL_DIR}/include/SEAL-3.5)
 include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/protobuf)
 
-
-
 set(HIT_PROTOBUF_DST ${CMAKE_CURRENT_BINARY_DIR}/protobuf/hit/protobuf)
 add_subdirectory(protobuf)
 
