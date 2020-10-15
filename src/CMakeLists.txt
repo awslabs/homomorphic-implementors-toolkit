@@ -13,7 +13,9 @@ add_subdirectory(hit)
 
 # Set C++ language version and include directories for the object library
 target_compile_features(aws_hit_obj PUBLIC cxx_std_17)
-target_include_directories(aws_hit_obj PUBLIC
+target_include_directories(aws_hit_obj
+	PUBLIC
+        ${3P_INSTALL_DIR}/include/SEAL-3.5
         ${CMAKE_CURRENT_BINARY_DIR}/../protobuf # to allow e.g., #include "protobuf/foo.ph.h"
         ${HIT_PROTOBUF_DST} # to allow e.g., #include "foo.ph.h", which is how auto-generated protobuf files expect imports to be available
         $<BUILD_INTERFACE:${HIT_INCLUDES_BUILD_DIR}>

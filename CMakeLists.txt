@@ -81,10 +81,6 @@ find_package(TbbLib REQUIRED)
 #####################
 # Compile Protobufs #
 #####################
-include_directories(${3P_INSTALL_DIR}/include)
-include_directories(${3P_INSTALL_DIR}/include/SEAL-3.5)
-include_directories(${Protobuf_INCLUDE_DIRS})
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/protobuf)
 
 set(HIT_PROTOBUF_DST ${CMAKE_CURRENT_BINARY_DIR}/protobuf/hit/protobuf)
 add_subdirectory(protobuf)
@@ -116,15 +112,15 @@ add_library(aws-hit STATIC $<TARGET_OBJECTS:aws_hit_obj> $<TARGET_OBJECTS:aws_hi
 target_compile_features(aws-hit PUBLIC cxx_std_17)
 target_include_directories(aws-hit
     PUBLIC
-        ${Protobuf_INCLUDE_DIRS}
         ${3P_INSTALL_DIR}/include
-        ${3P_INSTALL_DIR}/include/SEAL-3.5
+        ${Protobuf_INCLUDE_DIRS}
         ${CMAKE_CURRENT_BINARY_DIR}/protobuf # to allow e.g., #include "protobuf/foo.ph.h"
         ${HIT_PROTOBUF_DST} # to allow e.g., #include "foo.ph.h", which is how auto-generated protobuf files expect imports to be available
         $<BUILD_INTERFACE:${HIT_INCLUDES_BUILD_DIR}>
         $<INSTALL_INTERFACE:${HIT_INCLUDES_INSTALL_DIR}>
-    PRIVATE ${HIT_SOURCE_DIR}
-    )
+    PRIVATE
+        ${HIT_SOURCE_DIR}
+)
 set_common_flags(aws-hit)
 
 # Link dependencies
