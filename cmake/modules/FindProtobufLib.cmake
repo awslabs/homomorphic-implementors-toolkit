@@ -11,11 +11,11 @@ if (Protobuf_FOUND AND Protoc_FOUND)
     message(STATUS "Protobuf is already installed.")
 else ()
     message(STATUS "Protobuf was not found on your system.")
+    # the call to `find_package` above sets Protobuf_LIBRARIES to `NOTFOUND`
+    # When we call `find_package` again after installing protobuf, this variable
+    # is not updated unless we `unset` its value first.
+    unset(Protobuf_LIBRARIES)
     download_external_project("protobuf")
-    # Even though find_package(Protobuf) succeeds at this point, it doesn't set
-    # the variables `Protobuf_LIBRARIES` and `Protobuf_PROTOC_EXECUTABLE`
-    # like it is supposed to, so we set them manually.
-    # find_package(Protobuf "3.0.0" REQUIRED HINTS ${3P_INSTALL_DIR})
-    set(Protobuf_LIBRARIES "${3P_INSTALL_DIR}/lib/libprotobuf.a")
-    find_program(Protobuf_PROTOC_EXECUTABLE protoc)
+    find_package(Protobuf "3.0.0" REQUIRED)
+	message(STATUS "Protoc compiler: ${Protobuf_PROTOC_EXECUTABLE}")
 endif ()

@@ -56,6 +56,12 @@ add_library(aws_hit_proto
     ${HIT_PROTOBUF_DST}/encrypted_col_vector.pb.cc
 )
 
+# Add include path for protobuf files if it is built locally
+target_include_directories(aws_hit_proto
+    PUBLIC
+        ${3P_INSTALL_DIR}/include
+)
+
 install(
   FILES
     ${HIT_PROTOBUF_DST}/ciphertext.pb.h
