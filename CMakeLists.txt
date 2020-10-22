@@ -72,11 +72,11 @@ include(enable-clang-tidy)
 # need a tiny fraction of it. The required headers are zipped and included in the repository,
 # so if Boost is not installed on the system, we just extract the headers.
 
-find_package(TbbLib REQUIRED)
 find_package(BoostLib REQUIRED)
 find_package(SealLib REQUIRED)
 find_package(ProtobufLib REQUIRED)
 find_package(GlogLib REQUIRED)
+find_package(TbbLib REQUIRED)
 
 #####################
 # Compile Protobufs #

@@ -18,5 +18,9 @@ message(STATUS "Installing TBB...")
 # See https://sudonull.com/post/68014-Integration-of-Intel-Threading-Building-Blocks-into-your-CMake-project-Intel-Blog
 # for details on the tbb_get arguments.
 tbb_get(TBB_ROOT tbb_root CONFIG_DIR TBB_DIR SAVE_TO ${3P_INSTALL_DIR})
-find_package(TBB REQUIRED)
+# Runtime linker error with GCC-9 in CI if I _don't_ specify the TBB components
+# The problem seems to be that the default is to use more components, but the linker
+# can't find the shared libraries of the (unused) components.
+# See https://github.com/oneapi-src/oneTBB/blob/tbb_2020/cmake/README.rst#user-content-tbbconfig
+find_package(TBB REQUIRED COMPONENTS tbb)
 message(STATUS "TBB_VERSION : ${TBB_VERSION}")
