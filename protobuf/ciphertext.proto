@@ -8,6 +8,5 @@ message Ciphertext {
 	required bool initialized = 1; // has this ciphertext been initialized?
 	optional bytes seal_ct = 2;    // the underlying SEAL ciphertext
 	required int32 he_level = 3;   // level of this ciphertext
-	repeated double raw_pt = 4;    // raw (unscaled) plaintext encrypted in the ciphertext; only non-empty in debug modes
-	required double scale = 5;     // CKKS scale of this ciphertext
+	required double scale = 4;     // CKKS scale of this ciphertext
 }
