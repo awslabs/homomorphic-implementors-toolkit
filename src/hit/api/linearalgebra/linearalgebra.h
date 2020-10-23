@@ -28,6 +28,25 @@
  * more details.
  */
 
+/* Intended usage is:
+ *
+ *      parallel_for(x.size(), i) {
+ *          foo1;
+ *          foo2;
+ *          ...
+ *          foon;
+ *      });
+ */
+
+// https://stackoverflow.com/a/10379844/925978
+#define COMBINE1(X,Y) X##Y  // helper macro
+#define COMBINE(X,Y) COMBINE1(X,Y)
+// https://stackoverflow.com/a/17694752/925978
+#define parallel_for(max_idx, body)\
+    std::vector<int> COMBINE(iterIdxs, __LINE__)(max_idx);\
+    std::iota(begin(COMBINE(iterIdxs, __LINE__)), end(COMBINE(iterIdxs, __LINE__)), 0);\
+    for_each(__pstl::execution::par, begin(COMBINE(iterIdxs, __LINE__)), end(COMBINE(iterIdxs, __LINE__)), body)
+
 namespace hit {
 
     // Evaluation and Encryption API for Linear Algebra objects
@@ -715,8 +734,10 @@ namespace hit {
                            << ", Matrix: " << arg2.needs_relin());
             }
 
-            std::vector<int> iterIdxs = gen_for_each_iters(arg1.num_cts());
-            for_each(__pstl::execution::par, begin(iterIdxs), end(iterIdxs), [&](int i) {
+            // parallel_for(arg1.num_cts(), i) {
+            //     eval.multiply_inplace(arg1[i], arg2[i]);
+            // };
+            parallel_for(arg1.num_cts(), [&](int i) {
                 eval.multiply_inplace(arg1[i], arg2[i]);
             });
         }
@@ -770,8 +791,7 @@ namespace hit {
                 LOG_AND_THROW_STREAM("Input to hadamard_square must have nominal scale");
             }
 
-            std::vector<int> iterIdxs = gen_for_each_iters(arg.num_cts());
-            for_each(__pstl::execution::par, begin(iterIdxs), end(iterIdxs), [&](int i) {
+            parallel_for(arg.num_cts(), [&](int i) {
                 eval.square_inplace(arg[i]);
             });
         }
@@ -977,8 +997,7 @@ namespace hit {
                 LOG_AND_THROW_STREAM("Input to reduce_level_to is not initialized");
             }
 
-            std::vector<int> iterIdxs = gen_for_each_iters(arg.num_cts());
-            for_each(__pstl::execution::par, begin(iterIdxs), end(iterIdxs), [&](int i) {
+            parallel_for(arg.num_cts(), [&](int i) {
                 eval.reduce_level_to_inplace(arg[i], level);
             });
         }
@@ -1010,8 +1029,7 @@ namespace hit {
                 LOG_AND_THROW_STREAM("Inputs to rescale_to_next is not initialized");
             }
 
-            std::vector<int> iterIdxs = gen_for_each_iters(arg.num_cts());
-            for_each(__pstl::execution::par, begin(iterIdxs), end(iterIdxs), [&](int i) {
+            parallel_for(arg.num_cts(), [&](int i) {
                 eval.rescale_to_next_inplace(arg[i]);
             });
         }
@@ -1040,8 +1058,7 @@ namespace hit {
                 LOG_AND_THROW_STREAM("Inputs to relinearize is not initialized");
             }
 
-            std::vector<int> iterIdxs = gen_for_each_iters(arg.num_cts());
-            for_each(__pstl::execution::par, begin(iterIdxs), end(iterIdxs), [&](int i) {
+            parallel_for(arg.num_cts(), [&](int i) {
                 eval.relinearize_inplace(arg[i]);
             });
         }
