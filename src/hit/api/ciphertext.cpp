@@ -18,14 +18,6 @@ namespace hit {
         he_level_ = proto_ct.he_level();
         num_slots_ = context->first_context_data()->parms().poly_modulus_degree() / 2;
 
-        int raw_pt_size = proto_ct.raw_pt_size();
-        if (raw_pt_size > 0) {
-            raw_pt = vector<double>(raw_pt_size);
-            for (int i = 0; i < raw_pt_size; i++) {
-                raw_pt[i] = proto_ct.raw_pt(i);
-            }
-        }
-
         if (proto_ct.has_seal_ct()) {
             istringstream ctstream(proto_ct.seal_ct());
             seal_ct.load(context, ctstream);
@@ -46,17 +38,12 @@ namespace hit {
         auto *proto_ct = new protobuf::Ciphertext();
 
         if (!raw_pt.empty()) {
-            LOG(WARNING) << "Serializing ciphertext with plaintext data attached! Use the homomorphic evaluator "
-                            "instead for secure computation.";
+            LOG_AND_THROW_STREAM("HIT does not support serializing ciphertexts with plaintext data attached! Use the homomorphic evaluator to serialize ciphertexts.");
         }
 
         proto_ct->set_initialized(initialized);
         proto_ct->set_scale(scale_);
         proto_ct->set_he_level(he_level_);
-
-        for (double i : raw_pt) {
-            proto_ct->add_raw_pt(i);
-        }
 
         // if the seal_ct is initialized, serialize it
         if (seal_ct.parms_id() != parms_id_zero) {
