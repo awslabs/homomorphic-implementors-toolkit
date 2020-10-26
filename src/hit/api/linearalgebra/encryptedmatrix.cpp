@@ -20,7 +20,13 @@ namespace hit {
     void EncryptedMatrix::read_from_proto(const shared_ptr<SEALContext> &context,
                                           const protobuf::EncryptedMatrix &encrypted_matrix) {
         height_ = encrypted_matrix.height();
+        if (height_ < 0) {
+            LOG_AND_THROW_STREAM("Error deserializing EncryptedMatrix: height must be non-negative, got " << height_);
+        }
         width_ = encrypted_matrix.width();
+        if (width_ < 0) {
+            LOG_AND_THROW_STREAM("Error deserializing EncryptedMatrix: width must be non-negative, got " << width_);
+        }
         unit = EncodingUnit(encrypted_matrix.unit());
 
         cts.reserve(encrypted_matrix.cts_size());

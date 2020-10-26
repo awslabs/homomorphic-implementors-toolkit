@@ -10,6 +10,9 @@
 #include "seal/seal.h"
 #include "common.h"
 
+// SEAL throws an error for 21, but allows 22
+#define MIN_LOG_SCALE 22
+
 namespace hit {
     /*
     Helper function: Prints the parameters in a SEALContext.

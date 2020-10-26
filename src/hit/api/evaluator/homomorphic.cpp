@@ -17,9 +17,6 @@
 using namespace std;
 using namespace seal;
 
-// SEAL throws an error for 21, but allows 22
-#define MIN_LOG_SCALE 22
-
 namespace hit {
     /* Note: there is a flag to update_metadata of ciphertexts
      * however, *this evaluator must not depend on those values* (specifically: he_level() and scale()).
@@ -130,15 +127,42 @@ namespace hit {
     void HomomorphicEval::deserialize_common(istream &params_stream) {
         protobuf::CKKSParams ckks_params;
         ckks_params.ParseFromIstream(&params_stream);
+
         log_scale_ = ckks_params.logscale();
+        if (log_scale_ <= MIN_LOG_SCALE) {
+            LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: log scale too small. Minimum value is " << MIN_LOG_SCALE << ", got " << log_scale_);
+        }
+
         int num_slots = ckks_params.numslots();
+        if (num_slots < 4096 || !is_pow2(num_slots)) {
+            LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: num_slots is invalid. Expected a power of two at least 4096, got " << num_slots);
+        }
+
         int poly_modulus_degree = num_slots * 2;
-        int numPrimes = ckks_params.modulusvec_size();
+        int num_primes = ckks_params.modulusvec_size();
+        if (num_primes < 2) {
+            LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: at least two primes are required, but only got " << num_primes);
+        }
+
         vector<Modulus> modulus_vector;
-        modulus_vector.reserve(numPrimes);
-        for (int i = 0; i < numPrimes; i++) {
+        modulus_vector.reserve(num_primes);
+        for (int i = 0; i < num_primes; i++) {
             auto val = Modulus(ckks_params.modulusvec(i));
             modulus_vector.push_back(val);
+        }
+
+        if (round(log2(modulus_vector[0].value())) != 60) {
+            LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: Last prime must be 60 bits, got " << log2(modulus_vector[0].value()) << " bits");
+        }
+        if (round(log2(modulus_vector[num_primes-1].value())) != 60) {
+            LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: Special prime must be 60 bits, got " << log2(modulus_vector[num_primes-1].value()) << " bits");
+        }
+        int expected_log_scale = round(log2(modulus_vector[1].value()));
+        for (int i = 2; i < num_primes-1; i++) {
+            int log_prime = round(log2(modulus_vector[i].value()));
+            if (log_prime != expected_log_scale) {
+                LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: modulus primes expected to be " << expected_log_scale << " bits, got " << log_prime << " bits");
+            }
         }
 
         EncryptionParameters params = EncryptionParameters(scheme_type::CKKS);

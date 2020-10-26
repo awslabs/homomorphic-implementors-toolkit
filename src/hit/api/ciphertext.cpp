@@ -6,6 +6,7 @@
 #include <glog/logging.h>
 
 #include "../common.h"
+#include "../sealutils.h"
 
 using namespace std;
 using namespace seal;
@@ -14,8 +15,21 @@ namespace hit {
 
     void CKKSCiphertext::read_from_proto(const shared_ptr<SEALContext> &context, const protobuf::Ciphertext &proto_ct) {
         initialized = proto_ct.initialized();
+
+        // Users cannot specify an initial scale smaller than 2^MIN_LOG_SCALE
+        // If a user does specify this scale, the scale at lower levels is never
+        // smaller than the initial scale: it can only get larger because of the way
+        // SEAL generates modulus vectors.
         scale_ = proto_ct.scale();
+        if (scale_ <= pow(2, MIN_LOG_SCALE)) {
+            LOG_AND_THROW_STREAM("Error deserializing ciphertext: scale too small.");
+        }
+
         he_level_ = proto_ct.he_level();
+        if (he_level_ < 0 || he_level_ > context->first_context_data()->chain_index()) {
+            LOG_AND_THROW_STREAM("Error deserializing ciphertext: he_level out of bounds.");
+        }
+
         num_slots_ = context->first_context_data()->parms().poly_modulus_degree() / 2;
 
         if (proto_ct.has_seal_ct()) {

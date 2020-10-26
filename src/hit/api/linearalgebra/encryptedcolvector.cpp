@@ -19,6 +19,9 @@ namespace hit {
     void EncryptedColVector::read_from_proto(const shared_ptr<SEALContext> &context,
                                              const protobuf::EncryptedColVector &encrypted_col_vector) {
         height_ = encrypted_col_vector.height();
+        if (height_ < 0) {
+            LOG_AND_THROW_STREAM("Error deserializing EncryptedColVector: height must be non-negative, got " << height_);
+        }
         unit = EncodingUnit(encrypted_col_vector.unit());
         cts.reserve(encrypted_col_vector.cts().cts_size());
         deserialize_vector(context, encrypted_col_vector.cts(), cts);

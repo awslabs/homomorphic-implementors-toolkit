@@ -21,8 +21,10 @@ namespace hit {
     void EncryptedRowVector::read_from_proto(const shared_ptr<SEALContext> &context,
                                              const protobuf::EncryptedRowVector &encrypted_row_vector) {
         width_ = encrypted_row_vector.width();
+        if (width_ < 0) {
+            LOG_AND_THROW_STREAM("Error deserializing EncryptedRowVector: width must be non-negative, got " << width_);
+        }
         unit = EncodingUnit(encrypted_row_vector.unit());
-
         cts.reserve(encrypted_row_vector.cts().cts_size());
         deserialize_vector(context, encrypted_row_vector.cts(), cts);
         validate_init();
