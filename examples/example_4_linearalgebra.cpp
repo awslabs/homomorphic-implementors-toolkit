@@ -372,9 +372,10 @@ void example_4_driver() {
 /* ******** Matrix/Matrix Multiplication ********
  * Finally, we'll cover matrix-matrix multiplication. As with matrix/vector
  * multiplication, the homomorphic algorithm has a "twist": to compute the product
- * A*B, we need to provide encryptions of A^T and B. While this operation has
+ * A*B, we need to provide _either_ encryptions of A^T and B, _or_ encryptions
+ * of A and B^T. While this operation has
  * multiplicative depth 3 regardless of the matrix dimensions, the number of overall
- * multiplications involved *does* depend on the matrix dimensions. It's important
+ * multiplications involved depends on the matrix dimensions. It's important
  * to consider this when choosing to use this operation, since multiplying larger
  * matrices involves many expensive operations, even on highly parallel hardware.
  */
@@ -384,7 +385,8 @@ void example_4_driver() {
     vector<double> mat_data_a = random_vector(20*150, plaintext_inf_norm);
 	Matrix mat_a = Matrix(20, 150, mat_data_a);
 
-	// To compute the homomorphic product A*B, we actually need to encrypt A^T
+	// First, we will use the matrix/matrix variant that takes A^T and B,
+	// so we need to encrypt A^T
 	EncryptedMatrix enc_mat_a_trans = la_inst.encrypt(trans(mat_a), unit_64x128);
 
 	// Some operations allow us to throw in a free constant multiplication,
@@ -393,22 +395,47 @@ void example_4_driver() {
 	// created the evaluator with max_depth 3. However, `enc_mat1` must be at
 	// level 2, so we will first reduce its level.
 	la_inst.reduce_level_to_inplace(enc_mat1, enc_mat_a_trans.he_level()-1);
-	EncryptedMatrix mat_prod_ab = la_inst.multiply(enc_mat_a_trans, enc_mat1, 2);
+	EncryptedMatrix mat_row_prod_ab = la_inst.multiply_row_major(enc_mat_a_trans, enc_mat1, 2);
 	// A linear ciphertext with a squared scale, so let's rescale:
-	la_inst.rescale_to_next_inplace(mat_prod_ab);
+	la_inst.rescale_to_next_inplace(mat_row_prod_ab);
 
 	// Use boost to compute the plaintext matrix product
 	Matrix expected_result = 2*prec_prod(mat_a, mat);
 	// Look at the plaintext product using the homomorphic algorithm
-	Matrix actual_result_plaintext = mat_prod_ab.plaintext();
+	Matrix actual_row_result_plaintext = mat_row_prod_ab.plaintext();
 	// We can also decrypt the result to see what happened on ciphertexts
-	Matrix actual_result_homomorphic = la_inst.decrypt(mat_prod_ab);
+	Matrix actual_row_result_homomorphic = la_inst.decrypt(mat_row_prod_ab);
 
 	LOG(INFO) << "Matrix/Matrix plaintext algorithm is correct if "
-	     << relative_error(expected_result, actual_result_plaintext)
-	     << " is <<1.";
+	          << relative_error(expected_result, actual_row_result_plaintext)
+	          << " is <<1.";
 
 	LOG(INFO) << "Matrix/Matrix homomorphic algorithm is correct if "
-	     << relative_error(expected_result, actual_result_homomorphic)
-	     << " is <<1.";
+	          << relative_error(expected_result, actual_row_result_homomorphic)
+	          << " is <<1.";
+
+	// Alternatively, if we have A and B^T, we can use `multiply_row_major`.
+	// `mat` (which we renamed B) is a 150x300 matrix; we will need its transpose
+	Matrix mat_b_trans = trans(mat);
+	// Encrypt B^T with a 64x128 encoding unit
+	EncryptedMatrix enc_mat_b_trans = la_inst.encrypt(mat_b_trans, unit_64x128);
+	// Encrypt A with a 64x128 encoding unit at one level below enc_mat_b_trans
+	EncryptedMatrix enc_mat_a = la_inst.encrypt(mat_a, unit_64x128, enc_mat_b_trans.he_level()-1);
+	// Compute the product 2*A*B
+	EncryptedMatrix mat_col_prod_ab = la_inst.multiply_row_major(enc_mat_a_trans, enc_mat1, 2);
+	// A linear ciphertext with a squared scale, so let's rescale:
+	la_inst.rescale_to_next_inplace(mat_col_prod_ab);
+
+	// Look at the plaintext product using the homomorphic algorithm
+	Matrix actual_col_result_plaintext = mat_col_prod_ab.plaintext();
+	// We can also decrypt the result to see what happened on ciphertexts
+	Matrix actual_col_result_homomorphic = la_inst.decrypt(mat_col_prod_ab);
+
+	LOG(INFO) << "Matrix/Matrix plaintext algorithm is correct if "
+	          << relative_error(expected_result, actual_col_result_plaintext)
+	          << " is <<1.";
+
+	LOG(INFO) << "Matrix/Matrix homomorphic algorithm is correct if "
+	          << relative_error(expected_result, actual_col_result_homomorphic)
+	          << " is <<1.";
 }

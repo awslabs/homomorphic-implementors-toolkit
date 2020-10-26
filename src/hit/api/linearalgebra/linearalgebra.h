@@ -466,27 +466,6 @@ namespace hit {
             }
         }
 
-
-        /* Computes a standard (scaled) matrix/matrix product scalar*A*B, except that the inputs
-         * are A^T and B. Note that this operation has constant depth, but involves 3*g (parallel)
-         * multiplications.
-         * Input Linear Algebra Constraints:
-         *       Both arguments must be encoded with the same unit. `enc_mat_a_trans` is a g-by-f matrix,
-         *       and `enc_mat_b` is a g-by-h matrix.
-         * Input Ciphertext Constraints:
-         *       Both inputs must be linear ciphertexts with nominal scale. `enc_mat_a_trans` must be
-         *       at level i >= 3, and `enc_mat_b` must be at level i-1.
-         * Other Input Constraints:
-         *       Optional scalar defaults to 1.
-         * Output Linear Algebra Properties:
-         *       An f-by-h matrix scalar*A*B encoded with the same unit as the input.
-         * Output Ciphertext Properties:
-         *       A linear ciphertext with a squared scale at level i-2.
-         */
-        EncryptedMatrix multiply(const EncryptedMatrix &enc_mat_a_trans, const EncryptedMatrix &enc_mat_b,
-                                 double scalar = 1);
-
-
         /* Computes a standard row vector/matrix product, except that the output is transposed.
          * Input Linear Algebra Constraints:
          *       Both arguments must be encoded with the same unit. `enc_vec` is a f-dimensional vector,
@@ -514,6 +493,61 @@ namespace hit {
          */
         EncryptedRowVector multiply(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec,
                                     double scalar = 1);
+
+        /********************************
+         * Matrix-Matrix Multiplication *
+         ********************************
+         *
+         * Homomorphic matrix-matrix multiplication has a small catch: to multiply
+         * an f-by-g matrix A and a g-by-h matrix B, you must either provide encryptions of
+         * A^T and B, or encryptions of A and B^T. In both cases, we require both inputs to
+         * be encoded with (the same) m-by-n unit:
+         *
+         * multiply_row_major(A^T, B, c) = c*A*B
+         * multiply_col_major(A, B^T, c) = c*A*B
+         *
+         * Both functions have multiplicative depth three and similar performance:
+         * on a system with ~f*g*h/(m*n) cores, their cost is three mulitplications
+         * and (1+lg(m)+lg(n)) rotations.
+         */
+
+
+        /* Computes a standard (scaled) matrix/matrix product scalar*A*B, except that the inputs
+         * are A^T and B.
+         * Input Linear Algebra Constraints:
+         *       Both arguments must be encoded with the same unit. `enc_mat_a_trans` is a g-by-f matrix,
+         *       and `enc_mat_b` is a g-by-h matrix.
+         * Input Ciphertext Constraints:
+         *       Both inputs must be linear ciphertexts with nominal scale. `enc_mat_a_trans` must be
+         *       at level i >= 3, and `enc_mat_b` must be at level i-1.
+         * Other Input Constraints:
+         *       Optional scalar defaults to 1.
+         * Output Linear Algebra Properties:
+         *       An f-by-h matrix scalar*A*B encoded with the same unit as the input.
+         * Output Ciphertext Properties:
+         *       A linear ciphertext with a squared scale at level i-2.
+         */
+        EncryptedMatrix multiply_row_major(const EncryptedMatrix &enc_mat_a_trans, const EncryptedMatrix &enc_mat_b,
+                                           double scalar = 1);
+
+
+        /* Computes a standard (scaled) matrix/matrix product scalar*A*B, except that the inputs
+         * are A and B^T.
+         * Input Linear Algebra Constraints:
+         *       Both arguments must be encoded with the same unit. `enc_mat_a` is a f-by-g matrix,
+         *       and `enc_mat_b_trans` is a h-by-g matrix.
+         * Input Ciphertext Constraints:
+         *       Both inputs must be linear ciphertexts with nominal scale. `enc_mat_b_trans` must be
+         *       at level i >= 3, and `enc_mat_a` must be at level i-1.
+         * Other Input Constraints:
+         *       Optional scalar defaults to 1.
+         * Output Linear Algebra Properties:
+         *       An f-by-h matrix scalar*A*B encoded with the same unit as the input.
+         * Output Ciphertext Properties:
+         *       A linear ciphertext with a squared scale at level i-2.
+         */
+        EncryptedMatrix multiply_col_major(const EncryptedMatrix &enc_mat_a, const EncryptedMatrix &enc_mat_b_trans,
+                                           double scalar = 1);
 
 
         /******************************************
@@ -1060,17 +1094,25 @@ namespace hit {
                                                                     const EncryptedColVector &enc_vec, int i);
 
         // inner loop for matrix/matrix multiplication
-        EncryptedColVector matrix_matrix_mul_loop(const EncryptedMatrix &enc_mat_a_trans,
-                                                  const EncryptedMatrix &enc_mat_b, double scalar, int k,
-                                                  bool transpose_unit);
+        EncryptedColVector matrix_matrix_mul_loop_row_major(const EncryptedMatrix &enc_mat_a_trans,
+                                                            const EncryptedMatrix &enc_mat_b,
+                                                            double scalar, int k, bool transpose_unit);
+
+        // inner loop for matrix/matrix multiplication
+        EncryptedRowVector matrix_matrix_mul_loop_col_major(const EncryptedMatrix &enc_mat_a,
+                                                            const EncryptedMatrix &enc_mat_b_trans,
+                                                            double scalar, int k);
 
         // common core for matrix/matrix multiplication; used by both multiply and multiply_unit_transpose
         std::vector<EncryptedColVector> multiply_common(const EncryptedMatrix &enc_mat_a_trans,
                                                         const EncryptedMatrix &enc_mat_b, double scalar,
                                                         bool transpose_unit);
 
-        // helper function for matrix/matrix multiplication which extracts a single row of A (given the encoding of A^T)
+        // helper function for multiply_row_major which extracts a single row of A given the encoding of A^T
         EncryptedRowVector extract_row(const EncryptedMatrix &enc_mat_a_trans, int row);
+
+        // helper function for multiply_col_major which extracts a single column of B given the encoding of B^T
+        EncryptedColVector extract_col(const EncryptedMatrix &enc_mat_b_trans, int col);
     };
 
 }  // namespace hit

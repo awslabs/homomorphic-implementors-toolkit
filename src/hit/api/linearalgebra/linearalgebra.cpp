@@ -479,12 +479,59 @@ namespace hit {
         return sum_cols(hadmard_prod, scalar);
     }
 
+    /* Computes (the encoding of) the k^th column of B, given B^T */
+    EncryptedColVector LinearAlgebra::extract_col(const EncryptedMatrix &enc_mat_b_trans, int col) {
+        EncodingUnit unit = enc_mat_b_trans.encoding_unit();
+
+        // create a mask for the k^th row of B^T, which is the k^th column of B
+        // row_mask is a single encoding unit which will be replicated for every
+        // horizontal unit of the encoding of B^T
+        vector<double> row_mask(enc_mat_b_trans.num_slots());
+
+        // compute which unit row the desired column is in
+        int unit_row = col / unit.encoding_height();
+        // row_in_unit is the row within the encoding unit that contains the masked row
+        int row_in_unit = col % unit.encoding_height();
+
+        // create the column mask encoding unit
+        for (size_t i = 0; i < enc_mat_b_trans.num_slots(); i++) {
+            if (i / unit.encoding_width() == row_in_unit) {
+                row_mask[i] = 1;
+            } else {
+                row_mask[i] = 0;
+            }
+        }
+
+        vector<CKKSCiphertext> isolated_row_cts(enc_mat_b_trans.num_horizontal_units());
+        for (int j = 0; j < enc_mat_b_trans.num_horizontal_units(); j++) {
+            isolated_row_cts[j] = eval.multiply_plain(enc_mat_b_trans.cts[unit_row][j], row_mask);
+            eval.rescale_to_next_inplace(isolated_row_cts[j]);
+            // we now have isolated the k^th row of B^T. To get an encoding of the k^th column of B
+            // we need to replicate this row across all rows of the encoding unit
+
+            // An easy way to do this is to invoke sum_rows,
+            // but it requires some packing and unpacking.
+            // [Note: sum_rows nominally spawns new threads, but this matrix only has a
+            //  single unit, so no additional threads are created.
+            // First, compute the j^th component of the k^th column of B
+            EncryptedColVector kth_col_j = sum_rows(
+                EncryptedMatrix(unit.encoding_height(),
+                                unit.encoding_width(),
+                                unit,
+                                vector<vector<CKKSCiphertext>>{vector<CKKSCiphertext>{isolated_row_cts[j]}}));
+            // This "column" has a single encoding unit, which we want to extract
+            // and replace in isolated_row_cts
+            isolated_row_cts[j] = kth_col_j.cts[0];
+        }
+        return EncryptedColVector(enc_mat_b_trans.width(), unit, isolated_row_cts);
+    }
+
     /* Computes (the encoding of) the k^th row of A, given A^T */
     EncryptedRowVector LinearAlgebra::extract_row(const EncryptedMatrix &enc_mat_a_trans, int row) {
         EncodingUnit unit = enc_mat_a_trans.encoding_unit();
 
         // create a mask for the k^th column of A^T, which is the k^th row of A
-        // col_mask is a single encoding unit, which will be replicated for every
+        // col_mask is a single encoding unit which will be replicated for every
         // vertical unit of the encoding of A^T
         vector<double> col_mask(enc_mat_a_trans.num_slots());
 
@@ -520,26 +567,76 @@ namespace hit {
         return EncryptedRowVector(enc_mat_a_trans.height(), unit, isolated_col_cts);
     }
 
-    /* Computes the k^th row of c*A*B^T given A^T and B, but NOT encoded as a vector.
+    /* Computes the k^th column of c*A*B given A and B^T, but NOT encoded as a vector.
+     * First, mask out the k^th row of B^T, which is the k^th column of B.
+     * The goal is to replicate this row to get the encoding of the k^th column of A (as columns)
+     */
+    EncryptedRowVector LinearAlgebra::matrix_matrix_mul_loop_col_major(
+            const EncryptedMatrix &enc_mat_a,
+            const EncryptedMatrix &enc_mat_b_trans,
+            double scalar, int k) {
+        EncryptedColVector kth_col_B = extract_col(enc_mat_b_trans, k);
+        EncodingUnit unit = enc_mat_a.encoding_unit();
+
+        // We could just use `multiply` here, but it's inefficient:
+        // it would call hadamard_multiply, followed by `sum_cols` to
+        // create an encoding of the output vector.
+        // Our goal is to output a single copy of the output column,
+        // but NOT replicate it; we will add it to the other columns later
+        // By manulaly performing the `sum_cols` step, we can accomplish
+        // several other tasks simultaneously.
+        EncryptedMatrix hmul_A_times_kth_col_B = hadamard_multiply(enc_mat_a, kth_col_B);
+        relinearize_inplace(hmul_A_times_kth_col_B);
+        rescale_to_next_inplace(hmul_A_times_kth_col_B);
+
+        // create a mask for the first column
+        int num_slots = enc_mat_b_trans.num_slots();
+        vector<double> col_mask(num_slots);
+        for (int i = 0; i < num_slots; i++) {
+            if (i % unit.encoding_width() == 0) {
+                col_mask[i] = scalar;
+            }
+            else {
+                col_mask[i] = 0;
+            }
+        }
+
+        vector<CKKSCiphertext> row_cts(enc_mat_a.num_vertical_units());
+        for(int i = 0; i < enc_mat_a.num_vertical_units(); i++) {
+            // sum the units in this row
+            CKKSCiphertext unit_sum = eval.add_many(hmul_A_times_kth_col_B.cts[i]);
+            // sum the columns of the unit, putting the result in the first column
+            rot(unit_sum, unit.encoding_width(), 1, true);
+
+            // scale and mask out first column
+            row_cts[i] = eval.multiply_plain(unit_sum, col_mask);
+            // shift to the target column
+            eval.rotate_right_inplace(row_cts[i], k % unit.encoding_width());
+        }
+
+        return EncryptedRowVector(enc_mat_a.height(), unit, row_cts);
+    }
+
+    /* Computes the k^th row of c*A*B given A^T and B, but NOT encoded as a vector.
      * First, mask out the k^th column of A^T, which is the k^th row of A.
      * The goal is to replicate this column to get the encoding of the k^th row of A (as columns)
      */
-    EncryptedColVector LinearAlgebra::matrix_matrix_mul_loop(const EncryptedMatrix &enc_mat_a_trans,
-                                                             const EncryptedMatrix &enc_mat_b, const double scalar,
-                                                             int k, bool transpose_unit) {
+    EncryptedColVector LinearAlgebra::matrix_matrix_mul_loop_row_major(
+            const EncryptedMatrix &enc_mat_a_trans,
+            const EncryptedMatrix &enc_mat_b,
+            double scalar, int k, bool transpose_unit) {
         EncryptedRowVector kth_row_A = extract_row(enc_mat_a_trans, k);
-        EncryptedColVector kth_row_A_times_BT = multiply(kth_row_A, enc_mat_b);
-        rescale_to_next_inplace(kth_row_A_times_BT);
+        EncryptedColVector kth_row_A_times_B = multiply(kth_row_A, enc_mat_b);
+        rescale_to_next_inplace(kth_row_A_times_B);
 
-        // kth_row_A_times_BT is a column vector encoded as rows.
+        // kth_row_A_times_B is a column vector encoded as rows.
         // we need to mask out the desired row (but NOT replicate it; we will add it to the other rows later)
 
-        int num_slots =
-            enc_mat_a_trans.encoding_unit().encoding_width() * enc_mat_a_trans.encoding_unit().encoding_height();
+        int num_slots = enc_mat_a_trans.num_slots();
 
-        // Currently, each row of kth_row_A_times_BT is identical. We want to mask out one
+        // Currently, each row of kth_row_A_times_B is identical. We want to mask out one
         // so that we can add it to another row later to get our matrix product.
-        // Create a mask for the k^th row of kth_row_A_times_BT.
+        // Create a mask for the k^th row of kth_row_A_times_B.
         // This mask is scaled by c so that we get a constant multiplication for free.
         vector<double> row_mask(num_slots);
 
@@ -570,21 +667,100 @@ namespace hit {
         }
 
         // iterate over all the (horizontally adjacent) units of this column vector to mask out the kth row
-        for (auto &ct : kth_row_A_times_BT.cts) {
+        for (auto &ct : kth_row_A_times_B.cts) {
             eval.multiply_plain_inplace(ct, row_mask);
         }
 
-        return kth_row_A_times_BT;
+        return kth_row_A_times_B;
+    }
+
+    EncryptedMatrix LinearAlgebra::multiply_col_major(const EncryptedMatrix &enc_mat_a,
+                                                      const EncryptedMatrix &enc_mat_b_trans,
+                                                      double scalar) {
+        if (!enc_mat_a.initialized() || !enc_mat_b_trans.initialized()) {
+            LOG_AND_THROW_STREAM("Inputs to multiply are not initialized.");
+        }
+        if (enc_mat_a.encoding_unit() != enc_mat_b_trans.encoding_unit()) {
+            LOG_AND_THROW_STREAM("Inputs to multiply must have the same units: "
+                       << dim_string(enc_mat_a.encoding_unit()) << "!="
+                       << dim_string(enc_mat_b_trans.encoding_unit()));
+        }
+        if (enc_mat_a.he_level() + 1 != enc_mat_b_trans.he_level()) {
+            LOG_AND_THROW_STREAM("Second argument to matrix multiply must be one level below first argument: "
+                       << enc_mat_a.he_level() << "!=" << enc_mat_b_trans.he_level() << "+1");
+        }
+        if (enc_mat_a.width() != enc_mat_b_trans.width()) {
+            LOG_AND_THROW_STREAM("Inputs to matrix multiply do not have compatible dimensions: "
+                       << dim_string(enc_mat_a) + " vs " + dim_string(enc_mat_b_trans));
+        }
+        if (enc_mat_a.needs_rescale() || enc_mat_b_trans.needs_rescale()) {
+            LOG_AND_THROW_STREAM("Inputs to matrix multiply must have nominal scale: "
+                       << "Matrix A: " << enc_mat_a.needs_rescale()
+                       << ", Matrix B^T: " << enc_mat_b_trans.needs_rescale());
+        }
+        if (enc_mat_a.needs_relin() || enc_mat_b_trans.needs_relin()) {
+            LOG_AND_THROW_STREAM("Inputs to matrix multiply must be linear ciphertexts: "
+                       << "Matrix A: " << enc_mat_a.needs_relin()
+                       << ", Matrix B^T: " << enc_mat_b_trans.needs_relin());
+        }
+
+        // Multiply the matrix A by each column of B. The result is a list of EncryptedRowVectors, each with a single non-zero column.
+        // This function requires A to be at one level below enc_mat_b_trans.
+
+        // we will iterate over all rows of B^T (columns of B)
+        // and compute the k^th column of A times B
+        // then combine the results for each column to get the matrix product
+        vector<EncryptedRowVector> col_results(enc_mat_b_trans.height());
+
+        vector<int> iterIdxs(enc_mat_b_trans.height());
+        for (int i = 0; i < enc_mat_b_trans.height(); i++) {
+            iterIdxs[i] = i;
+        }
+
+        for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int k) {
+            col_results[k] = matrix_matrix_mul_loop_col_major(enc_mat_a, enc_mat_b_trans, scalar, k);
+        });
+
+        // col_results[i] contains a *single* column (possibily distributed across several vertical cts)
+        // containing the i^th column of A times the matrix B
+        // The next step is to add unit.encoding_width of these together to make a single unit
+        EncodingUnit unit = enc_mat_a.encoding_unit();
+        int result_horizontal_units =
+            ceil(enc_mat_b_trans.height() / static_cast<double>(unit.encoding_width()));
+        vector<vector<CKKSCiphertext>> matrix_cts(enc_mat_a.num_vertical_units());
+
+
+        // Proceed to append the individual column vectors one encoding unit row at a time
+        for (int i = 0; i < result_horizontal_units; i++) {
+            // this is the RowVector containing the first column of this vertical unit
+            EncryptedRowVector unit_col_i_cts = col_results[i * unit.encoding_width()];
+            for (int j = 1; j < unit.encoding_width(); j++) {
+                // there are exactly enc_mat_b_trans.height items in col_results, but this may not correspond
+                // to the number of columns in the encoding units (because some rows at the end may be 0-padding)
+                // thus, we need to break once we add all the ciphertexts in col_results
+                // this will break out of the inner loop, but the outer loop will immediately exit because
+                // the inner loop can only break when i = result_horizontal_units-1
+                if (i * unit.encoding_width() + j >= enc_mat_b_trans.height()) {
+                    break;
+                }
+                add_inplace(unit_col_i_cts, col_results[i * unit.encoding_width() + j]);
+            }
+            for (int j = 0; j < enc_mat_a.num_vertical_units(); j++) {
+                matrix_cts[j].push_back(unit_col_i_cts.cts[j]);
+            }
+        }
+
+        return EncryptedMatrix(enc_mat_a.height(), enc_mat_b_trans.height(), unit, matrix_cts);
     }
 
     // common core for matrix/matrix multiplication; used by both multiply and multiply_unit_transpose
     vector<EncryptedColVector> LinearAlgebra::multiply_common(const EncryptedMatrix &enc_mat_a_trans,
                                                               const EncryptedMatrix &enc_mat_b, double scalar,
                                                               bool transpose_unit) {
-        // This function requires b to be at one level below enc_enc_mat_a_trans.
+        // This function requires b to be at one level below enc_mat_a_trans.
 
         // we will iterate over all columns of A^T (rows of A)
-        // and compute the k^th row of A times B^T
+        // and compute the k^th row of A times B
         // then combine the results for each row to get the matrix product
         vector<EncryptedColVector> row_results(enc_mat_a_trans.width());
 
@@ -594,14 +770,15 @@ namespace hit {
         }
 
         for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int k) {
-            row_results[k] = matrix_matrix_mul_loop(enc_mat_a_trans, enc_mat_b, scalar, k, transpose_unit);
+            row_results[k] = matrix_matrix_mul_loop_row_major(enc_mat_a_trans, enc_mat_b, scalar, k, transpose_unit);
         });
 
         return row_results;
     }
 
-    EncryptedMatrix LinearAlgebra::multiply(const EncryptedMatrix &enc_mat_a_trans, const EncryptedMatrix &enc_mat_b,
-                                            double scalar) {
+    EncryptedMatrix LinearAlgebra::multiply_row_major(const EncryptedMatrix &enc_mat_a_trans,
+                                                      const EncryptedMatrix &enc_mat_b,
+                                                      double scalar) {
         if (!enc_mat_a_trans.initialized() || !enc_mat_b.initialized()) {
             LOG_AND_THROW_STREAM("Inputs to multiply are not initialized.");
         }
@@ -619,44 +796,45 @@ namespace hit {
                        << dim_string(enc_mat_a_trans) + " vs " + dim_string(enc_mat_b));
         }
         if (enc_mat_a_trans.needs_rescale() || enc_mat_b.needs_rescale()) {
-            LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have nominal scale: "
-                       << "Vector: " << enc_mat_a_trans.needs_rescale()
-                       << ", Matrix: " << enc_mat_b.needs_rescale());
+            LOG_AND_THROW_STREAM("Inputs to matrix multiply must have nominal scale: "
+                       << "Matrix A^T: " << enc_mat_a_trans.needs_rescale()
+                       << ", Matrix B: " << enc_mat_b.needs_rescale());
         }
         if (enc_mat_a_trans.needs_relin() || enc_mat_b.needs_relin()) {
-            LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must be linear ciphertexts: "
-                       << "Vector: " << enc_mat_a_trans.needs_relin()
-                       << ", Matrix: " << enc_mat_b.needs_relin());
+            LOG_AND_THROW_STREAM("Inputs to matrix multiply must be linear ciphertexts: "
+                       << "Matrix A^T: " << enc_mat_a_trans.needs_relin()
+                       << ", Matrix B: " << enc_mat_b.needs_relin());
         }
 
-        // Multiply each row of A by the matrix B. The result is a list of column vectors.
+        // Multiply each row of A by the matrix B. The result is a list of EncryptedColVectors, each with a single non-zero row.
         vector<EncryptedColVector> row_results = multiply_common(enc_mat_a_trans, enc_mat_b, scalar, false);
 
         // row_results[i] contains a *single* row (possibily distributed across several cts)
         // containing the i^th row of A times the matrix B
         // The next step is to add unit.encoding_height of these together to make a single unit
+        EncodingUnit unit = enc_mat_a_trans.encoding_unit();
         int result_vertical_units =
-            ceil(enc_mat_a_trans.width() / static_cast<double>(enc_mat_a_trans.encoding_unit().encoding_height()));
+            ceil(enc_mat_a_trans.width() / static_cast<double>(unit.encoding_height()));
         vector<vector<CKKSCiphertext>> matrix_cts(result_vertical_units);
 
         for (int i = 0; i < result_vertical_units; i++) {
             // this is the ColVector containing the first row of this horizontal unit
-            EncryptedColVector unit_row_i_cts = row_results[i * enc_mat_a_trans.encoding_unit().encoding_height()];
-            for (int j = 1; j < enc_mat_a_trans.encoding_unit().encoding_height(); j++) {
+            EncryptedColVector unit_row_i_cts = row_results[i * unit.encoding_height()];
+            for (int j = 1; j < unit.encoding_height(); j++) {
                 // there are exactly enc_mat_a_trans.width items in row_results, but this may not correspond
                 // to the number of rows in the encoding units (because some rows at the end may be 0-padding)
                 // thus, we need to break once we add all the ciphertexts in row_results
                 // this will break out of the inner loop, but the outer loop will immediately exit because
-                // the inner loop can only break when j = result_vertical_units-1
-                if (i * enc_mat_a_trans.encoding_unit().encoding_height() + j >= enc_mat_a_trans.width()) {
+                // the inner loop can only break when i = result_vertical_units-1
+                if (i * unit.encoding_height() + j >= enc_mat_a_trans.width()) {
                     break;
                 }
-                add_inplace(unit_row_i_cts, row_results[i * enc_mat_a_trans.encoding_unit().encoding_height() + j]);
+                add_inplace(unit_row_i_cts, row_results[i * unit.encoding_height() + j]);
             }
             matrix_cts[i] = unit_row_i_cts.cts;
         }
 
-        return EncryptedMatrix(enc_mat_a_trans.width(), enc_mat_b.width(), enc_mat_a_trans.encoding_unit(), matrix_cts);
+        return EncryptedMatrix(enc_mat_a_trans.width(), enc_mat_b.width(), unit, matrix_cts);
     }
 
     /* Generic helper for summing or replicating the rows or columns of an encoded matrix
