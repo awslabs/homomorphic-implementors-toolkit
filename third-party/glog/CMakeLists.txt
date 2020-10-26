@@ -17,9 +17,6 @@ ExternalProject_Add(EP_GLOG
     GIT_REPOSITORY       https://github.com/google/glog.git
     GIT_TAG              v${PROJECT_VERSION}
     GIT_CONFIG           advice.detachedHead=false
-    CMAKE_ARGS           -DCMAKE_BUILD_TYPE=Release
-    CONFIGURE_COMMAND    ""
-    BUILD_COMMAND        ""
-    INSTALL_COMMAND      ""
+    CMAKE_ARGS           -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${3P_INSTALL_DIR}
     TEST_COMMAND         ""
 )

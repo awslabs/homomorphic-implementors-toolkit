@@ -35,7 +35,11 @@ set(HIT_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/HIT)
 set(HIT_INCLUDES_INSTALL_DIR ${CMAKE_INSTALL_INCLUDE_DIR}/hit)
 set(HIT_INCLUDES_BUILD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
-set(HIT_INCLUDES_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/hit)
+set(3P_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/third-party)
+
+# This is where most third-party dependencies are installed; adding the path
+# to CMAKE_PREFIX_PATH allows `find_package()` to succeed on these dependencies
+list(APPEND CMAKE_PREFIX_PATH ${3P_INSTALL_DIR})
 
 ########################
 # Custom Cmake Scripts #
@@ -53,6 +57,20 @@ include(enable-clang-tidy)
 ############################
 # Third party dependencies #
 ############################
+
+# Using third-party dependencies is a multi-step process.
+# 1. The process starts in cmake/modules/FindFOOLib.cmake
+# 2. For some dependencies, we check if the dependency is available on the system with `find_package`.
+#    If the dependency is found, stop here.
+# 3. Otherwise, we invoke `download_external_project()`. In turn, this calls `cmake` on the make_directory
+#    third-party/FOO/, which includes a CMakeLists.txt with download and build instructions. The
+#    invocation of cmake generates the build system for the dependency.
+# 4. Next, `download_external_project()` calls `cmake --build`, which actually builds the dependency
+#    we downloaded and configured in the previous step.
+# 5. Finally, FindFOOLib.cmake applies any one-off fixups to make the dependency usable by HIT.
+# Boost is an exception to the process above, since it is a large header-only library and we only
+# need a tiny fraction of it. The required headers are zipped and included in the repository,
+# so if Boost is not installed on the system, we just extract the headers.
 
 find_package(BoostLib REQUIRED)
 find_package(SealLib REQUIRED)
@@ -92,17 +110,19 @@ add_subdirectory(src)
 # Always build the static library
 add_library(aws-hit STATIC $<TARGET_OBJECTS:aws_hit_obj> $<TARGET_OBJECTS:aws_hit_proto>)
 target_compile_features(aws-hit PUBLIC cxx_std_17)
-target_include_directories(aws-hit PUBLIC
+target_include_directories(aws-hit
+    PUBLIC
         ${CMAKE_CURRENT_BINARY_DIR}/protobuf # to allow e.g., #include "protobuf/foo.ph.h"
         ${HIT_PROTOBUF_DST} # to allow e.g., #include "foo.ph.h", which is how auto-generated protobuf files expect imports to be available
         $<BUILD_INTERFACE:${HIT_INCLUDES_BUILD_DIR}>
         $<INSTALL_INTERFACE:${HIT_INCLUDES_INSTALL_DIR}>
-    PRIVATE ${HIT_SOURCE_DIR}
-    )
+    PRIVATE
+        ${HIT_SOURCE_DIR}
+)
 set_common_flags(aws-hit)
 
 # Link dependencies
-target_link_libraries(aws-hit PUBLIC seal glog::glog PRIVATE ${Protobuf_LIBRARIES} ${TBB_IMPORTED_TARGETS})
+target_link_libraries(aws-hit PUBLIC SEAL::seal glog::glog ${Protobuf_LIBRARIES} PRIVATE ${TBB_IMPORTED_TARGETS})
 
 install(TARGETS aws-hit EXPORT HITTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

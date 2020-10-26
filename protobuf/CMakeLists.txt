@@ -26,13 +26,13 @@ add_custom_command(
     ${HIT_PROTOBUF_DST}/encrypted_row_vector.pb.cc
     ${HIT_PROTOBUF_DST}/encrypted_col_vector.pb.h
     ${HIT_PROTOBUF_DST}/encrypted_col_vector.pb.cc
-  COMMAND protoc --cpp_out=${HIT_PROTOBUF_DST} -I${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/ciphertext.proto
-  COMMAND protoc --cpp_out=${HIT_PROTOBUF_DST} -I${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/ckksparams.proto
-  COMMAND protoc --cpp_out=${HIT_PROTOBUF_DST} -I${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/encoding_unit.proto
-  COMMAND protoc --cpp_out=${HIT_PROTOBUF_DST} -I${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/ciphertext_vector.proto
-  COMMAND protoc --cpp_out=${HIT_PROTOBUF_DST} -I${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/encrypted_matrix.proto
-  COMMAND protoc --cpp_out=${HIT_PROTOBUF_DST} -I${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/encrypted_row_vector.proto
-  COMMAND protoc --cpp_out=${HIT_PROTOBUF_DST} -I${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/encrypted_col_vector.proto
+  COMMAND ${Protobuf_PROTOC_EXECUTABLE} --cpp_out=${HIT_PROTOBUF_DST} -I${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/ciphertext.proto
+  COMMAND ${Protobuf_PROTOC_EXECUTABLE} --cpp_out=${HIT_PROTOBUF_DST} -I${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/ckksparams.proto
+  COMMAND ${Protobuf_PROTOC_EXECUTABLE} --cpp_out=${HIT_PROTOBUF_DST} -I${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/encoding_unit.proto
+  COMMAND ${Protobuf_PROTOC_EXECUTABLE} --cpp_out=${HIT_PROTOBUF_DST} -I${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/ciphertext_vector.proto
+  COMMAND ${Protobuf_PROTOC_EXECUTABLE} --cpp_out=${HIT_PROTOBUF_DST} -I${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/encrypted_matrix.proto
+  COMMAND ${Protobuf_PROTOC_EXECUTABLE} --cpp_out=${HIT_PROTOBUF_DST} -I${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/encrypted_row_vector.proto
+  COMMAND ${Protobuf_PROTOC_EXECUTABLE} --cpp_out=${HIT_PROTOBUF_DST} -I${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/encrypted_col_vector.proto
   DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/ciphertext.proto
     ${CMAKE_CURRENT_SOURCE_DIR}/ckksparams.proto
@@ -54,6 +54,12 @@ add_library(aws_hit_proto
     ${HIT_PROTOBUF_DST}/encrypted_matrix.pb.cc
     ${HIT_PROTOBUF_DST}/encrypted_row_vector.pb.cc
     ${HIT_PROTOBUF_DST}/encrypted_col_vector.pb.cc
+)
+
+# Add include path for protobuf files if it is built locally
+target_include_directories(aws_hit_proto
+    PUBLIC
+        ${3P_INSTALL_DIR}/include
 )
 
 install(

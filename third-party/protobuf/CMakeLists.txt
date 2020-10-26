@@ -11,12 +11,10 @@ project(PROTOBUF_DOWNLOAD VERSION 3.12.3)
 include(ExternalProject)
 set(PROTOBUF_URL_SUFFIX "v${PROJECT_VERSION}/protobuf-cpp-${PROJECT_VERSION}.zip")
 ExternalProject_Add(EP_PROTOBUF
-        URL                  https://github.com/google/protobuf/releases/download/${PROTOBUF_URL_SUFFIX}
-        DOWNLOAD_DIR         ${CMAKE_CURRENT_LIST_DIR}/src
-        SOURCE_DIR           ${CMAKE_CURRENT_LIST_DIR}/src
-        CMAKE_ARGS           ""
-        CONFIGURE_COMMAND    ""
-        BUILD_COMMAND        ""
-        INSTALL_COMMAND      ""
-        TEST_COMMAND         ""
-        )
+    URL                  https://github.com/google/protobuf/releases/download/${PROTOBUF_URL_SUFFIX}
+    DOWNLOAD_DIR         ${CMAKE_CURRENT_LIST_DIR}
+    SOURCE_DIR           ${CMAKE_CURRENT_LIST_DIR}/src
+    SOURCE_SUBDIR        cmake
+    CMAKE_ARGS           -DCMAKE_INSTALL_PREFIX=${3P_INSTALL_DIR}
+    TEST_COMMAND         ""
+)

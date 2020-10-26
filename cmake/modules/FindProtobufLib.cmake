@@ -1,52 +1,21 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-message(STATUS "Searching Protobuf.")
-find_package(Protobuf "3.0.0" QUIET)
-if (Protobuf_FOUND)
-    message(STATUS "Protobuf is found. Skip downloading source code.")
+find_package(Protobuf 3.0.0 QUIET)
+find_program(Protoc_FOUND protoc)
+# require both the protobuf library and the protoc compiler to be installed,
+# otherwise build them ourselves. The versions must be compatible,
+# so it's not a good idea to use, e.g., a system-installed protoc and
+# build-from-source protobuf library
+if (Protobuf_FOUND AND Protoc_FOUND)
+    message(STATUS "Protobuf is already installed.")
 else ()
-    message(STATUS "Downloading and installing Protobuf since it is not found.")
-    # Download source code.
+    message(STATUS "Protobuf was not found on your system.")
+    # the call to `find_package` above sets Protobuf_LIBRARIES to `NOTFOUND`
+    # When we call `find_package` again after installing protobuf, this variable
+    # is not updated unless we `unset` its value first.
+    unset(Protobuf_LIBRARIES)
     download_external_project("protobuf")
-    # Build and install Protobuf project.
-    # https://github.com/protocolbuffers/protobuf/blob/master/src/README.md
-    set(PROTOBUF_CONTENT_DIR ${HIT_THIRD_PARTY_DIR}/protobuf/src)
-    set(PROTOBUF_BUILD_DIR ${HIT_THIRD_PARTY_DIR}/protobuf/build)
-    file(REMOVE_RECURSE ${PROTOBUF_BUILD_DIR})
-    file(MAKE_DIRECTORY ${PROTOBUF_BUILD_DIR})
-    execute_process(
-            COMMAND ./configure --prefix ${PROTOBUF_BUILD_DIR}
-            RESULT_VARIABLE result
-            WORKING_DIRECTORY ${PROTOBUF_CONTENT_DIR})
-    if (result)
-        message(FATAL_ERROR "Failed to configure Protobuf. Error code: (${result}).")
-    endif ()
-    execute_process(
-            COMMAND make -j
-            RESULT_VARIABLE result
-            WORKING_DIRECTORY ${PROTOBUF_CONTENT_DIR})
-    if (result)
-        message(FATAL_ERROR "Failed to build Protobuf. Error code: (${result}).")
-    endif ()
-    execute_process(
-            COMMAND make install
-            RESULT_VARIABLE result
-            WORKING_DIRECTORY ${PROTOBUF_CONTENT_DIR})
-    if (result)
-        message(FATAL_ERROR "Failed to install Protobuf. Error code: (${result}).")
-    endif ()
-    set(PROTOBUF_USE_STATIC_LIBS false)
-    # Set the library prefix and library suffix properly.
-    if (PROTOBUF_USE_STATIC_LIBS)
-        set(LIB_PREFIX ${CMAKE_STATIC_LIBRARY_PREFIX})
-        set(LIB_SUFFIX ${CMAKE_STATIC_LIBRARY_SUFFIX})
-    else ()
-        set(LIB_PREFIX ${CMAKE_SHARED_LIBRARY_PREFIX})
-        set(LIB_SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
-    endif ()
-    set(Protobuf_INCLUDE_DIRS ${PROTOBUF_BUILD_DIR}/include)
-    set(Protobuf_LIBRARIES "${PROTOBUF_BUILD_DIR}/lib/${LIB_PREFIX}protobuf${LIB_SUFFIX}")
+    find_package(Protobuf "3.0.0" REQUIRED)
+	message(STATUS "Protoc compiler: ${Protobuf_PROTOC_EXECUTABLE}")
 endif ()
-message(STATUS "Protobuf include dir : ${Protobuf_INCLUDE_DIRS}")
-message(STATUS "Protobuf libraries : ${Protobuf_LIBRARIES}")
