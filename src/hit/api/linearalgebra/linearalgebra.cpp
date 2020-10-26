@@ -3,8 +3,6 @@
 
 #include "linearalgebra.h"
 
-#include <algorithm>
-#include <execution>
 #include <glog/logging.h>
 
 using namespace std;
@@ -338,15 +336,6 @@ namespace hit {
         }
     }
 
-    vector<CKKSCiphertext> LinearAlgebra::matrix_rowvec_hadamard_mul_loop(const EncryptedRowVector &enc_vec,
-                                                                          const EncryptedMatrix &enc_mat, int j) {
-        vector<CKKSCiphertext> col_prods(enc_mat.num_vertical_units());
-        for (int i = 0; i < enc_mat.num_vertical_units(); i++) {
-            col_prods[i] = eval.multiply(enc_mat.cts[i][j], enc_vec.cts[i]);
-        }
-        return col_prods;
-    }
-
     EncryptedMatrix LinearAlgebra::hadamard_multiply(const EncryptedRowVector &enc_vec,
                                                      const EncryptedMatrix &enc_mat) {
         if (!enc_vec.initialized() || !enc_mat.initialized()) {
@@ -380,39 +369,15 @@ namespace hit {
                        << ", Matrix: " << enc_mat.needs_relin());
         }
 
-        vector<vector<CKKSCiphertext>> cts_transpose(enc_mat.num_horizontal_units());
+        vector<vector<CKKSCiphertext>> cts = enc_mat.cts;
 
-        vector<int> iterIdxs(enc_mat.num_horizontal_units());
-        for (int i = 0; i < enc_mat.num_horizontal_units(); i++) {
-            iterIdxs[i] = i;
-        }
-
-        for_each(execution::par, begin(iterIdxs), end(iterIdxs),
-                      [&](int j) { cts_transpose[j] = matrix_rowvec_hadamard_mul_loop(enc_vec, enc_mat, j);
+        parallel_for(enc_mat.num_vertical_units()*enc_mat.num_horizontal_units(), [&](int i) {
+            int unit_row = i / enc_mat.num_horizontal_units();
+            int unit_col = i % enc_mat.num_horizontal_units();
+            eval.multiply_inplace(cts[unit_row][unit_col], enc_vec.cts[unit_row]);
         });
 
-        // Because we iterate over the *columns* of the encoding, the encoding units are transposed
-        // We un-transpose them here.
-        vector<vector<CKKSCiphertext>> cts(enc_mat.num_vertical_units());
-
-        for (int i = 0; i < enc_mat.num_vertical_units(); i++) {
-            vector<CKKSCiphertext> mat_row(enc_mat.num_horizontal_units());
-            for (int j = 0; j < enc_mat.num_horizontal_units(); j++) {
-                mat_row[j] = cts_transpose[j][i];
-            }
-            cts[i] = mat_row;
-        }
-
         return EncryptedMatrix(enc_mat.height(), enc_mat.width(), enc_mat.encoding_unit(), cts);
-    }
-
-    vector<CKKSCiphertext> LinearAlgebra::matrix_colvec_hadamard_mul_loop(const EncryptedMatrix &enc_mat,
-                                                                          const EncryptedColVector &enc_vec, int i) {
-        vector<CKKSCiphertext> row_prods(enc_mat.num_horizontal_units());
-        for (int j = 0; j < enc_mat.num_horizontal_units(); j++) {
-            row_prods[j] = eval.multiply(enc_mat.cts[i][j], enc_vec.cts[j]);
-        }
-        return row_prods;
     }
 
     EncryptedMatrix LinearAlgebra::hadamard_multiply(const EncryptedMatrix &enc_mat,
@@ -448,15 +413,12 @@ namespace hit {
                        << ", Matrix: " << enc_vec.needs_relin());
         }
 
-        vector<vector<CKKSCiphertext>> cts(enc_mat.num_vertical_units());
+        vector<vector<CKKSCiphertext>> cts = enc_mat.cts;
 
-        vector<int> iterIdxs(enc_mat.num_vertical_units());
-        for (int i = 0; i < enc_mat.num_vertical_units(); i++) {
-            iterIdxs[i] = i;
-        }
-
-        for_each(execution::par, begin(iterIdxs), end(iterIdxs),
-                      [&](int i) { cts[i] = matrix_colvec_hadamard_mul_loop(enc_mat, enc_vec, i);
+        parallel_for(enc_mat.num_vertical_units()*enc_mat.num_horizontal_units(), [&](int i) {
+            int unit_row = i / enc_mat.num_horizontal_units();
+            int unit_col = i % enc_mat.num_horizontal_units();
+            eval.multiply_inplace(cts[unit_row][unit_col], enc_vec.cts[unit_col]);
         });
 
         return EncryptedMatrix(enc_mat.height(), enc_mat.width(), enc_mat.encoding_unit(), cts);
@@ -503,7 +465,7 @@ namespace hit {
         }
 
         vector<CKKSCiphertext> isolated_row_cts(enc_mat_b_trans.num_horizontal_units());
-        for (int j = 0; j < enc_mat_b_trans.num_horizontal_units(); j++) {
+        parallel_for(enc_mat_b_trans.num_horizontal_units(), [&](int j) {
             isolated_row_cts[j] = eval.multiply_plain(enc_mat_b_trans.cts[unit_row][j], row_mask);
             eval.rescale_to_next_inplace(isolated_row_cts[j]);
             // we now have isolated the k^th row of B^T. To get an encoding of the k^th column of B
@@ -514,15 +476,13 @@ namespace hit {
             // [Note: sum_rows nominally spawns new threads, but this matrix only has a
             //  single unit, so no additional threads are created.
             // First, compute the j^th component of the k^th column of B
-            EncryptedColVector kth_col_j = sum_rows(
+            // Then place it in isolated_row_cts
+            isolated_row_cts[j] = sum_rows_core(
                 EncryptedMatrix(unit.encoding_height(),
                                 unit.encoding_width(),
                                 unit,
-                                vector<vector<CKKSCiphertext>>{vector<CKKSCiphertext>{isolated_row_cts[j]}}));
-            // This "column" has a single encoding unit, which we want to extract
-            // and replace in isolated_row_cts
-            isolated_row_cts[j] = kth_col_j.cts[0];
-        }
+                                vector<vector<CKKSCiphertext>>{vector<CKKSCiphertext>{isolated_row_cts[j]}}), 0);
+        });
         return EncryptedColVector(enc_mat_b_trans.width(), unit, isolated_row_cts);
     }
 
@@ -550,7 +510,7 @@ namespace hit {
         }
 
         vector<CKKSCiphertext> isolated_col_cts(enc_mat_a_trans.num_vertical_units());
-        for (int i = 0; i < enc_mat_a_trans.num_vertical_units(); i++) {
+        parallel_for(enc_mat_a_trans.num_vertical_units(), [&](int i) {
             isolated_col_cts[i] = eval.multiply_plain(enc_mat_a_trans.cts[i][unit_col], col_mask);
             eval.rescale_to_next_inplace(isolated_col_cts[i]);
             // we now have isolated the k^th column of A^T. To get an encoding of the k^th row of A
@@ -563,7 +523,7 @@ namespace hit {
 
             // now replicate this column to all other columns of the unit
             rot(isolated_col_cts[i], unit.encoding_width(), 1, false);
-        }
+        });
         return EncryptedRowVector(enc_mat_a_trans.height(), unit, isolated_col_cts);
     }
 
@@ -602,7 +562,7 @@ namespace hit {
         }
 
         vector<CKKSCiphertext> row_cts(enc_mat_a.num_vertical_units());
-        for(int i = 0; i < enc_mat_a.num_vertical_units(); i++) {
+        parallel_for(enc_mat_a.num_vertical_units(), [&](int i) {
             // sum the units in this row
             CKKSCiphertext unit_sum = eval.add_many(hmul_A_times_kth_col_B.cts[i]);
             // sum the columns of the unit, putting the result in the first column
@@ -612,7 +572,7 @@ namespace hit {
             row_cts[i] = eval.multiply_plain(unit_sum, col_mask);
             // shift to the target column
             eval.rotate_right_inplace(row_cts[i], k % unit.encoding_width());
-        }
+        });
 
         return EncryptedRowVector(enc_mat_a.height(), unit, row_cts);
     }
@@ -712,12 +672,7 @@ namespace hit {
         // then combine the results for each column to get the matrix product
         vector<EncryptedRowVector> col_results(enc_mat_b_trans.height());
 
-        vector<int> iterIdxs(enc_mat_b_trans.height());
-        for (int i = 0; i < enc_mat_b_trans.height(); i++) {
-            iterIdxs[i] = i;
-        }
-
-        for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int k) {
+        parallel_for(enc_mat_b_trans.height(), [&](int k) {
             col_results[k] = matrix_matrix_mul_loop_col_major(enc_mat_a, enc_mat_b_trans, scalar, k);
         });
 
@@ -764,12 +719,7 @@ namespace hit {
         // then combine the results for each row to get the matrix product
         vector<EncryptedColVector> row_results(enc_mat_a_trans.width());
 
-        vector<int> iterIdxs(enc_mat_a_trans.width());
-        for (int i = 0; i < enc_mat_a_trans.width(); i++) {
-            iterIdxs[i] = i;
-        }
-
-        for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int k) {
+        parallel_for(enc_mat_a_trans.width(), [&](int k) {
             row_results[k] = matrix_matrix_mul_loop_row_major(enc_mat_a_trans, enc_mat_b, scalar, k, transpose_unit);
         });
 
@@ -936,12 +886,7 @@ namespace hit {
 
         vector<CKKSCiphertext> cts(enc_mat.num_vertical_units());
 
-        vector<int> iterIdxs(enc_mat.num_vertical_units());
-        for (int i = 0; i < enc_mat.num_vertical_units(); i++) {
-            iterIdxs[i] = i;
-        }
-
-        for_each(execution::par, begin(iterIdxs), end(iterIdxs), [&](int i) {
+        parallel_for(enc_mat.num_vertical_units(), [&](int i) {
             cts[i] = sum_cols_core(eval.add_many(enc_mat.cts[i]), enc_mat.encoding_unit(), scalar);
         });
 
@@ -1043,12 +988,7 @@ namespace hit {
         }
         vector<CKKSCiphertext> cts(enc_mat.num_horizontal_units());
 
-        vector<int> iterIdxs(enc_mat.num_horizontal_units());
-        for (int i = 0; i < enc_mat.num_horizontal_units(); i++) {
-            iterIdxs[i] = i;
-        }
-
-        for_each(execution::par, begin(iterIdxs), end(iterIdxs),
+        parallel_for(enc_mat.num_horizontal_units(),
                       [&](int j) { cts[j] = sum_rows_core(enc_mat, j);
         });
 

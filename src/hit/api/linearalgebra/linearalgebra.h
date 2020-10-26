@@ -15,6 +15,8 @@
 #include "encryptedcolvector.h"
 #include "../../common.h"
 #include <glog/logging.h>
+#include <algorithm>
+#include <execution>
 
 /* The LinearAlgebra API lifts the Evaluator API to linear algebra objects like row/column vectors and matrices.
  * It provides a simple API for performing many common linear algebra tasks, and automatic encoding and decoding
@@ -25,6 +27,25 @@
  * we have a list of encoding units which encode a vector, rather than a grid of encoding units. See the paper for
  * more details.
  */
+
+/* Intended usage is:
+ *
+ *      parallel_for(x.size(), i) {
+ *          foo1;
+ *          foo2;
+ *          ...
+ *          foon;
+ *      });
+ */
+
+// https://stackoverflow.com/a/10379844/925978
+#define COMBINE1(X,Y) X##Y  // helper macro
+#define COMBINE(X,Y) COMBINE1(X,Y)
+// https://stackoverflow.com/a/17694752/925978
+#define parallel_for(max_idx, body)\
+    std::vector<int> COMBINE(iterIdxs, __LINE__)(max_idx);\
+    std::iota(begin(COMBINE(iterIdxs, __LINE__)), end(COMBINE(iterIdxs, __LINE__)), 0);\
+    for_each(__pstl::execution::par, begin(COMBINE(iterIdxs, __LINE__)), end(COMBINE(iterIdxs, __LINE__)), body)
 
 namespace hit {
 
@@ -713,9 +734,12 @@ namespace hit {
                            << ", Matrix: " << arg2.needs_relin());
             }
 
-            for (size_t i = 0; i < arg1.num_cts(); i++) {
+            // parallel_for(arg1.num_cts(), i) {
+            //     eval.multiply_inplace(arg1[i], arg2[i]);
+            // };
+            parallel_for(arg1.num_cts(), [&](int i) {
                 eval.multiply_inplace(arg1[i], arg2[i]);
-            }
+            });
         }
 
 
@@ -767,9 +791,9 @@ namespace hit {
                 LOG_AND_THROW_STREAM("Input to hadamard_square must have nominal scale");
             }
 
-            for (size_t i = 0; i < arg.num_cts(); i++) {
+            parallel_for(arg.num_cts(), [&](int i) {
                 eval.square_inplace(arg[i]);
-            }
+            });
         }
 
 
@@ -936,8 +960,13 @@ namespace hit {
                 LOG_AND_THROW_STREAM("Inputs to reduce_level_to_min_inplace are not initialized");
             }
 
-            for (size_t i = 0; i < arg1.num_cts(); i++) {
-                eval.reduce_level_to_min_inplace(arg1[i], arg2[i]);
+            // We can't just call eval.reduce_level_to_min_inplace(arg1[i], arg2[i]) here;
+            // If the inputs have different types, they may not have the same number of inputs.
+            if(arg1.he_level() < arg2.he_level()) {
+                reduce_level_to_inplace(arg2, arg1.he_level());
+            }
+            else if(arg2.he_level() < arg1.he_level()) {
+                reduce_level_to_inplace(arg1, arg2.he_level());
             }
         }
 
@@ -968,9 +997,9 @@ namespace hit {
                 LOG_AND_THROW_STREAM("Input to reduce_level_to is not initialized");
             }
 
-            for (size_t i = 0; i < arg.num_cts(); i++) {
+            parallel_for(arg.num_cts(), [&](int i) {
                 eval.reduce_level_to_inplace(arg[i], level);
-            }
+            });
         }
 
 
@@ -1000,9 +1029,9 @@ namespace hit {
                 LOG_AND_THROW_STREAM("Inputs to rescale_to_next is not initialized");
             }
 
-            for (size_t i = 0; i < arg.num_cts(); i++) {
+            parallel_for(arg.num_cts(), [&](int i) {
                 eval.rescale_to_next_inplace(arg[i]);
-            }
+            });
         }
 
 
@@ -1029,9 +1058,9 @@ namespace hit {
                 LOG_AND_THROW_STREAM("Inputs to relinearize is not initialized");
             }
 
-            for (size_t i = 0; i < arg.num_cts(); i++) {
+            parallel_for(arg.num_cts(), [&](int i) {
                 eval.relinearize_inplace(arg[i]);
-            }
+            });
         }
 
         CKKSEvaluator &eval;
@@ -1085,20 +1114,12 @@ namespace hit {
         // results
         void rot(CKKSCiphertext &t1, int max, int stride, bool rotate_left);
 
-        // inner loop for matrix/row vector hadamard multiplication
-        std::vector<CKKSCiphertext> matrix_rowvec_hadamard_mul_loop(const EncryptedRowVector &enc_vec,
-                                                                    const EncryptedMatrix &enc_mat, int j);
-
-        // inner loop for matrix/column vector hadamard multiplication
-        std::vector<CKKSCiphertext> matrix_colvec_hadamard_mul_loop(const EncryptedMatrix &enc_mat,
-                                                                    const EncryptedColVector &enc_vec, int i);
-
-        // inner loop for matrix/matrix multiplication
+        // inner loop for multiply_row_major
         EncryptedColVector matrix_matrix_mul_loop_row_major(const EncryptedMatrix &enc_mat_a_trans,
                                                             const EncryptedMatrix &enc_mat_b,
                                                             double scalar, int k, bool transpose_unit);
 
-        // inner loop for matrix/matrix multiplication
+        // inner loop for multiply_col_major
         EncryptedRowVector matrix_matrix_mul_loop_col_major(const EncryptedMatrix &enc_mat_a,
                                                             const EncryptedMatrix &enc_mat_b_trans,
                                                             double scalar, int k);
