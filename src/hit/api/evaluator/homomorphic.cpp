@@ -166,9 +166,9 @@ namespace hit {
             LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: Special prime must be 60 bits, got "
                                  << log2(modulus_vector[num_primes - 1].value()) << " bits");
         }
-        int expected_log_scale = round(log2(modulus_vector[1].value()));
+        int expected_log_scale = static_cast<int>(round(log2(modulus_vector[1].value())));
         for (int i = 2; i < num_primes - 1; i++) {
-            int log_prime = round(log2(modulus_vector[i].value()));
+            int log_prime = static_cast<int>(round(log2(modulus_vector[i].value())));
             if (log_prime != expected_log_scale) {
                 LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: modulus primes expected to be "
                                      << expected_log_scale << " bits, got " << log_prime << " bits");
@@ -264,7 +264,7 @@ namespace hit {
         }
 
         auto context_data = context->first_context_data();
-        double scale = (double)pow(2, log_scale_);
+        double scale = pow(2, log_scale_);
         while (context_data->chain_index() > level) {
             // order of operations is very important: floating point arithmetic is not associative
             scale = (scale * scale) / static_cast<double>(context_data->parms().coeff_modulus().back().value());

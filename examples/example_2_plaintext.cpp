@@ -28,7 +28,7 @@ const double c_3 = -0.0002;
 /* First, we'll implement a plaintext version of the function we want to
  * implement.
  */
-vector<double> poly_eval_plaintext(vector<double> xs) {
+vector<double> poly_eval_plaintext(const vector<double> &xs) {
 	vector<double> results;
 	results.reserve(xs.size());
 	for(const auto x : xs) {

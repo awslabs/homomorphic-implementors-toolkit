@@ -10,7 +10,7 @@ using namespace hit;
 // defined in example_1_ckks.cpp
 extern vector<double> random_vector(int dim, double maxNorm);
 // defined in example_2_plaintext.cpp
-extern vector<double> poly_eval_plaintext(vector<double> xs);
+extern vector<double> poly_eval_plaintext(const vector<double> &xs);
 extern CKKSCiphertext poly_eval_homomorphic_v1(CKKSEvaluator &eval, CKKSCiphertext &ct);
 
 /* In the previous example, we saw how to use HIT to validate that a circuit
@@ -103,14 +103,14 @@ void example_3_driver() {
 
 	// After evaluating the circuit on the representative input, we can ask the
 	// ScaleEstimator to estimate the maximum log scale we can use with ciphertexts.
-	int log_scale = se_inst.get_estimated_max_log_scale();
+	double log_scale = se_inst.get_estimated_max_log_scale();
 
 /* ******** Ciphertext Evaluation ********
  * Having used HIT to help determine the circuit depth and the maximum scale
  * we can use, we can now set up an instance which actually does homomorphic
  * computation.
  */
-	HomomorphicEval he_inst = HomomorphicEval(num_slots, max_depth, log_scale);
+	HomomorphicEval he_inst = HomomorphicEval(num_slots, max_depth, static_cast<int>(floor(log_scale)));
 
 	// Don't reuse ciphertexts between instance types!
 	CKKSCiphertext he_ciphertext = he_inst.encrypt(plaintext);
@@ -147,7 +147,7 @@ void example_3_driver() {
  * to pinpoint exactly where the homomorphic computation went off the rails. You use the DebugEval
  * instance just like the HomomorphicEval instance.
  */
-	DebugEval dbg_inst = DebugEval(num_slots, max_depth, log_scale);
+	DebugEval dbg_inst = DebugEval(num_slots, max_depth, static_cast<int>(floor(log_scale)));
 
 	// Don't reuse ciphertexts between instance types!
 	CKKSCiphertext dbg_ciphertext = dbg_inst.encrypt(plaintext);
