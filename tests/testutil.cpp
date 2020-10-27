@@ -1,7 +1,9 @@
 
 #include "testutil.h"
-#include "gtest/gtest.h"
+
 #include <glog/logging.h>
+
+#include "gtest/gtest.h"
 
 using namespace std;
 using namespace hit;
@@ -38,8 +40,8 @@ int main(int argc, char **argv) {
     srand(time(NULL));
     ::testing::InitGoogleTest(&argc, argv);
 
-    FLAGS_logtostderr = 1; // log output to stderr
-    FLAGS_v = 0;           // only show warnings and errors
+    FLAGS_logtostderr = 1;  // log output to stderr
+    FLAGS_v = 0;            // only show warnings and errors
 
     google::InitGoogleLogging(argv[0]);
     return RUN_ALL_TESTS();

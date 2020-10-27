@@ -67,4 +67,4 @@ namespace hit {
         friend struct EncryptedColVector;
     };
 
-} // namespace hit
+}  // namespace hit

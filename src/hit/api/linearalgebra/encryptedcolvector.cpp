@@ -3,9 +3,10 @@
 
 #include "encryptedcolvector.h"
 
+#include <glog/logging.h>
+
 #include <algorithm>
 #include <execution>
-#include <glog/logging.h>
 
 using namespace std;
 using namespace seal;
@@ -30,8 +31,7 @@ namespace hit {
         read_from_proto(context, encrypted_col_vector);
     }
 
-    EncryptedColVector::EncryptedColVector(const shared_ptr<SEALContext> &context,
-                                           istream &stream) {
+    EncryptedColVector::EncryptedColVector(const shared_ptr<SEALContext> &context, istream &stream) {
         protobuf::EncryptedColVector proto_vec;
         proto_vec.ParseFromIstream(&stream);
         read_from_proto(context, proto_vec);
@@ -96,8 +96,9 @@ namespace hit {
             // add this additional context.
             Vector raw_plaintext = cts[i].plaintext();
             if (raw_plaintext.size() != unit.encoding_height() * unit.encoding_width()) {
-                LOG_AND_THROW_STREAM("Internal error: plaintext has " << raw_plaintext.size()
-                           << " coefficients, expected " << unit.encoding_height() * unit.encoding_width());
+                LOG_AND_THROW_STREAM("Internal error: plaintext has "
+                                     << raw_plaintext.size() << " coefficients, expected "
+                                     << unit.encoding_height() * unit.encoding_width());
             }
             Matrix formatted_plaintext = Matrix(unit.encoding_height(), unit.encoding_width(), raw_plaintext.data());
             plaintext_pieces[i] = formatted_plaintext;
@@ -112,23 +113,23 @@ namespace hit {
 
         if (height_ <= 0) {
             LOG_AND_THROW_STREAM("Invalid EncryptedColVector: "
-                << "height must be non-negative, got " << height_);
+                                 << "height must be non-negative, got " << height_);
         }
 
         if (cts.size() != ceil(height_ / static_cast<double>(unit.encoding_width()))) {
             LOG_AND_THROW_STREAM("Invalid EncryptedColVector: "
-                << "Expected " << ceil(height_ / static_cast<double>(unit.encoding_width()))
-                << " ciphertexts, found " << cts.size() << ". ");
+                                 << "Expected " << ceil(height_ / static_cast<double>(unit.encoding_width()))
+                                 << " ciphertexts, found " << cts.size() << ". ");
         }
 
         for (int i = 1; i < cts.size(); i++) {
             if (cts[i].scale() != cts[0].scale()) {
                 LOG_AND_THROW_STREAM("Invalid EncryptedColVector: "
-                    << "Each ciphertext must have the same scale.");
+                                     << "Each ciphertext must have the same scale.");
             }
             if (cts[i].he_level() != cts[0].he_level()) {
                 LOG_AND_THROW_STREAM("Invalid EncryptedColVector: "
-                    << "Each ciphertext must have the same level.");
+                                     << "Each ciphertext must have the same level.");
             }
         }
     }

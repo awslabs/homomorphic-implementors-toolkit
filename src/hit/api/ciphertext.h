@@ -53,7 +53,6 @@ namespace hit {
         friend class CKKSEvaluator;
 
        private:
-
         void read_from_proto(const std::shared_ptr<seal::SEALContext> &context, const protobuf::Ciphertext &proto_ct);
 
         // The raw plaintxt. This is used with some of the evaluators tha track ciphertext
@@ -65,7 +64,7 @@ namespace hit {
         seal::Ciphertext seal_ct;
 
         // `scale` is used by the ScaleEstimator evaluator
-        double scale_ = pow(2,30);
+        double scale_ = pow(2, 30);
 
         // flag indicating whether this CT has been initialized or not
         // CKKSCiphertexts are initialized upon encryption

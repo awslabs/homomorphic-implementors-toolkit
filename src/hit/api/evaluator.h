@@ -17,7 +17,6 @@
  * The wrapper provides simplified APIs compared to the SEAL Evaluator class.
  */
 
-
 /* Ciphertexts have three properties:
  *  - Their level
  *  - Whether the 'degree' of the ciphertext polynomial (in the secret key) is 'linear' or 'quadratic'
@@ -71,7 +70,6 @@ namespace hit {
          */
         CKKSCiphertext rotate_right(const CKKSCiphertext &ct, int steps);
 
-
         /* Rotate a plaintext vector cyclically to the right by any positive number of steps:
          *     rotate_right(<1,2,3,4>, 1) = <4,1,2,3>
          * Input: A linear ciphertext with nominal or squared scale
@@ -79,7 +77,6 @@ namespace hit {
          * Output (Inplace): A ciphertext with the same properties as the input.
          */
         void rotate_right_inplace(CKKSCiphertext &ct, int steps);
-
 
         /* Rotate a plaintext vector cyclically to the left by any positive number of steps:
          *     rotate_left(<1,2,3,4>, 1) = <2,3,4,1>
@@ -89,7 +86,6 @@ namespace hit {
          */
         CKKSCiphertext rotate_left(const CKKSCiphertext &ct, int steps);
 
-
         /* Rotate a plaintext vector cyclically to the left by any positive number of steps:
          *     rotate_left(<1,2,3,4>, 1) = <2,3,4,1>
          * Input: A linear ciphertext with nominal or squared scale
@@ -98,13 +94,11 @@ namespace hit {
          */
         void rotate_left_inplace(CKKSCiphertext &ct, int steps);
 
-
         /* Add a scalar to each plaintext slot.
          * Input: An arbitrary ciphertext (any degree and any scale) and a public scalar
          * Output: A ciphertext with the same properties as the input.
          */
         CKKSCiphertext add_plain(const CKKSCiphertext &ct, double scalar);
-
 
         /* Add a scalar to each plaintext slot.
          * Input: An arbitrary ciphertext (any degree and any scale) and a public scalar
@@ -112,20 +106,17 @@ namespace hit {
          */
         void add_plain_inplace(CKKSCiphertext &ct, double scalar);
 
-
         /* Add a public plaintext component-wise to the encrypted plaintext.
          * Input: An arbitrary ciphertext (any degree and any scale) and a public plaintext
          * Output: A ciphertext with the same properties as the input.
          */
         CKKSCiphertext add_plain(const CKKSCiphertext &ct, const std::vector<double> &plain);
 
-
         /* Add a public plaintext component-wise to the encrypted plaintext.
          * Input: An arbitrary ciphertext (any degree and any scale) and a public plaintext
          * Output (Inplace): A ciphertext with the same properties as the input.
          */
         void add_plain_inplace(CKKSCiphertext &ct, const std::vector<double> &plain);
-
 
         /* Add two encrypted plaintexts, component-wise.
          * Input: Two ciphertexts at the same level whose scales match (can be nominal or squared).
@@ -135,7 +126,6 @@ namespace hit {
          */
         CKKSCiphertext add(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
 
-
         /* Add two encrypted plaintexts, component-wise.
          * Input: Two ciphertexts at the same level whose scales match (can be nominal or squared).
          *        Note that ciphertext degrees do not need to match.
@@ -143,7 +133,6 @@ namespace hit {
          *                   degree is the maximum of the two input degrees.
          */
         void add_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
-
 
         /* Add a list of encrypted objects together, component-wise.
          * Input: A non-empty vector of ciphertexts. The ciphertexts must be at the same level,
@@ -154,13 +143,11 @@ namespace hit {
          */
         CKKSCiphertext add_many(const std::vector<CKKSCiphertext> &cts);
 
-
         /* Negate each plaintext coefficient.
          * Input: An arbitrary ciphertext (any degree and any scale)
          * Output: A ciphertext with the same properties as the input.
          */
         CKKSCiphertext negate(const CKKSCiphertext &ct);
-
 
         /* Negate each plaintext coefficient.
          * Input: An arbitrary ciphertext (any degree and any scale)
@@ -168,13 +155,11 @@ namespace hit {
          */
         void negate_inplace(CKKSCiphertext &ct);
 
-
         /* Subtract a scalar from each plaintext slot.
          * Input: An arbitrary ciphertext (any degree and any scale) and a public scalar
          * Output: A ciphertext with the same properties as the input.
          */
         CKKSCiphertext sub_plain(const CKKSCiphertext &ct, double scalar);
-
 
         /* Subtract a scalar from each plaintext slot.
          * Input: An arbitrary ciphertext (any degree and any scale) and a public scalar
@@ -182,20 +167,17 @@ namespace hit {
          */
         void sub_plain_inplace(CKKSCiphertext &ct, double scalar);
 
-
         /* Subtract a public plaintext component-wise from the encrypted plaintext.
          * Input: An arbitrary ciphertext (any degree and any scale) and a public plaintext
          * Output: A ciphertext with the same properties as the input.
          */
         CKKSCiphertext sub_plain(const CKKSCiphertext &ct, const std::vector<double> &plain);
 
-
         /* Subtract a public plaintext component-wise from the encrypted plaintext.
          * Input: An arbitrary ciphertext (any degree and any scale) and a public plaintext
          * Output (Inplace): A ciphertext with the same properties as the input.
          */
         void sub_plain_inplace(CKKSCiphertext &ct, const std::vector<double> &plain);
-
 
         /* Subtract one encrypted plaintext from another, component-wise.
          * Input: Two ciphertexts at the same level whose scales match (can be nominal or squared).
@@ -223,7 +205,6 @@ namespace hit {
          */
         void sub_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
 
-
         /* Multiply each plaintext slot by a scalar.
          * Input: A linear or quadratic ciphertext with nominal scale.
          * Output: A ciphertext with the same ciphertext degree as the input, but with squared scale.
@@ -232,7 +213,6 @@ namespace hit {
          *       all-zero plaintext.
          */
         CKKSCiphertext multiply_plain(const CKKSCiphertext &ct, double scalar);
-
 
         /* Multiply each plaintext slot by a scalar.
          * Input: A linear or quadratic ciphertext with nominal scale.
@@ -243,14 +223,12 @@ namespace hit {
          */
         void multiply_plain_inplace(CKKSCiphertext &ct, double scalar);
 
-
         /* Multiply the encrypted plaintext and the public plaintext component-wise.
          * Input: A linear or quadratic ciphertext with nominal scale.
          * Output: A ciphertext with the same ciphertext degree as the input,
          *         but with squared scale.
          */
         CKKSCiphertext multiply_plain(const CKKSCiphertext &ct, const std::vector<double> &plain);
-
 
         /* Multiply the encrypted plaintext and the public plaintext component-wise.
          * Input: A linear or quadratic ciphertext with nominal scale.
@@ -259,14 +237,12 @@ namespace hit {
          */
         void multiply_plain_inplace(CKKSCiphertext &ct, const std::vector<double> &plain);
 
-
         /* Multiply two encrypted plaintexts, component-wise.
          * Input: Two linear ciphertexts at the same level, with nominal scales.
          * Output: A quadratic ciphertext whose level is the same as the inputs,
          *         and whose scale is squared.
          */
         CKKSCiphertext multiply(const CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
-
 
         /* Multiply two encrypted plaintexts, component-wise.
          * Input: Two linear ciphertexts at the same level, with nominal scales.
@@ -275,7 +251,6 @@ namespace hit {
          */
         void multiply_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
 
-
         /* Square each plaintext coefficient.
          * Input: A linear ciphertext with nominal scale.
          * Output: A quadratic ciphertext whose level is the same as the input,
@@ -283,14 +258,12 @@ namespace hit {
          */
         CKKSCiphertext square(const CKKSCiphertext &ct);
 
-
         /* Square each plaintext coefficient.
          * Input: A linear ciphertext with nominal scale.
          * Output (Inplace): A quadratic ciphertext whose level is the same as the input,
          *                   and whose scale is squared.
          */
         void square_inplace(CKKSCiphertext &ct);
-
 
         /* Reduce the HE level of `ct` to the level of the `target`.
          * Input: A linear ciphertext with nominal scale and level i,
@@ -301,7 +274,6 @@ namespace hit {
          */
         CKKSCiphertext reduce_level_to(const CKKSCiphertext &ct, const CKKSCiphertext &target);
 
-
         /* Reduce the HE level of `ct` to the level of the `target`.
          * Input: A linear ciphertext with nominal scale and level i,
          *        and an arbitrary ciphertext at level j <= i.
@@ -310,7 +282,6 @@ namespace hit {
          * NOTE: It is an error if the target level is higher than the level of `ct`.
          */
         void reduce_level_to_inplace(CKKSCiphertext &ct, const CKKSCiphertext &target);
-
 
         /* Reduce the HE level of both inputs to the lower of the two levels.
          * This operation modifies at most one of the inputs.
@@ -323,7 +294,6 @@ namespace hit {
          */
         void reduce_level_to_min_inplace(CKKSCiphertext &ct1, CKKSCiphertext &ct2);
 
-
         /* Reduce the HE level of `ct` to a lower level
          * Input: A linear ciphertext with nominal scale and level i, and a target level
          *        0 <= j <= i.
@@ -331,7 +301,6 @@ namespace hit {
          *         the same plaintext as `ct`.
          */
         CKKSCiphertext reduce_level_to(const CKKSCiphertext &ct, int level);
-
 
         /* Reduce the HE level of `ct` to a lower level
          * Input: A linear ciphertext with nominal scale and level i, and a target level
@@ -341,7 +310,6 @@ namespace hit {
          */
         void reduce_level_to_inplace(CKKSCiphertext &ct, int level);
 
-
         /* Remove a prime from the modulus (i.e. go down one level) and scale
          * down the plaintext by that prime.
          * Input: A linear or quadratic ciphertext with squared scale and level i>0.
@@ -350,7 +318,6 @@ namespace hit {
          */
         CKKSCiphertext rescale_to_next(const CKKSCiphertext &ct);
 
-
         /* Remove a prime from the modulus (i.e. go down one level) and scale
          * down the plaintext by that prime.
          * Input: A linear or quadratic ciphertext with squared scale and level i>0.
@@ -358,7 +325,6 @@ namespace hit {
          *                   with nominal scale and level i-1.
          */
         void rescale_to_next_inplace(CKKSCiphertext &ct);
-
 
         /* Ciphertexts in BGV-style encryption schemes, like CKKS, are polynomials
          * in the (unknown) secret. A fresh ciphertext is a linear polynomial

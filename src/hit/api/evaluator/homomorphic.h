@@ -36,12 +36,11 @@ namespace hit {
                         const std::vector<int> &galois_steps = std::vector<int>());
 
         /* An evaluation instance */
-        HomomorphicEval(std::istream &params_stream, std::istream &galois_key_stream,
-                        std::istream &relin_key_stream);
+        HomomorphicEval(std::istream &params_stream, std::istream &galois_key_stream, std::istream &relin_key_stream);
 
         /* A full instance */
-        HomomorphicEval(std::istream &params_stream, std::istream &galois_key_stream,
-                        std::istream &relin_key_stream, std::istream &secret_key_stream);
+        HomomorphicEval(std::istream &params_stream, std::istream &galois_key_stream, std::istream &relin_key_stream,
+                        std::istream &secret_key_stream);
 
         /* For documentation on the API, see ../evaluator.h */
         ~HomomorphicEval() override;
@@ -104,10 +103,10 @@ namespace hit {
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
        private:
-        seal::CKKSEncoder *encoder = nullptr;      // no default constructor
-        seal::Evaluator *seal_evaluator = nullptr; // no default constructor
-        seal::Encryptor *seal_encryptor = nullptr; // no default constructor
-        seal::Decryptor *seal_decryptor = nullptr; // no default constructor
+        seal::CKKSEncoder *encoder = nullptr;       // no default constructor
+        seal::Evaluator *seal_evaluator = nullptr;  // no default constructor
+        seal::Encryptor *seal_encryptor = nullptr;  // no default constructor
+        seal::Decryptor *seal_decryptor = nullptr;  // no default constructor
         seal::PublicKey pk;
         seal::SecretKey sk;
         seal::GaloisKeys galois_keys;

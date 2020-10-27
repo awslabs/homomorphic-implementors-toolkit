@@ -6,8 +6,8 @@
 #include "../ciphertext.h"
 #include "../evaluator.h"
 #include "depthfinder.h"
-#include "plaintext.h"
 #include "homomorphic.h"
+#include "plaintext.h"
 #include "seal/context.h"
 #include "seal/seal.h"
 

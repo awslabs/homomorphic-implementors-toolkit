@@ -12,12 +12,11 @@ using namespace seal;
 
 namespace hit {
 
-    CKKSCiphertext DepthFinder::encrypt(const vector<double>&, int level) {
+    CKKSCiphertext DepthFinder::encrypt(const vector<double> &, int level) {
         if (encryption_mode_ == FIRST_ENCRYPT) {
             if (level == -1) {
                 encryption_mode_ = IMPLICIT_LEVEL;
-            }
-            else {
+            } else {
                 encryption_mode_ = EXPLICIT_LEVEL;
             }
         }
@@ -27,14 +26,18 @@ namespace hit {
         }
 
         if (level == -1 && encryption_mode_ == EXPLICIT_LEVEL) {
-            LOG_AND_THROW_STREAM("You have previously called `encrypt` with an explicit encryption level; you cannot use the default level now with the DepthFinder evaluator.");
+            LOG_AND_THROW_STREAM(
+                "You have previously called `encrypt` with an explicit encryption level; you cannot use the default "
+                "level now with the DepthFinder evaluator.");
         }
         if (level != -1 && encryption_mode_ == IMPLICIT_LEVEL) {
-            LOG_AND_THROW_STREAM("You have previously called `encrypt` without an explicit encryption level; you cannot use explicit levels now with the DepthFinder evaluator.");
+            LOG_AND_THROW_STREAM(
+                "You have previously called `encrypt` without an explicit encryption level; you cannot use explicit "
+                "levels now with the DepthFinder evaluator.");
         }
 
         if (level == -1) {
-            level = top_he_level_; // a default level
+            level = top_he_level_;  // a default level
         }
 
         CKKSCiphertext destination;

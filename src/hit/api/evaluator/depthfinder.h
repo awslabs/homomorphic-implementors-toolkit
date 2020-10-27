@@ -49,7 +49,7 @@ namespace hit {
         // encryption_mode_ starts as FIRST_ENCRYPT.
         // The first call to `encrypt` sets the mode for future calls to
         // `encrypt`, which only allows implicit levels or explicit levels.
-        enum EncryptionMode {FIRST_ENCRYPT, IMPLICIT_LEVEL, EXPLICIT_LEVEL};
+        enum EncryptionMode { FIRST_ENCRYPT, IMPLICIT_LEVEL, EXPLICIT_LEVEL };
         EncryptionMode encryption_mode_ = FIRST_ENCRYPT;
         const int num_slots_ = 4096;
         int multiplicative_depth_ = 0;

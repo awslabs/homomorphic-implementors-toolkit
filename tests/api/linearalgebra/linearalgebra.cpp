@@ -7,8 +7,8 @@
 
 #include "../../testutil.h"
 #include "gtest/gtest.h"
-#include "hit/api/evaluator/homomorphic.h"
 #include "hit/api/ciphertext.h"
+#include "hit/api/evaluator/homomorphic.h"
 #include "hit/common.h"
 #include "hit/sealutils.h"
 
@@ -630,22 +630,6 @@ TEST(LinearAlgebraTest, AddMultipleCol) {
     ASSERT_FALSE(ciphertext.needs_rescale());
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 TEST(LinearAlgebraTest, SubMatrixMatrix_InvalidCase) {
     HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
@@ -1129,8 +1113,8 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Row_Major_InvalidCase) {
         (linear_algebra.multiply_row_major(ciphertext1, ciphertext3)), invalid_argument);
 }
 
-void test_multiply_matrix_matrix_row_major(LinearAlgebra &linear_algebra, int left_dim, int inner_dim, int right_dim, double scalar,
-                                           EncodingUnit &unit) {
+void test_multiply_matrix_matrix_row_major(LinearAlgebra &linear_algebra, int left_dim, int inner_dim, int right_dim,
+                                           double scalar, EncodingUnit &unit) {
     // matrix-matrix mutliplication takes A^T and B as inputs and computes c*A*B for a scalar c and matrices A, B with
     // compatible dimensions Matrix A is left_dim x inner_dim, so A^T is the reverse
     Matrix matrix_a_transpose = random_mat(inner_dim, left_dim);
@@ -1231,8 +1215,8 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Col_Major_InvalidCase) {
         (linear_algebra.multiply_col_major(ciphertext1, ciphertext3)), invalid_argument);
 }
 
-void test_multiply_matrix_matrix_col_major(LinearAlgebra &linear_algebra, int left_dim, int inner_dim, int right_dim, double scalar,
-                                           EncodingUnit &unit) {
+void test_multiply_matrix_matrix_col_major(LinearAlgebra &linear_algebra, int left_dim, int inner_dim, int right_dim,
+                                           double scalar, EncodingUnit &unit) {
     // matrix-matrix mutliplication takes A and B^T as inputs and computes c*A*B for a scalar c and matrices A, B with
     // compatible dimensions Matrix A is left_dim x inner_dim
     Matrix matrix_a = random_mat(left_dim, inner_dim);
@@ -1394,7 +1378,8 @@ TEST(LinearAlgebraTest, MultiplyMatrixCol_InvalidCase) {
         (linear_algebra.multiply(ciphertext3, ciphertext2)), invalid_argument);
 }
 
-void test_multiply_matrix_col(LinearAlgebra &linear_algebra, int left_dim, int right_dim, double scalar, EncodingUnit &unit) {
+void test_multiply_matrix_col(LinearAlgebra &linear_algebra, int left_dim, int right_dim, double scalar,
+                              EncodingUnit &unit) {
     // Matrix A is left_dim x right_dim
     Vector vec = random_vec(right_dim);
     Matrix mat = random_mat(left_dim, right_dim);
@@ -1667,7 +1652,8 @@ TEST(LinearAlgebraTest, SumRows) {
     test_sum_rows(linear_algebra, 128, 128, unit1);
 }
 
-void test_sum_rows_many(LinearAlgebra &linear_algebra, int height1, int width1, int height2, int width2, EncodingUnit &unit) {
+void test_sum_rows_many(LinearAlgebra &linear_algebra, int height1, int width1, int height2, int width2,
+                        EncodingUnit &unit) {
     Matrix mat1 = random_mat(height1, width1);
     Matrix mat2 = random_mat(height2, width2);
 
@@ -1744,7 +1730,8 @@ TEST(LinearAlgebraTest, SumCols) {
     test_sum_cols(linear_algebra, 128, 128, PI, unit1);
 }
 
-void test_sum_cols_many(LinearAlgebra &linear_algebra, int height1, int width1, int height2, int width2, EncodingUnit &unit) {
+void test_sum_cols_many(LinearAlgebra &linear_algebra, int height1, int width1, int height2, int width2,
+                        EncodingUnit &unit) {
     Matrix mat1 = random_mat(height1, width1);
     Matrix mat2 = random_mat(height2, width2);
 

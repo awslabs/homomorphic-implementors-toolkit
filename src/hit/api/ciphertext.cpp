@@ -52,7 +52,9 @@ namespace hit {
         auto *proto_ct = new protobuf::Ciphertext();
 
         if (!raw_pt.empty()) {
-            LOG_AND_THROW_STREAM("HIT does not support serializing ciphertexts with plaintext data attached! Use the homomorphic evaluator to serialize ciphertexts.");
+            LOG_AND_THROW_STREAM(
+                "HIT does not support serializing ciphertexts with plaintext data attached! Use the homomorphic "
+                "evaluator to serialize ciphertexts.");
         }
 
         proto_ct->set_initialized(initialized);
