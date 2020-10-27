@@ -1,10 +1,31 @@
 # Homomorphic Implementor's Toolkit
 
-HIT provides tools to simplify the process of designing homomorphic circuits for the CKKS homomorphic encryption scheme. HIT is designed as a tool for researchers, rather than as a production-quality tool for developing and deploying homomorphic applciations.
+HIT provides tools to simplify the process of designing homomorphic circuits for the CKKS homomorphic encryption scheme.
 
-#### Builds Status:
+## Builds Status:
 * Ubuntu 18.04 GCC 9 ![Build Status](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiS0plc1RnWDFBLzBuSm1DV0J3S2RxenF5ek9XUkYwNWxodkVqSkMrbEdwUnpXQlpOME5BakN6djRnblJlWm92K3NORXZZV1dPOGdVRVIzNVB1UUVLWmtVPSIsIml2UGFyYW1ldGVyU3BlYyI6IkM2a0VPc0xsRmRHQ0hBVDIiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)
 * Ubuntu 18.04 Clang 10 ![Build Status](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiTzVreHl2cjN4WENKcmNkMlh1UVpzK1VzYmQwYWJ4OFVXMlZaWHMvYWtHazkrTlA5VzlPZGljSTRPR1JNOS9McERCU1NxY2twVDlBUXEyWWdEWmM4WmRBPSIsIml2UGFyYW1ldGVyU3BlYyI6ImIrTG1JdFF5RytlOVh0MkkiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)
+
+Table of Contents
+=================
+
+   * [Homomorphic Implementor's Toolkit](#homomorphic-implementors-toolkit)
+      * [Introduction](#introduction)
+         * [Evaluators](#evaluators)
+         * [Linear Algebra API](#linear-algebra-api)
+         * [CKKS Parameters](#ckks-parameters)
+         * [Deploying a Homomorphic Function](#deploying-a-homomorphic-function)
+      * [Building HIT](#building-hit)
+         * [Prerequisites](#prerequisites)
+            * [Tools](#tools)
+            * [Libraries](#libraries)
+            * [Ubuntu 18.04](#ubuntu-1804)
+         * [Building HIT with CMake](#building-hit-with-cmake)
+            * [HIT CMake Flags](#hit-cmake-flags)
+         * [Integrating HIT](#integrating-hit)
+         * [Using HIT](#using-hit)
+         * [Examples](#examples)
+      * [Contributing Changes](#contributing-change)
 
 ## Introduction
 
@@ -124,5 +145,5 @@ ninja run_hit_example
 ### Examples
 We recommend reading through the detailed [examples](/examples) which demonstrate how to use the features described above. For those unfamiliar with homomorphic encryption topics, we also recommend reading through the [SEAL examples](https://github.com/microsoft/SEAL/tree/master/native/examples).
 
-## Contributing change
+## Contributing Changes
 [CONTRIBUTING.md](/CONTRIBUTING.md) has details on how to contribute to this project.
