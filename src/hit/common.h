@@ -31,6 +31,13 @@
     throw std::invalid_argument(err_stream.str()); \
 }
 
+#define TRY_AND_THROW_STREAM(cond, stream_contents) \
+    try { \
+        cond; \
+    } catch(...) { \
+        LOG_AND_THROW_STREAM(stream_contents); \
+    }
+
 namespace hit {
     using Matrix = boost::numeric::ublas::matrix<double, boost::numeric::ublas::row_major, std::vector<double>>;
     using Vector = boost::numeric::ublas::vector<double, std::vector<double>>;

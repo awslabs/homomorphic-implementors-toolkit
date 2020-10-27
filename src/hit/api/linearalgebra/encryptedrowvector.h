@@ -97,8 +97,7 @@ namespace hit {
 
         EncryptedRowVector(int width, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts);
 
-        bool initialized() const;
-        void validate_init() const;
+        void validate() const;
 
         // width of the encoded matrix
         int width_ = 0;

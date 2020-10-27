@@ -93,8 +93,7 @@ namespace hit {
         EncryptedMatrix(int height, int width, const EncodingUnit &unit,
                         const std::vector<std::vector<CKKSCiphertext>> &cts);
 
-        bool initialized() const;
-        void validate_init() const;
+        void validate() const;
 
         // height of the encoded matrix
         int height_ = 0;

@@ -11,13 +11,13 @@ using namespace std;
 namespace hit {
     EncodingUnit::EncodingUnit(int encoding_height, int encoding_width)
         : encoding_height_(encoding_height), encoding_width_(encoding_width) {
-        validate_init();
+        validate();
     }
 
     void EncodingUnit::read_from_proto(const protobuf::EncodingUnit &encoding_unit) {
         encoding_height_ = encoding_unit.encoding_height();
         encoding_width_ = encoding_unit.encoding_width();
-        validate_init();
+        validate();
     }
 
     EncodingUnit::EncodingUnit(const protobuf::EncodingUnit &encoding_unit) {
@@ -59,12 +59,11 @@ namespace hit {
         delete proto_unit;
     }
 
-    bool EncodingUnit::initialized() const {
-        return encoding_height_ > 0 && encoding_width_ > 0 && is_pow2(encoding_height_) && is_pow2(encoding_width_);
-    }
-
-    void EncodingUnit::validate_init() const {
-        if (!initialized()) {
+    void EncodingUnit::validate() const {
+        if (encoding_height_ <= 0 ||
+            encoding_width_ <= 0 ||
+            !is_pow2(encoding_height_) ||
+            !is_pow2(encoding_width_)) {
             LOG_AND_THROW_STREAM("Encoding unit dimensions must be a positive powers of two, got "
                        << encoding_height_ << "x" << encoding_width_);
         }
