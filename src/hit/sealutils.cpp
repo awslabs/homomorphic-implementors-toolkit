@@ -22,11 +22,11 @@ namespace hit {
         // the SEAL examples recommend the last modulus be 60 bits; it's unclear why,
         // and also unclear how closely that choice is related to log_scale (they use 40 in their examples)
         modulusVector[0] = 60;
-        for (int i = 1; i < num_primes-1; i++) {
+        for (int i = 1; i < num_primes - 1; i++) {
             modulusVector[i] = log_scale;
         }
         // The special modulus has to be as large as the largest prime in the chain.
-        modulusVector[num_primes-1] = 60;
+        modulusVector[num_primes - 1] = 60;
 
         return modulusVector;
     }
@@ -81,8 +81,8 @@ namespace hit {
         ios old_fmt(nullptr);
         old_fmt.copyfmt(cout);
 
-        stream << hex << setfill('0') << setw(16) << parms_id[0] << " " << setw(16) << parms_id[1]
-               << " " << setw(16) << parms_id[2] << " " << setw(16) << parms_id[3] << " ";
+        stream << hex << setfill('0') << setw(16) << parms_id[0] << " " << setw(16) << parms_id[1] << " " << setw(16)
+               << parms_id[2] << " " << setw(16) << parms_id[3] << " ";
 
         /*
         Restore the old cout formatting.

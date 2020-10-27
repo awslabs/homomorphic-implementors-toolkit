@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "encodingunit.h"
-#include "../ciphertext.h"
 #include "../../common.h"
+#include "../ciphertext.h"
+#include "encodingunit.h"
 #include "hit/protobuf/encrypted_row_vector.pb.h"
 
 namespace hit {
@@ -123,4 +123,4 @@ namespace hit {
     // Decode a row vector given its encoding as a sequence of encoding units
     Vector decode_row_vector(const std::vector<Matrix> &mats, int trim_length = -1);
 
-} // namespace hit
+}  // namespace hit

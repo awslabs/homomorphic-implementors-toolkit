@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "debug.h"
-#include "../../sealutils.h"
 
 #include <glog/logging.h>
 
 #include <iomanip>
 
 #include "../../common.h"
+#include "../../sealutils.h"
 #include "../evaluator.h"
 
 using namespace std;
@@ -34,7 +34,8 @@ namespace hit {
 
         // First print the key level parameter information.
         auto context_data = homomorphic_eval->context->key_context_data();
-        VLOG(VLOG_VERBOSE) << "----> Level (chain index): " << context_data->chain_index() << " ...... key_context_data()";
+        VLOG(VLOG_VERBOSE) << "----> Level (chain index): " << context_data->chain_index()
+                           << " ...... key_context_data()";
         VLOG(VLOG_VERBOSE) << "      parms_id: " << context_data->parms_id();
         stringstream key_level_primes;
         for (const auto &prime : context_data->parms().coeff_modulus()) {
@@ -68,12 +69,13 @@ namespace hit {
 
     DebugEval::DebugEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,
                          const vector<int> &galois_steps) {
-        homomorphic_eval = new HomomorphicEval(num_slots, multiplicative_depth, log_scale, use_seal_params, galois_steps);
+        homomorphic_eval =
+            new HomomorphicEval(num_slots, multiplicative_depth, log_scale, use_seal_params, galois_steps);
         constructor_common(num_slots);
     }
 
-    DebugEval::DebugEval(istream &params_stream, istream &galois_key_stream,
-                         istream &relin_key_stream, istream &secret_key_stream) {
+    DebugEval::DebugEval(istream &params_stream, istream &galois_key_stream, istream &relin_key_stream,
+                         istream &secret_key_stream) {
         homomorphic_eval = new HomomorphicEval(params_stream, galois_key_stream, relin_key_stream, secret_key_stream);
         constructor_common(homomorphic_eval->num_slots());
     }
@@ -120,8 +122,8 @@ namespace hit {
 
         norm = relative_error(exact_plaintext, homom_plaintext);
         if (abs(log2(ct.scale()) - log2(ct.seal_ct.scale())) > 0.1) {
-            LOG_AND_THROW_STREAM("Internal error: HIT scale does not match SEAL scale: "
-                       << log2(ct.scale()) << " != " << ct.seal_ct.scale());
+            LOG_AND_THROW_STREAM("Internal error: HIT scale does not match SEAL scale: " << log2(ct.scale()) << " != "
+                                                                                         << ct.seal_ct.scale());
         }
 
         VLOG(VLOG_EVAL) << setprecision(8) << "    + Approximation norm: " << norm;
@@ -169,7 +171,7 @@ namespace hit {
             LOG(ERROR) << actual_debug_result.str();
 
             Plaintext encoded_plain;
-            homomorphic_eval->encoder->encode(ct.raw_pt, pow(2,log_scale_), encoded_plain);
+            homomorphic_eval->encoder->encode(ct.raw_pt, pow(2, log_scale_), encoded_plain);
 
             vector<double> decoded_plain;
             homomorphic_eval->encoder->decode(encoded_plain, decoded_plain);
@@ -186,9 +188,9 @@ namespace hit {
             LOG(ERROR) << "Encoding norm: " << norm2;
             LOG(ERROR) << "Encryption norm: " << norm3;
 
-            LOG_AND_THROW_STREAM("Plaintext and ciphertext divergence: " << norm
-                       << " > " << MAX_NORM << ". Scale is " << log_scale_
-                       << " bits. See error log for more details.");
+            LOG_AND_THROW_STREAM("Plaintext and ciphertext divergence: " << norm << " > " << MAX_NORM << ". Scale is "
+                                                                         << log_scale_
+                                                                         << " bits. See error log for more details.");
         }
     }
 
@@ -273,8 +275,7 @@ namespace hit {
         // To get decimal places, add `<< fixed << setprecision(2)` before printing the log.
         // Note that you'll need a lot of decimal places because these values are very close
         // to an integer.
-        VLOG(VLOG_EVAL) << "    + Scaled plaintext down by the ~" << prime_bit_len << "-bit prime " << hex << p
-                        << dec;
+        VLOG(VLOG_EVAL) << "    + Scaled plaintext down by the ~" << prime_bit_len << "-bit prime " << hex << p << dec;
     }
 
     void DebugEval::relinearize_inplace_internal(CKKSCiphertext &ct) {

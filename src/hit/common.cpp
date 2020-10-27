@@ -61,8 +61,8 @@ namespace hit {
     double relative_error(const vector<double> &expected, const vector<double> &actual) {
         int len = expected.size();
         if (len != actual.size()) {
-            LOG_AND_THROW_STREAM("Inputs to relative error do not have the same size: "
-                       << len << " != " << actual.size());
+            LOG_AND_THROW_STREAM("Inputs to relative error do not have the same size: " << len
+                                                                                        << " != " << actual.size());
         }
 
         Vector expected_vec = Vector(expected);
@@ -93,14 +93,11 @@ namespace hit {
 
         if (expected_l2_norm <= max_allowed_l2_norm) {
             // An unexpected situation.
-            LOG(WARNING) << "The expected result's norm is nearly zero (2^"
-                         << setprecision(8) << log2(expected_l2_norm)
-                         << "), but the actual result's norm is non-zero (2^"
-                         << log2(actual_l2_norm) << ")";
+            LOG(WARNING) << "The expected result's norm is nearly zero (2^" << setprecision(8) << log2(expected_l2_norm)
+                         << "), but the actual result's norm is non-zero (2^" << log2(actual_l2_norm) << ")";
         }
         if (diff_l2_norm > MAX_NORM) {
-            LOG(WARNING) << "Relative norm is somewhat large (2^"
-                         << setprecision(8) << log2(diff_l2_norm)
+            LOG(WARNING) << "Relative norm is somewhat large (2^" << setprecision(8) << log2(diff_l2_norm)
                          << "); there may be an error in the computation.";
         }
         return diff_l2_norm;
@@ -194,8 +191,9 @@ namespace hit {
         // else if(mod_bits <= 3524) { return 131072; }
         // else if(mod_bits <= 7050) { return 262144; }
         else {
-            LOG_AND_THROW_STREAM("This computation is too big to handle right now: cannot determine a valid ring size for a "
-                       << mod_bits << "-bit modulus");
+            LOG_AND_THROW_STREAM(
+                "This computation is too big to handle right now: cannot determine a valid ring size for a "
+                << mod_bits << "-bit modulus");
         }
     }
 
@@ -214,8 +212,8 @@ namespace hit {
     void decryption_warning(int level) {
         if (level != 0) {
             VLOG(VLOG_EVAL) << "Decrypting a ciphertext at level " << level
-                       << "; consider starting with a smaller modulus"
-                       << " to improve performance.";
+                            << "; consider starting with a smaller modulus"
+                            << " to improve performance.";
         }
     }
 

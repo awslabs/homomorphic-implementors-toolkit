@@ -1,11 +1,12 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hit/api/evaluator/plaintext.h"
+
 #include <iostream>
 
 #include "../../testutil.h"
 #include "gtest/gtest.h"
-#include "hit/api/evaluator/plaintext.h"
 #include "hit/api/ciphertext.h"
 #include "hit/common.h"
 #include "seal/seal.h"

@@ -5,8 +5,8 @@
 
 #include <glog/logging.h>
 
-#include <iomanip>
 #include <functional>
+#include <iomanip>
 
 #include "../../common.h"
 
@@ -25,9 +25,8 @@ namespace hit {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
             LOG_AND_THROW_STREAM("You can only encrypt vectors which have exactly as many "
-                       << " coefficients as the number of plaintext slots: Expected "
-                       << num_slots_ << " coefficients, but " << coeffs.size()
-                       << " were provided");
+                                 << " coefficients as the number of plaintext slots: Expected " << num_slots_
+                                 << " coefficients, but " << coeffs.size() << " were provided");
         }
 
         {
@@ -134,7 +133,7 @@ namespace hit {
     }
 
     void PlaintextEval::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        for(auto &coeff : ct.raw_pt) {
+        for (auto &coeff : ct.raw_pt) {
             coeff += scalar;
         }
         update_max_log_plain_val(ct);
@@ -151,7 +150,7 @@ namespace hit {
     }
 
     void PlaintextEval::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        for(auto &coeff : ct.raw_pt) {
+        for (auto &coeff : ct.raw_pt) {
             coeff -= scalar;
         }
         update_max_log_plain_val(ct);

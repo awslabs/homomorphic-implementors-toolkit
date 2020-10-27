@@ -6,13 +6,14 @@
 #include <glog/logging.h>
 
 #include <iomanip>
+
 #include "../../common.h"
 
 using namespace std;
 using namespace seal;
 namespace hit {
 
-    CKKSCiphertext OpCount::encrypt(const vector<double>&, int level) {
+    CKKSCiphertext OpCount::encrypt(const vector<double> &, int level) {
         {
             scoped_lock lock(mutex_);
             encryptions_++;
@@ -42,56 +43,56 @@ namespace hit {
         return num_slots_;
     }
 
-    void OpCount::rotate_right_inplace_internal(CKKSCiphertext&, int) {
+    void OpCount::rotate_right_inplace_internal(CKKSCiphertext &, int) {
         count_rotation_ops();
     }
 
-    void OpCount::rotate_left_inplace_internal(CKKSCiphertext&, int) {
+    void OpCount::rotate_left_inplace_internal(CKKSCiphertext &, int) {
         count_rotation_ops();
     }
 
-    void OpCount::negate_inplace_internal(CKKSCiphertext&) {
+    void OpCount::negate_inplace_internal(CKKSCiphertext &) {
         scoped_lock lock(mutex_);
         negations_++;
     }
 
-    void OpCount::add_inplace_internal(CKKSCiphertext&, const CKKSCiphertext&) {
+    void OpCount::add_inplace_internal(CKKSCiphertext &, const CKKSCiphertext &) {
         count_addition_ops();
     }
 
-    void OpCount::add_plain_inplace_internal(CKKSCiphertext&, double) {
+    void OpCount::add_plain_inplace_internal(CKKSCiphertext &, double) {
         count_addition_ops();
     }
 
-    void OpCount::add_plain_inplace_internal(CKKSCiphertext&, const vector<double>&) {
+    void OpCount::add_plain_inplace_internal(CKKSCiphertext &, const vector<double> &) {
         count_addition_ops();
     }
 
-    void OpCount::sub_inplace_internal(CKKSCiphertext&, const CKKSCiphertext&) {
+    void OpCount::sub_inplace_internal(CKKSCiphertext &, const CKKSCiphertext &) {
         count_addition_ops();
     }
 
-    void OpCount::sub_plain_inplace_internal(CKKSCiphertext&, double) {
+    void OpCount::sub_plain_inplace_internal(CKKSCiphertext &, double) {
         count_addition_ops();
     }
 
-    void OpCount::sub_plain_inplace_internal(CKKSCiphertext&, const vector<double>&) {
+    void OpCount::sub_plain_inplace_internal(CKKSCiphertext &, const vector<double> &) {
         count_addition_ops();
     }
 
-    void OpCount::multiply_inplace_internal(CKKSCiphertext&, const CKKSCiphertext&) {
+    void OpCount::multiply_inplace_internal(CKKSCiphertext &, const CKKSCiphertext &) {
         count_multiple_ops();
     }
 
-    void OpCount::multiply_plain_inplace_internal(CKKSCiphertext&, double) {
+    void OpCount::multiply_plain_inplace_internal(CKKSCiphertext &, double) {
         count_multiple_ops();
     }
 
-    void OpCount::multiply_plain_inplace_internal(CKKSCiphertext&, const vector<double>&) {
+    void OpCount::multiply_plain_inplace_internal(CKKSCiphertext &, const vector<double> &) {
         count_multiple_ops();
     }
 
-    void OpCount::square_inplace_internal(CKKSCiphertext&) {
+    void OpCount::square_inplace_internal(CKKSCiphertext &) {
         count_multiple_ops();
     }
 
@@ -103,12 +104,12 @@ namespace hit {
         reduce_level_muls_ += (ct.he_level() - level);
     }
 
-    void OpCount::rescale_to_next_inplace_internal(CKKSCiphertext&) {
+    void OpCount::rescale_to_next_inplace_internal(CKKSCiphertext &) {
         scoped_lock lock(mutex_);
         rescales_++;
     }
 
-    void OpCount::relinearize_inplace_internal(CKKSCiphertext&) {
+    void OpCount::relinearize_inplace_internal(CKKSCiphertext &) {
         scoped_lock lock(mutex_);
         relins_++;
     }

@@ -1,12 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hit/api/linearalgebra/linearalgebra.h"
-
 #include <iostream>
 
 #include "gtest/gtest.h"
 #include "hit/api/evaluator/homomorphic.h"
+#include "hit/api/linearalgebra/linearalgebra.h"
 
 using namespace std;
 using namespace hit;

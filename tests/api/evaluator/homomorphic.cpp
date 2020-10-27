@@ -1,11 +1,12 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hit/api/evaluator/homomorphic.h"
+
 #include <iostream>
 
 #include "../../testutil.h"
 #include "gtest/gtest.h"
-#include "hit/api/evaluator/homomorphic.h"
 #include "hit/api/ciphertext.h"
 #include "hit/common.h"
 #include "hit/sealutils.h"
@@ -40,7 +41,7 @@ TEST(HomomorphicTest, Serialization_NoSecret) {
     ASSERT_THROW((
                      // Expect invalid_argument is thrown because there is no secret key
                      ckks_instance2.decrypt(ciphertext)),
-                   invalid_argument);
+                 invalid_argument);
     // should not throw an error.
     ckks_instance2.square_inplace(ciphertext);
 }

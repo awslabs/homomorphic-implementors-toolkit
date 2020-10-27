@@ -3,9 +3,10 @@
 
 #include "encryptedmatrix.h"
 
+#include <glog/logging.h>
+
 #include <algorithm>
 #include <execution>
-#include <glog/logging.h>
 
 using namespace std;
 using namespace seal;
@@ -117,8 +118,9 @@ namespace hit {
                 // add this additional context.
                 Vector raw_plaintext = cts[i][j].plaintext();
                 if (raw_plaintext.size() != unit.encoding_height() * unit.encoding_width()) {
-                    LOG_AND_THROW_STREAM("Internal error: plaintext has " << raw_plaintext.size()
-                               << " coefficients, expected " << unit.encoding_height() * unit.encoding_width());
+                    LOG_AND_THROW_STREAM("Internal error: plaintext has "
+                                         << raw_plaintext.size() << " coefficients, expected "
+                                         << unit.encoding_height() * unit.encoding_width());
                 }
 
                 Matrix formatted_plaintext =
@@ -137,40 +139,40 @@ namespace hit {
 
         if (height_ <= 0) {
             LOG_AND_THROW_STREAM("Invalid EncryptedMatrix: "
-                << "height must be non-negative, got " << height_);
+                                 << "height must be non-negative, got " << height_);
         }
         if (width_ <= 0) {
             LOG_AND_THROW_STREAM("Invalid EncryptedMatrix: "
-                << "width must be non-negative, got " << width_);
+                                 << "width must be non-negative, got " << width_);
         }
 
         if (cts.size() != ceil(height_ / static_cast<double>(unit.encoding_height()))) {
             LOG_AND_THROW_STREAM("Invalid ciphertexts in EncryptedMatrix: "
-                       << "Expected " << ceil(height_ / static_cast<double>(unit.encoding_height()))
-                       << " vertical units, found a " << cts.size() << ". ");
+                                 << "Expected " << ceil(height_ / static_cast<double>(unit.encoding_height()))
+                                 << " vertical units, found a " << cts.size() << ". ");
         }
 
         if (cts[0].size() != ceil(width_ / static_cast<double>(unit.encoding_width()))) {
             LOG_AND_THROW_STREAM("Invalid ciphertexts in EncryptedMatrix: "
-                       << "Expected " << ceil(width_ / static_cast<double>(unit.encoding_width()))
-                       << " horizontal units, found a " << cts[0].size() << ". ");
+                                 << "Expected " << ceil(width_ / static_cast<double>(unit.encoding_width()))
+                                 << " horizontal units, found a " << cts[0].size() << ". ");
         }
 
         int row_size = cts[0].size();
         for (const auto &cts_i : cts) {
             if (cts_i.size() != row_size) {
                 LOG_AND_THROW_STREAM("Invalid ciphertexts in EncryptedMatrix: "
-                       << "Each horizontal row should have " << row_size
-                       << " units, but a row has " << cts_i.size() << " horizontal units. ");
+                                     << "Each horizontal row should have " << row_size << " units, but a row has "
+                                     << cts_i.size() << " horizontal units. ");
             }
             for (const auto &ct : cts_i) {
                 if (ct.scale() != cts[0][0].scale()) {
                     LOG_AND_THROW_STREAM("Invalid EncryptedMatrix: "
-                        << "Each ciphertext must have the same scale.");
+                                         << "Each ciphertext must have the same scale.");
                 }
                 if (ct.he_level() != cts[0][0].he_level()) {
                     LOG_AND_THROW_STREAM("Invalid EncryptedMatrix: "
-                        << "Each ciphertext must have the same level.");
+                                         << "Each ciphertext must have the same level.");
                 }
             }
         }
@@ -270,15 +272,16 @@ namespace hit {
         for (int i = 0; i < mats.size(); i++) {
             if (mats[i].size() != mats[0].size()) {
                 LOG_AND_THROW_STREAM("Internal error: all rows in decode_matrix must have the same length; "
-                           << "but " << mats[i].size() << "!=" << mats[0].size());
+                                     << "but " << mats[i].size() << "!=" << mats[0].size());
             }
             // for each Matrix row
             for (int j = 0; j < height && i * height + j < trim_height; j++) {
                 for (int k = 0; k < mats[0].size(); k++) {
                     if (mats[i][k].size1() != height || mats[i][k].size2() != width) {
-                        LOG_AND_THROW_STREAM("Internal error: all matrices in decode_matrix must have the same dimensions; "
-                                   << "expected " << height << "x" << width << ", but got "
-                                   << mats[i][k].size1() << "x" << mats[i][k].size2());
+                        LOG_AND_THROW_STREAM(
+                            "Internal error: all matrices in decode_matrix must have the same dimensions; "
+                            << "expected " << height << "x" << width << ", but got " << mats[i][k].size1() << "x"
+                            << mats[i][k].size2());
                     }
                     for (int l = 0; l < width && k * width + l < trim_width; l++) {
                         linear_matrix.emplace_back(mats[i][k].data()[j * width + l]);

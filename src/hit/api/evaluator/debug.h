@@ -27,8 +27,8 @@ namespace hit {
         DebugEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params = true,
                   const std::vector<int> &galois_steps = std::vector<int>());
 
-        DebugEval(std::istream &params_stream, std::istream &galois_key_stream,
-                  std::istream &relin_key_stream, std::istream &secret_key_stream);
+        DebugEval(std::istream &params_stream, std::istream &galois_key_stream, std::istream &relin_key_stream,
+                  std::istream &secret_key_stream);
 
         /* For documentation on the API, see ../evaluator.h */
         ~DebugEval() override;

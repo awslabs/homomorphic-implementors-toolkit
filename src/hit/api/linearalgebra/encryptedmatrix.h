@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "encodingunit.h"
 #include "../ciphertext.h"
+#include "encodingunit.h"
 #include "hit/common.h"
 #include "hit/protobuf/encrypted_matrix.pb.h"
 
@@ -122,4 +122,4 @@ namespace hit {
     // Decode a matrix given its encoding as a sequence of encoding units
     Matrix decode_matrix(const std::vector<std::vector<Matrix>> &mats, int trim_height = -1, int trim_width = -1);
 
-} // namespace hit
+}  // namespace hit

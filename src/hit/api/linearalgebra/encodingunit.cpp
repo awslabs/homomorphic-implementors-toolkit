@@ -3,8 +3,9 @@
 
 #include "encodingunit.h"
 
-#include "common.h"
 #include <glog/logging.h>
+
+#include "common.h"
 
 using namespace std;
 
@@ -60,12 +61,9 @@ namespace hit {
     }
 
     void EncodingUnit::validate() const {
-        if (encoding_height_ <= 0 ||
-            encoding_width_ <= 0 ||
-            !is_pow2(encoding_height_) ||
-            !is_pow2(encoding_width_)) {
+        if (encoding_height_ <= 0 || encoding_width_ <= 0 || !is_pow2(encoding_height_) || !is_pow2(encoding_width_)) {
             LOG_AND_THROW_STREAM("Encoding unit dimensions must be a positive powers of two, got "
-                       << encoding_height_ << "x" << encoding_width_);
+                                 << encoding_height_ << "x" << encoding_width_);
         }
     }
 
