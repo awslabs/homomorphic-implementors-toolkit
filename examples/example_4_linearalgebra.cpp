@@ -24,7 +24,7 @@ void example_4_driver() {
 	// Start by creating one of the basic HIT instances.
 	DebugEval dbg_inst = DebugEval(num_slots, max_depth, log_scale);
 	// We then create a LinearAlgebra wrapper around this instance
-	LinearAlgebra la_inst = LinearAlgebra(dbg_inst);
+	LinearAlgebra la_inst = LinearAlgebra(dbg_inst); // NOLINT(modernize-use-auto)
 
 /* ******** Encoding Units ********
  * A fundamental concept for the the linear algebra toolkit proposed in [Crockett20] is
@@ -169,7 +169,7 @@ void example_4_driver() {
 	Vector rvec = Vector(rvec_data);
 
 	// We can now encrypt this row vector with respect to one of the units
-	EncryptedRowVector enc_rvec = la_inst.encrypt<EncryptedRowVector>(rvec, unit_64x128);
+	EncryptedRowVector enc_rvec = la_inst.encrypt<EncryptedRowVector>(rvec, unit_64x128); // NOLINT(modernize-use-auto)
 	// The ciphertext knows the plaintext's original width.
 	LOG(INFO) << "enc_rvec has dimension " << enc_rvec.width();
 	// We can also see how many encoding units it took to tile this vector
@@ -223,7 +223,7 @@ void example_4_driver() {
 	Vector cvec = Vector(cvec_data);
 
 	// We can now encrypt a column vector with respect to one of the units
-	EncryptedColVector enc_cvec = la_inst.encrypt<EncryptedColVector>(cvec, unit_64x128);
+	EncryptedColVector enc_cvec = la_inst.encrypt<EncryptedColVector>(cvec, unit_64x128); // NOLINT(modernize-use-auto)
 	// The ciphertext knows the plaintext's original height.
 	LOG(INFO) << "enc_cvec has dimension " << enc_cvec.height();
 	// We can also see how many encoding units it took to tile this vector

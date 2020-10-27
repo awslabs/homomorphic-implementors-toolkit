@@ -142,7 +142,7 @@ vector<double> random_vector(int dim, double maxNorm) {
     vector<double> x;
     x.reserve(dim);
 
-    srand(time(NULL));
+    srand(time(nullptr));
     for (int i = 0; i < dim; i++) {
         // generate a random double between -maxNorm and maxNorm
         double a = -maxNorm + ((static_cast<double>(random())) / (static_cast<double>(RAND_MAX))) * (2 * maxNorm);
