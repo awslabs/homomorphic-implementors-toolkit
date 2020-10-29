@@ -1,26 +1,33 @@
 # Incorporating HIT into a CMake project
 
-## CMake Incorporation Steps
+## Including HIT Source
+The easiest way to consume HIT with your project's build system is to include the HIT source directly in your repository (say in `third-party/aws-hit`). Then in your project's CMakeLists.txt, just include:
+
+```
+# Add 'third-party/hit/src', which defines 'aws-hit' target.
+add_subdirectory(third-party/aws-hit)
+
+# Define your project target.
+add_executable(my_homom_app main.cpp)
+
+# Link the project target against aws-hit.
+target_link_libraries(my_homom_app aws-hit)
+```
+
+## Using HIT as a Dependency without Source
+A more complex way to include HIT in your CMake project is to have CMake download the HIT source from Github. This avoids the need to include the HIT source code directly in your project.
 
 ### 1. Under `third-party/hit` directory, create a file `CMakeLists.txt`, which will be used to download HIT GitHub code.
 ```cmake
 cmake_minimum_required(VERSION 3.12)
-
 project(AWS_HIT_DOWNLOAD)
-
-message(STATUS "Downloading HIT in ${CMAKE_CURRENT_LIST_DIR}.")
-
 include(ExternalProject)
 ExternalProject_Add(EP_AWS_HIT
-    TMP_DIR              ${CMAKE_CURRENT_LIST_DIR}/tmp
-    STAMP_DIR            ${CMAKE_CURRENT_LIST_DIR}/stamp
-    DOWNLOAD_DIR         ""
     SOURCE_DIR           ${CMAKE_CURRENT_LIST_DIR}/src
     BINARY_DIR           ${CMAKE_CURRENT_LIST_DIR}/build
     GIT_REPOSITORY       https://github.com/awslabs/homomorphic-implementors-toolkit.git
     GIT_TAG              master
     GIT_CONFIG           advice.detachedHead=false
-    CMAKE_ARGS           -DCMAKE_BUILD_TYPE=Release
     CONFIGURE_COMMAND    ""
     BUILD_COMMAND        ""
     INSTALL_COMMAND      ""
@@ -55,30 +62,25 @@ function(download_external_project project_dir)
 endfunction()
 
 # Download AWS HIT.
-download_external_project(third-party/hit)
-# Add 'third-party/hit/src', which defines 'aws-hit' target.
-add_subdirectory(third-party/hit/src)
+download_external_project(external/hit)
+# Add 'external/hit/src', which defines 'aws-hit' target.
+add_subdirectory(external/hit/src)
 # Define your project target.
-add_executable(example main.cpp)
+add_executable(my_homom_app main.cpp)
 # Link the project target against aws-hit as needed.
-target_link_libraries(example aws-hit)
+target_link_libraries(my_homom_app aws-hit)
 ```
 
-### 3. After link `aws-hit`, HIT header files are ready to be included in the `main.cpp` of your project.
+### 3. HIT header files are now available in `main.cpp` of your project.
 
 ```c++
-#include "hit/CKKSInstance.h"
-#include "hit/api/evaluator.h"
+#include "hit/hit.h"
 #include <glog/logging.h>
 
-const int NUM_OF_SLOTS = 4096;
-const int MULTI_DEPTH = 1;
-const int LOG_SCALE = 30;
+using namespace hit;
 
 int main(int, char **argv) {
-    hit::CKKSInstance *ckks_instance = hit::CKKSInstance::get_new_homomorphic_instance(NUM_OF_SLOTS, MULTI_DEPTH, LOG_SCALE);
-    // Ready to use CKKInstance to add and multiply ciphertexts.
+    DepthFinder *inst = DepthFinder();
+    // Ready to use `inst` to compute the depth of a circuit.
 }
 ```
-
-**Note**: HIT recommends reading *examples/evaluator_example.cpp*, which provides detailed explanation on how to use HIT evaluators.

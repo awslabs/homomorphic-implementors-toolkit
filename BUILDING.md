@@ -1,68 +1,22 @@
 # Building HIT with CMake
 
-## HIT Build Steps on Ubuntu 18.04
-### Install Build Tool, Compiler and Dependencies
+The [README](/README.md) contains basic building instructions. This document contains detailed instructions.
 
-HIT uses CMake (3.12+), and recommends using ninja as generator to speed up build.
-
-HIT supports compilers including GCC9 and Clang10.
-
-Dependencies of HIT includes:
- * [Boost](https://github.com/boostorg/boost)
- * [Google Protobuf](https://github.com/protocolbuffers/protobuf)
- * [Glog](https://github.com/google/glog)
- * [GoogleTest](https://github.com/google/googletest)
- * [TBB](https://github.com/oneapi-src/oneTBB)
- * [Microsoft SEAL](https://github.com/microsoft/SEAL)
-
-For `Boost` and `Google Protobuf`, HIT automatically downloads source code and builds the libraries if they are not found in system.
-For other dependencies, HIT does not look for system installed libraries but builds the binary from source code.
-HIT recommends installing `Boost` and `Google Protobuf` in system to reduce build time.
-
-The following instructions should have build tool, GCC9 and some dependencies (`Boost` and `Google Protobuf`) installed.
+## Recommended Prerequisites for Ubuntu 18.04
 ```!bash
-set -ex && \
-sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
-sudo apt-get update && \
-sudo apt-get -y --no-install-recommends upgrade && \
-sudo apt-get -y --no-install-recommends install \
-apt-utils \
-software-properties-common \
-zlib1g-dev \
-ninja-build \
-protobuf-compiler \
-libprotobuf-dev \
-libboost-all-dev \
-libcurl4-openssl-dev \
-libmsgsl-dev \
-libssl-dev \
-git \
-curl \
-ca-certificates && \
-cd /tmp && \
-curl -LO https://github.com/Kitware/CMake/releases/download/v3.16.3/cmake-3.16.3-Linux-x86_64.tar.gz && \
-sudo tar xzf cmake-3.16.3-Linux-x86_64.tar.gz -C /usr --strip-components 1 && \
-cmake --version && \
-sudo apt-get -y --no-install-recommends install gcc-9 g++-9 && \
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90 --slave /usr/bin/g++ g++ /usr/bin/g++-9 --slave /usr/bin/gcov gcov /usr/bin/gcov-9 && \
-sudo apt-get autoremove --purge -y && \
-sudo apt-get clean && \
-sudo apt-get autoclean && \
-sudo rm -rf /var/lib/apt/lists/* && \
-sudo rm -rf /tmp/*
-```
-
-**OPTIONAL**: The following instructions have `Clang10`, `clang-tidy` and `clang-format` installed.
-```bash
-sudo set -ex && \
-sudo apt-get update && \
-sudo apt-get -y --no-install-recommends install clang clang-10 clang-tidy-10 && \
-sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-10 90 --slave /usr/bin/clang++ clang++ /usr/bin/clang-cpp-10 --slave /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-10 && \
-sudo apt-get autoremove --purge -y && \
-sudo apt-get clean && \
-sudo apt-get autoclean && \
-sudo rm -rf /var/lib/apt/lists/* && \
-sudo rm -rf /tmp/*
+set -ex
+apt-get update
+apt-get -y --no-install-recommends install git ninja-build build-essential software-properties-common curl libboost-math-dev protobuf-compiler libprotobuf-dev ca-certificates clang clang-10 clang-tidy-10
+cd /tmp
+curl -LO https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz
+tar xzf cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz -C /usr --strip-components 1
+add-apt-repository ppa:ubuntu-toolchain-r/test
+apt-get update
+apt-get -y --no-install-recommends install gcc-9 g++-9
+update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90 --slave /usr/bin/g++ g++ /usr/bin/g++-9 --slave /usr/bin/gcov gcov /usr/bin/gcov-9
+add-apt-repository --remove ppa:ubuntu-toolchain-r/test
+apt-get update
+update-alternatives --install /usr/bin/clang clang /usr/bin/clang-10 90 --slave /usr/bin/clang++ clang++ /usr/bin/clang-cpp-10 --slave /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-10
 ```
 
 ### Download HIT, Build and Test
@@ -71,32 +25,39 @@ sudo rm -rf /tmp/*
 git clone https://github.com/awslabs/homomorphic-implementors-toolkit.git
 cd homomorphic-implementors-toolkit
 
-# Run build command
-cmake . -Bbuild -GNinja -DCMAKE_BUILD_TYPE=Release -DHIT_BUILD_TESTS=ON -DHIT_BUILD_EXAMPLES=ON
-ninja -j $(nproc)
+# Run build command. See [README](/README.md) for a comlete list of CMake flags.
+cmake . -Bbuild -GNinja -DHIT_BUILD_TESTS=ON -DHIT_BUILD_EXAMPLES=ON
+ninja -Cbuild
 
 # Run HIT unit tests
+# Log messages to stderr instead of logfiles.
+export GLOG_logtostderr=true
+# For testing, only show warnings and errors
+export GLOG_v=0
 ninja run_hit_tests
 
 # Run HIT example
-# When running code that uses HIT, you can control the output with GLog.
-# In HIT, logging is primarily controlled by VLOG:
-# - To see only critical security warnings and errors, define the environment variable GLOG_v=0 or use the command line argument --v=0
-# - To see evaluation output, define the environment variable GLOG_v=1 or use the command line argument --v=1
-# - To see verbose evaluation output, define the environment variable GLOG_v=2 or use the command line argument --v=2
-# See the GLog documentation for more information: https://hpc.nih.gov/development/glog.html
-
-# As an example, we will set the log level to 1 to show most output:
+# Show most HIT output
 export GLOG_v=1
+# Log to a log file instead of stderr
+export GLOG_logtostderr=false
 # Set Logging directory.
 export GLOG_log_dir="/tmp/hit_log"
-if [ -d ${GLOG_log_dir} ]; then rm -Rf ${GLOG_log_dir}; fi
-mkdir -p ${GLOG_log_dir}
-ninja run_hit_example
+ninja run_hit_examples
 ```
 
-### HIT CMake Flags
- - `HIT_BUILD_TESTS` (default OFF): Build the unit tests. See TESTING below for more information.
- - `HIT_BUILD_EXAMPLES` (default OFF): Build the HIT example.
- - `HIT_RUN_CLANG_TIDY` (default OFF): Run clang-tidy on the hand-written source code (but not code generated by protobufs), and make the build fail if clang-tidy emits any warnings.
- - `HIT_RUN_CLANG_FORMAT` (default OFF): Run clang-format on the source code, and apply changes in-place.
+#### HIT CMake Flags
+Flags primarily for users:
+ - `CMAKE_INSTALL_PREFIX`: Installation target directory for `make install` or `ninja install`; see https://cmake.org/cmake/help/latest/variable/CMAKE_INSTALL_PREFIX.html.
+ - `HIT_BUILD_EXAMPLES` (default OFF, allowed values: [ON, OFF]): Build the HIT example.
+
+Flags primarily for developers:
+ - `CMAKE_BUILD_TYPE`: (default Release, allowed values: [Release, Debug, MinSizeRel, RelWithDebInfo]): Build HIT with a specific build flavor; see https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html. This should only be used to debug HIT since build types other than `Release` result in much worse performance.
+ - `HIT_BUILD_TESTS` (default OFF, allowed values: [ON, OFF]): Build the unit tests. See TESTING below for more information.
+ - `HIT_RUN_CLANG_TIDY` (default OFF, allowed values: [ON, OFF]): Run clang-tidy on the hand-written source code (but not code generated by protobufs), and make the build fail if clang-tidy emits any warnings.
+ - `HIT_RUN_CLANG_FORMAT` (default OFF, allowed values: [ON, OFF]): Run clang-format on the source code, and apply changes in-place.
+
+To use any of these CMake flags, specify them as an argument to the `cmake` command. For example to build the HIT with examples, use
+```
+cmake . -Bbuild -GNinja -DHIT_BUILD_EXAMPLES=ON
+```

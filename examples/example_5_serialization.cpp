@@ -53,8 +53,12 @@ void example_5_client() {
 	ofstream params_stream("/tmp/params", ios::out | ios::binary);
 	ofstream galois_key_stream("/tmp/galois", ios::out | ios::binary);
 	ofstream relin_key_stream("/tmp/relin", ios::out | ios::binary);
-	// We can optionally write the secret key to a stream, but we don't need to
-	// for this application.
+	/* We can optionally write the secret key to a stream, but we don't need to
+	 * for this application since the client blocks until the server returns
+	 * its result.
+	 * Alternatively, if the client does save secret key to a stream, a new
+	 * instance can be loaded when the server computation is complete.
+	 */
 	he_inst.save(params_stream, galois_key_stream, relin_key_stream, nullptr);
 
 	// Don't forget to close the streams!
