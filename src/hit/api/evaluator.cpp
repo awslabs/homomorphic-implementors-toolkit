@@ -17,9 +17,12 @@ using namespace std;
 using namespace seal;
 
 namespace hit {
-
-    vector<double> CKKSEvaluator::decrypt(const CKKSCiphertext &, bool) const {
+    vector<double> CKKSEvaluator::decrypt(const CKKSCiphertext &) const {
         LOG_AND_THROW_STREAM("Decrypt can only be called with Homomorphic or Debug evaluators");
+    }
+
+    vector<double> CKKSEvaluator::decrypt(const CKKSCiphertext &ct, bool) const {
+        return decrypt(ct);
     }
 
     CKKSCiphertext CKKSEvaluator::rotate_right(const CKKSCiphertext &ct, int steps) {

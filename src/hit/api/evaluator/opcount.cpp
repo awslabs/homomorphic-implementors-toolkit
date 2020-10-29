@@ -13,6 +13,10 @@ using namespace std;
 using namespace seal;
 namespace hit {
 
+    CKKSCiphertext OpCount::encrypt(const vector<double> &coeffs) {
+        return encrypt(coeffs, -1);
+    }
+
     CKKSCiphertext OpCount::encrypt(const vector<double> &, int level) {
         {
             scoped_lock lock(mutex_);

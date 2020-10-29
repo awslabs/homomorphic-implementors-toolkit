@@ -249,6 +249,10 @@ namespace hit {
         relin_keys.save(relin_key_stream);
     }
 
+    CKKSCiphertext HomomorphicEval::encrypt(const vector<double> &coeffs) {
+        return encrypt(coeffs, -1);
+    }
+
     CKKSCiphertext HomomorphicEval::encrypt(const vector<double> &coeffs, int level) {
         int num_slots_ = encoder->slot_count();
         if (coeffs.size() != num_slots_) {
@@ -283,6 +287,10 @@ namespace hit {
         destination.initialized = true;
 
         return destination;
+    }
+
+    vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted) const {
+        return decrypt(encrypted, false);
     }
 
     vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const {

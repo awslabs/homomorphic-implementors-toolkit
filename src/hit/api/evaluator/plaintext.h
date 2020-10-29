@@ -33,7 +33,8 @@ namespace hit {
         // This is useful for putting an upper bound on the scale parameter.
         double get_exact_max_log_plain_val() const;
 
-        CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1) override;
+        CKKSCiphertext encrypt(const std::vector<double> &coeffs) override;
+        CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level) override;
 
        protected:
         void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) override;

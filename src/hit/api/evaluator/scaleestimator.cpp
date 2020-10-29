@@ -78,6 +78,10 @@ namespace hit {
         delete plaintext_eval;
     }
 
+    CKKSCiphertext ScaleEstimator::encrypt(const vector<double> &coeffs) {
+        return encrypt(coeffs, -1);
+    }
+
     CKKSCiphertext ScaleEstimator::encrypt(const vector<double> &coeffs, int level) {
         update_plaintext_max_val(coeffs);
 

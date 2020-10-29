@@ -48,12 +48,15 @@ namespace hit {
 
         // Encrypt a (full-dimensional) vector of coefficients. If an encryption level (integer >= 0) is not specified,
         // the ciphertext will be encrypted at the highest level allowed by the parameters.
+        virtual CKKSCiphertext encrypt(const std::vector<double> &coeffs) = 0;
         virtual CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level) = 0;
 
+        // Decrypt a ciphertext to (approximately) recover the plaintext coefficients.
         // This function will log a message if you try to decrypt a ciphertext which
         // is not at level 0. Sometimes it is expected for a ciphertext to be at a higher
-        // level, so you can suppress the warning by explicitly setting `suppress_warnings` to true.
-        virtual std::vector<double> decrypt(const CKKSCiphertext &ct, bool suppress_warnings = false) const;
+        // level, so you can suppress the warning by setting `suppress_warnings` to true.
+        virtual std::vector<double> decrypt(const CKKSCiphertext &ct) const;
+        virtual std::vector<double> decrypt(const CKKSCiphertext &ct, bool suppress_warnings) const;
 
         // Get the number of plaintext slots expected by this evaluator
         virtual int num_slots() const = 0;

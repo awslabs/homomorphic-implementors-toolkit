@@ -11,7 +11,6 @@ Checks: >
   portability-*,
   readability-*,
   -google-build-using-namespace,
-  -google-default-arguments,
   -modernize-use-nodiscard,
   -bugprone-branch-clone,
   -google-readability-braces-around-statements,

@@ -90,11 +90,19 @@ namespace hit {
         homomorphic_eval->save(params_stream, galois_key_stream, relin_key_stream, &secret_key_stream);
     }
 
+    CKKSCiphertext DebugEval::encrypt(const vector<double> &coeffs) {
+        return encrypt(coeffs, -1);
+    }
+
     CKKSCiphertext DebugEval::encrypt(const vector<double> &coeffs, int level) {
         scale_estimator->update_plaintext_max_val(coeffs);
         CKKSCiphertext destination = homomorphic_eval->encrypt(coeffs, level);
         destination.raw_pt = coeffs;
         return destination;
+    }
+
+    vector<double> DebugEval::decrypt(const CKKSCiphertext &encrypted) const {
+        return decrypt(encrypted, false);
     }
 
     vector<double> DebugEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const {
