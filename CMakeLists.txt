@@ -92,11 +92,11 @@ add_subdirectory(protobuf)
 # Enable tooling.
 # clang-tidy and clang-format are used to provide some warnings for developer reference during development.
 option(HIT_RUN_CLANG_FORMAT "Run clang-format and apply changes to source code." OFF)
-if (CMake_RUN_HIT_CODE_FORMAT)
+if (HIT_RUN_CLANG_FORMAT)
     enable_hit_code_format()
 endif ()
 option(HIT_RUN_CLANG_TIDY "Run clang-tidy with the compiler." OFF)
-if (CMake_RUN_CLANG_TIDY)
+if (HIT_RUN_CLANG_TIDY)
     enable_clang_tidy()
 endif ()
 

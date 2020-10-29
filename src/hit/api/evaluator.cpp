@@ -18,7 +18,7 @@ using namespace seal;
 
 namespace hit {
 
-    vector<double> CKKSEvaluator::decrypt(const CKKSCiphertext&, bool) const {
+    vector<double> CKKSEvaluator::decrypt(const CKKSCiphertext &, bool) const {
         LOG_AND_THROW_STREAM("Decrypt can only be called with Homomorphic or Debug evaluators");
     }
 
@@ -32,7 +32,7 @@ namespace hit {
         if (steps < 0) {
             LOG_AND_THROW_STREAM("rotate_right must have a positive number of steps, got " << steps);
         }
-        if(ct.needs_relin()) {
+        if (ct.needs_relin()) {
             LOG_AND_THROW_STREAM("Input to rotate_right must be a linear ciphertext");
         }
         VLOG(VLOG_EVAL) << "Rotate " << abs(steps) << " steps right.";
@@ -50,7 +50,7 @@ namespace hit {
         if (steps < 0) {
             LOG_AND_THROW_STREAM("rotate_left must have a positive number of steps, got " << steps);
         }
-        if(ct.needs_relin()) {
+        if (ct.needs_relin()) {
             LOG_AND_THROW_STREAM("Input to rotate_left must be a linear ciphertext");
         }
         VLOG(VLOG_EVAL) << "Rotate " << abs(steps) << " steps left.";
@@ -78,13 +78,13 @@ namespace hit {
 
     void CKKSEvaluator::add_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         VLOG(VLOG_EVAL) << "Add ciphertexts";
-        if(ct1.scale() != ct2.scale()) {
-            LOG_AND_THROW_STREAM("Inputs to add must have the same scale: "
-                       << log2(ct1.scale()) << " bits != " << log2(ct2.scale()) << " bits");
+        if (ct1.scale() != ct2.scale()) {
+            LOG_AND_THROW_STREAM("Inputs to add must have the same scale: " << log2(ct1.scale()) << " bits != "
+                                                                            << log2(ct2.scale()) << " bits");
         }
-        if(ct1.he_level() != ct2.he_level()) {
-            LOG_AND_THROW_STREAM("Inputs to add must be at the same level: "
-                       << ct1.he_level() << " != " << ct2.he_level());
+        if (ct1.he_level() != ct2.he_level()) {
+            LOG_AND_THROW_STREAM("Inputs to add must be at the same level: " << ct1.he_level()
+                                                                             << " != " << ct2.he_level());
         }
         add_inplace_internal(ct1, ct2);
         print_stats(ct1);
@@ -110,10 +110,10 @@ namespace hit {
 
     void CKKSEvaluator::add_plain_inplace(CKKSCiphertext &ct, const vector<double> &plain) {
         VLOG(VLOG_EVAL) << "Add plaintext to ciphertext";
-        if(plain.size() != ct.num_slots()) {
+        if (plain.size() != ct.num_slots()) {
             LOG_AND_THROW_STREAM("Public argument to add_plain must have exactly as many "
-                       << " coefficients as the ciphertext has plaintext slots: "
-                       << "Expected " << ct.num_slots() << " coeffs, got " << plain.size());
+                                 << " coefficients as the ciphertext has plaintext slots: "
+                                 << "Expected " << ct.num_slots() << " coeffs, got " << plain.size());
         }
         add_plain_inplace_internal(ct, plain);
         print_stats(ct);
@@ -127,13 +127,13 @@ namespace hit {
 
         CKKSCiphertext dest = cts[0];
         for (int i = 1; i < cts.size(); i++) {
-            if(cts[i].scale() != dest.scale()) {
+            if (cts[i].scale() != dest.scale()) {
                 LOG_AND_THROW_STREAM("Inputs to add_many must have the same scale: "
-                           << log2(cts[i].scale()) << " bits != " << log2(dest.scale()) << " bits");
+                                     << log2(cts[i].scale()) << " bits != " << log2(dest.scale()) << " bits");
             }
-            if(cts[i].he_level() != dest.he_level()) {
-                LOG_AND_THROW_STREAM("Inputs to add_many must be at the same level: "
-                       << cts[i].he_level() << " != " << dest.he_level());
+            if (cts[i].he_level() != dest.he_level()) {
+                LOG_AND_THROW_STREAM("Inputs to add_many must be at the same level: " << cts[i].he_level()
+                                                                                      << " != " << dest.he_level());
             }
             add_inplace_internal(dest, cts[i]);
         }
@@ -149,13 +149,13 @@ namespace hit {
 
     void CKKSEvaluator::sub_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         VLOG(VLOG_EVAL) << "Subtract ciphertexts";
-        if(ct1.scale() != ct2.scale()) {
-            LOG_AND_THROW_STREAM("Inputs to sub must have the same scale: "
-                       << log2(ct1.scale()) << " bits != " << log2(ct2.scale()) << " bits");
+        if (ct1.scale() != ct2.scale()) {
+            LOG_AND_THROW_STREAM("Inputs to sub must have the same scale: " << log2(ct1.scale()) << " bits != "
+                                                                            << log2(ct2.scale()) << " bits");
         }
-        if(ct1.he_level() != ct2.he_level()) {
-            LOG_AND_THROW_STREAM("Inputs to sub must be at the same level: "
-                       << ct1.he_level() << " != " << ct2.he_level());
+        if (ct1.he_level() != ct2.he_level()) {
+            LOG_AND_THROW_STREAM("Inputs to sub must be at the same level: " << ct1.he_level()
+                                                                             << " != " << ct2.he_level());
         }
         sub_inplace_internal(ct1, ct2);
         print_stats(ct1);
@@ -181,10 +181,10 @@ namespace hit {
 
     void CKKSEvaluator::sub_plain_inplace(CKKSCiphertext &ct, const vector<double> &plain) {
         VLOG(VLOG_EVAL) << "Subtract plaintext from ciphertext";
-        if(plain.size() != ct.num_slots()) {
+        if (plain.size() != ct.num_slots()) {
             LOG_AND_THROW_STREAM("Public argument to sub_plain must have exactly as many "
-                       << " coefficients as the ciphertext has plaintext slots: "
-                       << "Expected " << ct.num_slots() << " coeffs, got " << plain.size());
+                                 << " coefficients as the ciphertext has plaintext slots: "
+                                 << "Expected " << ct.num_slots() << " coeffs, got " << plain.size());
         }
         sub_plain_inplace_internal(ct, plain);
         print_stats(ct);
@@ -198,19 +198,19 @@ namespace hit {
 
     void CKKSEvaluator::multiply_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         VLOG(VLOG_EVAL) << "Multiply ciphertexts";
-        if(ct1.needs_relin() || ct2.needs_relin()) {
+        if (ct1.needs_relin() || ct2.needs_relin()) {
             LOG_AND_THROW_STREAM("Inputs to multiply must be linear ciphertexts");
         }
-        if(ct1.he_level() != ct2.he_level()) {
-            LOG_AND_THROW_STREAM("Inputs to multiply must be at the same level: "
-                       << ct1.he_level() << " != " << ct2.he_level());
+        if (ct1.he_level() != ct2.he_level()) {
+            LOG_AND_THROW_STREAM("Inputs to multiply must be at the same level: " << ct1.he_level()
+                                                                                  << " != " << ct2.he_level());
         }
-        if(ct1.needs_rescale() || ct2.needs_rescale()) {
+        if (ct1.needs_rescale() || ct2.needs_rescale()) {
             LOG_AND_THROW_STREAM("Inputs to multiply must have nominal scale");
         }
         if (ct1.scale() != ct2.scale()) {
-            LOG_AND_THROW_STREAM("Inputs to multiply must have the same scale: "
-                       << log2(ct1.scale()) << " bits != " << log2(ct2.scale()) << " bits");
+            LOG_AND_THROW_STREAM("Inputs to multiply must have the same scale: " << log2(ct1.scale()) << " bits != "
+                                                                                 << log2(ct2.scale()) << " bits");
         }
         multiply_inplace_internal(ct1, ct2);
         ct1.needs_rescale_ = true;
@@ -227,7 +227,7 @@ namespace hit {
 
     void CKKSEvaluator::multiply_plain_inplace(CKKSCiphertext &ct, double scalar) {
         VLOG(VLOG_EVAL) << "Multiply ciphertext by scalar " << scalar;
-        if(ct.needs_rescale()) {
+        if (ct.needs_rescale()) {
             LOG_AND_THROW_STREAM("Encrypted input to multiply_plain must have nominal scale");
         }
         multiply_plain_inplace_internal(ct, scalar);
@@ -246,10 +246,10 @@ namespace hit {
         VLOG(VLOG_EVAL) << "Multiply by plaintext";
         if (ct.num_slots() != plain.size()) {
             LOG_AND_THROW_STREAM("Public argument to multiply_plain must have exactly as many "
-                       << " coefficients as the ciphertext has plaintext slots: "
-                       << "Expected " << ct.num_slots() << " coeffs, got " << plain.size());
+                                 << " coefficients as the ciphertext has plaintext slots: "
+                                 << "Expected " << ct.num_slots() << " coeffs, got " << plain.size());
         }
-        if(ct.needs_rescale()) {
+        if (ct.needs_rescale()) {
             LOG_AND_THROW_STREAM("Encrypted input to multiply_plain must have nominal scale");
         }
         multiply_plain_inplace_internal(ct, plain);
@@ -266,10 +266,10 @@ namespace hit {
 
     void CKKSEvaluator::square_inplace(CKKSCiphertext &ct) {
         VLOG(VLOG_EVAL) << "Square ciphertext";
-        if(ct.needs_relin()) {
+        if (ct.needs_relin()) {
             LOG_AND_THROW_STREAM("Input to square must be a linear ciphertext");
         }
-        if(ct.needs_rescale()) {
+        if (ct.needs_rescale()) {
             LOG_AND_THROW_STREAM("Input to square must have nominal scale");
         }
         square_inplace_internal(ct);
@@ -303,14 +303,14 @@ namespace hit {
 
     void CKKSEvaluator::reduce_level_to_inplace(CKKSCiphertext &ct, int level) {
         VLOG(VLOG_EVAL) << "Decreasing HE level to " << level;
-        if(ct.he_level() < level) {
-            LOG_AND_THROW_STREAM("Input to reduce_level_to is already below the target level: "
-                       << ct.he_level() << "<" << level);
+        if (ct.he_level() < level) {
+            LOG_AND_THROW_STREAM("Input to reduce_level_to is already below the target level: " << ct.he_level() << "<"
+                                                                                                << level);
         }
-        if(ct.needs_relin()) {
+        if (ct.needs_relin()) {
             LOG_AND_THROW_STREAM("Input to reduce_level_to must be a linear ciphertext");
         }
-        if(ct.needs_rescale()) {
+        if (ct.needs_rescale()) {
             LOG_AND_THROW_STREAM("Input to reduce_level_to must have nominal scale");
         }
         reduce_level_to_inplace_internal(ct, level);
@@ -327,7 +327,7 @@ namespace hit {
 
     void CKKSEvaluator::rescale_to_next_inplace(CKKSCiphertext &ct) {
         VLOG(VLOG_EVAL) << "Rescaling ciphertext";
-        if(!ct.needs_rescale()) {
+        if (!ct.needs_rescale()) {
             LOG_AND_THROW_STREAM("Input to rescale_to_next_inplace must have squared scale");
         }
         rescale_to_next_inplace_internal(ct);
@@ -337,7 +337,7 @@ namespace hit {
 
     void CKKSEvaluator::relinearize_inplace(CKKSCiphertext &ct) {
         VLOG(VLOG_EVAL) << "Relinearizing ciphertext";
-        if(!ct.needs_relin()) {
+        if (!ct.needs_relin()) {
             LOG_AND_THROW_STREAM("Input to relinearize_inplace must be a linear ciphertext");
         }
         relinearize_inplace_internal(ct);
@@ -362,27 +362,27 @@ namespace hit {
 
     // default implementation for evaluators which don't use SEAL
     uint64_t CKKSEvaluator::get_last_prime_internal(const CKKSCiphertext &ct) const {
-        if(ct.needs_rescale()) {
+        if (ct.needs_rescale()) {
             return sqrt(ct.scale());
         }
         return ct.scale();
     }
 
-    void CKKSEvaluator::rotate_right_inplace_internal(CKKSCiphertext&, int) { };
-    void CKKSEvaluator::rotate_left_inplace_internal(CKKSCiphertext&, int) { };
-    void CKKSEvaluator::negate_inplace_internal(CKKSCiphertext&) { };
-    void CKKSEvaluator::add_inplace_internal(CKKSCiphertext&, const CKKSCiphertext&) { };
-    void CKKSEvaluator::add_plain_inplace_internal(CKKSCiphertext&, double) { };
-    void CKKSEvaluator::add_plain_inplace_internal(CKKSCiphertext&, const vector<double>&) { };
-    void CKKSEvaluator::sub_inplace_internal(CKKSCiphertext&, const CKKSCiphertext&) { };
-    void CKKSEvaluator::sub_plain_inplace_internal(CKKSCiphertext&, double) { };
-    void CKKSEvaluator::sub_plain_inplace_internal(CKKSCiphertext&, const vector<double>&) { };
-    void CKKSEvaluator::multiply_inplace_internal(CKKSCiphertext&, const CKKSCiphertext&) { };
-    void CKKSEvaluator::multiply_plain_inplace_internal(CKKSCiphertext&, double) { };
-    void CKKSEvaluator::multiply_plain_inplace_internal(CKKSCiphertext&, const vector<double>&) { };
-    void CKKSEvaluator::square_inplace_internal(CKKSCiphertext&) { };
-    void CKKSEvaluator::reduce_level_to_inplace_internal(CKKSCiphertext&, int) { };
-    void CKKSEvaluator::rescale_to_next_inplace_internal(CKKSCiphertext&) { };
-    void CKKSEvaluator::relinearize_inplace_internal(CKKSCiphertext&) { };
-    void CKKSEvaluator::print_stats(const CKKSCiphertext&) const { };
+    void CKKSEvaluator::rotate_right_inplace_internal(CKKSCiphertext &, int){};
+    void CKKSEvaluator::rotate_left_inplace_internal(CKKSCiphertext &, int){};
+    void CKKSEvaluator::negate_inplace_internal(CKKSCiphertext &){};
+    void CKKSEvaluator::add_inplace_internal(CKKSCiphertext &, const CKKSCiphertext &){};
+    void CKKSEvaluator::add_plain_inplace_internal(CKKSCiphertext &, double){};
+    void CKKSEvaluator::add_plain_inplace_internal(CKKSCiphertext &, const vector<double> &){};
+    void CKKSEvaluator::sub_inplace_internal(CKKSCiphertext &, const CKKSCiphertext &){};
+    void CKKSEvaluator::sub_plain_inplace_internal(CKKSCiphertext &, double){};
+    void CKKSEvaluator::sub_plain_inplace_internal(CKKSCiphertext &, const vector<double> &){};
+    void CKKSEvaluator::multiply_inplace_internal(CKKSCiphertext &, const CKKSCiphertext &){};
+    void CKKSEvaluator::multiply_plain_inplace_internal(CKKSCiphertext &, double){};
+    void CKKSEvaluator::multiply_plain_inplace_internal(CKKSCiphertext &, const vector<double> &){};
+    void CKKSEvaluator::square_inplace_internal(CKKSCiphertext &){};
+    void CKKSEvaluator::reduce_level_to_inplace_internal(CKKSCiphertext &, int){};
+    void CKKSEvaluator::rescale_to_next_inplace_internal(CKKSCiphertext &){};
+    void CKKSEvaluator::relinearize_inplace_internal(CKKSCiphertext &){};
+    void CKKSEvaluator::print_stats(const CKKSCiphertext &) const {};
 }  // namespace hit

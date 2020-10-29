@@ -3,20 +3,22 @@
 
 #pragma once
 
+#include <glog/logging.h>
+
+#include <algorithm>
+#include <execution>
+
+#include "../../common.h"
 #include "../ciphertext.h"
 #include "../evaluator.h"
+#include "encodingunit.h"
+#include "encryptedcolvector.h"
+#include "encryptedmatrix.h"
+#include "encryptedrowvector.h"
 #include "hit/protobuf/encoding_unit.pb.h"
 #include "hit/protobuf/encrypted_col_vector.pb.h"
 #include "hit/protobuf/encrypted_matrix.pb.h"
 #include "hit/protobuf/encrypted_row_vector.pb.h"
-#include "encodingunit.h"
-#include "encryptedmatrix.h"
-#include "encryptedrowvector.h"
-#include "encryptedcolvector.h"
-#include "../../common.h"
-#include <glog/logging.h>
-#include <algorithm>
-#include <execution>
 
 /* The LinearAlgebra API lifts the Evaluator API to linear algebra objects like row/column vectors and matrices.
  * It provides a simple API for performing many common linear algebra tasks, and automatic encoding and decoding
@@ -39,12 +41,12 @@
  */
 
 // https://stackoverflow.com/a/10379844/925978
-#define COMBINE1(X,Y) X##Y  // helper macro
-#define COMBINE(X,Y) COMBINE1(X,Y)
+#define COMBINE1(X, Y) X##Y  // helper macro
+#define COMBINE(X, Y) COMBINE1(X, Y)
 // https://stackoverflow.com/a/17694752/925978
-#define parallel_for(max_idx, body)\
-    std::vector<int> COMBINE(iterIdxs, __LINE__)(max_idx);\
-    std::iota(begin(COMBINE(iterIdxs, __LINE__)), end(COMBINE(iterIdxs, __LINE__)), 0);\
+#define parallel_for(max_idx, body)                                                     \
+    std::vector<int> COMBINE(iterIdxs, __LINE__)(max_idx);                              \
+    std::iota(begin(COMBINE(iterIdxs, __LINE__)), end(COMBINE(iterIdxs, __LINE__)), 0); \
     for_each(__pstl::execution::par, begin(COMBINE(iterIdxs, __LINE__)), end(COMBINE(iterIdxs, __LINE__)), body)
 
 namespace hit {
@@ -116,11 +118,9 @@ namespace hit {
          */
         Vector decrypt(const EncryptedColVector &enc_vec, bool suppress_warnings = false) const;
 
-
         /**************************************
          * Standard Linear Algebra Operations *
          **************************************/
-
 
         /* Add two encrypted linear algebra objects, component-wise.
          * Template Instantiations:
@@ -145,7 +145,6 @@ namespace hit {
             return temp;
         }
 
-
         /* Add two encrypted linear algebra objects, component-wise.
          * Template Instantiations:
          *   - void add_inplace(const EncryptedMatrix&, const EncryptedMatrix&)
@@ -164,27 +163,24 @@ namespace hit {
          */
         template <typename T>
         void add_inplace(T &arg1, const T &arg2) {
-            TRY_AND_THROW_STREAM(arg1.validate(),
-                             "First argument to add is invalid; has it been initialized?");
-            TRY_AND_THROW_STREAM(arg2.validate(),
-                             "Second argument to add is invalid; has it been initialized?");
+            TRY_AND_THROW_STREAM(arg1.validate(), "First argument to add is invalid; has it been initialized?");
+            TRY_AND_THROW_STREAM(arg2.validate(), "Second argument to add is invalid; has it been initialized?");
             if (!arg1.same_size(arg2)) {
                 LOG_AND_THROW_STREAM("Inputs to add_inplace do not have the same dimensions: "
-                           << dim_string(arg1) << " vs " << dim_string(arg2));
+                                     << dim_string(arg1) << " vs " << dim_string(arg2));
             }
             if (arg1.he_level() != arg2.he_level()) {
-                LOG_AND_THROW_STREAM("Inputs to add_inplace do not have the same level: "
-                           << arg1.he_level() << "!=" << arg2.he_level());
+                LOG_AND_THROW_STREAM("Inputs to add_inplace do not have the same level: " << arg1.he_level()
+                                                                                          << "!=" << arg2.he_level());
             }
             if (arg1.scale() != arg2.scale()) {
                 LOG_AND_THROW_STREAM("Inputs to add_inplace do not have the same scale: "
-                           << log2(arg1.scale()) << "bits !=" << log2(arg2.scale()) << " bits");
+                                     << log2(arg1.scale()) << "bits !=" << log2(arg2.scale()) << " bits");
             }
             for (size_t i = 0; i < arg1.num_cts(); i++) {
                 eval.add_inplace(arg1[i], arg2[i]);
             }
         }
-
 
         /* Add a public plaintext component-wise to an encrypted plaintext.
          * Template Instantiations:
@@ -206,7 +202,6 @@ namespace hit {
             return temp;
         }
 
-
         /* Add a public matrix component-wise to an encrypted matrix.
          * Input Linear Algebra Constraints:
          *       Both inputs must have matching dimensions.
@@ -218,7 +213,6 @@ namespace hit {
          */
         void add_plain_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2);
 
-
         /* Add a public row vector component-wise to an encrypted row vector.
          * Input Linear Algebra Constraints:
          *       Both inputs must have matching dimensions.
@@ -227,7 +221,6 @@ namespace hit {
          *                   properties as the encrypted input.
          */
         void add_plain_inplace(EncryptedRowVector &enc_vec1, const Vector &vec2);
-
 
         /* Add a public column vector component-wise to an encrypted column vector.
          * Input Linear Algebra Constraints:
@@ -240,7 +233,6 @@ namespace hit {
          *       properties as the encrypted input.
          */
         void add_plain_inplace(EncryptedColVector &enc_vec1, const Vector &vec2);
-
 
         /* Add a list of encrypted objects together, component-wise.
          * Template Instantiations:
@@ -273,7 +265,6 @@ namespace hit {
             return temp;
         }
 
-
         /* Subtract one encrypted linear algebra object from another, component-wise.
          * Template Instantiations:
          *   - EncryptedMatrix sub(const EncryptedMatrix&, const EncryptedMatrix&)
@@ -297,7 +288,6 @@ namespace hit {
             return temp;
         }
 
-
         /* Subtract one encrypted linear algebra object from another, component-wise.
          * Template Instantiations:
          *   - void sub_inplace(const EncryptedMatrix&, const EncryptedMatrix&)
@@ -316,27 +306,24 @@ namespace hit {
          */
         template <typename T>
         void sub_inplace(T &arg1, const T &arg2) {
-            TRY_AND_THROW_STREAM(arg1.validate(),
-                             "First argument to sub is invalid; has it been initialized?");
-            TRY_AND_THROW_STREAM(arg2.validate(),
-                             "Second argument to sub is invalid; has it been initialized?");
+            TRY_AND_THROW_STREAM(arg1.validate(), "First argument to sub is invalid; has it been initialized?");
+            TRY_AND_THROW_STREAM(arg2.validate(), "Second argument to sub is invalid; has it been initialized?");
             if (!arg1.same_size(arg2)) {
                 LOG_AND_THROW_STREAM("Inputs to sub_inplace do not have the same dimensions: "
-                           << dim_string(arg1) << " vs " << dim_string(arg2));
+                                     << dim_string(arg1) << " vs " << dim_string(arg2));
             }
             if (arg1.he_level() != arg2.he_level()) {
-                LOG_AND_THROW_STREAM("Inputs to sub_inplace do not have the same level: "
-                           << arg1.he_level() << "!=" << arg2.he_level());
+                LOG_AND_THROW_STREAM("Inputs to sub_inplace do not have the same level: " << arg1.he_level()
+                                                                                          << "!=" << arg2.he_level());
             }
             if (arg1.scale() != arg2.scale()) {
                 LOG_AND_THROW_STREAM("Inputs to sub_inplace do not have the same scale: "
-                           << log2(arg1.scale()) << "bits !=" << log2(arg2.scale()) << " bits");
+                                     << log2(arg1.scale()) << "bits !=" << log2(arg2.scale()) << " bits");
             }
             for (size_t i = 0; i < arg1.num_cts(); i++) {
                 eval.sub_inplace(arg1[i], arg2[i]);
             }
         }
-
 
         /* Subtract a public plaintext from an encrypted linear algebra object, component-wise.
          * Template Instantiations:
@@ -358,7 +345,6 @@ namespace hit {
             return temp;
         }
 
-
         /* Subtract a public matrix from an encrypted matrix, component-wise.
          * Input Linear Algebra Constraints:
          *       Both inputs must have matching dimensions.
@@ -370,7 +356,6 @@ namespace hit {
          */
         void sub_plain_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2);
 
-
         /* Subtract a public row vector from an encrypted row vector, component-wise.
          * Input Linear Algebra Constraints:
          *       Both inputs must have matching dimensions.
@@ -379,7 +364,6 @@ namespace hit {
          *                   properties as the encrypted input.
          */
         void sub_plain_inplace(EncryptedRowVector &enc_vec1, const Vector &vec2);
-
 
         /* Subtract a public column vector from an encrypted column vector, component-wise.
          * Input Linear Algebra Constraints:
@@ -391,7 +375,6 @@ namespace hit {
          *       An encrypted column vector with the same ciphertext properties as the encrypted input.
          */
         void sub_plain_inplace(EncryptedColVector &enc_vec1, const Vector &vec2);
-
 
         /* Negate an encrypted linear algebra object.
          * Template Instantiations:
@@ -412,7 +395,6 @@ namespace hit {
             return temp;
         }
 
-
         /* Negate an encrypted linear algebra object.
          * Template Instantiations:
          *   - void negate_inplace(const EncryptedMatrix&)
@@ -427,13 +409,11 @@ namespace hit {
          */
         template <typename T>
         void negate_inplace(T &arg) {
-            TRY_AND_THROW_STREAM(arg.validate(),
-                                 "Argument to negate is invalid; has it been initialized?");
+            TRY_AND_THROW_STREAM(arg.validate(), "Argument to negate is invalid; has it been initialized?");
             for (size_t i = 0; i < arg.num_cts(); i++) {
                 eval.negate_inplace(arg[i]);
             }
         }
-
 
         /* Scale an encrypted object by a constant.
          * Template Instantiations:
@@ -458,7 +438,6 @@ namespace hit {
             return temp;
         }
 
-
         /* Scale an encrypted object by a constant.
          * Template Instantiations:
          *   - void multiply_plain_inplace(const EncryptedMatrix&, double scalar)
@@ -477,9 +456,8 @@ namespace hit {
          */
         template <typename T>
         void multiply_plain_inplace(T &arg, double scalar) {
-            TRY_AND_THROW_STREAM(arg.validate(),
-                                 "Argument to multiply_plain is invalid; has it been initialized?");
-            if(arg.needs_rescale()) {
+            TRY_AND_THROW_STREAM(arg.validate(), "Argument to multiply_plain is invalid; has it been initialized?");
+            if (arg.needs_rescale()) {
                 LOG_AND_THROW_STREAM("Encrypted input to multiply_plain must have nominal scale.");
             }
             for (size_t i = 0; i < arg.num_cts(); i++) {
@@ -499,7 +477,6 @@ namespace hit {
          *       A linear ciphertext with a squared scale at level i.
          */
         EncryptedColVector multiply(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat);
-
 
         /* Computes a standard matrix/column vector product, except that the output is transposed.
          * Input Linear Algebra Constraints:
@@ -532,7 +509,6 @@ namespace hit {
          * and (1+lg(m)+lg(n)) rotations.
          */
 
-
         /* Computes a standard (scaled) matrix/matrix product scalar*A*B, except that the inputs
          * are A^T and B.
          * Input Linear Algebra Constraints:
@@ -550,7 +526,6 @@ namespace hit {
          */
         EncryptedMatrix multiply_row_major(const EncryptedMatrix &enc_mat_a_trans, const EncryptedMatrix &enc_mat_b,
                                            double scalar = 1);
-
 
         /* Computes a standard (scaled) matrix/matrix product scalar*A*B, except that the inputs
          * are A and B^T.
@@ -570,11 +545,9 @@ namespace hit {
         EncryptedMatrix multiply_col_major(const EncryptedMatrix &enc_mat_a, const EncryptedMatrix &enc_mat_b_trans,
                                            double scalar = 1);
 
-
         /******************************************
          * Non-standard Linear Algebra Operations *
          ******************************************/
-
 
         /* Add a scalar to each coefficient of the encrypted value.
          * Template Instantiations:
@@ -595,7 +568,6 @@ namespace hit {
             return temp;
         }
 
-
         /* Add a scalar to each coefficient of the encrypted value.
          * Template Instantiations:
          *   - void add_plain_inplace(const EncryptedMatrix&, double scalar)
@@ -610,13 +582,11 @@ namespace hit {
          */
         template <typename T>
         void add_plain_inplace(T &arg, double scalar) {
-            TRY_AND_THROW_STREAM(arg.validate(),
-                                 "Argument to add_plain is invalid; has it been initialized?");
+            TRY_AND_THROW_STREAM(arg.validate(), "Argument to add_plain is invalid; has it been initialized?");
             for (size_t i = 0; i < arg.num_cts(); i++) {
                 eval.add_plain_inplace(arg[i], scalar);
             }
         }
-
 
         /* Subtract a scalar from each coefficient of the encrypted value.
          * Template Instantiations:
@@ -637,7 +607,6 @@ namespace hit {
             return temp;
         }
 
-
         /* Subtract a scalar from each coefficient of the encrypted value.
          * Template Instantiations:
          *   - void sub_plain_inplace(const EncryptedMatrix&, double scalar)
@@ -652,13 +621,11 @@ namespace hit {
          */
         template <typename T>
         void sub_plain_inplace(T &arg, double scalar) {
-            TRY_AND_THROW_STREAM(arg.validate(),
-                                 "Argument to sub_plain is invalid; has it been initialized?");
+            TRY_AND_THROW_STREAM(arg.validate(), "Argument to sub_plain is invalid; has it been initialized?");
             for (size_t i = 0; i < arg.num_cts(); i++) {
                 eval.sub_plain_inplace(arg[i], scalar);
             }
         }
-
 
         /* Coefficient-wise (Hadamard) product of two objects.
          * Template Instantiations:
@@ -682,7 +649,6 @@ namespace hit {
             return temp;
         }
 
-
         /* Coefficient-wise (Hadamard) product of two objects.
          * Template Instantiations:
          *   - void hadamard_multiply_inplace(const EncryptedMatrix&, const EncryptedMatrix&)
@@ -701,45 +667,39 @@ namespace hit {
         template <typename T>
         void hadamard_multiply_inplace(T &arg1, const T &arg2) {
             TRY_AND_THROW_STREAM(arg1.validate(),
-                             "First argument to hadamard_multiply is invalid; has it been initialized?");
+                                 "First argument to hadamard_multiply is invalid; has it been initialized?");
             TRY_AND_THROW_STREAM(arg2.validate(),
-                             "Second argument to hadamard_multiply is invalid; has it been initialized?");
+                                 "Second argument to hadamard_multiply is invalid; has it been initialized?");
             if (arg1.encoding_unit() != arg2.encoding_unit()) {
                 LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have the same units: "
-                           << dim_string(arg1.encoding_unit()) << "!="
-                           << dim_string(arg2.encoding_unit()));
+                                     << dim_string(arg1.encoding_unit()) << "!=" << dim_string(arg2.encoding_unit()));
             }
             if (!arg1.same_size(arg2)) {
                 LOG_AND_THROW_STREAM("Dimension mismatch in hadamard_multiply: " + dim_string(arg1)
-                           << " vs " + dim_string(arg2));
+                                     << " vs " + dim_string(arg2));
             }
             if (arg1.he_level() != arg2.he_level()) {
-                LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have the same level: "
-                           << arg1.he_level() << "!=" << arg2.he_level());
+                LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have the same level: " << arg1.he_level() << "!="
+                                                                                              << arg2.he_level());
             }
             if (arg1.scale() != arg2.scale()) {
                 LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have the same scale: "
-                           << log2(arg1.scale()) << "bits != " << log2(arg2.scale()) << " bits");
+                                     << log2(arg1.scale()) << "bits != " << log2(arg2.scale()) << " bits");
             }
             if (arg1.needs_rescale() || arg2.needs_rescale()) {
                 LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have nominal scale: "
-                           << "Vector: " << arg1.needs_rescale()
-                           << ", Matrix: " << arg2.needs_rescale());
+                                     << "Vector: " << arg1.needs_rescale() << ", Matrix: " << arg2.needs_rescale());
             }
             if (arg1.needs_relin() || arg2.needs_relin()) {
                 LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must be linear ciphertexts: "
-                           << "Vector: " << arg1.needs_relin()
-                           << ", Matrix: " << arg2.needs_relin());
+                                     << "Vector: " << arg1.needs_relin() << ", Matrix: " << arg2.needs_relin());
             }
 
             // parallel_for(arg1.num_cts(), i) {
             //     eval.multiply_inplace(arg1[i], arg2[i]);
             // };
-            parallel_for(arg1.num_cts(), [&](int i) {
-                eval.multiply_inplace(arg1[i], arg2[i]);
-            });
+            parallel_for(arg1.num_cts(), [&](int i) { eval.multiply_inplace(arg1[i], arg2[i]); });
         }
-
 
         /* Square each coefficient of an object.
          * Template Instantiations:
@@ -762,7 +722,6 @@ namespace hit {
             return temp;
         }
 
-
         /* Square each coefficient of an object.
          * Template Instantiations:
          *   - void hadamard_square_inplace(const EncryptedMatrix&)
@@ -779,20 +738,16 @@ namespace hit {
          */
         template <typename T>
         void hadamard_square_inplace(T &arg) {
-            TRY_AND_THROW_STREAM(arg.validate(),
-                                 "Argument to hadamard_square is invalid; has it been initialized?");
-            if(arg.needs_relin()) {
+            TRY_AND_THROW_STREAM(arg.validate(), "Argument to hadamard_square is invalid; has it been initialized?");
+            if (arg.needs_relin()) {
                 LOG_AND_THROW_STREAM("Input to hadamard_square must be a linear ciphertext");
             }
-            if(arg.needs_rescale()) {
+            if (arg.needs_rescale()) {
                 LOG_AND_THROW_STREAM("Input to hadamard_square must have nominal scale");
             }
 
-            parallel_for(arg.num_cts(), [&](int i) {
-                eval.square_inplace(arg[i]);
-            });
+            parallel_for(arg.num_cts(), [&](int i) { eval.square_inplace(arg[i]); });
         }
-
 
         /* Hadamard product of a row vector with each column of a matrix.
          * Input Linear Algebra Constraints:
@@ -810,7 +765,6 @@ namespace hit {
          */
         EncryptedMatrix hadamard_multiply(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat);
 
-
         /* Hadamard product of a column vector with each row of a matrix.
          * Input Linear Algebra Constraints:
          *      Input dimensions must be compatibile for standard matrix/column-vector product,
@@ -825,7 +779,6 @@ namespace hit {
          *      and whose scale is squared.
          */
         EncryptedMatrix hadamard_multiply(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec);
-
 
         /* Sum the columns of a matrix, and encode the result as a row vector.
          * This is a key algorithm for (standard) matrix/column-vector multiplication,
@@ -849,7 +802,6 @@ namespace hit {
          */
         EncryptedRowVector sum_cols(const EncryptedMatrix &enc_mat, double scalar = 1);
 
-
         /* Sum the rows of a matrix, and encode the result as a column vector.
          * This is a key algorithm for (standard) row-vector/matrix multiplication,
          * which is achieved by performing a hadamard product between the row vector and matrix
@@ -869,7 +821,6 @@ namespace hit {
          */
         EncryptedColVector sum_rows(const EncryptedMatrix &enc_mat);
 
-
         /* This function enables the use of the sum_cols linear map across matrices of incompatibile dimensions.
          * If A is f-by-g1 and B is f-by-g2, then sum_cols(A, scalar) + sum_cols(B, scalar) is a f-dimensional row
          * vector. This function returns the same result, but without invoking sum_cols multiple times.
@@ -887,7 +838,6 @@ namespace hit {
          *      A linear ciphertext with squared scale and same level as the input.
          */
         EncryptedRowVector sum_cols_many(const std::vector<EncryptedMatrix> &enc_mats, double scalar = 1);
-
 
         /* This function enables the use of the sum_rows linear map across matrices of incompatibile dimensions.
          * If A is f1-by-g and B is f2-by-g, then sum_rows(A) + sum_rows(B) is a g-dimensional column vector.
@@ -907,12 +857,10 @@ namespace hit {
          */
         EncryptedColVector sum_rows_many(const std::vector<EncryptedMatrix> &enc_mats);
 
-
         /*************************************
          * Ciphertext Maintenance Operations *
          *************************************/
         // These operations do not affect encoding unit or other linear algebra properties.
-
 
         /* Reduce the HE level of `ct` to the level of the `target`.
          * Input: The first argument must be a linear encrypted linear algebra object
@@ -927,7 +875,6 @@ namespace hit {
             return reduce_level_to(arg1, arg2.he_level());
         }
 
-
         /* Reduce the HE level of `ct` to the level of the `target`.
          * Input: The first argument must be a linear encrypted linear algebra object
          *        with nominal scale and level i, and the second argument must be a
@@ -941,7 +888,6 @@ namespace hit {
             reduce_level_to_inplace(arg1, arg2.he_level());
         }
 
-
         /* Reduce the HE level of both inputs to the lower of the two levels.
          * This operation modifies at most one of the inputs.
          * Input: Two encrypted linear algebra objects (not necessarily of the same type)
@@ -954,20 +900,18 @@ namespace hit {
         template <typename T1, typename T2>
         void reduce_level_to_min_inplace(T1 &arg1, T2 &arg2) {
             TRY_AND_THROW_STREAM(arg1.validate(),
-                             "First argument to reduce_level_to_min is invalid; has it been initialized?");
+                                 "First argument to reduce_level_to_min is invalid; has it been initialized?");
             TRY_AND_THROW_STREAM(arg2.validate(),
-                             "Second argument to reduce_level_to_min is invalid; has it been initialized?");
+                                 "Second argument to reduce_level_to_min is invalid; has it been initialized?");
 
             // We can't just call eval.reduce_level_to_min_inplace(arg1[i], arg2[i]) here;
             // If the inputs have different types, they may not have the same number of inputs.
-            if(arg1.he_level() < arg2.he_level()) {
+            if (arg1.he_level() < arg2.he_level()) {
                 reduce_level_to_inplace(arg2, arg1.he_level());
-            }
-            else if(arg2.he_level() < arg1.he_level()) {
+            } else if (arg2.he_level() < arg1.he_level()) {
                 reduce_level_to_inplace(arg1, arg2.he_level());
             }
         }
-
 
         /* Reduce the HE level of the first argument to the target level.
          * Inputs: A linear EncryptedMatrix, EncryptedRowVector, or EncryptedColVector
@@ -982,7 +926,6 @@ namespace hit {
             return temp;
         }
 
-
         /* Reduce the HE level of the first argument to the target level.
          * Inputs: A linear EncryptedMatrix, EncryptedRowVector, or EncryptedColVector
          *         with nominal scale and level i, and a target level 0 <= j <= i.
@@ -991,14 +934,10 @@ namespace hit {
          */
         template <typename T>
         void reduce_level_to_inplace(T &arg, int level) {
-            TRY_AND_THROW_STREAM(arg.validate(),
-                                 "Argument to reduce_level_to is invalid; has it been initialized?");
+            TRY_AND_THROW_STREAM(arg.validate(), "Argument to reduce_level_to is invalid; has it been initialized?");
 
-            parallel_for(arg.num_cts(), [&](int i) {
-                eval.reduce_level_to_inplace(arg[i], level);
-            });
+            parallel_for(arg.num_cts(), [&](int i) { eval.reduce_level_to_inplace(arg[i], level); });
         }
-
 
         /* Remove a prime from the modulus (i.e. go down one level) and scale
          * down the plaintext by that prime.
@@ -1013,7 +952,6 @@ namespace hit {
             return temp;
         }
 
-
         /* Remove a prime from the modulus (i.e. go down one level) and scale
          * down the plaintext by that prime.
          * Inputs: A linear or quadratic EncryptedMatrix, EncryptedRowVector, or EncryptedColVector
@@ -1022,14 +960,10 @@ namespace hit {
          */
         template <typename T>
         void rescale_to_next_inplace(T &arg) {
-            TRY_AND_THROW_STREAM(arg.validate(),
-                                 "Argument to rescale_to_next is invalid; has it been initialized?");
+            TRY_AND_THROW_STREAM(arg.validate(), "Argument to rescale_to_next is invalid; has it been initialized?");
 
-            parallel_for(arg.num_cts(), [&](int i) {
-                eval.rescale_to_next_inplace(arg[i]);
-            });
+            parallel_for(arg.num_cts(), [&](int i) { eval.rescale_to_next_inplace(arg[i]); });
         }
-
 
         /* Ciphertexts in BGV-style encryption schemes, like CKKS, are polynomials
          * in the (unknown) secret. A fresh ciphertext is a linear polynomial
@@ -1053,9 +987,7 @@ namespace hit {
             TRY_AND_THROW_STREAM(arg.validate(),
                                  "Argument to relinearize_inplace is invalid; has it been initialized?");
 
-            parallel_for(arg.num_cts(), [&](int i) {
-                eval.relinearize_inplace(arg[i]);
-            });
+            parallel_for(arg.num_cts(), [&](int i) { eval.relinearize_inplace(arg[i]); });
         }
 
         CKKSEvaluator &eval;
@@ -1111,13 +1043,13 @@ namespace hit {
 
         // inner loop for multiply_row_major
         EncryptedColVector matrix_matrix_mul_loop_row_major(const EncryptedMatrix &enc_mat_a_trans,
-                                                            const EncryptedMatrix &enc_mat_b,
-                                                            double scalar, int k, bool transpose_unit);
+                                                            const EncryptedMatrix &enc_mat_b, double scalar, int k,
+                                                            bool transpose_unit);
 
         // inner loop for multiply_col_major
         EncryptedRowVector matrix_matrix_mul_loop_col_major(const EncryptedMatrix &enc_mat_a,
-                                                            const EncryptedMatrix &enc_mat_b_trans,
-                                                            double scalar, int k);
+                                                            const EncryptedMatrix &enc_mat_b_trans, double scalar,
+                                                            int k);
 
         // common core for matrix/matrix multiplication; used by both multiply and multiply_unit_transpose
         std::vector<EncryptedColVector> multiply_common(const EncryptedMatrix &enc_mat_a_trans,

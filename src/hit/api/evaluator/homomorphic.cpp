@@ -6,13 +6,14 @@
  */
 
 #include "homomorphic.h"
-#include "../../common.h"
-#include "hit/protobuf/ckksparams.pb.h"
+
+#include <glog/logging.h>
 
 #include <future>
 
+#include "../../common.h"
 #include "../../sealutils.h"
-#include <glog/logging.h>
+#include "hit/protobuf/ckksparams.pb.h"
 
 using namespace std;
 using namespace seal;
@@ -28,11 +29,11 @@ namespace hit {
      */
 
     HomomorphicEval::HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,
-                                     const vector<int> &galois_steps): log_scale_(log_scale) {
-
+                                     const vector<int> &galois_steps)
+        : log_scale_(log_scale) {
         if (!is_pow2(num_slots) || num_slots < 4096) {
             LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
-                       << "num_slots must be a power of 2, and at least 4096. Got " << num_slots);
+                                 << "num_slots must be a power of 2, and at least 4096. Got " << num_slots);
         }
 
         int poly_modulus_degree = num_slots * 2;
@@ -40,21 +41,22 @@ namespace hit {
             LOG(ERROR) << "poly_modulus_degree is " << poly_modulus_degree << ", which limits the modulus to "
                        << poly_degree_to_max_mod_bits(poly_modulus_degree) << " bits";
             LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
-                       << "log_scale is " << log_scale_ << ", which is less than the minimum "
-                       << MIN_LOG_SCALE << ". Either increase the number of slots or decrease the number of primes.");
+                                 << "log_scale is " << log_scale_ << ", which is less than the minimum "
+                                 << MIN_LOG_SCALE
+                                 << ". Either increase the number of slots or decrease the number of primes.");
         }
 
         int num_primes = multiplicative_depth + 2;
         vector<int> modulusVector = gen_modulus_vec(num_primes, log_scale_);
         int mod_bits = 0;
-        for(const auto &bits : modulusVector) {
+        for (const auto &bits : modulusVector) {
             mod_bits += bits;
         }
         int min_poly_degree = modulus_to_poly_degree(mod_bits);
         if (poly_modulus_degree < min_poly_degree) {
             LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
-                       << "Parameters for depth " << multiplicative_depth << " circuits and scale "
-                       << log_scale << " bits require more than " << num_slots << " plaintext slots.");
+                                 << "Parameters for depth " << multiplicative_depth << " circuits and scale "
+                                 << log_scale << " bits require more than " << num_slots << " plaintext slots.");
         }
         EncryptionParameters params = EncryptionParameters(scheme_type::CKKS);
         params.set_poly_modulus_degree(poly_modulus_degree);
@@ -76,8 +78,9 @@ namespace hit {
         seal_evaluator = new Evaluator(context);
 
         int num_galois_keys = galois_steps.size();
-        VLOG(VLOG_VERBOSE) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth << ", including "
-                  << (num_galois_keys != 0 ? to_string(num_galois_keys) : "all") << " Galois keys.";
+        VLOG(VLOG_VERBOSE) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth
+                           << ", including " << (num_galois_keys != 0 ? to_string(num_galois_keys) : "all")
+                           << " Galois keys.";
 
         double keys_size_bytes = estimate_key_size(galois_steps.size(), num_slots, multiplicative_depth);
         VLOG(VLOG_VERBOSE) << "Estimated size is " << setprecision(3);
@@ -130,18 +133,22 @@ namespace hit {
 
         log_scale_ = ckks_params.logscale();
         if (log_scale_ <= MIN_LOG_SCALE) {
-            LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: log scale too small. Minimum value is " << MIN_LOG_SCALE << ", got " << log_scale_);
+            LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: log scale too small. Minimum value is "
+                                 << MIN_LOG_SCALE << ", got " << log_scale_);
         }
 
         int num_slots = ckks_params.numslots();
         if (num_slots < 4096 || !is_pow2(num_slots)) {
-            LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: num_slots is invalid. Expected a power of two at least 4096, got " << num_slots);
+            LOG_AND_THROW_STREAM(
+                "Error deserializing CKKS parameters: num_slots is invalid. Expected a power of two at least 4096, got "
+                << num_slots);
         }
 
         int poly_modulus_degree = num_slots * 2;
         int num_primes = ckks_params.modulusvec_size();
         if (num_primes < 2) {
-            LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: at least two primes are required, but only got " << num_primes);
+            LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: at least two primes are required, but only got "
+                                 << num_primes);
         }
 
         vector<Modulus> modulus_vector;
@@ -152,16 +159,19 @@ namespace hit {
         }
 
         if (round(log2(modulus_vector[0].value())) != 60) {
-            LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: Last prime must be 60 bits, got " << log2(modulus_vector[0].value()) << " bits");
+            LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: Last prime must be 60 bits, got "
+                                 << log2(modulus_vector[0].value()) << " bits");
         }
-        if (round(log2(modulus_vector[num_primes-1].value())) != 60) {
-            LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: Special prime must be 60 bits, got " << log2(modulus_vector[num_primes-1].value()) << " bits");
+        if (round(log2(modulus_vector[num_primes - 1].value())) != 60) {
+            LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: Special prime must be 60 bits, got "
+                                 << log2(modulus_vector[num_primes - 1].value()) << " bits");
         }
-        int expected_log_scale = round(log2(modulus_vector[1].value()));
-        for (int i = 2; i < num_primes-1; i++) {
-            int log_prime = round(log2(modulus_vector[i].value()));
+        int expected_log_scale = static_cast<int>(round(log2(modulus_vector[1].value())));
+        for (int i = 2; i < num_primes - 1; i++) {
+            int log_prime = static_cast<int>(round(log2(modulus_vector[i].value())));
             if (log_prime != expected_log_scale) {
-                LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: modulus primes expected to be " << expected_log_scale << " bits, got " << log_prime << " bits");
+                LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: modulus primes expected to be "
+                                     << expected_log_scale << " bits, got " << log_prime << " bits");
             }
         }
 
@@ -184,15 +194,13 @@ namespace hit {
         seal_evaluator = new Evaluator(context);
         encoder = new CKKSEncoder(context);
 
-
         istringstream pkstream(ckks_params.pubkey());
         pk.load(context, pkstream);
         seal_encryptor = new Encryptor(context, pk);
     }
 
     /* An evaluation instance */
-    HomomorphicEval::HomomorphicEval(istream &params_stream, istream &galois_key_stream,
-                                     istream &relin_key_stream) {
+    HomomorphicEval::HomomorphicEval(istream &params_stream, istream &galois_key_stream, istream &relin_key_stream) {
         deserialize_common(params_stream);
 
         timepoint start = chrono::steady_clock::now();
@@ -202,8 +210,8 @@ namespace hit {
     }
 
     /* A full instance */
-    HomomorphicEval::HomomorphicEval(istream &params_stream, istream &galois_key_stream,
-                                     istream &relin_key_stream, istream &secret_key_stream) {
+    HomomorphicEval::HomomorphicEval(istream &params_stream, istream &galois_key_stream, istream &relin_key_stream,
+                                     istream &secret_key_stream) {
         deserialize_common(params_stream);
 
         timepoint start = chrono::steady_clock::now();
@@ -247,9 +255,8 @@ namespace hit {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
             LOG_AND_THROW_STREAM("You can only encrypt vectors which have exactly as many "
-                       << " coefficients as the number of plaintext slots: Expected "
-                       << num_slots_ << " coefficients, but " << coeffs.size()
-                       << " were provided");
+                                 << " coefficients as the number of plaintext slots: Expected " << num_slots_
+                                 << " coefficients, but " << coeffs.size() << " were provided");
         }
 
         if (level == -1) {
@@ -257,7 +264,7 @@ namespace hit {
         }
 
         auto context_data = context->first_context_data();
-        double scale = (double)pow(2, log_scale_);
+        double scale = pow(2, log_scale_);
         while (context_data->chain_index() > level) {
             // order of operations is very important: floating point arithmetic is not associative
             scale = (scale * scale) / static_cast<double>(context_data->parms().coeff_modulus().back().value());
@@ -280,7 +287,8 @@ namespace hit {
 
     vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const {
         if (seal_decryptor == nullptr) {
-            LOG_AND_THROW_STREAM("Decryption is only possible from a deserialized instance when the secret key is provided.");
+            LOG_AND_THROW_STREAM(
+                "Decryption is only possible from a deserialized instance when the secret key is provided.");
         }
 
         Plaintext temp;

@@ -7,8 +7,8 @@
 #include <iostream>
 
 #include "api/ciphertext.h"
-#include "seal/seal.h"
 #include "common.h"
+#include "seal/seal.h"
 
 // SEAL throws an error for 21, but allows 22
 #define MIN_LOG_SCALE 22
@@ -31,7 +31,8 @@ namespace hit {
     /*
     Helper function: Get the context data for the ciphertext's level
     */
-    std::shared_ptr<const seal::SEALContext::ContextData> get_context_data(const std::shared_ptr<seal::SEALContext> &context, int level);
+    std::shared_ptr<const seal::SEALContext::ContextData> get_context_data(
+        const std::shared_ptr<seal::SEALContext> &context, int level);
 
     /*
     Helper function: Fetch the last prime given SEALContext and heLevel.

@@ -20,27 +20,28 @@ namespace hit {
     // encoding/decoding, this should be set to as high as possible.
     int defaultScaleBits = 30;
 
-    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth): log_scale_(defaultScaleBits), num_slots_(num_slots) {
+    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth)
+        : log_scale_(defaultScaleBits), num_slots_(num_slots) {
         plaintext_eval = new PlaintextEval(num_slots);
 
         if (!is_pow2(num_slots) || num_slots < 4096) {
             LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
-                       << "num_slots must be a power of 2, and at least 4096. Got " << num_slots);
+                                 << "num_slots must be a power of 2, and at least 4096. Got " << num_slots);
         }
 
         int num_primes = multiplicative_depth + 2;
         vector<int> modulusVector = gen_modulus_vec(num_primes, log_scale_);
 
         int modBits = 0;
-        for(const auto &bits : modulusVector) {
+        for (const auto &bits : modulusVector) {
             modBits += bits;
         }
         int min_poly_degree = modulus_to_poly_degree(modBits);
         int poly_modulus_degree = num_slots * 2;
         if (poly_modulus_degree < min_poly_degree) {
             LOG_AND_THROW_STREAM("Invalid parameters when creating ScaleEstimator instance: "
-                       << "Parameters for depth " << multiplicative_depth << " circuits and scale "
-                       << log_scale_ << " bits require more than " << num_slots << " plaintext slots.");
+                                 << "Parameters for depth " << multiplicative_depth << " circuits and scale "
+                                 << log_scale_ << " bits require more than " << num_slots << " plaintext slots.");
         }
 
         EncryptionParameters params = EncryptionParameters(scheme_type::CKKS);
@@ -58,7 +59,8 @@ namespace hit {
         }
     }
 
-    ScaleEstimator::ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval): log_scale_(homom_eval.log_scale_), num_slots_(num_slots),  has_shared_params_(true) {
+    ScaleEstimator::ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval)
+        : log_scale_(homom_eval.log_scale_), num_slots_(num_slots), has_shared_params_(true) {
         plaintext_eval = new PlaintextEval(num_slots);
 
         // instead of creating a new instance, use the instance provided
@@ -83,9 +85,8 @@ namespace hit {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
             LOG_AND_THROW_STREAM("You can only encrypt vectors which have exactly as many "
-                       << " coefficients as the number of plaintext slots: Expected "
-                       << num_slots_ << " coefficients, but " << coeffs.size()
-                       << " were provided");
+                                 << " coefficients as the number of plaintext slots: Expected " << num_slots_
+                                 << " coefficients, but " << coeffs.size() << " were provided");
         }
 
         if (level == -1) {
@@ -129,7 +130,7 @@ namespace hit {
         plaintext_eval->print_stats(ct);
         VLOG(VLOG_EVAL) << "    + Level: " << ct.he_level();
         VLOG(VLOG_EVAL) << "    + Plaintext logmax: " << log2(exact_plaintext_max_val)
-                          << " bits (scaled: " << log2(ct.scale()) + log2(exact_plaintext_max_val) << " bits)";
+                        << " bits (scaled: " << log2(ct.scale()) + log2(exact_plaintext_max_val) << " bits)";
         VLOG(VLOG_EVAL) << "    + Total modulus size: " << setprecision(4) << log_modulus << " bits";
         VLOG(VLOG_EVAL) << "    + Theoretical max log scale: " << get_estimated_max_log_scale() << " bits";
     }
@@ -145,11 +146,12 @@ namespace hit {
     //      this is bogus, so nothing to do.
     void ScaleEstimator::update_max_log_scale(const CKKSCiphertext &ct) {
         // update the estimated_max_log_scale_
-        auto scale_exp = static_cast<int>(round(log2(ct.scale()) / log2(pow(2,log_scale_))));
+        auto scale_exp = static_cast<int>(round(log2(ct.scale()) / log2(pow(2, log_scale_))));
         if (scale_exp != 1 && scale_exp != 2) {
-            LOG_AND_THROW_STREAM("Internal error: scale_exp is not 1 or 2: got " << scale_exp << ". "
-                       << "HIT ciphertext scale is " << log2(ct.scale())
-                       << " bits, and nominal scale is " << log_scale_ << " bits");
+            LOG_AND_THROW_STREAM("Internal error: scale_exp is not 1 or 2: got "
+                                 << scale_exp << ". "
+                                 << "HIT ciphertext scale is " << log2(ct.scale()) << " bits, and nominal scale is "
+                                 << log_scale_ << " bits");
         }
         if (scale_exp > ct.he_level()) {
             auto estimated_scale = (PLAINTEXT_LOG_MAX - log2(l_inf_norm(ct.raw_pt))) / (scale_exp - ct.he_level());
@@ -158,9 +160,9 @@ namespace hit {
                 estimated_max_log_scale_ = min(estimated_max_log_scale_, estimated_scale);
             }
         } else if (scale_exp == ct.he_level() && log2(l_inf_norm(ct.raw_pt)) > PLAINTEXT_LOG_MAX) {
-            LOG_AND_THROW_STREAM("The maximum value in the plaintext is " << log2(l_inf_norm(ct.raw_pt))
-                       << " bits which exceeds SEAL's capacity of " << PLAINTEXT_LOG_MAX
-                       << " bits. Overflow is imminent.");
+            LOG_AND_THROW_STREAM("The maximum value in the plaintext is "
+                                 << log2(l_inf_norm(ct.raw_pt)) << " bits which exceeds SEAL's capacity of "
+                                 << PLAINTEXT_LOG_MAX << " bits. Overflow is imminent.");
         }
     }
 
@@ -291,7 +293,7 @@ namespace hit {
          * log2(p_1)=log2(p_k)=60 and log2(p_i)=s=log(scale). Thus s must be less
          * than (maxModBits-120)/(k-2)
          */
-        int max_mod_bits = poly_degree_to_max_mod_bits(2*num_slots_);
+        int max_mod_bits = poly_degree_to_max_mod_bits(2 * num_slots_);
         auto estimated_log_scale = static_cast<double>(PLAINTEXT_LOG_MAX);
         {
             shared_lock lock(mutex_);

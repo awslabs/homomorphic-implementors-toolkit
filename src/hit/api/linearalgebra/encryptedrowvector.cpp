@@ -3,9 +3,10 @@
 
 #include "encryptedrowvector.h"
 
+#include <glog/logging.h>
+
 #include <algorithm>
 #include <execution>
-#include <glog/logging.h>
 
 #include "common.h"
 
@@ -32,8 +33,7 @@ namespace hit {
         read_from_proto(context, encrypted_row_vector);
     }
 
-    EncryptedRowVector::EncryptedRowVector(const shared_ptr<SEALContext> &context,
-                                           istream &stream) {
+    EncryptedRowVector::EncryptedRowVector(const shared_ptr<SEALContext> &context, istream &stream) {
         protobuf::EncryptedRowVector proto_vec;
         proto_vec.ParseFromIstream(&stream);
         read_from_proto(context, proto_vec);
@@ -89,8 +89,9 @@ namespace hit {
             // add this additional context.
             Vector raw_plaintext = cts[i].plaintext();
             if (raw_plaintext.size() != unit.encoding_height() * unit.encoding_width()) {
-                LOG_AND_THROW_STREAM("Internal error: plaintext has " << raw_plaintext.size()
-                           << " coefficients, expected " << unit.encoding_height() * unit.encoding_width());
+                LOG_AND_THROW_STREAM("Internal error: plaintext has "
+                                     << raw_plaintext.size() << " coefficients, expected "
+                                     << unit.encoding_height() * unit.encoding_width());
             }
             Matrix formatted_plaintext = Matrix(unit.encoding_height(), unit.encoding_width(), raw_plaintext.data());
             plaintext_pieces[i] = formatted_plaintext;
@@ -114,23 +115,23 @@ namespace hit {
 
         if (width_ <= 0) {
             LOG_AND_THROW_STREAM("Invalid EncryptedRowVector: "
-                << "width must be non-negative, got " << width_);
+                                 << "width must be non-negative, got " << width_);
         }
 
         if (cts.size() != ceil(width_ / static_cast<double>(unit.encoding_height()))) {
             LOG_AND_THROW_STREAM("Invalid EncryptedRowVector: "
-                << "Expected " << ceil(width_ / static_cast<double>(unit.encoding_height()))
-                << " ciphertexts, found " << cts.size() << ". ");
+                                 << "Expected " << ceil(width_ / static_cast<double>(unit.encoding_height()))
+                                 << " ciphertexts, found " << cts.size() << ". ");
         }
 
         for (int i = 1; i < cts.size(); i++) {
             if (cts[i].scale() != cts[0].scale()) {
                 LOG_AND_THROW_STREAM("Invalid EncryptedRowVector: "
-                    << "Each ciphertext must have the same scale.");
+                                     << "Each ciphertext must have the same scale.");
             }
             if (cts[i].he_level() != cts[0].he_level()) {
                 LOG_AND_THROW_STREAM("Invalid EncryptedRowVector: "
-                    << "Each ciphertext must have the same level.");
+                                     << "Each ciphertext must have the same level.");
             }
         }
     }

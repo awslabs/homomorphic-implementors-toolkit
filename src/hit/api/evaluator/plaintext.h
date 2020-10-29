@@ -19,7 +19,7 @@ namespace hit {
          * There's no good way to know what value to use here without generating some parameters
          * first. Reasonable values include 4096, 8192, or 16384.
          */
-        PlaintextEval(int num_slots);
+        explicit PlaintextEval(int num_slots);
 
         /* For documentation on the API, see ../evaluator.h */
         ~PlaintextEval() override = default;

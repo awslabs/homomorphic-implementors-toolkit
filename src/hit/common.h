@@ -3,14 +3,14 @@
 
 #pragma once
 
+#include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/vector.hpp>
 #include <chrono>
 
 #include "api/ciphertext.h"
 #include "hit/protobuf/ciphertext.pb.h"
 #include "hit/protobuf/ciphertext_vector.pb.h"
 #include "seal/seal.h"
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/vector.hpp>
 
 #define VLOG_EVAL 1
 #define VLOG_VERBOSE 2
@@ -24,18 +24,21 @@
 // less than this many bits
 #define PLAINTEXT_LOG_MAX 59
 
-#define LOG_AND_THROW_STREAM(stream_contents) { \
-    std::stringstream err_stream; \
-    err_stream << stream_contents; \
-    LOG(ERROR) << err_stream.str(); \
-    throw std::invalid_argument(err_stream.str()); \
-}
+
+#define LOG_AND_THROW_STREAM(stream_contents)          \
+    {                                                  \
+        std::stringstream err_stream;                  \
+/* NOLINTNEXTLINE(bugprone-macro-parentheses) */       \
+        err_stream << stream_contents;                 \
+        LOG(ERROR) << err_stream.str();                \
+        throw std::invalid_argument(err_stream.str()); \
+    }
 
 #define TRY_AND_THROW_STREAM(cond, stream_contents) \
-    try { \
-        cond; \
-    } catch(...) { \
-        LOG_AND_THROW_STREAM(stream_contents); \
+    try {                                           \
+        (cond);                                     \
+    } catch (...) {                                 \
+        LOG_AND_THROW_STREAM(stream_contents);      \
     }
 
 namespace hit {

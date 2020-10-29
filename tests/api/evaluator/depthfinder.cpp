@@ -1,10 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hit/api/evaluator/depthfinder.h"
+
 #include <iostream>
 
 #include "gtest/gtest.h"
-#include "hit/api/evaluator/depthfinder.h"
 #include "hit/api/ciphertext.h"
 
 using namespace std;
