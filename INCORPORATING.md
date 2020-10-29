@@ -62,9 +62,9 @@ function(download_external_project project_dir)
 endfunction()
 
 # Download AWS HIT.
-download_external_project(third-party/hit)
-# Add 'third-party/hit/src', which defines 'aws-hit' target.
-add_subdirectory(third-party/hit/src)
+download_external_project(external/hit)
+# Add 'external/hit/src', which defines 'aws-hit' target.
+add_subdirectory(external/hit/src)
 # Define your project target.
 add_executable(my_homom_app main.cpp)
 # Link the project target against aws-hit as needed.
