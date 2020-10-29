@@ -31,6 +31,13 @@
     throw std::invalid_argument(err_stream.str()); \
 }
 
+#define TRY_AND_THROW_STREAM(cond, stream_contents) \
+    try { \
+        cond; \
+    } catch(...) { \
+        LOG_AND_THROW_STREAM(stream_contents); \
+    }
+
 namespace hit {
     using Matrix = boost::numeric::ublas::matrix<double, boost::numeric::ublas::row_major, std::vector<double>>;
     using Vector = boost::numeric::ublas::vector<double, std::vector<double>>;
@@ -77,8 +84,8 @@ namespace hit {
     }
 
     inline void deserialize_vector(const std::shared_ptr<seal::SEALContext> &context,
-                                  const protobuf::CiphertextVector &proto_ciphertext_vector,
-                                  std::vector<CKKSCiphertext> &ciphertext_vector) {
+                                   const protobuf::CiphertextVector &proto_ciphertext_vector,
+                                   std::vector<CKKSCiphertext> &ciphertext_vector) {
         for (int i = 0; i < proto_ciphertext_vector.cts_size(); i++) {
             const protobuf::Ciphertext &ciphertext = proto_ciphertext_vector.cts(i);
             ciphertext_vector.emplace_back(CKKSCiphertext(context, ciphertext));

@@ -14,7 +14,7 @@ namespace hit {
     EncryptedMatrix::EncryptedMatrix(int height, int width, const EncodingUnit &unit,
                                      const vector<vector<CKKSCiphertext>> &cts)
         : height_(height), width_(width), unit(unit), cts(move(cts)) {
-        validate_init();
+        validate();
     }
 
     void EncryptedMatrix::read_from_proto(const shared_ptr<SEALContext> &context,
@@ -31,7 +31,7 @@ namespace hit {
             deserialize_vector(context, proto_ciphertext_vector, ciphertext_vector);
             cts.push_back(ciphertext_vector);
         }
-        validate_init();
+        validate();
     }
 
     EncryptedMatrix::EncryptedMatrix(const shared_ptr<SEALContext> &context,
@@ -131,46 +131,48 @@ namespace hit {
         return decode_matrix(plaintext_pieces, height_, width_);
     }
 
-    bool EncryptedMatrix::initialized() const {
-        if (cts.empty() || cts[0].empty()) {
-            return false;
+    void EncryptedMatrix::validate() const {
+        // validate the unit
+        unit.validate();
+
+        if (height_ <= 0) {
+            LOG_AND_THROW_STREAM("Invalid EncryptedMatrix: "
+                << "height must be non-negative, got " << height_);
+        }
+        if (width_ <= 0) {
+            LOG_AND_THROW_STREAM("Invalid EncryptedMatrix: "
+                << "width must be non-negative, got " << width_);
         }
 
         if (cts.size() != ceil(height_ / static_cast<double>(unit.encoding_height()))) {
-            return false;
+            LOG_AND_THROW_STREAM("Invalid ciphertexts in EncryptedMatrix: "
+                       << "Expected " << ceil(height_ / static_cast<double>(unit.encoding_height()))
+                       << " vertical units, found a " << cts.size() << ". ");
         }
 
         if (cts[0].size() != ceil(width_ / static_cast<double>(unit.encoding_width()))) {
-            return false;
+            LOG_AND_THROW_STREAM("Invalid ciphertexts in EncryptedMatrix: "
+                       << "Expected " << ceil(width_ / static_cast<double>(unit.encoding_width()))
+                       << " horizontal units, found a " << cts[0].size() << ". ");
         }
 
         int row_size = cts[0].size();
         for (const auto &cts_i : cts) {
             if (cts_i.size() != row_size) {
-                return false;
+                LOG_AND_THROW_STREAM("Invalid ciphertexts in EncryptedMatrix: "
+                       << "Each horizontal row should have " << row_size
+                       << " units, but a row has " << cts_i.size() << " horizontal units. ");
             }
             for (const auto &ct : cts_i) {
-                if (ct.scale() != cts[0][0].scale() || ct.he_level() != cts[0][0].he_level()) {
-                    return false;
+                if (ct.scale() != cts[0][0].scale()) {
+                    LOG_AND_THROW_STREAM("Invalid EncryptedMatrix: "
+                        << "Each ciphertext must have the same scale.");
+                }
+                if (ct.he_level() != cts[0][0].he_level()) {
+                    LOG_AND_THROW_STREAM("Invalid EncryptedMatrix: "
+                        << "Each ciphertext must have the same level.");
                 }
             }
-        }
-        /* if we got to this point:
-         *   - cts is non-empty
-         *   - each row has the same number of units
-         *   - all cts have the same scale
-         *   - all cts have the same he_level
-         */
-        return unit.initialized() && num_vertical_units() == cts.size() && num_horizontal_units() == cts[0].size();
-    }
-
-    void EncryptedMatrix::validate_init() const {
-        if (!initialized()) {
-            LOG_AND_THROW_STREAM("Invalid ciphertexts in EncryptedMatrix: "
-                       << "Expected a " << ceil(height_ / static_cast<double>(unit.encoding_height()))
-                       << "x" << ceil(width_ / static_cast<double>(unit.encoding_width()))
-                       << " grid, found a " << cts.size() << "x" << cts[0].size() << " grid. "
-                       << "Each ciphertext must have the same scale and level.");
         }
     }
 

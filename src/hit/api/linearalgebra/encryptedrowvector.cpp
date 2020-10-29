@@ -15,17 +15,16 @@ using namespace seal;
 namespace hit {
     EncryptedRowVector::EncryptedRowVector(int width, const EncodingUnit &unit, vector<CKKSCiphertext> &cts)
         : width_(width), unit(unit), cts(cts) {
-        validate_init();
+        validate();
     }
 
     void EncryptedRowVector::read_from_proto(const shared_ptr<SEALContext> &context,
                                              const protobuf::EncryptedRowVector &encrypted_row_vector) {
         width_ = encrypted_row_vector.width();
         unit = EncodingUnit(encrypted_row_vector.unit());
-
         cts.reserve(encrypted_row_vector.cts().cts_size());
         deserialize_vector(context, encrypted_row_vector.cts(), cts);
-        validate_init();
+        validate();
     }
 
     EncryptedRowVector::EncryptedRowVector(const shared_ptr<SEALContext> &context,
@@ -109,34 +108,30 @@ namespace hit {
         return cts[0].scale();
     }
 
-    bool EncryptedRowVector::initialized() const {
-        if (cts.empty()) {
-            return false;
+    void EncryptedRowVector::validate() const {
+        // validate the unit
+        unit.validate();
+
+        if (width_ <= 0) {
+            LOG_AND_THROW_STREAM("Invalid EncryptedRowVector: "
+                << "width must be non-negative, got " << width_);
         }
 
         if (cts.size() != ceil(width_ / static_cast<double>(unit.encoding_height()))) {
-            return false;
+            LOG_AND_THROW_STREAM("Invalid EncryptedRowVector: "
+                << "Expected " << ceil(width_ / static_cast<double>(unit.encoding_height()))
+                << " ciphertexts, found " << cts.size() << ". ");
         }
 
         for (int i = 1; i < cts.size(); i++) {
-            if (cts[i].scale() != cts[0].scale() || cts[i].he_level() != cts[0].he_level()) {
-                return false;
+            if (cts[i].scale() != cts[0].scale()) {
+                LOG_AND_THROW_STREAM("Invalid EncryptedRowVector: "
+                    << "Each ciphertext must have the same scale.");
             }
-        }
-        /* If we got to this point:
-         *   - cts is non-empty
-         *   - all cts have the same scale
-         *   - all cts hav ethe same he_level
-         */
-        return unit.initialized() && num_units() == cts.size();
-    }
-
-    void EncryptedRowVector::validate_init() const {
-        if (!initialized()) {
-            LOG_AND_THROW_STREAM("Invalid ciphertexts in EncryptedRowVector: "
-                       << "Expected " << ceil(width_ / static_cast<double>(unit.encoding_height()))
-                       << " ciphertexts, found " << cts.size() << ". "
-                       << "Each ciphertext must have the same scale and level.");
+            if (cts[i].he_level() != cts[0].he_level()) {
+                LOG_AND_THROW_STREAM("Invalid EncryptedRowVector: "
+                    << "Each ciphertext must have the same level.");
+            }
         }
     }
 

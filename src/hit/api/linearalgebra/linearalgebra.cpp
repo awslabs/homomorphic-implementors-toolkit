@@ -32,9 +32,8 @@ namespace hit {
     }
 
     Matrix LinearAlgebra::decrypt(const EncryptedMatrix &enc_mat, bool suppress_warnings) const {
-        if (!enc_mat.initialized()) {
-            LOG_AND_THROW_STREAM("Cannot decrypt uninitialized enc_matrix");
-        }
+        TRY_AND_THROW_STREAM(enc_mat.validate(),
+                             "The EncryptedMatrix argument to decrypt is invalid; has it been initialized?");
 
         if (!suppress_warnings) {
             decryption_warning(enc_mat.he_level());
@@ -77,9 +76,8 @@ namespace hit {
     }
 
     Vector LinearAlgebra::decrypt(const EncryptedRowVector &enc_vec, bool suppress_warnings) const {
-        if (!enc_vec.initialized()) {
-            LOG_AND_THROW_STREAM("Cannot decrypt uninitialized row vector");
-        }
+        TRY_AND_THROW_STREAM(enc_vec.validate(),
+                             "The EncryptedRowVector argument to decrypt is invalid; has it been initialized?");
 
         if (!suppress_warnings) {
             decryption_warning(enc_vec.he_level());
@@ -112,9 +110,8 @@ namespace hit {
     }
 
     Vector LinearAlgebra::decrypt(const EncryptedColVector &enc_vec, bool suppress_warnings) const {
-        if (!enc_vec.initialized()) {
-            LOG_AND_THROW_STREAM("Cannot decrypt uninitialized column vector");
-        }
+        TRY_AND_THROW_STREAM(enc_vec.validate(),
+                             "The EncryptedColVector argument to decrypt is invalid; has it been initialized?");
 
         if (!suppress_warnings) {
             decryption_warning(enc_vec.he_level());
@@ -237,9 +234,8 @@ namespace hit {
     template void LinearAlgebra::reduce_level_to_min_inplace(EncryptedColVector &, EncryptedColVector &);
 
     void LinearAlgebra::add_plain_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2) {
-        if (!enc_mat1.initialized()) {
-            LOG_AND_THROW_STREAM("Encrypted input to add_plain is not initialized");
-        }
+        TRY_AND_THROW_STREAM(enc_mat1.validate(),
+                             "The EncryptedMatrix argument to add_plain is invalid; has it been initialized?");
         if (enc_mat1.height() != mat2.size1() || enc_mat1.width() != mat2.size2()) {
             LOG_AND_THROW_STREAM("Arguments to add_plain must have the same dimensions; "
                        << "ciphertext encrypts a " << enc_mat1.height() << "x" << enc_mat1.width() << " matrix, "
@@ -255,9 +251,8 @@ namespace hit {
     }
 
     void LinearAlgebra::add_plain_inplace(EncryptedRowVector &enc_vec1, const Vector &vec2) {
-        if (!enc_vec1.initialized()) {
-            LOG_AND_THROW_STREAM("Encrypted input to add_plain is not initialized");
-        }
+        TRY_AND_THROW_STREAM(enc_vec1.validate(),
+                             "The EncryptedRowVector argument to add_plain is invalid; has it been initialized?");
         if (enc_vec1.width() != vec2.size()) {
             LOG_AND_THROW_STREAM("Arguments to add_plain must have the same dimensions; "
                        << "ciphertext encrypts a " << enc_vec1.width() << " vector, "
@@ -271,9 +266,8 @@ namespace hit {
     }
 
     void LinearAlgebra::add_plain_inplace(EncryptedColVector &enc_vec1, const Vector &vec2) {
-        if (!enc_vec1.initialized()) {
-            LOG_AND_THROW_STREAM("Encrypted input to add_plain is not initialized");
-        }
+        TRY_AND_THROW_STREAM(enc_vec1.validate(),
+                             "The EncryptedColVector argument to add_plain is invalid; has it been initialized?");
         if (enc_vec1.height() != vec2.size()) {
             LOG_AND_THROW_STREAM("Arguments to add_plain must have the same dimensions; "
                        << "ciphertext encrypts a " << enc_vec1.height() << " vector, "
@@ -287,9 +281,8 @@ namespace hit {
     }
 
     void LinearAlgebra::sub_plain_inplace(EncryptedMatrix &enc_mat1, const Matrix &mat2) {
-        if (!enc_mat1.initialized()) {
-            LOG_AND_THROW_STREAM("Encrypted input to sub_plain is not initialized");
-        }
+        TRY_AND_THROW_STREAM(enc_mat1.validate(),
+                             "The EncryptedMatrix argument to sub_plain is invalid; has it been initialized?");
         if (enc_mat1.height() != mat2.size1() || enc_mat1.width() != mat2.size2()) {
             LOG_AND_THROW_STREAM("Arguments to sub_plain must have the same dimensions; "
                        << "ciphertext encrypts a " << enc_mat1.height() << "x" << enc_mat1.width() << " matrix, "
@@ -305,9 +298,8 @@ namespace hit {
     }
 
     void LinearAlgebra::sub_plain_inplace(EncryptedRowVector &enc_vec1, const Vector &vec2) {
-        if (!enc_vec1.initialized()) {
-            LOG_AND_THROW_STREAM("Encrypted input to sub_plain is not initialized");
-        }
+        TRY_AND_THROW_STREAM(enc_vec1.validate(),
+                             "The EncryptedRowVector argument to sub_plain is invalid; has it been initialized?");
         if (enc_vec1.width() != vec2.size()) {
             LOG_AND_THROW_STREAM("Arguments to sub_plain must have the same dimensions; "
                        << "ciphertext encrypts a " << enc_vec1.width() << " vector, "
@@ -321,9 +313,8 @@ namespace hit {
     }
 
     void LinearAlgebra::sub_plain_inplace(EncryptedColVector &enc_vec1, const Vector &vec2) {
-        if (!enc_vec1.initialized()) {
-            LOG_AND_THROW_STREAM("Encrypted input to sub_plain is not initialized");
-        }
+        TRY_AND_THROW_STREAM(enc_vec1.validate(),
+                             "The EncryptedColVector argument to sub_plain is invalid; has it been initialized?");
         if (enc_vec1.height() != vec2.size()) {
             LOG_AND_THROW_STREAM("Arguments to sub_plain must have the same dimensions; "
                        << "ciphertext encrypts a " << enc_vec1.height() << " vector, "
@@ -338,9 +329,10 @@ namespace hit {
 
     EncryptedMatrix LinearAlgebra::hadamard_multiply(const EncryptedRowVector &enc_vec,
                                                      const EncryptedMatrix &enc_mat) {
-        if (!enc_vec.initialized() || !enc_mat.initialized()) {
-            LOG_AND_THROW_STREAM("Inputs to hadamard_multiply are not initialized.");
-        }
+        TRY_AND_THROW_STREAM(enc_vec.validate(),
+                             "The EncryptedRowVector argument to hadamard_multiply is invalid; has it been initialized?");
+        TRY_AND_THROW_STREAM(enc_mat.validate(),
+                             "The EncryptedMatrix argument to hadamard_multiply is invalid; has it been initialized?");
         if (enc_mat.encoding_unit() != enc_vec.encoding_unit()) {
             LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have the same units: "
                        << dim_string(enc_vec.encoding_unit()) << "!="
@@ -382,9 +374,10 @@ namespace hit {
 
     EncryptedMatrix LinearAlgebra::hadamard_multiply(const EncryptedMatrix &enc_mat,
                                                      const EncryptedColVector &enc_vec) {
-        if (!enc_vec.initialized() || !enc_mat.initialized()) {
-            LOG_AND_THROW_STREAM("Inputs to hadamard_multiply are not initialized.");
-        }
+        TRY_AND_THROW_STREAM(enc_mat.validate(),
+                             "The EncryptedMatrix argument to hadamard_multiply is invalid; has it been initialized?");
+        TRY_AND_THROW_STREAM(enc_vec.validate(),
+                             "The EncryptedColVector argument to hadamard_multiply is invalid; has it been initialized?");
         if (enc_mat.encoding_unit() != enc_vec.encoding_unit()) {
             LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have the same units: "
                        << dim_string(enc_mat.encoding_unit()) << "!="
@@ -637,9 +630,11 @@ namespace hit {
     EncryptedMatrix LinearAlgebra::multiply_col_major(const EncryptedMatrix &enc_mat_a,
                                                       const EncryptedMatrix &enc_mat_b_trans,
                                                       double scalar) {
-        if (!enc_mat_a.initialized() || !enc_mat_b_trans.initialized()) {
-            LOG_AND_THROW_STREAM("Inputs to multiply are not initialized.");
-        }
+        TRY_AND_THROW_STREAM(enc_mat_a.validate(),
+                             "The enc_mat_a argument to multiply_col_major is invalid; has it been initialized?");
+
+        TRY_AND_THROW_STREAM(enc_mat_b_trans.validate(),
+                             "The enc_mat_b_trans argument to multiply_col_major is invalid; has it been initialized?");
         if (enc_mat_a.encoding_unit() != enc_mat_b_trans.encoding_unit()) {
             LOG_AND_THROW_STREAM("Inputs to multiply must have the same units: "
                        << dim_string(enc_mat_a.encoding_unit()) << "!="
@@ -729,9 +724,11 @@ namespace hit {
     EncryptedMatrix LinearAlgebra::multiply_row_major(const EncryptedMatrix &enc_mat_a_trans,
                                                       const EncryptedMatrix &enc_mat_b,
                                                       double scalar) {
-        if (!enc_mat_a_trans.initialized() || !enc_mat_b.initialized()) {
-            LOG_AND_THROW_STREAM("Inputs to multiply are not initialized.");
-        }
+        TRY_AND_THROW_STREAM(enc_mat_a_trans.validate(),
+                             "The enc_mat_a argument to multiply_row_major is invalid; has it been initialized?");
+
+        TRY_AND_THROW_STREAM(enc_mat_b.validate(),
+                             "The enc_mat_b_trans argument to multiply_row_major is invalid; has it been initialized?");
         if (enc_mat_a_trans.encoding_unit() != enc_mat_b.encoding_unit()) {
             LOG_AND_THROW_STREAM("Inputs to multiply must have the same units: "
                        << dim_string(enc_mat_a_trans.encoding_unit()) << "!="

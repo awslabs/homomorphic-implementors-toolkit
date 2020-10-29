@@ -164,9 +164,10 @@ namespace hit {
          */
         template <typename T>
         void add_inplace(T &arg1, const T &arg2) {
-            if (!arg1.initialized() || !arg2.initialized()) {
-                LOG_AND_THROW_STREAM("Inputs to add_inplace are not initialized");
-            }
+            TRY_AND_THROW_STREAM(arg1.validate(),
+                             "First argument to add is invalid; has it been initialized?");
+            TRY_AND_THROW_STREAM(arg2.validate(),
+                             "Second argument to add is invalid; has it been initialized?");
             if (!arg1.same_size(arg2)) {
                 LOG_AND_THROW_STREAM("Inputs to add_inplace do not have the same dimensions: "
                            << dim_string(arg1) << " vs " << dim_string(arg2));
@@ -315,9 +316,10 @@ namespace hit {
          */
         template <typename T>
         void sub_inplace(T &arg1, const T &arg2) {
-            if (!arg1.initialized() || !arg2.initialized()) {
-                LOG_AND_THROW_STREAM("Inputs to sub_inplace are not initialized");
-            }
+            TRY_AND_THROW_STREAM(arg1.validate(),
+                             "First argument to sub is invalid; has it been initialized?");
+            TRY_AND_THROW_STREAM(arg2.validate(),
+                             "Second argument to sub is invalid; has it been initialized?");
             if (!arg1.same_size(arg2)) {
                 LOG_AND_THROW_STREAM("Inputs to sub_inplace do not have the same dimensions: "
                            << dim_string(arg1) << " vs " << dim_string(arg2));
@@ -425,9 +427,8 @@ namespace hit {
          */
         template <typename T>
         void negate_inplace(T &arg) {
-            if (!arg.initialized()) {
-                LOG_AND_THROW_STREAM("Encrypted input to sub_plain is not initialized.");
-            }
+            TRY_AND_THROW_STREAM(arg.validate(),
+                                 "Argument to negate is invalid; has it been initialized?");
             for (size_t i = 0; i < arg.num_cts(); i++) {
                 eval.negate_inplace(arg[i]);
             }
@@ -476,9 +477,8 @@ namespace hit {
          */
         template <typename T>
         void multiply_plain_inplace(T &arg, double scalar) {
-            if (!arg.initialized()) {
-                LOG_AND_THROW_STREAM("Encrypted input to multiply_plain is not initialized.");
-            }
+            TRY_AND_THROW_STREAM(arg.validate(),
+                                 "Argument to multiply_plain is invalid; has it been initialized?");
             if(arg.needs_rescale()) {
                 LOG_AND_THROW_STREAM("Encrypted input to multiply_plain must have nominal scale.");
             }
@@ -610,9 +610,8 @@ namespace hit {
          */
         template <typename T>
         void add_plain_inplace(T &arg, double scalar) {
-            if (!arg.initialized()) {
-                LOG_AND_THROW_STREAM("Encrypted input to add_plain is not initialized.");
-            }
+            TRY_AND_THROW_STREAM(arg.validate(),
+                                 "Argument to add_plain is invalid; has it been initialized?");
             for (size_t i = 0; i < arg.num_cts(); i++) {
                 eval.add_plain_inplace(arg[i], scalar);
             }
@@ -653,10 +652,8 @@ namespace hit {
          */
         template <typename T>
         void sub_plain_inplace(T &arg, double scalar) {
-            if (!arg.initialized()) {
-                LOG(ERROR) << "Encrypted input to sub_plain is not initialized.";
-                throw std::invalid_argument("An error occurred. See the log for details.");
-            }
+            TRY_AND_THROW_STREAM(arg.validate(),
+                                 "Argument to sub_plain is invalid; has it been initialized?");
             for (size_t i = 0; i < arg.num_cts(); i++) {
                 eval.sub_plain_inplace(arg[i], scalar);
             }
@@ -703,9 +700,10 @@ namespace hit {
          */
         template <typename T>
         void hadamard_multiply_inplace(T &arg1, const T &arg2) {
-            if (!arg2.initialized() || !arg1.initialized()) {
-                LOG_AND_THROW_STREAM("Inputs to hadamard_multiply are not initialized.");
-            }
+            TRY_AND_THROW_STREAM(arg1.validate(),
+                             "First argument to hadamard_multiply is invalid; has it been initialized?");
+            TRY_AND_THROW_STREAM(arg2.validate(),
+                             "Second argument to hadamard_multiply is invalid; has it been initialized?");
             if (arg1.encoding_unit() != arg2.encoding_unit()) {
                 LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have the same units: "
                            << dim_string(arg1.encoding_unit()) << "!="
@@ -781,9 +779,8 @@ namespace hit {
          */
         template <typename T>
         void hadamard_square_inplace(T &arg) {
-            if (!arg.initialized()) {
-                LOG_AND_THROW_STREAM("Input to hadamard_square is not initialized");
-            }
+            TRY_AND_THROW_STREAM(arg.validate(),
+                                 "Argument to hadamard_square is invalid; has it been initialized?");
             if(arg.needs_relin()) {
                 LOG_AND_THROW_STREAM("Input to hadamard_square must be a linear ciphertext");
             }
@@ -956,9 +953,10 @@ namespace hit {
          */
         template <typename T1, typename T2>
         void reduce_level_to_min_inplace(T1 &arg1, T2 &arg2) {
-            if (!arg1.initialized() || !arg2.initialized()) {
-                LOG_AND_THROW_STREAM("Inputs to reduce_level_to_min_inplace are not initialized");
-            }
+            TRY_AND_THROW_STREAM(arg1.validate(),
+                             "First argument to reduce_level_to_min is invalid; has it been initialized?");
+            TRY_AND_THROW_STREAM(arg2.validate(),
+                             "Second argument to reduce_level_to_min is invalid; has it been initialized?");
 
             // We can't just call eval.reduce_level_to_min_inplace(arg1[i], arg2[i]) here;
             // If the inputs have different types, they may not have the same number of inputs.
@@ -993,9 +991,8 @@ namespace hit {
          */
         template <typename T>
         void reduce_level_to_inplace(T &arg, int level) {
-            if (!arg.initialized()) {
-                LOG_AND_THROW_STREAM("Input to reduce_level_to is not initialized");
-            }
+            TRY_AND_THROW_STREAM(arg.validate(),
+                                 "Argument to reduce_level_to is invalid; has it been initialized?");
 
             parallel_for(arg.num_cts(), [&](int i) {
                 eval.reduce_level_to_inplace(arg[i], level);
@@ -1025,9 +1022,8 @@ namespace hit {
          */
         template <typename T>
         void rescale_to_next_inplace(T &arg) {
-            if (!arg.initialized()) {
-                LOG_AND_THROW_STREAM("Inputs to rescale_to_next is not initialized");
-            }
+            TRY_AND_THROW_STREAM(arg.validate(),
+                                 "Argument to rescale_to_next is invalid; has it been initialized?");
 
             parallel_for(arg.num_cts(), [&](int i) {
                 eval.rescale_to_next_inplace(arg[i]);
@@ -1054,9 +1050,8 @@ namespace hit {
          */
         template <typename T>
         void relinearize_inplace(T &arg) {
-            if (!arg.initialized()) {
-                LOG_AND_THROW_STREAM("Inputs to relinearize is not initialized");
-            }
+            TRY_AND_THROW_STREAM(arg.validate(),
+                                 "Argument to relinearize_inplace is invalid; has it been initialized?");
 
             parallel_for(arg.num_cts(), [&](int i) {
                 eval.relinearize_inplace(arg[i]);

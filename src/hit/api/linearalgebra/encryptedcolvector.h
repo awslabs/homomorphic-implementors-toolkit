@@ -81,8 +81,7 @@ namespace hit {
 
         EncryptedColVector(int height, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts);
 
-        bool initialized() const;
-        void validate_init() const;
+        void validate() const;
 
         // height of the encoded vector
         int height_ = 0;
