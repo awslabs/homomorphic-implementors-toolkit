@@ -12,6 +12,10 @@ using namespace seal;
 
 namespace hit {
 
+    CKKSCiphertext DepthFinder::encrypt(const vector<double> &coeffs) {
+        return encrypt(coeffs, -1);
+    }
+
     CKKSCiphertext DepthFinder::encrypt(const vector<double> &, int level) {
         if (encryption_mode_ == FIRST_ENCRYPT) {
             if (level == -1) {

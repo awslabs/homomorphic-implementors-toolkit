@@ -44,7 +44,8 @@ namespace hit {
         // will unnecessarily reduce precision of the computation.
         double get_estimated_max_log_scale() const;
 
-        CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1) override;
+        CKKSCiphertext encrypt(const std::vector<double> &coeffs) override;
+        CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level) override;
 
         std::shared_ptr<seal::SEALContext> context;
 

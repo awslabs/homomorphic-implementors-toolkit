@@ -32,7 +32,8 @@ namespace hit {
         DepthFinder(DepthFinder &&) = delete;
         DepthFinder &operator=(DepthFinder &&) = delete;
 
-        CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1) override;
+        CKKSCiphertext encrypt(const std::vector<double> &coeffs) override;
+        CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level) override;
 
         /* Return the multiplicative depth of this computation.
          * Must be called after performing the target computation.

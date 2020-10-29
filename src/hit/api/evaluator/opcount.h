@@ -27,7 +27,8 @@ namespace hit {
         /* Print the total number of operations performed in this computation. */
         void print_op_count() const;
 
-        CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level = -1) override;
+        CKKSCiphertext encrypt(const std::vector<double> &coeffs) override;
+        CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level) override;
 
        protected:
         void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) override;

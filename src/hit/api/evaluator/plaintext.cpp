@@ -20,6 +20,10 @@ namespace hit {
         }
     }
 
+    CKKSCiphertext PlaintextEval::encrypt(const vector<double> &coeffs) {
+        return encrypt(coeffs, -1);
+    }
+
     CKKSCiphertext PlaintextEval::encrypt(const vector<double> &coeffs, int) {
         if (coeffs.size() != num_slots_) {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext

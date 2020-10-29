@@ -18,6 +18,10 @@ using namespace seal;
 
 namespace hit {
 
+    vector<double> CKKSEvaluator::decrypt(const CKKSCiphertext &ct) const {
+        return decrypt(ct, false);
+    }
+
     vector<double> CKKSEvaluator::decrypt(const CKKSCiphertext &, bool) const {
         LOG_AND_THROW_STREAM("Decrypt can only be called with Homomorphic or Debug evaluators");
     }
