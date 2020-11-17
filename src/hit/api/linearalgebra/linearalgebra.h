@@ -44,11 +44,14 @@
 #define COMBINE1(X, Y) X##Y  // helper macro
 #define COMBINE(X, Y) COMBINE1(X, Y)
 // https://stackoverflow.com/a/17694752/925978
-#define parallel_for(max_idx, body)                                                     \
-    std::vector<int> COMBINE(iterIdxs, __LINE__)(max_idx);                              \
-    std::iota(begin(COMBINE(iterIdxs, __LINE__)), end(COMBINE(iterIdxs, __LINE__)), 0); \
-    for_each(__pstl::execution::par, begin(COMBINE(iterIdxs, __LINE__)), end(COMBINE(iterIdxs, __LINE__)), body)
-
+#define parallel_for(max_idx, body)                                                                                   \
+    if (max_idx == 1) {                                                                                               \
+        body(0);                                                                                                      \
+    } else {                                                                                                          \
+        std::vector<int> COMBINE(iterIdxs, __LINE__)(max_idx);                                                        \
+        std::iota(begin(COMBINE(iterIdxs, __LINE__)), end(COMBINE(iterIdxs, __LINE__)), 0);                           \
+        for_each(__pstl::execution::par, begin(COMBINE(iterIdxs, __LINE__)), end(COMBINE(iterIdxs, __LINE__)), body); \
+    }
 namespace hit {
 
     // Evaluation and Encryption API for Linear Algebra objects
