@@ -22,7 +22,7 @@ namespace hit {
         double ms_per_min = 60 * ms_per_sec;
         double ms_per_hour = 60 * ms_per_min;
         if (ts == TS_MS || (ts == TS_DYNAMIC && elapsed_ms < ms_per_sec)) {
-            buffer << setprecision(3) << elapsed_ms << " ms";
+            buffer << setprecision(8) << elapsed_ms << " ms";
         } else if (ts == TS_SEC || (ts == TS_DYNAMIC && elapsed_ms < ms_per_min)) {
             buffer << setprecision(3) << elapsed_ms / ms_per_sec << " seconds";
         } else if (ts == TS_MIN || (ts == TS_DYNAMIC && elapsed_ms < ms_per_hour)) {

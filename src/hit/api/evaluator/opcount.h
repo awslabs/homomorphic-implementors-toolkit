@@ -14,7 +14,7 @@ namespace hit {
     /* This evaluator tracks the plaintext computation */
     class OpCount : public CKKSEvaluator {
        public:
-        OpCount() = default;
+        explicit OpCount(int num_slots);
 
         /* For documentation on the API, see ../evaluator.h */
         ~OpCount() override = default;
@@ -73,9 +73,10 @@ namespace hit {
         int reduce_levels_ = 0;
         int reduce_level_muls_ = 0;
         int encryptions_ = 0;
+        int encryption_levels_ = 0;
         int rescales_ = 0;
         int relins_ = 0;
-        const int num_slots_ = 4096;
+        int num_slots_ = 0;
 
         inline void count_multiple_ops() {
             std::scoped_lock lock(mutex_);

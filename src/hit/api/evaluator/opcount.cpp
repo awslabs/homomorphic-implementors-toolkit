@@ -13,6 +13,8 @@ using namespace std;
 using namespace seal;
 namespace hit {
 
+    OpCount::OpCount(int num_slots): num_slots_(num_slots) { }
+
     CKKSCiphertext OpCount::encrypt(const vector<double> &coeffs) {
         return encrypt(coeffs, -1);
     }
@@ -21,6 +23,7 @@ namespace hit {
         {
             scoped_lock lock(mutex_);
             encryptions_++;
+            encryption_levels_ += level;
         }
         CKKSCiphertext destination;
         destination.he_level_ = level;
@@ -39,6 +42,7 @@ namespace hit {
         VLOG(VLOG_EVAL) << "Rotations: " << rotations_;
         VLOG(VLOG_EVAL) << "ReduceLevels: " << reduce_levels_;
         VLOG(VLOG_EVAL) << "Encryptions: " << encryptions_;
+        VLOG(VLOG_EVAL) << "Encryption Levels: " << encryption_levels_ << endl;
         VLOG(VLOG_EVAL) << "Rescales: " << rescales_;
         VLOG(VLOG_EVAL) << "Relinearizations: " << relins_;
     }
