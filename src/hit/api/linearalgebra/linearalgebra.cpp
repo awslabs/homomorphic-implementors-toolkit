@@ -832,8 +832,8 @@ namespace hit {
      */
     void LinearAlgebra::rot(CKKSCiphertext &t1, int max, int stride, bool rotate_left) {
         // serial implementation
+        CKKSCiphertext t2;
         for (int i = 1; i < max; i <<= 1) {
-            CKKSCiphertext t2;
             if (rotate_left) {
                 t2 = eval.rotate_left(t1, i * stride);
             } else {

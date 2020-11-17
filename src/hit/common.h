@@ -53,6 +53,7 @@ namespace hit {
     uint64_t elapsed_time_in_ms(timepoint start, timepoint end);
     std::string elapsed_time_to_str(timepoint start, timepoint end, TimeScale = TS_DYNAMIC);
     void print_elapsed_time(timepoint start, const std::string &str = "");
+    void print_elapsed_time_cout(timepoint start, const std::string &str="");
 
     // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
     double relative_error(const std::vector<double> &expected, const std::vector<double> &actual);
