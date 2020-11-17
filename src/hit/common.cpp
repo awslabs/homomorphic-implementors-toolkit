@@ -57,6 +57,11 @@ namespace hit {
         VLOG(VLOG_VERBOSE) << str << elapsed_time_to_str(start, end);
     }
 
+    void print_elapsed_time_cout(timepoint start, const string &str) {
+      timepoint end = chrono::steady_clock::now();
+      cout << str << elapsed_time_to_str(start, end);
+    }
+
     // computes the |expected-actual|/|expected|, where |*| denotes the 2-norm.
     double relative_error(const vector<double> &expected, const vector<double> &actual) {
         int len = expected.size();
