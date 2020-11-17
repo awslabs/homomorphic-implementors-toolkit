@@ -35,16 +35,26 @@ namespace hit {
 
     void OpCount::print_op_count() const {
         shared_lock lock(mutex_);
-        VLOG(VLOG_EVAL) << "Multiplications: " << multiplies_;
-        VLOG(VLOG_EVAL) << "ReduceLevelMuls: " << reduce_level_muls_;
-        VLOG(VLOG_EVAL) << "Additions: " << additions_;
-        VLOG(VLOG_EVAL) << "Negations: " << negations_;
-        VLOG(VLOG_EVAL) << "Rotations: " << rotations_;
-        VLOG(VLOG_EVAL) << "ReduceLevels: " << reduce_levels_;
-        VLOG(VLOG_EVAL) << "Encryptions: " << encryptions_;
-        VLOG(VLOG_EVAL) << "Encryption Levels: " << encryption_levels_ << endl;
-        VLOG(VLOG_EVAL) << "Rescales: " << rescales_;
-        VLOG(VLOG_EVAL) << "Relinearizations: " << relins_;
+        cout << multiplies_ << " " <<
+                reduce_level_muls_<< " " <<
+                additions_ << " " <<
+                negations_ << " " <<
+                rotations_ << " " <<
+                reduce_levels_ << " " <<
+                encryptions_ << " " <<
+                encryption_levels_ << " " <<
+                rescales_ << " " <<
+                relins_ << endl;
+        cout << "Multiplications: " << multiplies_<< endl;
+        cout << "ReduceLevelMuls: " << reduce_level_muls_ << endl;
+        cout << "Additions: " << additions_ << endl;
+        cout << "Negations: " << negations_ << endl;
+        cout << "Rotations: " << rotations_ << endl;
+        cout << "ReduceLevels: " << reduce_levels_ << endl;
+        cout << "Encryptions: " << encryptions_ << endl;
+        cout << "Encryption Levels: " << encryption_levels_ << endl;
+        cout << "Rescales: " << rescales_ << endl;
+        cout << "Relinearizations: " << relins_ << endl;
     }
 
     int OpCount::num_slots() const {
