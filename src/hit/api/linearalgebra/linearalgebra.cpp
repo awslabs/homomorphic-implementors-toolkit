@@ -567,6 +567,7 @@ namespace hit {
     /* Computes the k^th row of c*A*B given A^T and B, but NOT encoded as a vector.
      * First, mask out the k^th column of A^T, which is the k^th row of A.
      * The goal is to replicate this column to get the encoding of the k^th row of A (as columns)
+     * Returns a column vector with the same encoding unit as the inputs
      */
     EncryptedColVector LinearAlgebra::matrix_matrix_mul_loop_row_major(const EncryptedMatrix &enc_mat_a_trans,
                                                                        const EncryptedMatrix &enc_mat_b, double scalar,
@@ -586,28 +587,23 @@ namespace hit {
         // This mask is scaled by c so that we get a constant multiplication for free.
         vector<double> row_mask(num_slots);
 
+        // both inputs have the same encoding unit
+        EncodingUnit mask_unit = enc_mat_b.encoding_unit();
         if (transpose_unit) {
-            // create a mask for the k^th row in a *transposed* encoding unit
-            for (int i = 0; i < enc_mat_a_trans.encoding_unit().encoding_width(); i++) {
-                for (int j = 0; j < enc_mat_a_trans.encoding_unit().encoding_height(); j++) {
-                    if (i == k && j < enc_mat_b.width()) {
-                        row_mask[i * enc_mat_a_trans.encoding_unit().encoding_height() + j] = scalar;
-                    } else {
-                        row_mask[i * enc_mat_a_trans.encoding_unit().encoding_height() + j] = 0;
-                    }
-                }
-            }
-        } else {
-            // row_in_unit is the row within the encoding unit that should contain the masked row
-            int row_in_unit = k % enc_mat_a_trans.encoding_unit().encoding_height();
+            // inputs have an n-by-m unit, we need to create a mask relative to an m-by-n unit
+            mask_unit = mask_unit.transpose();
+        }
 
-            for (int i = 0; i < enc_mat_a_trans.encoding_unit().encoding_height(); i++) {
-                for (int j = 0; j < enc_mat_a_trans.encoding_unit().encoding_width(); j++) {
-                    if (i == row_in_unit) {
-                        row_mask[i * enc_mat_a_trans.encoding_unit().encoding_width() + j] = scalar;
-                    } else {
-                        row_mask[i * enc_mat_a_trans.encoding_unit().encoding_width() + j] = 0;
-                    }
+        // row_in_unit is the row within the encoding unit that should contain the masked row
+        int row_in_unit = k % mask_unit.encoding_height();
+
+        for (int i = 0; i < mask_unit.encoding_height(); i++) {
+            for (int j = 0; j < mask_unit.encoding_width(); j++) {
+                if ((transpose_unit && i == k && j < enc_mat_b.width()) ||
+                    (!transpose_unit && i == row_in_unit && j < mask_unit.encoding_height())) {
+                    row_mask[i * mask_unit.encoding_width() + j] = scalar;
+                } else {
+                    row_mask[i * mask_unit.encoding_width() + j] = 0;
                 }
             }
         }
@@ -620,35 +616,40 @@ namespace hit {
         return kth_row_A_times_B;
     }
 
+    void LinearAlgebra::matrix_multiply_validation(const EncryptedMatrix &enc_mat_a,
+                                                   const EncryptedMatrix &enc_mat_b,
+                                                   const string &api) {
+        TRY_AND_THROW_STREAM(enc_mat_a.validate(),
+                             "The enc_mat_a argument to " + api + " is invalid; has it been initialized?");
+        TRY_AND_THROW_STREAM(enc_mat_b.validate(),
+                             "The enc_mat_b_trans argument to " + api + " is invalid; has it been initialized?");
+        if (enc_mat_a.encoding_unit() != enc_mat_b.encoding_unit()) {
+            LOG_AND_THROW_STREAM("Inputs to " + api + " must have the same units: "
+                                 << dim_string(enc_mat_a.encoding_unit())
+                                 << "!=" << dim_string(enc_mat_b.encoding_unit()));
+        }
+        if (enc_mat_a.needs_rescale() || enc_mat_b.needs_rescale()) {
+            LOG_AND_THROW_STREAM("Inputs to " + api + " must have nominal scale: "
+                                 << "First argument: " << enc_mat_a.needs_rescale()
+                                 << ", Second argument: " << enc_mat_b.needs_rescale());
+        }
+        if (enc_mat_a.needs_relin() || enc_mat_b.needs_relin()) {
+            LOG_AND_THROW_STREAM("Inputs to " + api + " must be linear ciphertexts: "
+                                 << "First argument: " << enc_mat_a.needs_relin()
+                                 << ", Second argument: " << enc_mat_b.needs_relin());
+        }
+    }
+
     EncryptedMatrix LinearAlgebra::multiply_col_major(const EncryptedMatrix &enc_mat_a,
                                                       const EncryptedMatrix &enc_mat_b_trans, double scalar) {
-        TRY_AND_THROW_STREAM(enc_mat_a.validate(),
-                             "The enc_mat_a argument to multiply_col_major is invalid; has it been initialized?");
-
-        TRY_AND_THROW_STREAM(enc_mat_b_trans.validate(),
-                             "The enc_mat_b_trans argument to multiply_col_major is invalid; has it been initialized?");
-        if (enc_mat_a.encoding_unit() != enc_mat_b_trans.encoding_unit()) {
-            LOG_AND_THROW_STREAM("Inputs to multiply must have the same units: "
-                                 << dim_string(enc_mat_a.encoding_unit())
-                                 << "!=" << dim_string(enc_mat_b_trans.encoding_unit()));
-        }
+        matrix_multiply_validation(enc_mat_a, enc_mat_b_trans, "multiply_col_major");
         if (enc_mat_a.he_level() + 1 != enc_mat_b_trans.he_level()) {
-            LOG_AND_THROW_STREAM("Second argument to matrix multiply must be one level below first argument: "
+            LOG_AND_THROW_STREAM("First argument to multiply_col_major must be one level below second argument: "
                                  << enc_mat_a.he_level() << "!=" << enc_mat_b_trans.he_level() << "+1");
         }
         if (enc_mat_a.width() != enc_mat_b_trans.width()) {
-            LOG_AND_THROW_STREAM("Inputs to matrix multiply do not have compatible dimensions: "
+            LOG_AND_THROW_STREAM("Inputs to multiply_col_major do not have compatible dimensions: "
                                  << dim_string(enc_mat_a) + " vs " + dim_string(enc_mat_b_trans));
-        }
-        if (enc_mat_a.needs_rescale() || enc_mat_b_trans.needs_rescale()) {
-            LOG_AND_THROW_STREAM("Inputs to matrix multiply must have nominal scale: "
-                                 << "Matrix A: " << enc_mat_a.needs_rescale()
-                                 << ", Matrix B^T: " << enc_mat_b_trans.needs_rescale());
-        }
-        if (enc_mat_a.needs_relin() || enc_mat_b_trans.needs_relin()) {
-            LOG_AND_THROW_STREAM("Inputs to matrix multiply must be linear ciphertexts: "
-                                 << "Matrix A: " << enc_mat_a.needs_relin()
-                                 << ", Matrix B^T: " << enc_mat_b_trans.needs_relin());
         }
 
         // Multiply the matrix A by each column of B. The result is a list of EncryptedRowVectors, each with a single
@@ -694,7 +695,7 @@ namespace hit {
     }
 
     // common core for matrix/matrix multiplication; used by both multiply and multiply_unit_transpose
-    vector<EncryptedColVector> LinearAlgebra::multiply_common(const EncryptedMatrix &enc_mat_a_trans,
+    EncryptedMatrix LinearAlgebra::multiply_common(const EncryptedMatrix &enc_mat_a_trans,
                                                               const EncryptedMatrix &enc_mat_b, double scalar,
                                                               bool transpose_unit) {
         // This function requires b to be at one level below enc_mat_a_trans.
@@ -708,48 +709,15 @@ namespace hit {
             row_results[k] = matrix_matrix_mul_loop_row_major(enc_mat_a_trans, enc_mat_b, scalar, k, transpose_unit);
         });
 
-        return row_results;
-    }
-
-    EncryptedMatrix LinearAlgebra::multiply_row_major(const EncryptedMatrix &enc_mat_a_trans,
-                                                      const EncryptedMatrix &enc_mat_b, double scalar) {
-        TRY_AND_THROW_STREAM(enc_mat_a_trans.validate(),
-                             "The enc_mat_a argument to multiply_row_major is invalid; has it been initialized?");
-
-        TRY_AND_THROW_STREAM(enc_mat_b.validate(),
-                             "The enc_mat_b_trans argument to multiply_row_major is invalid; has it been initialized?");
-        if (enc_mat_a_trans.encoding_unit() != enc_mat_b.encoding_unit()) {
-            LOG_AND_THROW_STREAM("Inputs to multiply must have the same units: "
-                                 << dim_string(enc_mat_a_trans.encoding_unit())
-                                 << "!=" << dim_string(enc_mat_b.encoding_unit()));
-        }
-        if (enc_mat_a_trans.he_level() != enc_mat_b.he_level() + 1) {
-            LOG_AND_THROW_STREAM("Second argument to matrix multiply must be one level below first argument: "
-                                 << enc_mat_a_trans.he_level() << "!=" << enc_mat_b.he_level() << "+1");
-        }
-        if (enc_mat_a_trans.height() != enc_mat_b.height()) {
-            LOG_AND_THROW_STREAM("Inputs to matrix multiply do not have compatible dimensions: "
-                                 << dim_string(enc_mat_a_trans) + " vs " + dim_string(enc_mat_b));
-        }
-        if (enc_mat_a_trans.needs_rescale() || enc_mat_b.needs_rescale()) {
-            LOG_AND_THROW_STREAM("Inputs to matrix multiply must have nominal scale: "
-                                 << "Matrix A^T: " << enc_mat_a_trans.needs_rescale()
-                                 << ", Matrix B: " << enc_mat_b.needs_rescale());
-        }
-        if (enc_mat_a_trans.needs_relin() || enc_mat_b.needs_relin()) {
-            LOG_AND_THROW_STREAM("Inputs to matrix multiply must be linear ciphertexts: "
-                                 << "Matrix A^T: " << enc_mat_a_trans.needs_relin()
-                                 << ", Matrix B: " << enc_mat_b.needs_relin());
-        }
-
-        // Multiply each row of A by the matrix B. The result is a list of EncryptedColVectors, each with a single
-        // non-zero row.
-        vector<EncryptedColVector> row_results = multiply_common(enc_mat_a_trans, enc_mat_b, scalar, false);
-
         // row_results[i] contains a *single* row (possibily distributed across several cts)
         // containing the i^th row of A times the matrix B
         // The next step is to add unit.encoding_height of these together to make a single unit
         EncodingUnit unit = enc_mat_a_trans.encoding_unit();
+
+        if (transpose_unit) {
+            unit = unit.transpose();
+        }
+
         int result_vertical_units = ceil(enc_mat_a_trans.width() / static_cast<double>(unit.encoding_height()));
         vector<vector<CKKSCiphertext>> matrix_cts(result_vertical_units);
 
@@ -771,6 +739,53 @@ namespace hit {
         }
 
         return EncryptedMatrix(enc_mat_a_trans.width(), enc_mat_b.width(), unit, matrix_cts);
+    }
+
+    EncryptedMatrix LinearAlgebra::multiply_row_major(const EncryptedMatrix &enc_mat_a_trans,
+                                                      const EncryptedMatrix &enc_mat_b, double scalar) {
+        matrix_multiply_validation(enc_mat_a_trans, enc_mat_b, "multiply_row_major");
+        if (enc_mat_a_trans.he_level() != enc_mat_b.he_level() + 1) {
+            LOG_AND_THROW_STREAM("Second argument to multiply_row_major must be one level below first argument: "
+                                 << enc_mat_a_trans.he_level() << "!=" << enc_mat_b.he_level() << "+1");
+        }
+        if (enc_mat_a_trans.height() != enc_mat_b.height()) {
+            LOG_AND_THROW_STREAM("Inputs to multiply_row_major do not have compatible dimensions: "
+                                 << dim_string(enc_mat_a_trans) + " vs " + dim_string(enc_mat_b));
+        }
+
+        // Multiply each row of A by the matrix B. The result is a list of EncryptedColVectors, each with a single
+        // non-zero row, then sum the results.
+        return multiply_common(enc_mat_a_trans, enc_mat_b, scalar, false);
+    }
+
+    EncryptedMatrix LinearAlgebra::multiply_row_major_mixed_unit(const EncryptedMatrix &enc_mat_a_trans,
+                                                                 const EncryptedMatrix &enc_mat_b, double scalar) {
+        matrix_multiply_validation(enc_mat_a_trans, enc_mat_b, "multiply_row_major_mixed_unit");
+        if (enc_mat_a_trans.he_level() != enc_mat_b.he_level() + 1) {
+            LOG_AND_THROW_STREAM("Second argument to multiply_row_major_mixed_unit must be one level below first argument: "
+                                 << enc_mat_a_trans.he_level() << "!=" << enc_mat_b.he_level() << "+1");
+        }
+        if (enc_mat_a_trans.height() != enc_mat_b.height()) {
+            LOG_AND_THROW_STREAM("Inputs to multiply_row_major_mixed_unit do not have compatible dimensions: "
+                                 << dim_string(enc_mat_a_trans) << " vs " << dim_string(enc_mat_b));
+        }
+        // inputs are encoded with an n-by-m unit where we require m <= n
+        EncodingUnit unit = enc_mat_a_trans.encoding_unit();
+        if (unit.encoding_width() > unit.encoding_height()) {
+            LOG_AND_THROW_STREAM("Inputs to multiply_row_major_mixed_unit are encoded with an invalid " + dim_string(unit)
+                                 << ": " << dim_string(enc_mat_a_trans) + " vs " + dim_string(enc_mat_b));
+        }
+        // A^T is g-by-f, B is g-by-h; we require f,h < m
+        if (enc_mat_a_trans.width() > unit.encoding_width() || enc_mat_b.width() > unit.encoding_width()) {
+            LOG_AND_THROW_STREAM("Inputs to multiply_row_major_mixed_unit do not have valid dimensions: The "
+                                 << enc_mat_a_trans.width() << "-by-" << enc_mat_b.width() << " output must fit into a single "
+                                 << unit.encoding_width() << "-by-" << unit.encoding_height() << " unit and a single "
+                                 << unit.encoding_height() << "-by-" << unit.encoding_width() << " unit");
+        }
+
+        // Multiply each row of A by the matrix B. The result is a list of EncryptedColVectors, each with a single
+        // non-zero row, then sum the results.
+        return multiply_common(enc_mat_a_trans, enc_mat_b, scalar, true);
     }
 
     /* Generic helper for summing or replicating the rows or columns of an encoded matrix
