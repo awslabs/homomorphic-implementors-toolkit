@@ -804,7 +804,6 @@ namespace hit {
         return multiply_common(enc_mat_a_trans, enc_mat_b, scalar, true);
     }
 
-<<<<<<< HEAD
     void LinearAlgebra::transpose_unit_inplace(EncryptedMatrix &enc_mat) {
         // inputs are encoded with an m-by-n unit where we require m <= n
         EncodingUnit unit = enc_mat.encoding_unit();
@@ -821,8 +820,6 @@ namespace hit {
         enc_mat.unit = enc_mat.unit.transpose();
     }
 
-=======
->>>>>>> f428c44... Added multiply_row_major_mixed_unit
     /* Generic helper for summing or replicating the rows or columns of an encoded matrix
      *
      * To sum columns, set `max` to the width of the matrix (must be a power of two), `stride` to 1, and rotateLeft=true
