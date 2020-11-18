@@ -1246,7 +1246,7 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Row_Major_Mixed_Unit_InvalidCase) {
 }
 
 void test_multiply_matrix_matrix_row_major_mixed_unit(LinearAlgebra &linear_algebra, int left_dim, int inner_dim, int right_dim,
-                                            double scalar, EncodingUnit &unit) {
+                                                      double scalar, EncodingUnit &unit) {
     // matrix-matrix mutliplication takes A^T and B as inputs and computes c*A*B for a scalar c and matrices A, B with
     // compatible dimensions Matrix A is left_dim x inner_dim, so A^T is the reverse
     Matrix matrix_a_transpose = random_mat(inner_dim, left_dim);
@@ -1271,7 +1271,8 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Row_Major_Mixed_Unit) {
     HomomorphicEval ckks_instance = HomomorphicEval(8192, THREE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    int unit1_height = 128;  // a 128x64 encoding unit
+    // a 128x64 encoding unit
+    int unit1_height = 128;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
     int unit1_width = 8192 / unit1_height;
