@@ -599,8 +599,8 @@ namespace hit {
 
         for (int i = 0; i < mask_unit.encoding_height(); i++) {
             for (int j = 0; j < mask_unit.encoding_width(); j++) {
-                if ((transpose_unit && i == k && j < enc_mat_b.width()) ||
-                    (!transpose_unit && i == row_in_unit && j < mask_unit.encoding_height())) {
+                if ((transpose_unit && i == k && j < mask_unit.encoding_height()) ||
+                    (!transpose_unit && i == row_in_unit)) {
                     row_mask[i * mask_unit.encoding_width() + j] = scalar;
                 } else {
                     row_mask[i * mask_unit.encoding_width() + j] = 0;
