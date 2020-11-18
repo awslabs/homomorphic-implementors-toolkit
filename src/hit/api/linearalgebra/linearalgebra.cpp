@@ -599,8 +599,8 @@ namespace hit {
 
         for (int i = 0; i < mask_unit.encoding_height(); i++) {
             for (int j = 0; j < mask_unit.encoding_width(); j++) {
-                if ((transpose_unit && i == k && j < enc_mat_b.width()) ||
-                    (!transpose_unit && i == row_in_unit && j < mask_unit.encoding_height())) {
+                if ((transpose_unit && i == k && j < mask_unit.encoding_height()) ||
+                    (!transpose_unit && i == row_in_unit)) {
                     row_mask[i * mask_unit.encoding_width() + j] = scalar;
                 } else {
                     row_mask[i * mask_unit.encoding_width() + j] = 0;
@@ -772,10 +772,9 @@ namespace hit {
         // inputs are encoded with an n-by-m unit where we require m <= n
         EncodingUnit unit = enc_mat_a_trans.encoding_unit();
         if (unit.encoding_width() > unit.encoding_height()) {
-            LOG_AND_THROW_STREAM("Inputs to multiply_row_major_mixed_unit are encoded with an invalid " + dim_string(unit)
-                                 << ": " << dim_string(enc_mat_a_trans) + " vs " + dim_string(enc_mat_b));
+            LOG_AND_THROW_STREAM("Inputs to multiply_row_major_mixed_unit are encoded with an invalid " + dim_string(unit));
         }
-        // A^T is g-by-f, B is g-by-h; we require f,h < m
+        // A^T is g-by-f, B is g-by-h; we require f,h <= m
         if (enc_mat_a_trans.width() > unit.encoding_width() || enc_mat_b.width() > unit.encoding_width()) {
             LOG_AND_THROW_STREAM("Inputs to multiply_row_major_mixed_unit do not have valid dimensions: The "
                                  << enc_mat_a_trans.width() << "-by-" << enc_mat_b.width() << " output must fit into a single "
