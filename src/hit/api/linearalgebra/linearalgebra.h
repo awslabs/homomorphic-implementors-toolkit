@@ -876,22 +876,6 @@ namespace hit {
          */
         EncryptedMatrix hadamard_multiply(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec);
 
-        /* Hadamard product of a column vector with each row of a matrix, where the inputs have
-         *      different encoding units.
-         * Input Linear Algebra Constraints:
-         *      Input dimensions must be compatibile for standard matrix/column-vector product,
-         *      i.e., the length of the vector must be the same as the width of the matrix.
-         *      `enc_mat` must be an f-by-g matrix encoded with an m-by-n unit where g <= m <= n.
-         * Input Ciphertext Constraints:
-         *      Input must both be linear ciphertexts at the same HE level and with nominal scale.
-         * Output Linear Algebra Properties:
-         *      A f-by-g matrix encoded with an m-by-n unit.
-         * Output Ciphertext Properties:
-         *      A quadratic ciphertext whose level is the same as the input,
-         *      and whose scale is squared.
-         */
-        EncryptedMatrix hadamard_multiply_mixed_unit(const EncryptedMatrix &mat, const EncryptedColVector &vec);
-
         /* Sum the columns of a matrix, and encode the result as a row vector.
          * This is a key algorithm for (standard) matrix/column-vector multiplication,
          * which is achieved by performing a hadamard product between the matrix and column

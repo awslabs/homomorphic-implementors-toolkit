@@ -442,22 +442,6 @@ namespace hit {
         return EncryptedMatrix(enc_mat.height(), enc_mat.width(), enc_mat.encoding_unit(), cts);
     }
 
-    EncryptedMatrix LinearAlgebra::hadamard_multiply_mixed_unit(const EncryptedMatrix &mat, const EncryptedColVector &vec) {
-        EncodingUnit unit = mat.encoding_unit();
-        if (mat.encoding_unit() != vec.encoding_unit().transpose()) {
-            LOG_AND_THROW_STREAM("Matrix input to hadamard_multiply_mixed_unit must be encoded with transpose of the vector"
-                                 << " encoding unit: " << dim_string(mat.encoding_unit()) << " vs "
-                                 << dim_string(vec.encoding_unit()));
-        }
-        if (vec.height() > unit.encoding_width() || vec.height() > unit.encoding_height()) {
-            LOG_AND_THROW_STREAM("Vector input to hadamard_multiply_mixed_unit must be smaller than both dimensions of its"
-                                 << " encoding unit: " << vec.height() << " vs " << dim_string(vec.encoding_unit()));
-        }
-        EncryptedColVector temp = vec;
-        temp.unit = temp.unit.transpose();
-        return hadamard_multiply(mat, temp);
-    }
-
     EncryptedColVector LinearAlgebra::multiply(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat) {
         // input validation by hadamard_multiply
         EncryptedMatrix hadmard_prod = hadamard_multiply(enc_vec, enc_mat);
