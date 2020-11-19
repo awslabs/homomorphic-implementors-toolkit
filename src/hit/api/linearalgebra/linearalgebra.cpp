@@ -328,6 +328,46 @@ namespace hit {
         }
     }
 
+    /* Computes a standard row vector/matrix product, except that the output is transposed,
+     *       and the output has a different encoding unit from the inputs.
+     * Input Linear Algebra Constraints:
+     *      `enc_vec` is a f-dimensional vector and `enc_mat` is a f-by-g matrix.
+     *      Both arguments must be encoded with the same m-by-n unit where g <= m <= n.
+     * Input Ciphertext Constraints:
+     *       Both inputs must be linear ciphertexts with nominal scale at level i >= 1.
+     * Output Linear Algebra Properties:
+     *       An g-dimensional column vector encoded with an n-by-m unit.
+     * Output Ciphertext Properties:
+     *       A linear ciphertext with a squared scale at level i.
+     */
+    EncryptedColVector LinearAlgebra::multiply_mixed_unit(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat) {
+        // inputs are encoded with an m-by-n unit where we require m <= n
+        EncodingUnit unit = enc_vec.encoding_unit();
+        if (unit.encoding_height() > unit.encoding_width()) {
+            LOG_AND_THROW_STREAM("Inputs to multiply_mixed_unit are encoded with an invalid " << dim_string(unit));
+        }
+        // enc_mat is a f-by-g matrix where we require g <= m
+        if (enc_mat.width() > unit.encoding_height()) {
+            LOG_AND_THROW_STREAM("Input to multiply_mixed_unit does not have valid dimensions: Matrix width "
+                                 << enc_mat.width() << " must be smaller than the smallest "
+                                 << "encoding unit dimension. Unit is " << unit.encoding_height() << "-by-" << unit.encoding_width());
+        }
+        // additional input validation by hadamard_multiply
+        EncryptedMatrix hadmard_prod = hadamard_multiply(enc_vec, enc_mat);
+        // rotation requires a linear ciphertext, but does not require rescaling
+        relinearize_inplace(hadmard_prod);
+
+        vector<CKKSCiphertext> cts{sum_rows_core(enc_mat, 0, true)};
+        return EncryptedColVector(hadmard_prod.width(), hadmard_prod.encoding_unit().transpose(), cts);
+    }
+
+    EncryptedRowVector LinearAlgebra::multiply_mixed_unit(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec,
+                                                          double scalar) {
+        // inputs are validated by calls to `transpose_unit` and `multiply`
+        EncryptedColVector enc_vec_transpose = transpose_unit(enc_vec);
+        return multiply(enc_mat, enc_vec_transpose, scalar);
+    }
+
     EncryptedMatrix LinearAlgebra::hadamard_multiply(const EncryptedRowVector &enc_vec,
                                                      const EncryptedMatrix &enc_mat) {
         TRY_AND_THROW_STREAM(
@@ -470,7 +510,7 @@ namespace hit {
             isolated_row_cts[j] = sum_rows_core(
                 EncryptedMatrix(unit.encoding_height(), unit.encoding_width(), unit,
                                 vector<vector<CKKSCiphertext>>{vector<CKKSCiphertext>{isolated_row_cts[j]}}),
-                0);
+                0, false);
         });
         return EncryptedColVector(enc_mat_b_trans.width(), unit, isolated_row_cts);
     }
@@ -788,6 +828,9 @@ namespace hit {
     }
 
     void LinearAlgebra::transpose_unit_inplace(EncryptedMatrix &enc_mat) {
+
+        TRY_AND_THROW_STREAM(enc_mat.validate(),
+                             "The enc_mat argument to transpose_unit is invalid; has it been initialized?");
         // input is encoded with an m-by-n unit where we require m <= n
         EncodingUnit unit = enc_mat.encoding_unit();
         if (unit.encoding_height() > unit.encoding_width()) {
@@ -804,6 +847,8 @@ namespace hit {
     }
 
     void LinearAlgebra::transpose_unit_inplace(EncryptedColVector &enc_vec) {
+        TRY_AND_THROW_STREAM(enc_vec.validate(),
+                             "The enc_vec argument to transpose_unit is invalid; has it been initialized?");
         // input is encoded with an n-by-m unit where we require m <= n
         EncodingUnit unit = enc_vec.encoding_unit();
         if (unit.encoding_width() > unit.encoding_height()) {
@@ -986,6 +1031,10 @@ namespace hit {
      * sum the rows of a matrix packed into a single ciphertext
      * All operations (like the left shift) occur on the vectorized form of the matrix.
      *
+     * If `transpose_unit` is true, we logically transpose the ciphertext prior to
+     * summing the rows. This results in a ciphertext with a transposed unit
+     * compared to the input.
+     *
      * ASSUMPTIONS:
      *  - ct is a linear ciphertext
      *  - ct encodes a matrix
@@ -998,7 +1047,7 @@ namespace hit {
      *       This prevents the need for masking and a second round of shifting
      *       as in colSum, at the cost of flexibility
      */
-    CKKSCiphertext LinearAlgebra::sum_rows_core(const EncryptedMatrix &enc_mat, int j) {
+    CKKSCiphertext LinearAlgebra::sum_rows_core(const EncryptedMatrix &enc_mat, int j, bool transpose_unit) {
         vector<CKKSCiphertext> col_prods(enc_mat.num_vertical_units());
         // extract the j^th column of encoding units
         for (int i = 0; i < enc_mat.num_vertical_units(); i++) {
@@ -1006,7 +1055,12 @@ namespace hit {
         }
 
         CKKSCiphertext output = eval.add_many(col_prods);
-        rot(output, enc_mat.encoding_unit().encoding_height(), enc_mat.encoding_unit().encoding_width(), true);
+        if (transpose_unit) {
+            rot(output, enc_mat.encoding_unit().encoding_width(), enc_mat.encoding_unit().encoding_height(), true);
+        }
+        else {
+            rot(output, enc_mat.encoding_unit().encoding_height(), enc_mat.encoding_unit().encoding_width(), true);
+        }
         return output;
     }
 
@@ -1019,7 +1073,7 @@ namespace hit {
         }
         vector<CKKSCiphertext> cts(enc_mat.num_horizontal_units());
 
-        parallel_for(enc_mat.num_horizontal_units(), [&](int j) { cts[j] = sum_rows_core(enc_mat, j); });
+        parallel_for(enc_mat.num_horizontal_units(), [&](int j) { cts[j] = sum_rows_core(enc_mat, j, false); });
 
         return EncryptedColVector(enc_mat.width(), enc_mat.encoding_unit(), cts);
     }

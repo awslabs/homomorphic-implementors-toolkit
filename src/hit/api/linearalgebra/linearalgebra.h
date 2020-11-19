@@ -492,33 +492,6 @@ namespace hit {
         EncryptedRowVector multiply(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec,
                                     double scalar = 1);
 
-        /* Computes a standard row vector/matrix product, except that the output is transposed.
-         * Input Linear Algebra Constraints:
-         *       Both arguments must be encoded with the same m-by-n unit. `enc_vec` is a f-dimensional vector,
-         *       and `enc_mat` is a f-by-g matrix.
-         * Input Ciphertext Constraints:
-         *       Both inputs must be linear ciphertexts with nominal scale at level i >= 1.
-         * Output Linear Algebra Properties:
-         *       An g-dimensional column vector matrix encoded with the same unit as the input.
-         * Output Ciphertext Properties:
-         *       A linear ciphertext with a squared scale at level i.
-         */
-        EncryptedColVector multiply_mixed_unit(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat);
-
-        /* Computes a standard matrix/column vector product, except that the output is transposed.
-         * Input Linear Algebra Constraints:
-         *       Both arguments must be encoded with the same unit. `enc_mat` is a f-by-g matrix
-         *       and `enc_vec` is a g-dimensional vector.
-         * Input Ciphertext Constraints:
-         *       Both inputs must be linear ciphertexts with nominal scale at level i >= 2.
-         * Output Linear Algebra Properties:
-         *       An f-dimensional row vector matrix encoded with the same unit as the input.
-         * Output Ciphertext Properties:
-         *       A linear ciphertext with a squared scale at level i-1.
-         */
-        EncryptedRowVector multiply_mixed_unit(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec,
-                                    double scalar = 1);
-
         /********************************
          * Matrix-Matrix Multiplication *
          ********************************
@@ -671,6 +644,37 @@ namespace hit {
                 eval.sub_plain_inplace(arg[i], scalar);
             }
         }
+
+        /* Computes a standard row vector/matrix product, except that the output is transposed,
+         *       and the output has a different encoding unit from the inputs.
+         * Input Linear Algebra Constraints:
+         *      `enc_vec` is a f-dimensional vector and `enc_mat` is a f-by-g matrix.
+         *      Both arguments must be encoded with the same m-by-n unit where g <= m <= n.
+         * Input Ciphertext Constraints:
+         *       Both inputs must be linear ciphertexts with nominal scale at level i >= 1.
+         * Output Linear Algebra Properties:
+         *       An g-dimensional column vector encoded with an n-by-m unit.
+         * Output Ciphertext Properties:
+         *       A linear ciphertext with a squared scale at level i.
+         */
+        EncryptedColVector multiply_mixed_unit(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat);
+
+        /* Computes a standard matrix/column vector product, except that the output is transposed,
+         *       and the inputs have different encoding units.
+         * Input Linear Algebra Constraints:
+         *      Input dimensions must be compatibile for standard matrix/column-vector product,
+         *      i.e., the length of the vector must be the same as the width of the matrix.
+         *      `enc_mat` must be an f-by-g matrix encoded with an m-by-n unit where g <= m <= n,
+         *      and `enc_vec` must be encoded with an n-by-m unit.
+         * Input Ciphertext Constraints:
+         *       Both inputs must be linear ciphertexts with nominal scale at level i >= 2.
+         * Output Linear Algebra Properties:
+         *       An f-dimensional row vector encoded with an m-by-n unit.
+         * Output Ciphertext Properties:
+         *       A linear ciphertext with a squared scale at level i-1.
+         */
+        EncryptedRowVector multiply_mixed_unit(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec,
+                                               double scalar = 1);
 
         /* Coefficient-wise (Hadamard) product of two objects.
          * Template Instantiations:
@@ -1132,7 +1136,7 @@ namespace hit {
          *       as in colSum, at the cost of flexibility
          * The output needs to be rescaled!
          */
-        CKKSCiphertext sum_rows_core(const EncryptedMatrix &enc_mat, int j);
+        CKKSCiphertext sum_rows_core(const EncryptedMatrix &enc_mat, int j, bool transpose_unit);
 
         // helper function for sum_rows and sum_cols which repeatedly shifts by increasing powers of two, adding the
         // results
