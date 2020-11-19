@@ -721,8 +721,12 @@ namespace hit {
 
         /* Tranpose the m-by-n unit of a properly-encoded matrix to an n-by-m unit.
          * Note that usually, this does not produce a valid encoding of any object; use with care.
+         * Template Instantiations:
+         *   - EncryptedMatrix transpose_unit(const EncryptedMatrix&)
+         *   - EncryptedColVector transpose_unit(const EncryptedColVector&)
          * Input Linear Algebra Constraints:
-         *       `enc_mat` is a f-by-g matrix encoded with an m-by-n unit where f,g <= m <= n.
+         *       All dimensions of the input object must be smaller than both dimensions of the
+         *       encoding unit so that the object fits into a single unit and a single transpose unit.
          * Input Ciphertext Constraints:
          *       None
          * Output Linear Algebra Properties:
@@ -732,7 +736,38 @@ namespace hit {
          * Output Ciphertext Properties:
          *       Same as input.
          */
+        template <typename T>
+        T transpose_unit(const T &arg) {
+            T temp = arg;
+            transpose_unit_inplace(temp);
+            return temp;
+        }
+
+        /* Tranpose the m-by-n unit of a properly-encoded matrix to an n-by-m unit.
+         * Note that usually, this does not produce a valid encoding of any object; use with care.
+         * Input Linear Algebra Constraints:
+         *       `enc_mat` must be an f-by-g matrix encoded with an m-by-n unit such that
+         *       f,g <= m <= n
+         * Input Ciphertext Constraints: None
+         * Output Linear Algebra Properties:
+         *       Same as input.
+         * Output Ciphertext Properties:
+         *       An encrypted matrix with the same ciphertext properties as the encrypted input.
+         */
         void transpose_unit_inplace(EncryptedMatrix &enc_mat);
+
+        /* Tranpose the m-by-n unit of a properly-encoded matrix to an n-by-m unit.
+         * Note that usually, this does not produce a valid encoding of any object; use with care.
+         * Input Linear Algebra Constraints:
+         *       `enc_vec` must be an g-dimensional vector encoded with an n-by-m unit such that
+         *       g <= m <= n
+         * Input Ciphertext Constraints: None
+         * Output Linear Algebra Properties:
+         *       Same as input.
+         * Output Ciphertext Properties:
+         *       An encrypted matrix with the same ciphertext properties as the encrypted input.
+         */
+        void transpose_unit_inplace(EncryptedColVector &enc_vec);
 
         /* Square each coefficient of an object.
          * Template Instantiations:
@@ -812,22 +847,6 @@ namespace hit {
          *      and whose scale is squared.
          */
         EncryptedMatrix hadamard_multiply(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec);
-
-        /* Hadamard product of a column vector with each row of a matrix, where the inputs have
-         *      different encoding units.
-         * Input Linear Algebra Constraints:
-         *      Input dimensions must be compatibile for standard matrix/column-vector product,
-         *      i.e., the length of the vector must be the same as the width of the matrix.
-         *      `enc_mat` must be an f-by-g matrix encoded with an m-by-n unit where g <= m <= n.
-         * Input Ciphertext Constraints:
-         *      Input must both be linear ciphertexts at the same HE level and with nominal scale.
-         * Output Linear Algebra Properties:
-         *      A f-by-g matrix encoded with an m-by-n unit.
-         * Output Ciphertext Properties:
-         *      A quadratic ciphertext whose level is the same as the input,
-         *      and whose scale is squared.
-         */
-        EncryptedMatrix hadamard_multiply_mixed_unit(const EncryptedMatrix &mat, const EncryptedColVector &vec);
 
         /* Sum the columns of a matrix, and encode the result as a row vector.
          * This is a key algorithm for (standard) matrix/column-vector multiplication,

@@ -414,22 +414,6 @@ namespace hit {
         return EncryptedMatrix(enc_mat.height(), enc_mat.width(), enc_mat.encoding_unit(), cts);
     }
 
-    EncryptedMatrix LinearAlgebra::hadamard_multiply_mixed_unit(const EncryptedMatrix &mat, const EncryptedColVector &vec) {
-        EncodingUnit unit = mat.encoding_unit();
-        if (mat.encoding_unit() != vec.encoding_unit().transpose()) {
-            LOG_AND_THROW_STREAM("Matrix input to hadamard_multiply_mixed_unit must be encoded with transpose of the vector"
-                                 << " encoding unit: " << dim_string(mat.encoding_unit()) << " vs "
-                                 << dim_string(vec.encoding_unit()));
-        }
-        if (vec.height() > unit.encoding_width() || vec.height() > unit.encoding_height()) {
-            LOG_AND_THROW_STREAM("Vector input to hadamard_multiply_mixed_unit must be smaller than both dimensions of its"
-                                 << " encoding unit: " << vec.height() << " vs " << dim_string(vec.encoding_unit()));
-        }
-        EncryptedColVector temp = vec;
-        temp.unit = temp.unit.transpose();
-        return hadamard_multiply(mat, temp);
-    }
-
     EncryptedColVector LinearAlgebra::multiply(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat) {
         // input validation by hadamard_multiply
         EncryptedMatrix hadmard_prod = hadamard_multiply(enc_vec, enc_mat);
@@ -805,7 +789,7 @@ namespace hit {
     }
 
     void LinearAlgebra::transpose_unit_inplace(EncryptedMatrix &enc_mat) {
-        // inputs are encoded with an m-by-n unit where we require m <= n
+        // input is encoded with an m-by-n unit where we require m <= n
         EncodingUnit unit = enc_mat.encoding_unit();
         if (unit.encoding_height() > unit.encoding_width()) {
             LOG_AND_THROW_STREAM("Input to logical_transpose has invalid " + dim_string(unit));
@@ -818,6 +802,21 @@ namespace hit {
                                  << unit.encoding_height() << "-by-" << unit.encoding_width() << " unit");
         }
         enc_mat.unit = enc_mat.unit.transpose();
+    }
+
+    void LinearAlgebra::transpose_unit_inplace(EncryptedColVector &enc_vec) {
+        // input is encoded with an n-by-m unit where we require m <= n
+        EncodingUnit unit = enc_vec.encoding_unit();
+        if (unit.encoding_width() > unit.encoding_height()) {
+            LOG_AND_THROW_STREAM("Input to logical_transpose has invalid " + dim_string(unit));
+        }
+        // enc_vec is g-dimensional, we require g <= m
+        if (enc_vec.height() > unit.encoding_width()) {
+            LOG_AND_THROW_STREAM("Input to logical_transpose does not have valid dimensions: The vector dimension ("
+                                 << enc_vec.height() << ") must be no larger than the encoding unit width ("
+                                 << unit.encoding_width() << ")");
+        }
+        enc_vec.unit = enc_vec.unit.transpose();
     }
 
     /* Generic helper for summing or replicating the rows or columns of an encoded matrix
