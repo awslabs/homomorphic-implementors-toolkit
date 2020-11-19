@@ -662,10 +662,8 @@ namespace hit {
         /* Computes a standard matrix/column vector product, except that the output is transposed,
          *       and the inputs have different encoding units.
          * Input Linear Algebra Constraints:
-         *      Input dimensions must be compatibile for standard matrix/column-vector product,
-         *      i.e., the length of the vector must be the same as the width of the matrix.
          *      `enc_mat` must be an f-by-g matrix encoded with an m-by-n unit where g <= m <= n,
-         *      and `enc_vec` must be encoded with an n-by-m unit.
+         *      and `enc_vec` must be a g-dimensional vector encoded with an n-by-m unit.
          * Input Ciphertext Constraints:
          *       Both inputs must be linear ciphertexts with nominal scale at level i >= 2.
          * Output Linear Algebra Properties:
