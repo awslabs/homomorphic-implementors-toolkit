@@ -328,18 +328,6 @@ namespace hit {
         }
     }
 
-    /* Computes a standard row vector/matrix product, except that the output is transposed,
-     *       and the output has a different encoding unit from the inputs.
-     * Input Linear Algebra Constraints:
-     *      `enc_vec` is a f-dimensional vector and `enc_mat` is a f-by-g matrix.
-     *      Both arguments must be encoded with the same m-by-n unit where g <= m <= n.
-     * Input Ciphertext Constraints:
-     *       Both inputs must be linear ciphertexts with nominal scale at level i >= 1.
-     * Output Linear Algebra Properties:
-     *       An g-dimensional column vector encoded with an n-by-m unit.
-     * Output Ciphertext Properties:
-     *       A linear ciphertext with a squared scale at level i.
-     */
     EncryptedColVector LinearAlgebra::multiply_mixed_unit(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat) {
         // inputs are encoded with an m-by-n unit where we require m <= n
         EncodingUnit unit = enc_vec.encoding_unit();
