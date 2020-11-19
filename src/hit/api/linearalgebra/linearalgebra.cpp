@@ -787,6 +787,37 @@ namespace hit {
         return multiply_common(enc_mat_a_trans, enc_mat_b, scalar, true);
     }
 
+    void LinearAlgebra::transpose_unit_inplace(EncryptedMatrix &enc_mat) {
+        // input is encoded with an m-by-n unit where we require m <= n
+        EncodingUnit unit = enc_mat.encoding_unit();
+        if (unit.encoding_height() > unit.encoding_width()) {
+            LOG_AND_THROW_STREAM("Input to logical_transpose has invalid " + dim_string(unit));
+        }
+        // enc_mat is f-by-g, we require f,g <= m
+        if (enc_mat.height() > unit.encoding_height() || enc_mat.width() > unit.encoding_height()) {
+            LOG_AND_THROW_STREAM("Input to logical_transpose does not have valid dimensions: The "
+                                 << enc_mat.width() << "-by-" << enc_mat.width() << " input must fit into a single "
+                                 << unit.encoding_width() << "-by-" << unit.encoding_height() << " unit and a single "
+                                 << unit.encoding_height() << "-by-" << unit.encoding_width() << " unit");
+        }
+        enc_mat.unit = enc_mat.unit.transpose();
+    }
+
+    void LinearAlgebra::transpose_unit_inplace(EncryptedColVector &enc_vec) {
+        // input is encoded with an n-by-m unit where we require m <= n
+        EncodingUnit unit = enc_vec.encoding_unit();
+        if (unit.encoding_width() > unit.encoding_height()) {
+            LOG_AND_THROW_STREAM("Input to logical_transpose has invalid " + dim_string(unit));
+        }
+        // enc_vec is g-dimensional, we require g <= m
+        if (enc_vec.height() > unit.encoding_width()) {
+            LOG_AND_THROW_STREAM("Input to logical_transpose does not have valid dimensions: The vector dimension ("
+                                 << enc_vec.height() << ") must be no larger than the encoding unit width ("
+                                 << unit.encoding_width() << ")");
+        }
+        enc_vec.unit = enc_vec.unit.transpose();
+    }
+
     /* Generic helper for summing or replicating the rows or columns of an encoded matrix
      *
      * To sum columns, set `max` to the width of the matrix (must be a power of two), `stride` to 1, and rotateLeft=true
