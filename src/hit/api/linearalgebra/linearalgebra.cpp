@@ -816,6 +816,7 @@ namespace hit {
     }
 
     void LinearAlgebra::transpose_unit_inplace(EncryptedMatrix &enc_mat) {
+
         TRY_AND_THROW_STREAM(enc_mat.validate(),
                              "The enc_mat argument to transpose_unit is invalid; has it been initialized?");
         // input is encoded with an m-by-n unit where we require m <= n
@@ -859,8 +860,8 @@ namespace hit {
      */
     void LinearAlgebra::rot(CKKSCiphertext &t1, int max, int stride, bool rotate_left) {
         // serial implementation
-        CKKSCiphertext t2;
         for (int i = 1; i < max; i <<= 1) {
+            CKKSCiphertext t2;
             if (rotate_left) {
                 t2 = eval.rotate_left(t1, i * stride);
             } else {
