@@ -751,8 +751,7 @@ namespace hit {
          *   - EncryptedMatrix transpose_unit(const EncryptedMatrix&)
          *   - EncryptedColVector transpose_unit(const EncryptedColVector&)
          * Input Linear Algebra Constraints:
-         *       All dimensions of the input object must be smaller than both dimensions of the
-         *       encoding unit so that the object fits into a single unit and a single transpose unit.
+         *       See corresponding _inplace variants.
          * Input Ciphertext Constraints:
          *       None
          * Output Linear Algebra Properties:
@@ -1150,7 +1149,7 @@ namespace hit {
                                                             const EncryptedMatrix &enc_mat_b_trans, double scalar,
                                                             int k);
 
-        // common core for matrix/matrix multiplication; used by both multiply and multiply_unit_transpose
+        // common core for matrix/matrix multiplication; used by both multiply_row_major and multiply_row_major_mixed_unit
         EncryptedMatrix multiply_common(const EncryptedMatrix &enc_mat_a_trans,
                                         const EncryptedMatrix &enc_mat_b, double scalar,
                                         bool transpose_unit);

@@ -1729,7 +1729,7 @@ TEST(LinearAlgebraTest, MultiplyMatrixCol_Mixed_Unit) {
     HomomorphicEval ckks_instance = HomomorphicEval(8192, TWO_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
-    // a 64x64 encoding unit
+    // a 64x128 encoding unit
     int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
@@ -1761,6 +1761,88 @@ TEST(LinearAlgebraTest, MultiplyMatrixCol_Mixed_Unit) {
     test_multiply_matrix_col(linear_algebra, 67, 17, PI, unit1, mixed_unit);
     test_multiply_matrix_col(linear_algebra, 134, 134, PI, unit1, mixed_unit);
     test_multiply_matrix_col(linear_algebra, 300, 27, PI, unit1, mixed_unit);
+}
+
+// Covers
+// void transpose_unit_inplace(EncryptedMatrix &enc_mat)
+// and
+// void transpose_unit_inplace(EncryptedColVector &enc_vec)
+// All dimensions of the input object must be smaller than both dimensions of the
+// encoding unit so that the object fits into a single unit and a single transpose unit.
+TEST(LinearAlgebraTest, TransposeUnit_InvalidCase) {
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+
+    Vector vec1 = random_vec(65);
+    Matrix mat1 = random_mat(65, 32);
+    Matrix mat2 = random_mat(32, 65);
+
+    EncryptedColVector ciphertext1 = linear_algebra.encrypt_col_vector(vec1, unit1);
+    EncryptedMatrix ciphertext2 = linear_algebra.encrypt_matrix(mat1, unit1);
+    EncryptedMatrix ciphertext3 = linear_algebra.encrypt_matrix(mat2, unit1);
+
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because vector is larger than unit height
+        (linear_algebra.transpose_unit(ciphertext1)), invalid_argument);
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because matrix height is larger than unit height
+        (linear_algebra.transpose_unit(ciphertext2)), invalid_argument);
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because matrix width is larger than unit height
+        (linear_algebra.transpose_unit(ciphertext3)), invalid_argument);
+
+    // a 128x32 encoding unit
+    int unit2_height = 128;
+    EncodingUnit unit2 = linear_algebra.make_unit(unit2_height);
+
+    Vector vec2 = random_vec(32);
+    Matrix mat3 = random_mat(32, 32);
+    // col vector _should_ be encoded with an n-by-m unit where m <= n
+    EncryptedColVector ciphertext4 = linear_algebra.encrypt_col_vector(vec2, unit2.transpose());
+    EncryptedMatrix ciphertext5 = linear_algebra.encrypt_matrix(mat3, unit2);
+
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because unit is invalid for this operation
+        (linear_algebra.transpose_unit(ciphertext4)), invalid_argument);
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because unit is invalid for this operation
+        (linear_algebra.transpose_unit(ciphertext5)), invalid_argument);
+}
+
+// Covers
+// void transpose_unit_inplace(EncryptedMatrix &enc_mat)
+// and
+// void transpose_unit_inplace(EncryptedColVector &enc_vec)
+// All dimensions of the input object must be smaller than both dimensions of the
+// encoding unit so that the object fits into a single unit and a single transpose unit.
+TEST(LinearAlgebraTest, TransposeUnit) {
+    HomomorphicEval ckks_instance = HomomorphicEval(8192, TWO_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x128 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+
+    Vector vec1 = random_vec(64);
+    Matrix mat1 = random_mat(64, 64);
+
+    EncryptedColVector ciphertext1 = linear_algebra.encrypt_col_vector(vec1, unit1.transpose());
+    EncryptedMatrix ciphertext2 = linear_algebra.encrypt_matrix(mat1, unit1);
+
+    EncryptedColVector result1 = linear_algebra.transpose_unit(ciphertext1);
+    EncryptedMatrix result2 = linear_algebra.transpose_unit(ciphertext2);
+
+    // test that transpose_unit actually transposes the unit
+    ASSERT_EQ(ciphertext1.encoding_unit(), result1.encoding_unit().transpose());
+    ASSERT_EQ(ciphertext2.encoding_unit(), result2.encoding_unit().transpose());
+
+    // test that sum_rows(A) = sum_rows(transpose_unit(A))
+    ASSERT_LT(relative_error(linear_algebra.decrypt(linear_algebra.sum_rows(ciphertext2)),
+                             linear_algebra.decrypt(linear_algebra.sum_rows(result2))), MAX_NORM);
 }
 
 TEST(LinearAlgebraTest, ReduceLevelToMinMatrix) {
