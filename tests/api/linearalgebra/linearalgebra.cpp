@@ -1190,6 +1190,107 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Row_Major) {
     test_multiply_matrix_matrix_row_major(linear_algebra, 300, 27, 29, PI, unit1);
 }
 
+TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Row_Major_Mixed_Unit_InvalidCase) {
+    HomomorphicEval ckks_instance = HomomorphicEval(8192, THREE_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // both of these units are valid for inputs to multiply_mixed_unit
+    // a 256x32 encoding unit
+    int unit1_height = 256;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+    // a 128x64 encoding unit
+    int unit2_height = 128;
+    EncodingUnit unit2 = linear_algebra.make_unit(unit2_height);
+
+    Matrix mat1 = random_mat(17, 16);
+    Matrix mat2 = random_mat(16, 16);
+    EncryptedMatrix ciphertext1 = linear_algebra.encrypt_matrix(mat1, unit1);
+    EncryptedMatrix ciphertext2 = linear_algebra.encrypt_matrix(mat2, unit1);
+    EncryptedMatrix ciphertext3 = linear_algebra.encrypt_matrix(mat1, unit2);
+
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because inner dimensions do not match
+        // (mat1 is 17-by-16, but represents the *transpose* of the left argument to the multiplication)
+        (linear_algebra.multiply_row_major_mixed_unit(ciphertext1, ciphertext2)), invalid_argument);
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because encoding units do not match.
+        (linear_algebra.multiply_row_major_mixed_unit(ciphertext1, ciphertext3)), invalid_argument);
+
+    // Everything above here is copied from the normal matrix invalid test
+    // multiply_row_major_mixed_unit has several additional invalid cases:
+    // 1. n-by-m unit where m > n
+    // 2. s > m
+    // 3. u > m
+
+    // a 64x128 encoding unit, invalid for inputs
+    int unit3_height = 64;
+    EncodingUnit unit3 = linear_algebra.make_unit(unit3_height);
+    EncryptedMatrix ciphertext4 = linear_algebra.encrypt_matrix(mat1, unit3);
+    EncryptedMatrix ciphertext5 = linear_algebra.encrypt_matrix(mat2, unit3);
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because unit3 is invalid:
+        // n-by-m unit is 64-by-128, but m > n
+        (linear_algebra.multiply_row_major_mixed_unit(ciphertext4, ciphertext5)), invalid_argument);
+
+    Matrix mat3 = random_mat(64, 64);
+    Matrix mat4 = random_mat(64, 32);
+    EncryptedMatrix ciphertext6 = linear_algebra.encrypt_matrix(mat3, unit1);
+    EncryptedMatrix ciphertext7 = linear_algebra.encrypt_matrix(mat4, unit1);
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because mat3 is t-by-s=64x64, so s=64>m=32
+        (linear_algebra.multiply_row_major_mixed_unit(ciphertext6, ciphertext7)), invalid_argument);
+
+    ASSERT_THROW(
+        // Expect invalid_argument is thrown because mat3 is t-by-u=64x64, so u=64>m=32
+        (linear_algebra.multiply_row_major_mixed_unit(ciphertext7, ciphertext6)), invalid_argument);
+}
+
+void test_multiply_matrix_matrix_row_major_mixed_unit(LinearAlgebra &linear_algebra, int left_dim, int inner_dim, int right_dim,
+                                                      double scalar, EncodingUnit &unit) {
+    // matrix-matrix mutliplication takes A^T and B as inputs and computes c*A*B for a scalar c and matrices A, B with
+    // compatible dimensions Matrix A is left_dim x inner_dim, so A^T is the reverse
+    Matrix matrix_a_transpose = random_mat(inner_dim, left_dim);
+    // Matrix B is inner_dim x right_dim
+    Matrix matrix_b = random_mat(inner_dim, right_dim);
+
+    EncryptedMatrix ct_a_transpose = linear_algebra.encrypt_matrix(matrix_a_transpose, unit);
+    EncryptedMatrix ct_b = linear_algebra.encrypt_matrix(matrix_b, unit, ct_a_transpose.he_level() - 1);
+    EncryptedMatrix ct_c_times_A_times_B = linear_algebra.multiply_row_major_mixed_unit(ct_a_transpose, ct_b, scalar);
+    Matrix actual_output = linear_algebra.decrypt(ct_c_times_A_times_B);
+
+    // Transpose of A^T is A
+    Matrix matrix_a = trans(matrix_a_transpose);
+    Matrix expected_output = scalar * prec_prod(matrix_a, matrix_b);
+
+    ASSERT_LT(relative_error(actual_output.data(), expected_output.data()), MAX_NORM);
+    ASSERT_EQ(unit.encoding_height(), ct_c_times_A_times_B.encoding_unit().encoding_width());
+    ASSERT_EQ(unit.encoding_width(), ct_c_times_A_times_B.encoding_unit().encoding_height());
+}
+
+TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Row_Major_Mixed_Unit) {
+    HomomorphicEval ckks_instance = HomomorphicEval(8192, THREE_MULTI_DEPTH, LOG_SCALE);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 128x64 encoding unit
+    int unit1_height = 128;
+    EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
+
+    int unit1_width = 8192 / unit1_height;
+
+    // both matrices are exactly the size of the encoding unit
+    test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width, unit1_height, unit1_width, 1.0, unit1);
+    test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width, unit1_height, unit1_width, PI, unit1);
+
+    // one or more matrices are smaller than the encoding unit
+    test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width - 9, unit1_height, unit1_width, PI, unit1);
+    test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width, unit1_height - 9, unit1_width, PI, unit1);
+    test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width, unit1_height, unit1_width - 9, PI, unit1);
+    test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width - 9, unit1_height, unit1_width - 11, PI, unit1);
+    test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width - 9, unit1_height - 11, unit1_width, PI, unit1);
+    test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width, unit1_height - 9, unit1_width - 11, PI, unit1);
+    test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width - 13, unit1_height - 9, unit1_width - 11, PI, unit1);
+}
+
 TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Col_Major_InvalidCase) {
     HomomorphicEval ckks_instance = HomomorphicEval(8192, THREE_MULTI_DEPTH, LOG_SCALE);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
