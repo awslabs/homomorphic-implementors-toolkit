@@ -345,7 +345,7 @@ namespace hit {
         // rotation requires a linear ciphertext, but does not require rescaling
         relinearize_inplace(hadmard_prod);
 
-        vector<CKKSCiphertext> cts{sum_rows_core(enc_mat, 0, true)};
+        vector<CKKSCiphertext> cts{sum_rows_core(hadmard_prod, 0, true)};
         return EncryptedColVector(hadmard_prod.width(), hadmard_prod.encoding_unit().transpose(), cts);
     }
 

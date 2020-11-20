@@ -1512,29 +1512,29 @@ TEST(LinearAlgebraTest, MultiplyRowMatrix_Mixed_Unit_InvalidCase) {
 
     ASSERT_THROW(
         // Expect invalid_argument is thrown because dimensions do not match.
-        (linear_algebra.multiply(ciphertext1, ciphertext3)), invalid_argument);
+        (linear_algebra.multiply_mixed_unit(ciphertext1, ciphertext3)), invalid_argument);
     ASSERT_THROW(
         // Expect invalid_argument is thrown because encoding units do not match.
-        (linear_algebra.multiply(ciphertext2, ciphertext3)), invalid_argument);
+        (linear_algebra.multiply_mixed_unit(ciphertext2, ciphertext3)), invalid_argument);
 
 
     // Both arguments must be encoded with the same m-by-n unit where g <= m <= n.
     // a 128x32 encoding unit
     int unit3_height = 128;
     EncodingUnit unit3 = linear_algebra.make_unit(unit3_height);
-    EncryptedRowVector ciphertext4 = linear_algebra.encrypt_row_vector(vec1, unit3);
+    Vector vec2 = random_vec(55);
+    EncryptedRowVector ciphertext4 = linear_algebra.encrypt_row_vector(vec2, unit3);
     EncryptedMatrix ciphertext5 = linear_algebra.encrypt_matrix(mat1, unit3);
     ASSERT_THROW(
         // Expect invalid_argument is thrown because unit is invalid for this operation.
-        (linear_algebra.multiply(ciphertext4, ciphertext5)), invalid_argument);
+        (linear_algebra.multiply_mixed_unit(ciphertext4, ciphertext5)), invalid_argument);
 
     Matrix mat2 = random_mat(55, 33);
-    Vector vec2 = random_vec(55);
     EncryptedRowVector ciphertext6 = linear_algebra.encrypt_row_vector(vec2, unit2);
     EncryptedMatrix ciphertext7 = linear_algebra.encrypt_matrix(mat2, unit2);
     ASSERT_THROW(
         // Expect invalid_argument is thrown because the matrix width (33) is larger than the unit height (32)
-        (linear_algebra.multiply(ciphertext6, ciphertext7)), invalid_argument);
+        (linear_algebra.multiply_mixed_unit(ciphertext6, ciphertext7)), invalid_argument);
 }
 
 // Covers EncryptedColVector multiply_mixed_unit(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat)
@@ -1614,13 +1614,14 @@ void test_multiply_matrix_col(LinearAlgebra &linear_algebra, int left_dim, int r
     Vector vec = random_vec(right_dim);
     Matrix mat = random_mat(left_dim, right_dim);
 
-    EncryptedColVector ct_vec = linear_algebra.encrypt_col_vector(vec, unit);
     EncryptedMatrix ct_mat = linear_algebra.encrypt_matrix(mat, unit);
     EncryptedRowVector result;
     if (mixed_unit) {
+        EncryptedColVector ct_vec = linear_algebra.encrypt_col_vector(vec, unit.transpose());
         result = linear_algebra.multiply_mixed_unit(ct_mat, ct_vec, scalar);
     }
     else {
+        EncryptedColVector ct_vec = linear_algebra.encrypt_col_vector(vec, unit);
         result = linear_algebra.multiply(ct_mat, ct_vec, scalar);
     }
 
@@ -1716,12 +1717,12 @@ TEST(LinearAlgebraTest, MultiplyMatrixCol_Mixed_Unit_InvalidCase) {
         (linear_algebra.multiply(ciphertext4, ciphertext5)), invalid_argument);
 
     Matrix mat2 = random_mat(55, 33);
-    Vector vec2 = random_vec(55);
+    Vector vec2 = random_vec(33);
     EncryptedMatrix ciphertext6 = linear_algebra.encrypt_matrix(mat2, unit2);
     EncryptedColVector ciphertext7 = linear_algebra.encrypt_col_vector(vec2, unit2.transpose());
     ASSERT_THROW(
         // Expect invalid_argument is thrown because the matrix width (33) is larger than the unit height (32)
-        (linear_algebra.multiply(ciphertext6, ciphertext7)), invalid_argument);
+        (linear_algebra.multiply_mixed_unit(ciphertext6, ciphertext7)), invalid_argument);
 }
 
 // Covers EncryptedRowVector multiply_mixed_unit(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec, double scalar = 1)
@@ -1733,33 +1734,32 @@ TEST(LinearAlgebraTest, MultiplyMatrixCol_Mixed_Unit) {
     int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
-    int unit1_width = 8192 / unit1_height;
-
-    bool mixed_unit = false;
+    bool mixed_unit = true;
+    int max_width = unit1_height;
 
     // matrix is exactly the size of the encoding unit
-    test_multiply_matrix_col(linear_algebra, unit1_width, unit1_height, 1.0, unit1, mixed_unit);
-    test_multiply_matrix_col(linear_algebra, unit1_width, unit1_height, PI, unit1, mixed_unit);
+    test_multiply_matrix_col(linear_algebra, unit1_height, max_width, 1.0, unit1, mixed_unit);
+    test_multiply_matrix_col(linear_algebra, unit1_height, max_width, PI, unit1, mixed_unit);
 
     // one or more dimensions are are multiple of the encoding unit (no padding)
     int large_height = 2 * unit1_height;
-    test_multiply_matrix_col(linear_algebra, large_height, unit1_width, PI, unit1, mixed_unit);
+    test_multiply_matrix_col(linear_algebra, large_height, max_width, PI, unit1, mixed_unit);
 
     // one or more dimensions are larger than the encoding unit (padding required)
     large_height = unit1_height + 11;
-    test_multiply_matrix_col(linear_algebra, large_height, unit1_width, PI, unit1, mixed_unit);
+    test_multiply_matrix_col(linear_algebra, large_height, max_width, PI, unit1, mixed_unit);
 
     // one or more dimensions are are fraction of the encoding unit (padding required)
-    int half_width = unit1_width / 2;
+    int half_width = max_width / 2;
     int half_height = unit1_height / 2;
-    test_multiply_matrix_col(linear_algebra, half_height,  unit1_width, PI, unit1, mixed_unit);
+    test_multiply_matrix_col(linear_algebra, half_height,  max_width, PI, unit1, mixed_unit);
     test_multiply_matrix_col(linear_algebra, unit1_height, half_width,  PI, unit1, mixed_unit);
     test_multiply_matrix_col(linear_algebra, half_height,  half_width,  PI, unit1, mixed_unit);
 
     // some random dimensions
     test_multiply_matrix_col(linear_algebra, 13, 63, PI, unit1, mixed_unit);
     test_multiply_matrix_col(linear_algebra, 67, 17, PI, unit1, mixed_unit);
-    test_multiply_matrix_col(linear_algebra, 134, 134, PI, unit1, mixed_unit);
+    test_multiply_matrix_col(linear_algebra, 134, 11, PI, unit1, mixed_unit);
     test_multiply_matrix_col(linear_algebra, 300, 27, PI, unit1, mixed_unit);
 }
 
