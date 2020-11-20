@@ -165,8 +165,10 @@ void example_3_driver() {
  * useful to know how many gates (and of what type) are evaluated in each circuit. The OpCount evaluator
  * provides exactly this information. Let's see how to use it below.
  */
-	// The OpCount instance type doesn't need any arguments.
-	OpCount oc_inst = OpCount();
+	// The OpCount instance type takes the number of plaintext slots, since most of the high-level
+	// operations in the linear algebra API perform a different number of low-level operations depending
+	// on how inputs are encoded, which depends on the number of plaintext slots.
+	OpCount oc_inst = OpCount(num_slots);
 
 	// Don't reuse ciphertexts between instance types!
 	CKKSCiphertext oc_ciphertext = oc_inst.encrypt(plaintext);

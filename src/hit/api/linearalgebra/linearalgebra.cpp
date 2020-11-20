@@ -67,12 +67,12 @@ namespace hit {
     }
 
     EncryptedRowVector LinearAlgebra::encrypt_row_vector(const Vector &vec, const EncodingUnit &unit, int level) {
-        vector<Matrix> mat_pieces = encode_row_vector(vec, unit);
-        vector<CKKSCiphertext> mat_cts(mat_pieces.size());
-        for (int i = 0; i < mat_pieces.size(); i++) {
-            mat_cts[i] = eval.encrypt(mat_pieces[i].data(), level);
+        vector<Matrix> vec_pieces = encode_row_vector(vec, unit);
+        vector<CKKSCiphertext> vec_cts(vec_pieces.size());
+        for (int i = 0; i < vec_pieces.size(); i++) {
+            vec_cts[i] = eval.encrypt(vec_pieces[i].data(), level);
         }
-        return EncryptedRowVector(vec.size(), unit, mat_cts);
+        return EncryptedRowVector(vec.size(), unit, vec_cts);
     }
 
     Vector LinearAlgebra::decrypt(const EncryptedRowVector &enc_vec, bool suppress_warnings) const {
@@ -83,12 +83,12 @@ namespace hit {
             decryption_warning(enc_vec.he_level());
         }
 
-        vector<Matrix> mat_pieces(enc_vec.cts.size());
+        vector<Matrix> vec_pieces(enc_vec.cts.size());
         for (int i = 0; i < enc_vec.cts.size(); i++) {
-            mat_pieces[i] = Matrix(enc_vec.encoding_unit().encoding_height(), enc_vec.encoding_unit().encoding_width(),
+            vec_pieces[i] = Matrix(enc_vec.encoding_unit().encoding_height(), enc_vec.encoding_unit().encoding_width(),
                                    eval.decrypt(enc_vec.cts[i], true));
         }
-        return decode_row_vector(mat_pieces, enc_vec.width());
+        return decode_row_vector(vec_pieces, enc_vec.width());
     }
 
     template <>
@@ -97,12 +97,12 @@ namespace hit {
     }
 
     EncryptedColVector LinearAlgebra::encrypt_col_vector(const Vector &vec, const EncodingUnit &unit, int level) {
-        vector<Matrix> mat_pieces = encode_col_vector(vec, unit);
-        vector<CKKSCiphertext> mat_cts(mat_pieces.size());
-        for (int i = 0; i < mat_pieces.size(); i++) {
-            mat_cts[i] = eval.encrypt(mat_pieces[i].data(), level);
+        vector<Matrix> vec_pieces = encode_col_vector(vec, unit);
+        vector<CKKSCiphertext> vec_cts(vec_pieces.size());
+        for (int i = 0; i < vec_pieces.size(); i++) {
+            vec_cts[i] = eval.encrypt(vec_pieces[i].data(), level);
         }
-        return EncryptedColVector(vec.size(), unit, mat_cts);
+        return EncryptedColVector(vec.size(), unit, vec_cts);
     }
 
     EncodingUnit LinearAlgebra::make_unit(int encoding_height) const {
@@ -117,12 +117,12 @@ namespace hit {
             decryption_warning(enc_vec.he_level());
         }
 
-        vector<Matrix> mat_pieces(enc_vec.cts.size());
+        vector<Matrix> vec_pieces(enc_vec.cts.size());
         for (int i = 0; i < enc_vec.cts.size(); i++) {
-            mat_pieces[i] = Matrix(enc_vec.encoding_unit().encoding_height(), enc_vec.encoding_unit().encoding_width(),
+            vec_pieces[i] = Matrix(enc_vec.encoding_unit().encoding_height(), enc_vec.encoding_unit().encoding_width(),
                                    eval.decrypt(enc_vec.cts[i], true));
         }
-        return decode_col_vector(mat_pieces, enc_vec.height());
+        return decode_col_vector(vec_pieces, enc_vec.height());
     }
 
     LinearAlgebra::LinearAlgebra(CKKSEvaluator &eval) : eval(eval) {

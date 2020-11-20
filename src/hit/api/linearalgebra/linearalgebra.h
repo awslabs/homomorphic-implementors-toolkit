@@ -695,9 +695,6 @@ namespace hit {
                                      << "Vector: " << arg1.needs_relin() << ", Matrix: " << arg2.needs_relin());
             }
 
-            // parallel_for(arg1.num_cts(), i) {
-            //     eval.multiply_inplace(arg1[i], arg2[i]);
-            // };
             parallel_for(arg1.num_cts(), [&](int i) { eval.multiply_inplace(arg1[i], arg2[i]); });
         }
 

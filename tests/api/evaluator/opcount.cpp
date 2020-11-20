@@ -15,7 +15,7 @@ const int RANGE = 16;
 const int NUM_OF_SLOTS = 4096;
 
 TEST(OpcountTest, BasicFlow) {
-    OpCount ckks_instance = OpCount();
+    OpCount ckks_instance = OpCount(NUM_OF_SLOTS);
     vector<double> vector_input = random_vector(NUM_OF_SLOTS, RANGE);
     CKKSCiphertext ciphertext = ckks_instance.encrypt(vector_input);
     ckks_instance.square_inplace(ciphertext);
