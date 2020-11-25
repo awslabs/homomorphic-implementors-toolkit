@@ -822,11 +822,11 @@ namespace hit {
         // input is encoded with an m-by-n unit where we require m <= n
         EncodingUnit unit = enc_mat.encoding_unit();
         if (unit.encoding_height() > unit.encoding_width()) {
-            LOG_AND_THROW_STREAM("Input to logical_transpose has invalid " + dim_string(unit));
+            LOG_AND_THROW_STREAM("Input to logical_transpose(EncryptedMatrix) has invalid " + dim_string(unit));
         }
         // enc_mat is f-by-g, we require f,g <= m
         if (enc_mat.height() > unit.encoding_height() || enc_mat.width() > unit.encoding_height()) {
-            LOG_AND_THROW_STREAM("Input to logical_transpose does not have valid dimensions: The "
+            LOG_AND_THROW_STREAM("Input to logical_transpose(EncryptedMatrix) does not have valid dimensions: The "
                                  << enc_mat.width() << "-by-" << enc_mat.width() << " input must fit into a single "
                                  << unit.encoding_width() << "-by-" << unit.encoding_height() << " unit and a single "
                                  << unit.encoding_height() << "-by-" << unit.encoding_width() << " unit");
@@ -840,11 +840,11 @@ namespace hit {
         // input is encoded with an n-by-m unit where we require m <= n
         EncodingUnit unit = enc_vec.encoding_unit();
         if (unit.encoding_width() > unit.encoding_height()) {
-            LOG_AND_THROW_STREAM("Input to logical_transpose has invalid " + dim_string(unit));
+            LOG_AND_THROW_STREAM("Input to logical_transpose(EncryptedColVector) has invalid " + dim_string(unit));
         }
         // enc_vec is g-dimensional, we require g <= m
         if (enc_vec.height() > unit.encoding_width()) {
-            LOG_AND_THROW_STREAM("Input to logical_transpose does not have valid dimensions: The vector dimension ("
+            LOG_AND_THROW_STREAM("Input to logical_transpose(EncryptedColVector) does not have valid dimensions: The vector dimension ("
                                  << enc_vec.height() << ") must be no larger than the encoding unit width ("
                                  << unit.encoding_width() << ")");
         }
