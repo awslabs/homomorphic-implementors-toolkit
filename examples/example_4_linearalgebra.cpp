@@ -11,7 +11,7 @@ using namespace hit;
 extern vector<double> random_vector(int dim, double maxNorm);
 
 /* This example explores HIT's API for linear algebra operations
- * on encrypted data. This API is an implementation of <TODO link to paper>.
+ * on encrypted data. This API is an implementation of https://eprint.iacr.org/2020/1483.
  * This example explains the concepts behind algorithm to encode linear algebra
  * objects (like vectors and matrices) into CKKS ciphertexts, and demonstrates
  * how to use this API.

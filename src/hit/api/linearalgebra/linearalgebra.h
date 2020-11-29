@@ -26,8 +26,8 @@
  *
  * A fundamental concept is the `EncodingUnit`, which is a two-dimensional tile used for encoding objects. To encode
  * a matrix, we tile encoding units over the matrix, and pad the edges with 0s. Encoding vectors is similar, except
- * we have a list of encoding units which encode a vector, rather than a grid of encoding units. See the paper for
- * more details.
+ * we have a list of encoding units which encode a vector, rather than a grid of encoding units. See
+ * https://eprint.iacr.org/2020/1483 for more details.
  */
 
 /* Intended usage is:
