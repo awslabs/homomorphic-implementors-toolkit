@@ -44,12 +44,12 @@ namespace hit {
                                  << log_scale_ << " bits require more than " << num_slots << " plaintext slots.");
         }
 
-        EncryptionParameters params = EncryptionParameters(scheme_type::CKKS);
+        EncryptionParameters params = EncryptionParameters(scheme_type::ckks);
         params.set_poly_modulus_degree(poly_modulus_degree);
         params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulusVector));
 
         // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-        context = SEALContext::Create(params, true, sec_level_type::none);
+        context = make_unique<SEALContext>(params, true, sec_level_type::none);
 
         // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;

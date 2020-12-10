@@ -58,24 +58,24 @@ namespace hit {
                                  << "Parameters for depth " << multiplicative_depth << " circuits and scale "
                                  << log_scale << " bits require more than " << num_slots << " plaintext slots.");
         }
-        EncryptionParameters params = EncryptionParameters(scheme_type::CKKS);
+        EncryptionParameters params = EncryptionParameters(scheme_type::ckks);
         params.set_poly_modulus_degree(poly_modulus_degree);
         params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulusVector));
         timepoint start = chrono::steady_clock::now();
         if (use_seal_params) {
-            context = SEALContext::Create(params);
+            context = make_unique<SEALContext>(params);
             print_elapsed_time(start, "Creating encryption context...");
             standard_params_ = true;
         } else {
             LOG(WARNING) << "YOU ARE NOT USING SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security"
                          << "DO NOT USE IN PRODUCTION";
             // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-            context = SEALContext::Create(params, true, sec_level_type::none);
+            context = make_unique<SEALContext>(params, true, sec_level_type::none);
             print_elapsed_time(start, "Creating encryption context...");
             standard_params_ = false;
         }
-        encoder = new CKKSEncoder(context);
-        seal_evaluator = new Evaluator(context);
+        encoder = new CKKSEncoder(*context);
+        seal_evaluator = new Evaluator(*context);
 
         int num_galois_keys = galois_steps.size();
         VLOG(VLOG_VERBOSE) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth
@@ -103,21 +103,21 @@ namespace hit {
         // generate keys
         // This call generates a KeyGenerator with fresh randomness
         // The KeyGenerator object contains deterministic keys.
-        KeyGenerator keygen(context);
+        KeyGenerator keygen(*context);
         sk = keygen.secret_key();
-        pk = keygen.public_key();
+        keygen.create_public_key(pk);
         if (num_galois_keys > 0) {
-            galois_keys = keygen.galois_keys_local(galois_steps);
+            keygen.create_galois_keys(galois_steps, galois_keys);
         } else {
             // generate all galois keys
-            galois_keys = keygen.galois_keys_local();
+            keygen.create_galois_keys(galois_keys);
         }
-        relin_keys = keygen.relin_keys_local();
+        keygen.create_relin_keys(relin_keys);
 
         print_elapsed_time(start, "Generating keys...");
 
-        seal_encryptor = new Encryptor(context, pk);
-        seal_decryptor = new Decryptor(context, sk);
+        seal_encryptor = new Encryptor(*context, pk);
+        seal_decryptor = new Decryptor(*context, sk);
     }
 
     HomomorphicEval::~HomomorphicEval() {
@@ -175,28 +175,28 @@ namespace hit {
             }
         }
 
-        EncryptionParameters params = EncryptionParameters(scheme_type::CKKS);
+        EncryptionParameters params = EncryptionParameters(scheme_type::ckks);
         params.set_poly_modulus_degree(poly_modulus_degree);
         params.set_coeff_modulus(modulus_vector);
 
         standard_params_ = ckks_params.standardparams();
         timepoint start = chrono::steady_clock::now();
         if (standard_params_) {
-            context = SEALContext::Create(params);
+            context = make_unique<SEALContext>(params);
             print_elapsed_time(start, "Creating encryption context...");
         } else {
             LOG(WARNING) << "YOU ARE NOT USING SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security."
                          << " DO NOT USE IN PRODUCTION";
             // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-            context = SEALContext::Create(params, true, sec_level_type::none);
+            context = make_unique<SEALContext>(params, true, sec_level_type::none);
             print_elapsed_time(start, "Creating encryption context...");
         }
-        seal_evaluator = new Evaluator(context);
-        encoder = new CKKSEncoder(context);
+        seal_evaluator = new Evaluator(*context);
+        encoder = new CKKSEncoder(*context);
 
         istringstream pkstream(ckks_params.pubkey());
-        pk.load(context, pkstream);
-        seal_encryptor = new Encryptor(context, pk);
+        pk.load(*context, pkstream);
+        seal_encryptor = new Encryptor(*context, pk);
     }
 
     /* An evaluation instance */
@@ -204,8 +204,8 @@ namespace hit {
         deserialize_common(params_stream);
 
         timepoint start = chrono::steady_clock::now();
-        galois_keys.load(context, galois_key_stream);
-        relin_keys.load(context, relin_key_stream);
+        galois_keys.load(*context, galois_key_stream);
+        relin_keys.load(*context, relin_key_stream);
         print_elapsed_time(start, "Reading keys...");
     }
 
@@ -215,11 +215,11 @@ namespace hit {
         deserialize_common(params_stream);
 
         timepoint start = chrono::steady_clock::now();
-        sk.load(context, secret_key_stream);
-        galois_keys.load(context, galois_key_stream);
-        relin_keys.load(context, relin_key_stream);
+        sk.load(*context, secret_key_stream);
+        galois_keys.load(*context, galois_key_stream);
+        relin_keys.load(*context, relin_key_stream);
         print_elapsed_time(start, "Reading keys...");
-        seal_decryptor = new Decryptor(context, sk);
+        seal_decryptor = new Decryptor(*context, sk);
     }
 
     void HomomorphicEval::save(ostream &params_stream, ostream &galois_key_stream, ostream &relin_key_stream,

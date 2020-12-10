@@ -34,7 +34,7 @@ namespace hit {
 
         if (proto_ct.has_seal_ct()) {
             istringstream ctstream(proto_ct.seal_ct());
-            seal_ct.load(context, ctstream);
+            seal_ct.load(*context, ctstream);
         }
     }
 
