@@ -62,7 +62,7 @@ namespace hit {
         /*
         For the BFV scheme print the plain_modulus parameter.
         */
-        if (context_data.parms().scheme() == scheme_type::BFV) {
+        if (context_data.parms().scheme() == scheme_type::bfv) {
             VLOG(VLOG_VERBOSE) << "|   plain_modulus: " << context_data.parms().plain_modulus().value();
         }
 

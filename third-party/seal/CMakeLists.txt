@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.12)
 
 message(STATUS "Downloading Microsoft SEAL in ${CMAKE_CURRENT_LIST_DIR}.")
 
-project(SEAL_DOWNLOAD VERSION 3.5.9)
+project(SEAL_DOWNLOAD VERSION 3.6.1)
 
 include(ExternalProject)
 ExternalProject_Add(EP_SEAL
