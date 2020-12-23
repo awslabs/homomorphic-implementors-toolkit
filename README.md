@@ -1,6 +1,6 @@
 # Homomorphic Implementor's Toolkit
 
-HIT provides tools to simplify the process of designing homomorphic circuits for the CKKS homomorphic encryption scheme.
+HIT provides tools to simplify the process of designing homomorphic circuits for the CKKS homomorphic encryption scheme. This library is intended to further research in homomorphic encryption. Users must be aware of the security issues surrounding the deployment of CKKS homomorphic encryption; see SECURITY.md for details.
 
 #### Build Status:
 * Ubuntu 18.04 GCC 9 ![Build Status](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiS0plc1RnWDFBLzBuSm1DV0J3S2RxenF5ek9XUkYwNWxodkVqSkMrbEdwUnpXQlpOME5BakN6djRnblJlWm92K3NORXZZV1dPOGdVRVIzNVB1UUVLWmtVPSIsIml2UGFyYW1ldGVyU3BlYyI6IkM2a0VPc0xsRmRHQ0hBVDIiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)
@@ -127,6 +127,19 @@ ninja run_hit_example
 
 ### Examples
 We recommend reading through the detailed [examples](/examples) which demonstrate how to use the features described above. For those unfamiliar with homomorphic encryption topics, we also recommend reading through the [SEAL examples](https://github.com/microsoft/SEAL/tree/master/native/examples).
+
+## Citing HIT
+Please use the following BibTeX entry to cite HIT:
+```
+@misc{aws-hit,
+    title = {Homomorphic Implementor's Toolkit},
+    howpublished = {\url{https://github.com/awslabs/homomorphic-implementors-toolkit}},
+    month = dec,
+    year = 2020,
+    note = {Amazon Web Services},
+    key = {HIT}
+}
+```
 
 ## Contributing Changes
 [CONTRIBUTING.md](/CONTRIBUTING.md) has details on how to contribute to this project.
