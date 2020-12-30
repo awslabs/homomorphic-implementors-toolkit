@@ -13,7 +13,8 @@ using namespace std;
 using namespace seal;
 namespace hit {
 
-    OpCount::OpCount(int num_slots): num_slots_(num_slots) { }
+    OpCount::OpCount(int num_slots) : num_slots_(num_slots) {
+    }
 
     CKKSCiphertext OpCount::encrypt(const vector<double> &coeffs) {
         return encrypt(coeffs, -1);

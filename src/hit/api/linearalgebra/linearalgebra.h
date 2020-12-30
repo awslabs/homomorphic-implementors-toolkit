@@ -560,8 +560,8 @@ namespace hit {
          * Output Ciphertext Properties:
          *       A linear ciphertext with a squared scale at level i-2.
          */
-        EncryptedMatrix multiply_row_major_mixed_unit(const EncryptedMatrix &enc_mat_a_trans, const EncryptedMatrix &enc_mat_b,
-                                                      double scalar = 1);
+        EncryptedMatrix multiply_row_major_mixed_unit(const EncryptedMatrix &enc_mat_a_trans,
+                                                      const EncryptedMatrix &enc_mat_b, double scalar = 1);
 
         /******************************************
          * Non-standard Linear Algebra Operations *
@@ -1090,8 +1090,7 @@ namespace hit {
         std::string dim_string(const T &arg);
 
         // helper function for validating inputs to matrix-matrix multiplication
-        void matrix_multiply_validation(const EncryptedMatrix &enc_mat_a,
-                                        const EncryptedMatrix &enc_mat_b,
+        void matrix_multiply_validation(const EncryptedMatrix &enc_mat_a, const EncryptedMatrix &enc_mat_b,
                                         const std::string &api);
 
         /* Algorithm 3 in HHCP'18; see the paper for details.
@@ -1149,10 +1148,10 @@ namespace hit {
                                                             const EncryptedMatrix &enc_mat_b_trans, double scalar,
                                                             int k);
 
-        // common core for matrix/matrix multiplication; used by both multiply_row_major and multiply_row_major_mixed_unit
-        EncryptedMatrix multiply_common(const EncryptedMatrix &enc_mat_a_trans,
-                                        const EncryptedMatrix &enc_mat_b, double scalar,
-                                        bool transpose_unit);
+        // common core for matrix/matrix multiplication; used by both multiply_row_major and
+        // multiply_row_major_mixed_unit
+        EncryptedMatrix multiply_common(const EncryptedMatrix &enc_mat_a_trans, const EncryptedMatrix &enc_mat_b,
+                                        double scalar, bool transpose_unit);
 
         // helper function for multiply_row_major which extracts a single row of A given the encoding of A^T
         EncryptedRowVector extract_row(const EncryptedMatrix &enc_mat_a_trans, int row);

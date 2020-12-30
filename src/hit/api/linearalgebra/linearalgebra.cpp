@@ -328,7 +328,8 @@ namespace hit {
         }
     }
 
-    EncryptedColVector LinearAlgebra::multiply_mixed_unit(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat) {
+    EncryptedColVector LinearAlgebra::multiply_mixed_unit(const EncryptedRowVector &enc_vec,
+                                                          const EncryptedMatrix &enc_mat) {
         // inputs are encoded with an m-by-n unit where we require m <= n
         EncodingUnit unit = enc_vec.encoding_unit();
         if (unit.encoding_height() > unit.encoding_width()) {
@@ -338,7 +339,8 @@ namespace hit {
         if (enc_mat.width() > unit.encoding_height()) {
             LOG_AND_THROW_STREAM("Input to multiply_mixed_unit does not have valid dimensions: Matrix width "
                                  << enc_mat.width() << " must be smaller than the smallest "
-                                 << "encoding unit dimension. Unit is " << unit.encoding_height() << "-by-" << unit.encoding_width());
+                                 << "encoding unit dimension. Unit is " << unit.encoding_height() << "-by-"
+                                 << unit.encoding_width());
         }
         // additional input validation by hadamard_multiply
         EncryptedMatrix hadmard_prod = hadamard_multiply(enc_vec, enc_mat);
@@ -349,8 +351,8 @@ namespace hit {
         return EncryptedColVector(hadmard_prod.width(), hadmard_prod.encoding_unit().transpose(), cts);
     }
 
-    EncryptedRowVector LinearAlgebra::multiply_mixed_unit(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec,
-                                                          double scalar) {
+    EncryptedRowVector LinearAlgebra::multiply_mixed_unit(const EncryptedMatrix &enc_mat,
+                                                          const EncryptedColVector &enc_vec, double scalar) {
         // inputs are validated by calls to `transpose_unit` and `multiply`
         EncryptedColVector enc_vec_transpose = transpose_unit(enc_vec);
         return multiply(enc_mat, enc_vec_transpose, scalar);
@@ -644,8 +646,7 @@ namespace hit {
         return kth_row_A_times_B;
     }
 
-    void LinearAlgebra::matrix_multiply_validation(const EncryptedMatrix &enc_mat_a,
-                                                   const EncryptedMatrix &enc_mat_b,
+    void LinearAlgebra::matrix_multiply_validation(const EncryptedMatrix &enc_mat_a, const EncryptedMatrix &enc_mat_b,
                                                    const string &api) {
         TRY_AND_THROW_STREAM(enc_mat_a.validate(),
                              "The enc_mat_a argument to " + api + " is invalid; has it been initialized?");
@@ -724,8 +725,8 @@ namespace hit {
 
     // common core for matrix/matrix multiplication; used by both multiply and multiply_unit_transpose
     EncryptedMatrix LinearAlgebra::multiply_common(const EncryptedMatrix &enc_mat_a_trans,
-                                                              const EncryptedMatrix &enc_mat_b, double scalar,
-                                                              bool transpose_unit) {
+                                                   const EncryptedMatrix &enc_mat_b, double scalar,
+                                                   bool transpose_unit) {
         // This function requires b to be at one level below enc_mat_a_trans.
 
         // we will iterate over all columns of A^T (rows of A)
@@ -790,8 +791,9 @@ namespace hit {
                                                                  const EncryptedMatrix &enc_mat_b, double scalar) {
         matrix_multiply_validation(enc_mat_a_trans, enc_mat_b, "multiply_row_major_mixed_unit");
         if (enc_mat_a_trans.he_level() != enc_mat_b.he_level() + 1) {
-            LOG_AND_THROW_STREAM("Second argument to multiply_row_major_mixed_unit must be one level below first argument: "
-                                 << enc_mat_a_trans.he_level() << "!=" << enc_mat_b.he_level() << "+1");
+            LOG_AND_THROW_STREAM(
+                "Second argument to multiply_row_major_mixed_unit must be one level below first argument: "
+                << enc_mat_a_trans.he_level() << "!=" << enc_mat_b.he_level() << "+1");
         }
         if (enc_mat_a_trans.height() != enc_mat_b.height()) {
             LOG_AND_THROW_STREAM("Inputs to multiply_row_major_mixed_unit do not have compatible dimensions: "
@@ -800,14 +802,16 @@ namespace hit {
         // inputs are encoded with an n-by-m unit where we require m <= n
         EncodingUnit unit = enc_mat_a_trans.encoding_unit();
         if (unit.encoding_width() > unit.encoding_height()) {
-            LOG_AND_THROW_STREAM("Inputs to multiply_row_major_mixed_unit are encoded with an invalid " + dim_string(unit));
+            LOG_AND_THROW_STREAM("Inputs to multiply_row_major_mixed_unit are encoded with an invalid " +
+                                 dim_string(unit));
         }
         // A^T is g-by-f, B is g-by-h; we require f,h <= m
         if (enc_mat_a_trans.width() > unit.encoding_width() || enc_mat_b.width() > unit.encoding_width()) {
             LOG_AND_THROW_STREAM("Inputs to multiply_row_major_mixed_unit do not have valid dimensions: The "
-                                 << enc_mat_a_trans.width() << "-by-" << enc_mat_b.width() << " output must fit into a single "
-                                 << unit.encoding_width() << "-by-" << unit.encoding_height() << " unit and a single "
-                                 << unit.encoding_height() << "-by-" << unit.encoding_width() << " unit");
+                                 << enc_mat_a_trans.width() << "-by-" << enc_mat_b.width()
+                                 << " output must fit into a single " << unit.encoding_width() << "-by-"
+                                 << unit.encoding_height() << " unit and a single " << unit.encoding_height() << "-by-"
+                                 << unit.encoding_width() << " unit");
         }
 
         // Multiply each row of A by the matrix B. The result is a list of EncryptedColVectors, each with a single
@@ -816,7 +820,6 @@ namespace hit {
     }
 
     void LinearAlgebra::transpose_unit_inplace(EncryptedMatrix &enc_mat) {
-
         TRY_AND_THROW_STREAM(enc_mat.validate(),
                              "The enc_mat argument to transpose_unit is invalid; has it been initialized?");
         // input is encoded with an m-by-n unit where we require m <= n
@@ -844,9 +847,10 @@ namespace hit {
         }
         // enc_vec is g-dimensional, we require g <= m
         if (enc_vec.height() > unit.encoding_width()) {
-            LOG_AND_THROW_STREAM("Input to logical_transpose(EncryptedColVector) does not have valid dimensions: The vector dimension ("
-                                 << enc_vec.height() << ") must be no larger than the encoding unit width ("
-                                 << unit.encoding_width() << ")");
+            LOG_AND_THROW_STREAM(
+                "Input to logical_transpose(EncryptedColVector) does not have valid dimensions: The vector dimension ("
+                << enc_vec.height() << ") must be no larger than the encoding unit width (" << unit.encoding_width()
+                << ")");
         }
         enc_vec.unit = enc_vec.unit.transpose();
     }
@@ -1045,8 +1049,7 @@ namespace hit {
         CKKSCiphertext output = eval.add_many(col_prods);
         if (transpose_unit) {
             rot(output, enc_mat.encoding_unit().encoding_width(), enc_mat.encoding_unit().encoding_height(), true);
-        }
-        else {
+        } else {
             rot(output, enc_mat.encoding_unit().encoding_height(), enc_mat.encoding_unit().encoding_width(), true);
         }
         return output;
