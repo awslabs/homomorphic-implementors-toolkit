@@ -13,6 +13,7 @@ list(APPEND HIT_TEST_FILES "testutil.cpp")
 add_executable(hit-unit-tests ${HIT_TEST_FILES})
 
 target_link_libraries(hit-unit-tests PRIVATE aws-hit ${gtest_LIBRARIES})
+target_include_directories(hit-unit-tests PRIVATE ${3P_INSTALL_DIR}/include)
 set_common_flags(hit-unit-tests)
 
 add_custom_target(NAME hit-unit-tests COMMAND hit-unit-tests)
