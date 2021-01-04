@@ -820,7 +820,6 @@ namespace hit {
     }
 
     void LinearAlgebra::transpose_unit_inplace(EncryptedMatrix &enc_mat) {
-
         TRY_AND_THROW_STREAM(enc_mat.validate(),
                              "The enc_mat argument to transpose_unit is invalid; has it been initialized?");
         // input is encoded with an m-by-n unit where we require m <= n
