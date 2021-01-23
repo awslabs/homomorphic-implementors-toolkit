@@ -85,7 +85,7 @@ namespace hit {
         // we instead fuzz the norm test: if the expected vector norm is "small enough"
         // we skip the comparison altogether. The magic constant below seems to work
         // well in practice.
-        int log_norm_limit = 11;
+        int log_norm_limit = 12;
         double max_allowed_l2_norm = pow(2, -log_norm_limit);
         if (expected_l2_norm <= max_allowed_l2_norm && actual_l2_norm <= max_allowed_l2_norm) {
             return -1;
