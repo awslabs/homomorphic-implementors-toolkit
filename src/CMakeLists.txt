@@ -8,6 +8,11 @@ add_library(aws_hit_obj OBJECT)
 # generated prior to compiling aws_hit_obj, which imports the generated headers
 add_dependencies(aws_hit_obj aws_hit_proto)
 
+# Disable parallelism in debug mode for easier debugging, especially with GDB
+if (CMAKE_BUILD_TYPE EQUAL "DEBUG")
+    target_compile_options(aws_hit_obj PRIVATE -DDISABLE_PARALLELISM)
+endif ()
+
 # Add source files to library and header files to install
 add_subdirectory(hit)
 
