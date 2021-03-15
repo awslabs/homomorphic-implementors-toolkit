@@ -116,7 +116,7 @@ namespace hit {
         delete seal_decryptor;
     }
 
-    void HomomorphicEval::makeSealCtxt(EncryptionParameters params, timepoint start) {
+    void HomomorphicEval::makeSealCtxt(const seal::EncryptionParameters &params, const timepoint &start) {
         if (standard_params_) {
             context = make_unique<SEALContext>(params);
             print_elapsed_time(start, "Creating encryption context...");
