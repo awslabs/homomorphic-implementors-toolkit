@@ -20,6 +20,9 @@ namespace hit {
     void EncryptedColVector::read_from_proto(const shared_ptr<SEALContext> &context,
                                              const protobuf::EncryptedColVector &encrypted_col_vector) {
         height_ = encrypted_col_vector.height();
+        if (height_ == 0) {
+            return;
+        }
         unit = EncodingUnit(encrypted_col_vector.unit());
         cts.reserve(encrypted_col_vector.cts().cts_size());
         deserialize_vector(context, encrypted_col_vector.cts(), cts);
