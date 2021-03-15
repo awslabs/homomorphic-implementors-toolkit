@@ -22,6 +22,8 @@ namespace hit {
                                           const protobuf::EncryptedMatrix &encrypted_matrix) {
         height_ = encrypted_matrix.height();
         width_ = encrypted_matrix.width();
+        // if height and width are 0, this object is uninitialized. Don't call validate() (or create a unit):
+        // both will fail. Just return an uninitailzed object.
         if (height_ == 0 && width_ == 0) {
             return;
         }

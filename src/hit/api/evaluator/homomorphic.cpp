@@ -119,14 +119,13 @@ namespace hit {
     void HomomorphicEval::makeSealCtxt(const seal::EncryptionParameters &params, const timepoint &start) {
         if (standard_params_) {
             context = make_unique<SEALContext>(params);
-            print_elapsed_time(start, "Creating encryption context...");
         } else {
             LOG(WARNING) << "YOU ARE NOT USING STANDARD SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security"
                          << "DO NOT USE IN PRODUCTION";
             // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
             context = make_unique<SEALContext>(params, true, sec_level_type::none);
-            print_elapsed_time(start, "Creating encryption context...");
         }
+        print_elapsed_time(start, "Creating encryption context...");
     }
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {

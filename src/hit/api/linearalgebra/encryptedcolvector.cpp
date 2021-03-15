@@ -20,6 +20,8 @@ namespace hit {
     void EncryptedColVector::read_from_proto(const shared_ptr<SEALContext> &context,
                                              const protobuf::EncryptedColVector &encrypted_col_vector) {
         height_ = encrypted_col_vector.height();
+        // if height is 0, this object is uninitialized. Don't call validate() (or create a unit):
+        // both will fail. Just return an uninitailzed object.
         if (height_ == 0) {
             return;
         }
