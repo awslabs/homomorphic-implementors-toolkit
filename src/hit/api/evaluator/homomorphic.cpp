@@ -11,7 +11,6 @@
 
 #include <future>
 
-#include "../../common.h"
 #include "../../sealutils.h"
 #include "hit/protobuf/ckksparams.pb.h"
 
@@ -62,20 +61,10 @@ namespace hit {
         params.set_poly_modulus_degree(poly_modulus_degree);
         params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulusVector));
         timepoint start = chrono::steady_clock::now();
-        if (use_seal_params) {
-            context = make_unique<SEALContext>(params);
-            print_elapsed_time(start, "Creating encryption context...");
-            standard_params_ = true;
-        } else {
-            LOG(WARNING) << "YOU ARE NOT USING SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security"
-                         << "DO NOT USE IN PRODUCTION";
-            // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-            context = make_unique<SEALContext>(params, true, sec_level_type::none);
-            print_elapsed_time(start, "Creating encryption context...");
-            standard_params_ = false;
-        }
-        encoder = new CKKSEncoder(*context);
+        standard_params_ = use_seal_params;
+        makeSealCtxt(params, start);
         seal_evaluator = new Evaluator(*context);
+        encoder = new CKKSEncoder(*context);
 
         int num_galois_keys = galois_steps.size();
         VLOG(VLOG_VERBOSE) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth
@@ -125,6 +114,18 @@ namespace hit {
         delete seal_evaluator;
         delete seal_encryptor;
         delete seal_decryptor;
+    }
+
+    void HomomorphicEval::makeSealCtxt(const seal::EncryptionParameters &params, const timepoint &start) {
+        if (standard_params_) {
+            context = make_unique<SEALContext>(params);
+        } else {
+            LOG(WARNING) << "YOU ARE NOT USING STANDARD SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security"
+                         << "DO NOT USE IN PRODUCTION";
+            // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
+            context = make_unique<SEALContext>(params, true, sec_level_type::none);
+        }
+        print_elapsed_time(start, "Creating encryption context...");
     }
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {
@@ -181,16 +182,7 @@ namespace hit {
 
         standard_params_ = ckks_params.standardparams();
         timepoint start = chrono::steady_clock::now();
-        if (standard_params_) {
-            context = make_unique<SEALContext>(params);
-            print_elapsed_time(start, "Creating encryption context...");
-        } else {
-            LOG(WARNING) << "YOU ARE NOT USING SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security."
-                         << " DO NOT USE IN PRODUCTION";
-            // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-            context = make_unique<SEALContext>(params, true, sec_level_type::none);
-            print_elapsed_time(start, "Creating encryption context...");
-        }
+        makeSealCtxt(params, start);
         seal_evaluator = new Evaluator(*context);
         encoder = new CKKSEncoder(*context);
 

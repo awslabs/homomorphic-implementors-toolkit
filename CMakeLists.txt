@@ -15,7 +15,7 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug" "MinSizeRel" "RelWithDebInfo")
 endif ()
-message(STATUS "Build type (CMAKE_BUILD_TYPE): ${CMAKE_BUILD_TYPE}")
+message(STATUS "HIT Build type (CMAKE_BUILD_TYPE): ${CMAKE_BUILD_TYPE}")
 
 #########
 # Paths #

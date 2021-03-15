@@ -22,8 +22,12 @@ namespace hit {
                                           const protobuf::EncryptedMatrix &encrypted_matrix) {
         height_ = encrypted_matrix.height();
         width_ = encrypted_matrix.width();
+        // if height and width are 0, this object is uninitialized. Don't call validate() (or create a unit):
+        // both will fail. Just return an uninitailzed object.
+        if (height_ == 0 && width_ == 0) {
+            return;
+        }
         unit = EncodingUnit(encrypted_matrix.unit());
-
         cts.reserve(encrypted_matrix.cts_size());
         for (int i = 0; i < encrypted_matrix.cts_size(); i++) {
             const protobuf::CiphertextVector &proto_ciphertext_vector = encrypted_matrix.cts(i);
