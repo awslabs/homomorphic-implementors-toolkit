@@ -15,6 +15,5 @@ target_link_libraries(hit-examples aws-hit glog::glog)
 add_custom_target(
   run_hit_examples
   COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/hit-examples
-  WORKING_DIRECTORY ${HELR_ROOT_DIR}
   DEPENDS hit-examples
   USES_TERMINAL)

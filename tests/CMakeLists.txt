@@ -21,6 +21,5 @@ add_custom_target(NAME hit-unit-tests COMMAND hit-unit-tests)
 add_custom_target(
   run_hit_tests
   COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/hit-unit-tests
-  WORKING_DIRECTORY ${HELR_ROOT_DIR}
   DEPENDS hit-unit-tests
   USES_TERMINAL)
