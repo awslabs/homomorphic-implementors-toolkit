@@ -103,7 +103,7 @@ namespace hit {
         }
         keygen.create_relin_keys(relin_keys);
 
-        print_elapsed_time(start, "Generating keys...");
+        log_elapsed_time(start, "Generating keys...");
 
         seal_encryptor = new Encryptor(*context, pk);
         seal_decryptor = new Decryptor(*context, sk);
@@ -125,7 +125,7 @@ namespace hit {
             // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
             context = make_unique<SEALContext>(params, true, sec_level_type::none);
         }
-        print_elapsed_time(start, "Creating encryption context...");
+        log_elapsed_time(start, "Creating encryption context...");
     }
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {
@@ -198,7 +198,7 @@ namespace hit {
         timepoint start = chrono::steady_clock::now();
         galois_keys.load(*context, galois_key_stream);
         relin_keys.load(*context, relin_key_stream);
-        print_elapsed_time(start, "Reading keys...");
+        log_elapsed_time(start, "Reading keys...");
     }
 
     /* A full instance */
@@ -210,7 +210,7 @@ namespace hit {
         sk.load(*context, secret_key_stream);
         galois_keys.load(*context, galois_key_stream);
         relin_keys.load(*context, relin_key_stream);
-        print_elapsed_time(start, "Reading keys...");
+        log_elapsed_time(start, "Reading keys...");
         seal_decryptor = new Decryptor(*context, sk);
     }
 
