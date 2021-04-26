@@ -5,8 +5,6 @@
 
 #include "hit/protobuf/ciphertext.pb.h"
 #include "metadata.h"
-#include "seal/context.h"
-#include "seal/seal.h"
 
 namespace hit {
     /* This is a wrapper around the SEAL `Ciphertext` type.

@@ -5,6 +5,8 @@
 
 #include "../ciphertext.h"
 #include "../evaluator.h"
+#include "seal/context.h"
+#include "seal/seal.h"
 #include "../../common.h"
 
 namespace hit {
@@ -64,7 +66,7 @@ namespace hit {
         std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
         std::vector<double> decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const override;
 
-        // std::shared_ptr<seal::SEALContext> context;
+        std::shared_ptr<seal::SEALContext> context;
 
         int num_slots() const override;
 
@@ -89,7 +91,8 @@ namespace hit {
 
         void multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
 
-        /* WARNING: This function is not constant time in the scalar argument. */
+        /* WARNING: Multiplying by 0 results in non-constant time behavior! Only multiply by 0 if the scalar is truly
+         * public. */
         void multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) override;
 
         void multiply_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain) override;

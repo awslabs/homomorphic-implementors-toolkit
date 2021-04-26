@@ -73,10 +73,10 @@ include(enable-clang-tidy)
 # so if Boost is not installed on the system, we just extract the headers.
 
 find_package(BoostLib REQUIRED)
-find_package(SealLib REQUIRED)
 find_package(ProtobufLib REQUIRED)
 find_package(GlogLib REQUIRED)
 find_package(TbbLib REQUIRED)
+find_package(LatticppLib REQUIRED)
 
 #####################
 # Compile Protobufs #
@@ -122,7 +122,7 @@ target_include_directories(aws-hit
 set_common_flags(aws-hit)
 
 # Link dependencies
-target_link_libraries(aws-hit PUBLIC SEAL::seal glog::glog ${Protobuf_LIBRARIES} ${TBB_IMPORTED_TARGETS})
+target_link_libraries(aws-hit PUBLIC aws-lattigo-cpp glog::glog ${Protobuf_LIBRARIES} ${TBB_IMPORTED_TARGETS})
 
 install(TARGETS aws-hit EXPORT HITTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
