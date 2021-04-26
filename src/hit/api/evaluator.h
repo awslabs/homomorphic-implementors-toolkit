@@ -7,8 +7,6 @@
 #include <shared_mutex>
 
 #include "ciphertext.h"
-#include "seal/context.h"
-#include "seal/seal.h"
 
 /* An abstract class with an evaluator API.
  * All evaluators should extend this class.

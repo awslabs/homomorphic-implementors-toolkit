@@ -64,7 +64,7 @@ namespace hit {
         std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
         std::vector<double> decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const override;
 
-        // std::shared_ptr<seal::SEALContext> context;
+        std::shared_ptr<LattigoCtxt> context;
 
         int num_slots() const override;
 
@@ -103,14 +103,14 @@ namespace hit {
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
        private:
-        seal::CKKSEncoder *encoder = nullptr;       // no default constructor
-        seal::Evaluator *seal_evaluator = nullptr;  // no default constructor
-        seal::Encryptor *seal_encryptor = nullptr;  // no default constructor
-        seal::Decryptor *seal_decryptor = nullptr;  // no default constructor
-        seal::PublicKey pk;
-        seal::SecretKey sk;
-        seal::GaloisKeys galois_keys;
-        seal::RelinKeys relin_keys;
+        latticpp::Encoder *encoder = nullptr;       // no default constructor
+        latticpp::Evaluator *seal_evaluator = nullptr;  // no default constructor
+        latticpp::Encryptor *seal_encryptor = nullptr;  // no default constructor
+        latticpp::Decryptor *seal_decryptor = nullptr;  // no default constructor
+        latticpp::PublicKey pk;
+        latticpp::SecretKey sk;
+        latticpp::GaloisKeys galois_keys;
+        latticpp::RelinKeys relin_keys;
         bool standard_params_;
 
         int log_scale_;
@@ -118,7 +118,7 @@ namespace hit {
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 
         void deserialize_common(std::istream &params_stream);
-        void makeSealCtxt(const seal::EncryptionParameters &params, const hit::timepoint &start);
+        // void makeSealCtxt(const seal::EncryptionParameters &params, const hit::timepoint &start);
 
         friend class DebugEval;
         friend class ScaleEstimator;

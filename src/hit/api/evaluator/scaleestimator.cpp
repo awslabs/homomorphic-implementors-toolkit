@@ -29,34 +29,34 @@ namespace hit {
                                  << "num_slots must be a power of 2, and at least 4096. Got " << num_slots);
         }
 
-        int num_primes = multiplicative_depth + 2;
-        vector<int> modulusVector = gen_modulus_vec(num_primes, log_scale_);
+        // int num_primes = multiplicative_depth + 2;
+        // vector<int> modulusVector = gen_modulus_vec(num_primes, log_scale_);
 
-        int modBits = 0;
-        for (const auto &bits : modulusVector) {
-            modBits += bits;
-        }
-        int min_poly_degree = modulus_to_poly_degree(modBits);
-        int poly_modulus_degree = num_slots * 2;
-        if (poly_modulus_degree < min_poly_degree) {
-            LOG_AND_THROW_STREAM("Invalid parameters when creating ScaleEstimator instance: "
-                                 << "Parameters for depth " << multiplicative_depth << " circuits and scale "
-                                 << log_scale_ << " bits require more than " << num_slots << " plaintext slots.");
-        }
+        // int modBits = 0;
+        // for (const auto &bits : modulusVector) {
+        //     modBits += bits;
+        // }
+        // int min_poly_degree = modulus_to_poly_degree(modBits);
+        // int poly_modulus_degree = num_slots * 2;
+        // if (poly_modulus_degree < min_poly_degree) {
+        //     LOG_AND_THROW_STREAM("Invalid parameters when creating ScaleEstimator instance: "
+        //                          << "Parameters for depth " << multiplicative_depth << " circuits and scale "
+        //                          << log_scale_ << " bits require more than " << num_slots << " plaintext slots.");
+        // }
 
-        EncryptionParameters params = EncryptionParameters(scheme_type::ckks);
-        params.set_poly_modulus_degree(poly_modulus_degree);
-        params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulusVector));
+        // EncryptionParameters params = EncryptionParameters(scheme_type::ckks);
+        // params.set_poly_modulus_degree(poly_modulus_degree);
+        // params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulusVector));
 
-        // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-        context = make_unique<SEALContext>(params, true, sec_level_type::none);
+        // // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
+        // context = make_unique<SEALContext>(params, true, sec_level_type::none);
 
-        // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
-        estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
-        auto context_data = context->first_context_data();
-        for (const auto &prime : context_data->parms().coeff_modulus()) {
-            estimated_max_log_scale_ += log2(prime.value());
-        }
+        // // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
+        // estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
+        // auto context_data = context->first_context_data();
+        // for (const auto &prime : context_data->parms().coeff_modulus()) {
+        //     estimated_max_log_scale_ += log2(prime.value());
+        // }
     }
 
     ScaleEstimator::ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval)

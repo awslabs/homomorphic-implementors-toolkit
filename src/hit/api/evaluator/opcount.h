@@ -6,8 +6,6 @@
 #include "../ciphertext.h"
 #include "../evaluator.h"
 #include "depthfinder.h"
-#include "seal/context.h"
-#include "seal/seal.h"
 
 namespace hit {
 

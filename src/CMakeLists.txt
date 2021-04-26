@@ -32,4 +32,4 @@ target_include_directories(aws_hit_obj
 # https://stackoverflow.com/a/59220856/925978
 target_link_libraries(aws_hit_obj PRIVATE aws-lattigo-cpp glog::glog ${TBB_IMPORTED_TARGETS})
 
-# set_common_flags(aws_hit_obj)
+set_common_flags(aws_hit_obj)

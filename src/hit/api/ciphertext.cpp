@@ -13,7 +13,7 @@ using namespace seal;
 
 namespace hit {
 
-    void CKKSCiphertext::read_from_proto(const shared_ptr<SEALContext> &context, const protobuf::Ciphertext &proto_ct) {
+    void CKKSCiphertext::read_from_proto(const shared_ptr<LattigoCtxt> &context, const protobuf::Ciphertext &proto_ct) {
         initialized = proto_ct.initialized();
 
         // Users cannot specify an initial scale smaller than 2^MIN_LOG_SCALE
@@ -26,23 +26,23 @@ namespace hit {
         }
 
         he_level_ = proto_ct.he_level();
-        if (he_level_ < 0 || he_level_ > context->first_context_data()->chain_index()) {
-            LOG_AND_THROW_STREAM("Error deserializing ciphertext: he_level out of bounds.");
-        }
+        // if (he_level_ < 0 || he_level_ > context->first_context_data()->chain_index()) {
+        //     LOG_AND_THROW_STREAM("Error deserializing ciphertext: he_level out of bounds.");
+        // }
 
-        num_slots_ = context->first_context_data()->parms().poly_modulus_degree() / 2;
+        // num_slots_ = context->first_context_data()->parms().poly_modulus_degree() / 2;
 
-        if (proto_ct.has_seal_ct()) {
-            istringstream ctstream(proto_ct.seal_ct());
-            seal_ct.load(*context, ctstream);
-        }
+        // if (proto_ct.has_seal_ct()) {
+        //     istringstream ctstream(proto_ct.seal_ct());
+        //     seal_ct.load(*context, ctstream);
+        // }
     }
 
-    CKKSCiphertext::CKKSCiphertext(const shared_ptr<SEALContext> &context, const protobuf::Ciphertext &proto_ct) {
+    CKKSCiphertext::CKKSCiphertext(const shared_ptr<LattigoCtxt> &context, const protobuf::Ciphertext &proto_ct) {
         read_from_proto(context, proto_ct);
     }
 
-    CKKSCiphertext::CKKSCiphertext(const shared_ptr<SEALContext> &context, istream &stream) {
+    CKKSCiphertext::CKKSCiphertext(const shared_ptr<LattigoCtxt> &context, istream &stream) {
         protobuf::Ciphertext proto_ct;
         proto_ct.ParseFromIstream(&stream);
         read_from_proto(context, proto_ct);
@@ -62,11 +62,11 @@ namespace hit {
         proto_ct->set_he_level(he_level_);
 
         // if the seal_ct is initialized, serialize it
-        if (seal_ct.parms_id() != parms_id_zero) {
-            ostringstream sealctBuf;
-            seal_ct.save(sealctBuf);
-            proto_ct->set_seal_ct(sealctBuf.str());
-        }
+        // if (seal_ct.parms_id() != parms_id_zero) {
+        //     ostringstream sealctBuf;
+        //     seal_ct.save(sealctBuf);
+        //     proto_ct->set_seal_ct(sealctBuf.str());
+        // }
 
         return proto_ct;
     }

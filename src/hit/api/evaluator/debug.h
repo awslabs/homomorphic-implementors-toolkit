@@ -7,7 +7,6 @@
 #include "../evaluator.h"
 #include "homomorphic.h"
 #include "scaleestimator.h"
-#include "seal/seal.h"
 
 namespace hit {
 

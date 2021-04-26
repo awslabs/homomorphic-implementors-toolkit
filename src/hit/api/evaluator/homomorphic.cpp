@@ -116,7 +116,7 @@ namespace hit {
         // delete seal_decryptor;
     }
 
-    void HomomorphicEval::makeSealCtxt(const seal::EncryptionParameters &params, const timepoint &start) {
+    // void HomomorphicEval::makeSealCtxt(const seal::EncryptionParameters &params, const timepoint &start) {
         // if (standard_params_) {
         //     context = make_unique<SEALContext>(params);
         // } else {
@@ -126,7 +126,7 @@ namespace hit {
         //     context = make_unique<SEALContext>(params, true, sec_level_type::none);
         // }
         // log_elapsed_time(start, "Creating encryption context...");
-    }
+    // }
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {
         // protobuf::CKKSParams ckks_params;

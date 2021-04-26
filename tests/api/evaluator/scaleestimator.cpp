@@ -9,8 +9,6 @@
 #include "gtest/gtest.h"
 #include "hit/api/ciphertext.h"
 #include "hit/common.h"
-#include "hit/sealutils.h"
-#include "seal/seal.h"
 
 using namespace std;
 using namespace hit;

@@ -9,7 +9,6 @@
 #include <execution>
 
 using namespace std;
-using namespace seal;
 
 namespace hit {
     EncryptedMatrix::EncryptedMatrix(int height, int width, const EncodingUnit &unit,
@@ -18,7 +17,7 @@ namespace hit {
         validate();
     }
 
-    void EncryptedMatrix::read_from_proto(const shared_ptr<SEALContext> &context,
+    void EncryptedMatrix::read_from_proto(const shared_ptr<LattigoCtxt> &context,
                                           const protobuf::EncryptedMatrix &encrypted_matrix) {
         height_ = encrypted_matrix.height();
         width_ = encrypted_matrix.width();
@@ -39,12 +38,12 @@ namespace hit {
         validate();
     }
 
-    EncryptedMatrix::EncryptedMatrix(const shared_ptr<SEALContext> &context,
+    EncryptedMatrix::EncryptedMatrix(const shared_ptr<LattigoCtxt> &context,
                                      const protobuf::EncryptedMatrix &encrypted_matrix) {
         read_from_proto(context, encrypted_matrix);
     }
 
-    EncryptedMatrix::EncryptedMatrix(const shared_ptr<seal::SEALContext> &context, istream &stream) {
+    EncryptedMatrix::EncryptedMatrix(const shared_ptr<LattigoCtxt> &context, istream &stream) {
         protobuf::EncryptedMatrix proto_mat;
         proto_mat.ParseFromIstream(&stream);
         read_from_proto(context, proto_mat);

@@ -10,7 +10,7 @@
 #include "api/ciphertext.h"
 #include "hit/protobuf/ciphertext.pb.h"
 #include "hit/protobuf/ciphertext_vector.pb.h"
-#include "seal/seal.h"
+#include "hit/lattigoutils.h"
 
 #define VLOG_EVAL 1
 #define VLOG_VERBOSE 2
@@ -85,7 +85,7 @@ namespace hit {
         return proto_ciphertext_vector;
     }
 
-    inline void deserialize_vector(const std::shared_ptr<seal::SEALContext> &context,
+    inline void deserialize_vector(const std::shared_ptr<LattigoCtxt> &context,
                                    const protobuf::CiphertextVector &proto_ciphertext_vector,
                                    std::vector<CKKSCiphertext> &ciphertext_vector) {
         for (int i = 0; i < proto_ciphertext_vector.cts_size(); i++) {

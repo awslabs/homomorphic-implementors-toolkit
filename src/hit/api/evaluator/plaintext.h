@@ -5,8 +5,6 @@
 
 #include "../ciphertext.h"
 #include "../evaluator.h"
-#include "seal/context.h"
-#include "seal/seal.h"
 
 namespace hit {
     /* This evaluator tracks the plaintext computation */

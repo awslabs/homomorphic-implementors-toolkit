@@ -11,7 +11,6 @@
 #include "common.h"
 
 using namespace std;
-using namespace seal;
 
 namespace hit {
     EncryptedRowVector::EncryptedRowVector(int width, const EncodingUnit &unit, vector<CKKSCiphertext> &cts)
@@ -19,7 +18,7 @@ namespace hit {
         validate();
     }
 
-    void EncryptedRowVector::read_from_proto(const shared_ptr<SEALContext> &context,
+    void EncryptedRowVector::read_from_proto(const shared_ptr<LattigoCtxt> &context,
                                              const protobuf::EncryptedRowVector &encrypted_row_vector) {
         width_ = encrypted_row_vector.width();
         // if width is 0, this object is uninitialized. Don't call validate() (or create a unit):
@@ -33,12 +32,12 @@ namespace hit {
         validate();
     }
 
-    EncryptedRowVector::EncryptedRowVector(const shared_ptr<SEALContext> &context,
+    EncryptedRowVector::EncryptedRowVector(const shared_ptr<LattigoCtxt> &context,
                                            const protobuf::EncryptedRowVector &encrypted_row_vector) {
         read_from_proto(context, encrypted_row_vector);
     }
 
-    EncryptedRowVector::EncryptedRowVector(const shared_ptr<SEALContext> &context, istream &stream) {
+    EncryptedRowVector::EncryptedRowVector(const shared_ptr<LattigoCtxt> &context, istream &stream) {
         protobuf::EncryptedRowVector proto_vec;
         proto_vec.ParseFromIstream(&stream);
         read_from_proto(context, proto_vec);
