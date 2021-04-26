@@ -754,7 +754,7 @@ namespace hit {
             parallel_for(arg1.num_cts(), [&](int i) { eval.multiply_inplace(arg1[i], arg2[i]); });
         }
 
-        /* Tranpose the m-by-n unit of a properly-encoded matrix to an n-by-m unit.
+        /* Tranpose the encoding unit of a properly-encoded object.
          * Note that usually, this does not produce a valid encoding of any object; use with care.
          * Template Instantiations:
          *   - EncryptedMatrix transpose_unit(const EncryptedMatrix&)
@@ -764,9 +764,10 @@ namespace hit {
          * Input Ciphertext Constraints:
          *       None
          * Output Linear Algebra Properties:
-         *       After calling `transpose_unit_inplace`, the output has the same ciphertexts as the input,
-         *       but interpreted as being encoded with an n-by-m unit. This usually produces a ciphertext
-         *       which does not meaningfully encode any linear algebra object.
+         *       After calling `transpose_unit`, the output has the same ciphertexts as the input,
+         *       but they are interpreted as being encoded with a transposed encoding unit.
+         *       This usually produces a ciphertext which does not meaningfully encode any linear
+         *       algebra object.
          * Output Ciphertext Properties:
          *       Same as input.
          */
@@ -790,16 +791,17 @@ namespace hit {
          */
         void transpose_unit_inplace(EncryptedMatrix &enc_mat);
 
-        /* Tranpose the m-by-n unit of a properly-encoded matrix to an n-by-m unit.
+        /* Tranpose the n-by-m unit of a properly-encoded column vector to an m-by-n unit.
          * Note that usually, this does not produce a valid encoding of any object; use with care.
          * Input Linear Algebra Constraints:
          *       `enc_vec` must be an g-dimensional vector encoded with an n-by-m unit such that
          *       g <= m <= n
          * Input Ciphertext Constraints: None
          * Output Linear Algebra Properties:
-         *       Same as input.
+         *       An object (not necessarily corresponding to a value encoding of a linear algebra object)
+         *       encoded with an m-by-n unit.
          * Output Ciphertext Properties:
-         *       An encrypted matrix with the same ciphertext properties as the encrypted input.
+         *       Same as input.
          */
         void transpose_unit_inplace(EncryptedColVector &enc_vec);
 
