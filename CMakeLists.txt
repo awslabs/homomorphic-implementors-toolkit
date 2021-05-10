@@ -73,10 +73,10 @@ include(enable-clang-tidy)
 # so if Boost is not installed on the system, we just extract the headers.
 
 find_package(BoostLib REQUIRED)
+find_package(LatticppLib REQUIRED)
 find_package(ProtobufLib REQUIRED)
 find_package(GlogLib REQUIRED)
 find_package(TbbLib REQUIRED)
-find_package(LatticppLib REQUIRED)
 
 #####################
 # Compile Protobufs #
