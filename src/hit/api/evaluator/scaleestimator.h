@@ -8,7 +8,7 @@
 #include "depthfinder.h"
 #include "homomorphic.h"
 #include "plaintext.h"
-#include "hit/latticpputils.h"
+#include "hit/api/context.h"
 
 namespace hit {
 
@@ -46,7 +46,7 @@ namespace hit {
         CKKSCiphertext encrypt(const std::vector<double> &coeffs) override;
         CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level) override;
 
-        std::shared_ptr<LattigoCtxt> context;
+        std::shared_ptr<HEContext> context;
 
         int num_slots() const override;
 

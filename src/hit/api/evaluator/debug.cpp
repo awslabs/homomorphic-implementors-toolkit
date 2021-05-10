@@ -8,7 +8,7 @@
 #include <iomanip>
 
 #include "../../common.h"
-#include "../../latticpputils.h"
+#include "hit/api/context.h"
 #include "../evaluator.h"
 
 using namespace std;
