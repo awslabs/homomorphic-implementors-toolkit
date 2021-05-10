@@ -109,8 +109,8 @@ namespace hit {
         latticpp::Decryptor *seal_decryptor = nullptr;  // no default constructor
         latticpp::PublicKey pk;
         latticpp::SecretKey sk;
-        latticpp::GaloisKeys galois_keys;
-        latticpp::RelinKeys relin_keys;
+        latticpp::RotationKeys galois_keys;
+        latticpp::EvaluationKey relin_keys;
         bool standard_params_;
 
         int log_scale_;

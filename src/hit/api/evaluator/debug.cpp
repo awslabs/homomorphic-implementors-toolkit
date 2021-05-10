@@ -8,14 +8,14 @@
 #include <iomanip>
 
 #include "../../common.h"
-#include "../../sealutils.h"
+#include "../../latticpputils.h"
 #include "../evaluator.h"
 
 using namespace std;
-using namespace seal;
 
 namespace hit {
     void DebugEval::constructor_common(int num_slots) {
+        /*
         // use the _private_ ScaleEstimator constructor to avoid creating two sets of CKKS params
         scale_estimator = new ScaleEstimator(num_slots, *homomorphic_eval);
         log_scale_ = homomorphic_eval->log_scale_;
@@ -65,6 +65,7 @@ namespace hit {
             context_data = context_data->next_context_data();
         }
         VLOG(VLOG_VERBOSE) << " End of chain reached";
+        */
     }
 
     DebugEval::DebugEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,
@@ -119,87 +120,87 @@ namespace hit {
 
     // print some debug info
     void DebugEval::print_stats(const CKKSCiphertext &ct) const {
-        homomorphic_eval->print_stats(ct);
-        scale_estimator->print_stats(ct);
+        // homomorphic_eval->print_stats(ct);
+        // scale_estimator->print_stats(ct);
 
-        double norm = 0;
+        // double norm = 0;
 
-        // decrypt to compute the approximate plaintext
-        vector<double> homom_plaintext = decrypt(ct, true);
-        vector<double> exact_plaintext = ct.raw_pt;
+        // // decrypt to compute the approximate plaintext
+        // vector<double> homom_plaintext = decrypt(ct, true);
+        // vector<double> exact_plaintext = ct.raw_pt;
 
-        norm = relative_error(exact_plaintext, homom_plaintext);
-        if (abs(log2(ct.scale()) - log2(ct.seal_ct.scale())) > 0.1) {
-            LOG_AND_THROW_STREAM("Internal error: HIT scale does not match SEAL scale: " << log2(ct.scale()) << " != "
-                                                                                         << ct.seal_ct.scale());
-        }
+        // norm = relative_error(exact_plaintext, homom_plaintext);
+        // if (abs(log2(ct.scale()) - log2(ct.seal_ct.scale())) > 0.1) {
+        //     LOG_AND_THROW_STREAM("Internal error: HIT scale does not match SEAL scale: " << log2(ct.scale()) << " != "
+        //                                                                                  << ct.seal_ct.scale());
+        // }
 
-        VLOG(VLOG_EVAL) << setprecision(8) << "    + Approximation norm: " << norm;
+        // VLOG(VLOG_EVAL) << setprecision(8) << "    + Approximation norm: " << norm;
 
-        int max_print_size = 8;
-        stringstream verbose_info;
-        verbose_info << "    + Homom Result:   < ";
-        for (int i = 0; i < min(max_print_size, static_cast<int>(homom_plaintext.size())); i++) {
-            verbose_info << setprecision(8) << homom_plaintext[i] << ", ";
-        }
-        if (homom_plaintext.size() > max_print_size) {
-            verbose_info << "... ";
-        }
-        verbose_info << ">";
-        VLOG(VLOG_EVAL) << verbose_info.str();
+        // int max_print_size = 8;
+        // stringstream verbose_info;
+        // verbose_info << "    + Homom Result:   < ";
+        // for (int i = 0; i < min(max_print_size, static_cast<int>(homom_plaintext.size())); i++) {
+        //     verbose_info << setprecision(8) << homom_plaintext[i] << ", ";
+        // }
+        // if (homom_plaintext.size() > max_print_size) {
+        //     verbose_info << "... ";
+        // }
+        // verbose_info << ">";
+        // VLOG(VLOG_EVAL) << verbose_info.str();
 
-        if (norm > MAX_NORM) {
-            max_print_size = 32;
-            stringstream expect_debug_result;
-            expect_debug_result << "    + DEBUG Expected result: <";
-            for (int i = 0; i < min(max_print_size, static_cast<int>(exact_plaintext.size())); i++) {
-                expect_debug_result << setprecision(8) << exact_plaintext[i];
-                if (i < exact_plaintext.size() - 1) {
-                    expect_debug_result << ", ";
-                }
-            }
-            if (exact_plaintext.size() > max_print_size) {
-                expect_debug_result << "..., ";
-            }
-            expect_debug_result << ">";
-            LOG(ERROR) << expect_debug_result.str();
+        // if (norm > MAX_NORM) {
+        //     max_print_size = 32;
+        //     stringstream expect_debug_result;
+        //     expect_debug_result << "    + DEBUG Expected result: <";
+        //     for (int i = 0; i < min(max_print_size, static_cast<int>(exact_plaintext.size())); i++) {
+        //         expect_debug_result << setprecision(8) << exact_plaintext[i];
+        //         if (i < exact_plaintext.size() - 1) {
+        //             expect_debug_result << ", ";
+        //         }
+        //     }
+        //     if (exact_plaintext.size() > max_print_size) {
+        //         expect_debug_result << "..., ";
+        //     }
+        //     expect_debug_result << ">";
+        //     LOG(ERROR) << expect_debug_result.str();
 
-            stringstream actual_debug_result;
-            actual_debug_result << "    + DEBUG Actual result:   <";
-            for (int i = 0; i < min(max_print_size, static_cast<int>(homom_plaintext.size())); i++) {
-                actual_debug_result << setprecision(8) << homom_plaintext[i];
-                if (i < exact_plaintext.size() - 1) {
-                    actual_debug_result << ", ";
-                }
-            }
-            if (homom_plaintext.size() > max_print_size) {
-                actual_debug_result << "..., ";
-            }
-            actual_debug_result << ">";
-            LOG(ERROR) << actual_debug_result.str();
+        //     stringstream actual_debug_result;
+        //     actual_debug_result << "    + DEBUG Actual result:   <";
+        //     for (int i = 0; i < min(max_print_size, static_cast<int>(homom_plaintext.size())); i++) {
+        //         actual_debug_result << setprecision(8) << homom_plaintext[i];
+        //         if (i < exact_plaintext.size() - 1) {
+        //             actual_debug_result << ", ";
+        //         }
+        //     }
+        //     if (homom_plaintext.size() > max_print_size) {
+        //         actual_debug_result << "..., ";
+        //     }
+        //     actual_debug_result << ">";
+        //     LOG(ERROR) << actual_debug_result.str();
 
-            Plaintext encoded_plain;
-            homomorphic_eval->encoder->encode(ct.raw_pt, pow(2, log_scale_), encoded_plain);
+        //     Plaintext encoded_plain;
+        //     homomorphic_eval->encoder->encode(ct.raw_pt, pow(2, log_scale_), encoded_plain);
 
-            vector<double> decoded_plain;
-            homomorphic_eval->encoder->decode(encoded_plain, decoded_plain);
+        //     vector<double> decoded_plain;
+        //     homomorphic_eval->encoder->decode(encoded_plain, decoded_plain);
 
-            // the exact_plaintext and homom_plaintext should have the same length.
-            // decoded_plain is full-dimensional, however. This may not match
-            // the dimension of exact_plaintext if the plaintext in question is a
-            // vector, so we need to truncate the decoded value.
-            vector<double> truncated_decoded_plain(decoded_plain.begin(),
-                                                   decoded_plain.begin() + exact_plaintext.size());
-            double norm2 = relative_error(exact_plaintext, truncated_decoded_plain);
-            double norm3 = relative_error(truncated_decoded_plain, homom_plaintext);
+        //     // the exact_plaintext and homom_plaintext should have the same length.
+        //     // decoded_plain is full-dimensional, however. This may not match
+        //     // the dimension of exact_plaintext if the plaintext in question is a
+        //     // vector, so we need to truncate the decoded value.
+        //     vector<double> truncated_decoded_plain(decoded_plain.begin(),
+        //                                            decoded_plain.begin() + exact_plaintext.size());
+        //     double norm2 = relative_error(exact_plaintext, truncated_decoded_plain);
+        //     double norm3 = relative_error(truncated_decoded_plain, homom_plaintext);
 
-            LOG(ERROR) << "Encoding norm: " << norm2;
-            LOG(ERROR) << "Encryption norm: " << norm3;
+        //     LOG(ERROR) << "Encoding norm: " << norm2;
+        //     LOG(ERROR) << "Encryption norm: " << norm3;
 
-            LOG_AND_THROW_STREAM("Plaintext and ciphertext divergence: " << norm << " > " << MAX_NORM << ". Scale is "
-                                                                         << log_scale_
-                                                                         << " bits. See error log for more details.");
-        }
+        //     LOG_AND_THROW_STREAM("Plaintext and ciphertext divergence: " << norm << " > " << MAX_NORM << ". Scale is "
+        //                                                                  << log_scale_
+        //                                                                  << " bits. See error log for more details.");
+        // }
     }
 
     void DebugEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {

@@ -10,7 +10,7 @@
 #include "api/ciphertext.h"
 #include "hit/protobuf/ciphertext.pb.h"
 #include "hit/protobuf/ciphertext_vector.pb.h"
-#include "hit/lattigoutils.h"
+#include "hit/latticpputils.h"
 
 #define VLOG_EVAL 1
 #define VLOG_VERBOSE 2

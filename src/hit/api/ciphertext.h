@@ -5,8 +5,8 @@
 
 #include "hit/protobuf/ciphertext.pb.h"
 #include "metadata.h"
-#include "hit/lattigoutils.h"
-#include "latticpp/marshall/gohandle.h"
+#include "hit/latticpputils.h"
+#include "latticpp/latticpp.h"
 #include <cmath>
 
 namespace hit {

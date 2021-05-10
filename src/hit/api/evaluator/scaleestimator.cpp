@@ -8,10 +8,8 @@
 #include <iomanip>
 
 #include "../../common.h"
-#include "../../sealutils.h"
 
 using namespace std;
-using namespace seal;
 
 namespace hit {
 
@@ -68,10 +66,10 @@ namespace hit {
 
         // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
-        auto context_data = context->first_context_data();
-        for (const auto &prime : context_data->parms().coeff_modulus()) {
-            estimated_max_log_scale_ += log2(prime.value());
-        }
+        // auto context_data = context->first_context_data();
+        // for (const auto &prime : context_data->parms().coeff_modulus()) {
+        //     estimated_max_log_scale_ += log2(prime.value());
+        // }
     }
 
     ScaleEstimator::~ScaleEstimator() {
@@ -83,34 +81,34 @@ namespace hit {
     }
 
     CKKSCiphertext ScaleEstimator::encrypt(const vector<double> &coeffs, int level) {
-        update_plaintext_max_val(coeffs);
+        // update_plaintext_max_val(coeffs);
 
-        if (coeffs.size() != num_slots_) {
-            // bad things can happen if you don't plan for your input to be smaller than the ciphertext
-            // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
-            LOG_AND_THROW_STREAM("You can only encrypt vectors which have exactly as many "
-                                 << " coefficients as the number of plaintext slots: Expected " << num_slots_
-                                 << " coefficients, but " << coeffs.size() << " were provided");
-        }
+        // if (coeffs.size() != num_slots_) {
+        //     // bad things can happen if you don't plan for your input to be smaller than the ciphertext
+        //     // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
+        //     LOG_AND_THROW_STREAM("You can only encrypt vectors which have exactly as many "
+        //                          << " coefficients as the number of plaintext slots: Expected " << num_slots_
+        //                          << " coefficients, but " << coeffs.size() << " were provided");
+        // }
 
-        if (level == -1) {
-            level = context->first_context_data()->chain_index();
-        }
+        // if (level == -1) {
+        //     level = context->first_context_data()->chain_index();
+        // }
 
-        auto context_data = context->first_context_data();
-        double scale = pow(2, log_scale_);
-        while (context_data->chain_index() > level) {
-            // order of operations is very important: floating point arithmetic is not associative
-            scale = (scale * scale) / static_cast<double>(context_data->parms().coeff_modulus().back().value());
-            context_data = context_data->next_context_data();
-        }
+        // auto context_data = context->first_context_data();
+        // double scale = pow(2, log_scale_);
+        // while (context_data->chain_index() > level) {
+        //     // order of operations is very important: floating point arithmetic is not associative
+        //     scale = (scale * scale) / static_cast<double>(context_data->parms().coeff_modulus().back().value());
+        //     context_data = context_data->next_context_data();
+        // }
 
         CKKSCiphertext destination;
-        destination.he_level_ = level;
-        destination.scale_ = scale;
-        destination.raw_pt = coeffs;
-        destination.num_slots_ = num_slots_;
-        destination.initialized = true;
+        // destination.he_level_ = level;
+        // destination.scale_ = scale;
+        // destination.raw_pt = coeffs;
+        // destination.num_slots_ = num_slots_;
+        // destination.initialized = true;
 
         return destination;
     }
@@ -297,16 +295,17 @@ namespace hit {
          * log2(p_1)=log2(p_k)=60 and log2(p_i)=s=log(scale). Thus s must be less
          * than (maxModBits-120)/(k-2)
          */
+        //
         auto estimated_log_scale = static_cast<double>(PLAINTEXT_LOG_MAX);
-        {
-            shared_lock lock(mutex_);
-            estimated_log_scale = min(estimated_log_scale, estimated_max_log_scale_);
-        }
-        int top_he_level = context->first_context_data()->chain_index();
-        if (top_he_level > 0) {
-            int max_mod_bits = poly_degree_to_max_mod_bits(2 * num_slots_);
-            return min(estimated_log_scale, (max_mod_bits - 120) / static_cast<double>(top_he_level));
-        }
+        // {
+        //     shared_lock lock(mutex_);
+        //     estimated_log_scale = min(estimated_log_scale, estimated_max_log_scale_);
+        // }
+        // int top_he_level = context->first_context_data()->chain_index();
+        // if (top_he_level > 0) {
+        //     int max_mod_bits = poly_degree_to_max_mod_bits(2 * num_slots_);
+        //     return min(estimated_log_scale, (max_mod_bits - 120) / static_cast<double>(top_he_level));
+        // }
         return estimated_log_scale;
     }
 }  // namespace hit

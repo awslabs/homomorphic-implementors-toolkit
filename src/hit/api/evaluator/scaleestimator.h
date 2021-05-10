@@ -8,7 +8,7 @@
 #include "depthfinder.h"
 #include "homomorphic.h"
 #include "plaintext.h"
-#include "hit/lattigoutils.h"
+#include "hit/latticpputils.h"
 
 namespace hit {
 

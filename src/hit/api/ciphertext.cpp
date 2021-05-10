@@ -6,10 +6,8 @@
 #include <glog/logging.h>
 
 #include "../common.h"
-#include "../sealutils.h"
 
 using namespace std;
-using namespace seal;
 
 namespace hit {
 
