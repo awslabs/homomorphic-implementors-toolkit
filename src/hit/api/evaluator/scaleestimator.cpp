@@ -297,7 +297,6 @@ namespace hit {
          * log2(p_1)=log2(p_k)=60 and log2(p_i)=s=log(scale). Thus s must be less
          * than (maxModBits-120)/(k-2)
          */
-        int max_mod_bits = poly_degree_to_max_mod_bits(2 * num_slots_);
         auto estimated_log_scale = static_cast<double>(PLAINTEXT_LOG_MAX);
         {
             shared_lock lock(mutex_);
@@ -305,6 +304,7 @@ namespace hit {
         }
         int top_he_level = context->first_context_data()->chain_index();
         if (top_he_level > 0) {
+            int max_mod_bits = poly_degree_to_max_mod_bits(2 * num_slots_);
             return min(estimated_log_scale, (max_mod_bits - 120) / static_cast<double>(top_he_level));
         }
         return estimated_log_scale;
