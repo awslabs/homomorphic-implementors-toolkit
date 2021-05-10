@@ -6,6 +6,9 @@
 #include "latticpp/latticpp.h"
 #include <memory>
 
+// SEAL throws an error for 21, but allows 22
+#define MIN_LOG_SCALE 22
+
 namespace hit {
     struct LattigoCtxt {
 

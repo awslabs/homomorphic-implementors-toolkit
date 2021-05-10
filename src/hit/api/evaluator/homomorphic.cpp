@@ -5,17 +5,12 @@
  * SEAL's Evaluator API, and those functions now have a simpler interface.
  */
 
-#include "latticpp.h"
-
 #include <glog/logging.h>
 
-#include <future>
-
-#include "../../sealutils.h"
+#include "homomorphic.h"
 #include "hit/protobuf/ckksparams.pb.h"
 
 using namespace std;
-using namespace seal;
 
 namespace hit {
     /* Note: there is a flag to update_metadata of ciphertexts
@@ -267,7 +262,7 @@ namespace hit {
         //     context_data = context_data->next_context_data();
         // }
 
-        // CKKSCiphertext destination;
+        CKKSCiphertext destination;
         // destination.he_level_ = level;
         // destination.scale_ = scale;
 
@@ -278,7 +273,7 @@ namespace hit {
         // destination.num_slots_ = num_slots_;
         // destination.initialized = true;
 
-        // return destination;
+        return destination;
     }
 
     vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted) const {
@@ -299,14 +294,15 @@ namespace hit {
 
         // seal_decryptor->decrypt(encrypted.seal_ct, temp);
 
-        // vector<double> decoded_output;
+        vector<double> decoded_output;
         // encoder->decode(temp, decoded_output);
 
-        // return decoded_output;
+        return decoded_output;
     }
 
     int HomomorphicEval::num_slots() const {
         // return encoder->slot_count();
+        return 0;
     }
 
     uint64_t HomomorphicEval::get_last_prime_internal(const CKKSCiphertext &ct) const {
@@ -373,7 +369,7 @@ namespace hit {
         //     // seal sets the scale to be 1, but our the debug evaluator always ensures that the SEAL scale is consistent
         //     // with our mirror calculation
         //     ct.seal_ct.scale() = previous_scale * previous_scale;
-        }
+        // }
     }
 
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {

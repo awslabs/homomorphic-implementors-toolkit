@@ -11,7 +11,7 @@
 using namespace std;
 
 namespace hit {
-    uint64_t get_last_prime(const std::shared_ptr<LattigoCtxt> &, int) {
+    uint64_t get_last_prime(const std::shared_ptr<LattigoCtxt> &context, int he_level) {
         return 0;
     }
 } // namespace hit

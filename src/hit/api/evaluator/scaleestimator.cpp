@@ -123,18 +123,18 @@ namespace hit {
 
     // print some debug info
     void ScaleEstimator::print_stats(const CKKSCiphertext &ct) const {
-        double exact_plaintext_max_val = l_inf_norm(ct.raw_pt);
-        double log_modulus = 0;
-        auto context_data = get_context_data(context, ct.he_level());
-        for (const auto &prime : context_data->parms().coeff_modulus()) {
-            log_modulus += log2(prime.value());
-        }
-        plaintext_eval->print_stats(ct);
-        VLOG(VLOG_EVAL) << "    + Level: " << ct.he_level();
-        VLOG(VLOG_EVAL) << "    + Plaintext logmax: " << log2(exact_plaintext_max_val)
-                        << " bits (scaled: " << log2(ct.scale()) + log2(exact_plaintext_max_val) << " bits)";
-        VLOG(VLOG_EVAL) << "    + Total modulus size: " << setprecision(4) << log_modulus << " bits";
-        VLOG(VLOG_EVAL) << "    + Theoretical max log scale: " << get_estimated_max_log_scale() << " bits";
+        // double exact_plaintext_max_val = l_inf_norm(ct.raw_pt);
+        // double log_modulus = 0;
+        // auto context_data = get_context_data(context, ct.he_level());
+        // for (const auto &prime : context_data->parms().coeff_modulus()) {
+        //     log_modulus += log2(prime.value());
+        // }
+        // plaintext_eval->print_stats(ct);
+        // VLOG(VLOG_EVAL) << "    + Level: " << ct.he_level();
+        // VLOG(VLOG_EVAL) << "    + Plaintext logmax: " << log2(exact_plaintext_max_val)
+        //                 << " bits (scaled: " << log2(ct.scale()) + log2(exact_plaintext_max_val) << " bits)";
+        // VLOG(VLOG_EVAL) << "    + Total modulus size: " << setprecision(4) << log_modulus << " bits";
+        // VLOG(VLOG_EVAL) << "    + Theoretical max log scale: " << get_estimated_max_log_scale() << " bits";
     }
 
     // At all times, we need ct.scale*l_inf_norm(ct.getPlaintext()) <~ q/4
@@ -272,16 +272,16 @@ namespace hit {
     }
 
     void ScaleEstimator::update_plaintext_max_val(const vector<double> &coeffs) {
-        double x = l_inf_norm(coeffs);
-        // account for a freshly-encrypted ciphertext
-        // if this is a depth-0 computation *AND* the parameters are such that it is a no-op,
-        // this is the only way we can account for the values in the input. We have to encrypt them,
-        // and if the scale is ~2^60, encoding will (rightly) fail
-        int top_he_level = context->first_context_data()->chain_index();
-        if (top_he_level == 0) {
-            scoped_lock lock(mutex_);
-            estimated_max_log_scale_ = min(estimated_max_log_scale_, PLAINTEXT_LOG_MAX - log2(x));
-        }
+        // double x = l_inf_norm(coeffs);
+        // // account for a freshly-encrypted ciphertext
+        // // if this is a depth-0 computation *AND* the parameters are such that it is a no-op,
+        // // this is the only way we can account for the values in the input. We have to encrypt them,
+        // // and if the scale is ~2^60, encoding will (rightly) fail
+        // int top_he_level = context->first_context_data()->chain_index();
+        // if (top_he_level == 0) {
+        //     scoped_lock lock(mutex_);
+        //     estimated_max_log_scale_ = min(estimated_max_log_scale_, PLAINTEXT_LOG_MAX - log2(x));
+        // }
     }
 
     double ScaleEstimator::get_estimated_max_log_scale() const {
