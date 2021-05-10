@@ -63,7 +63,6 @@ namespace hit {
         // This plaintext is not CKKS-encoded; in particular it is not scaled by the scale factor.
         std::vector<double> raw_pt;
 
-        // Lattigo ciphertext
         BackendCiphertext backend_ct;
 
         // `scale` is used by the ScaleEstimator evaluator
