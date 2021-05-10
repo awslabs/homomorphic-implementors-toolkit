@@ -115,10 +115,6 @@ namespace hit {
         return destination;
     }
 
-    uint64_t ScaleEstimator::get_last_prime_internal(const CKKSCiphertext &ct) const {
-        return get_last_prime(context, ct.he_level());
-    }
-
     int ScaleEstimator::num_slots() const {
         return num_slots_;
     }

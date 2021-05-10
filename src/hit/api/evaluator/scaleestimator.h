@@ -98,8 +98,6 @@ namespace hit {
         void print_stats(const CKKSCiphertext &ct) const override;
         void update_max_log_scale(const CKKSCiphertext &ct);
 
-        uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
-
         // primarily used to indicate the maximum value for each *input* to the function.
         // For circuits which are a no-op, this function is the only way the evaluator
         // can learn the maximum plaintext values, and thereby appropriately restrict the scale.
