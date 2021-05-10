@@ -8,6 +8,8 @@
 #include <iomanip>
 #include <iostream>
 
+#include "seal/seal.h"
+
 using namespace std;
 using namespace seal;
 

@@ -8,6 +8,7 @@
 
 #include "api/ciphertext.h"
 #include "common.h"
+#include "seal/seal.h"
 
 // SEAL throws an error for 21, but allows 22
 #define MIN_LOG_SCALE 22
