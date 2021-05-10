@@ -64,7 +64,7 @@ namespace hit {
         std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
         std::vector<double> decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const override;
 
-        std::shared_ptr<LattigoCtxt> context;
+        std::shared_ptr<HEContext> context;
 
         int num_slots() const override;
 

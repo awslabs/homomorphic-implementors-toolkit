@@ -16,7 +16,7 @@ namespace hit {
         validate();
     }
 
-    void EncryptedColVector::read_from_proto(const shared_ptr<LattigoCtxt> &context,
+    void EncryptedColVector::read_from_proto(const shared_ptr<HEContext> &context,
                                              const protobuf::EncryptedColVector &encrypted_col_vector) {
         height_ = encrypted_col_vector.height();
         // if height is 0, this object is uninitialized. Don't call validate() (or create a unit):
@@ -30,12 +30,12 @@ namespace hit {
         validate();
     }
 
-    EncryptedColVector::EncryptedColVector(const shared_ptr<LattigoCtxt> &context,
+    EncryptedColVector::EncryptedColVector(const shared_ptr<HEContext> &context,
                                            const protobuf::EncryptedColVector &encrypted_col_vector) {
         read_from_proto(context, encrypted_col_vector);
     }
 
-    EncryptedColVector::EncryptedColVector(const shared_ptr<LattigoCtxt> &context, istream &stream) {
+    EncryptedColVector::EncryptedColVector(const shared_ptr<HEContext> &context, istream &stream) {
         protobuf::EncryptedColVector proto_vec;
         proto_vec.ParseFromIstream(&stream);
         read_from_proto(context, proto_vec);

@@ -10,7 +10,6 @@
 #include "api/ciphertext.h"
 #include "hit/protobuf/ciphertext.pb.h"
 #include "hit/protobuf/ciphertext_vector.pb.h"
-#include "hit/latticpputils.h"
 
 #define VLOG_EVAL 1
 #define VLOG_VERBOSE 2
@@ -85,7 +84,7 @@ namespace hit {
         return proto_ciphertext_vector;
     }
 
-    inline void deserialize_vector(const std::shared_ptr<LattigoCtxt> &context,
+    inline void deserialize_vector(const std::shared_ptr<HEContext> &context,
                                    const protobuf::CiphertextVector &proto_ciphertext_vector,
                                    std::vector<CKKSCiphertext> &ciphertext_vector) {
         for (int i = 0; i < proto_ciphertext_vector.cts_size(); i++) {

@@ -17,7 +17,7 @@ namespace hit {
         validate();
     }
 
-    void EncryptedMatrix::read_from_proto(const shared_ptr<LattigoCtxt> &context,
+    void EncryptedMatrix::read_from_proto(const shared_ptr<HEContext> &context,
                                           const protobuf::EncryptedMatrix &encrypted_matrix) {
         height_ = encrypted_matrix.height();
         width_ = encrypted_matrix.width();
@@ -38,12 +38,12 @@ namespace hit {
         validate();
     }
 
-    EncryptedMatrix::EncryptedMatrix(const shared_ptr<LattigoCtxt> &context,
+    EncryptedMatrix::EncryptedMatrix(const shared_ptr<HEContext> &context,
                                      const protobuf::EncryptedMatrix &encrypted_matrix) {
         read_from_proto(context, encrypted_matrix);
     }
 
-    EncryptedMatrix::EncryptedMatrix(const shared_ptr<LattigoCtxt> &context, istream &stream) {
+    EncryptedMatrix::EncryptedMatrix(const shared_ptr<HEContext> &context, istream &stream) {
         protobuf::EncryptedMatrix proto_mat;
         proto_mat.ParseFromIstream(&stream);
         read_from_proto(context, proto_mat);

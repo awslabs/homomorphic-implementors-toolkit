@@ -62,7 +62,7 @@ namespace hit {
         plaintext_eval = new PlaintextEval(num_slots);
 
         // instead of creating a new instance, use the instance provided
-        context = homom_eval.context;
+        // context = homom_eval.context;
 
         // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;

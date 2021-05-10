@@ -47,10 +47,10 @@ namespace hit {
         // use `encrypt_row_vector` in `LinearAlgebra` to construct an encrypted row vector
         EncryptedColVector() = default;
         // Returns a EncryptedColVector, which is deserialized from protobuf::EncryptedColVector.
-        EncryptedColVector(const std::shared_ptr<LattigoCtxt> &context,
+        EncryptedColVector(const std::shared_ptr<HEContext> &context,
                            const protobuf::EncryptedColVector &encrypted_col_vector);
         // Returns a EncryptedColVector, which is deserialized from a stream containing a protobuf::EncryptedColVector.
-        EncryptedColVector(const std::shared_ptr<LattigoCtxt> &context, std::istream &stream);
+        EncryptedColVector(const std::shared_ptr<HEContext> &context, std::istream &stream);
         // Returns a protobuf::EncryptedColVector, which is serialized from EncryptedColVector.
         protobuf::EncryptedColVector *serialize() const;
         // Serialize an EncryptedColVector as a protobuf object to a stream.
@@ -76,7 +76,7 @@ namespace hit {
         Vector plaintext() const override;
 
        private:
-        void read_from_proto(const std::shared_ptr<LattigoCtxt> &context,
+        void read_from_proto(const std::shared_ptr<HEContext> &context,
                              const protobuf::EncryptedColVector &encrypted_col_vector);
 
         EncryptedColVector(int height, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts);

@@ -5,11 +5,13 @@
 
 #include "hit/protobuf/ciphertext.pb.h"
 #include "metadata.h"
-#include "hit/latticpputils.h"
-#include "latticpp/latticpp.h"
+#include "hit/api/context.h"
+#include "hit/api/backend.h"
 #include <cmath>
 
 namespace hit {
+    using BackendCiphertext = latticpp::Ciphertext;
+
     /* This is a wrapper around the SEAL `Ciphertext` type.
      */
     struct CKKSCiphertext : public CiphertextMetadata<std::vector<double>> {
@@ -17,10 +19,10 @@ namespace hit {
         CKKSCiphertext() = default;
 
         // Deserialize a ciphertext from a protobuf object
-        CKKSCiphertext(const std::shared_ptr<LattigoCtxt> &context, const protobuf::Ciphertext &proto_ct);
+        CKKSCiphertext(const std::shared_ptr<HEContext> &context, const protobuf::Ciphertext &proto_ct);
 
         // Deserialize a ciphertext from a stream containing a protobuf object
-        CKKSCiphertext(const std::shared_ptr<LattigoCtxt> &context, std::istream &stream);
+        CKKSCiphertext(const std::shared_ptr<HEContext> &context, std::istream &stream);
 
         // Serialize a ciphertext to a protobuf object
         // This function is typically used in protobuf serialization code for objects which
@@ -54,7 +56,7 @@ namespace hit {
         friend class CKKSEvaluator;
 
        private:
-        void read_from_proto(const std::shared_ptr<LattigoCtxt> &context, const protobuf::Ciphertext &proto_ct);
+        void read_from_proto(const std::shared_ptr<HEContext> &context, const protobuf::Ciphertext &proto_ct);
 
         // The raw plaintxt. This is used with some of the evaluators tha track ciphertext
         // metadata (e.g., DebugEval and PlaintextEval), but not by the Homomorphic evaluator.
@@ -62,7 +64,7 @@ namespace hit {
         std::vector<double> raw_pt;
 
         // Lattigo ciphertext
-        latticpp::Ciphertext ct_handle;
+        BackendCiphertext backend_ct;
 
         // `scale` is used by the ScaleEstimator evaluator
         double scale_ = pow(2, 30);

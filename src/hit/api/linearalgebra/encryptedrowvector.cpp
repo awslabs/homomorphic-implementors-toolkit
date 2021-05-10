@@ -18,7 +18,7 @@ namespace hit {
         validate();
     }
 
-    void EncryptedRowVector::read_from_proto(const shared_ptr<LattigoCtxt> &context,
+    void EncryptedRowVector::read_from_proto(const shared_ptr<HEContext> &context,
                                              const protobuf::EncryptedRowVector &encrypted_row_vector) {
         width_ = encrypted_row_vector.width();
         // if width is 0, this object is uninitialized. Don't call validate() (or create a unit):
@@ -32,12 +32,12 @@ namespace hit {
         validate();
     }
 
-    EncryptedRowVector::EncryptedRowVector(const shared_ptr<LattigoCtxt> &context,
+    EncryptedRowVector::EncryptedRowVector(const shared_ptr<HEContext> &context,
                                            const protobuf::EncryptedRowVector &encrypted_row_vector) {
         read_from_proto(context, encrypted_row_vector);
     }
 
-    EncryptedRowVector::EncryptedRowVector(const shared_ptr<LattigoCtxt> &context, istream &stream) {
+    EncryptedRowVector::EncryptedRowVector(const shared_ptr<HEContext> &context, istream &stream) {
         protobuf::EncryptedRowVector proto_vec;
         proto_vec.ParseFromIstream(&stream);
         read_from_proto(context, proto_vec);

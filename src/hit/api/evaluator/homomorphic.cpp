@@ -306,7 +306,7 @@ namespace hit {
     }
 
     uint64_t HomomorphicEval::get_last_prime_internal(const CKKSCiphertext &ct) const {
-        return get_last_prime(context, ct.he_level());
+        return context->last_prime(ct.he_level());
     }
 
     void HomomorphicEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {

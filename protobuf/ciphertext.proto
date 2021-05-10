@@ -6,7 +6,7 @@ package hit.protobuf;
 
 message Ciphertext {
 	required bool initialized = 1; // has this ciphertext been initialized?
-	optional bytes seal_ct = 2;    // the underlying SEAL ciphertext
+	optional bytes ct = 2;         // the underlying CKKS ciphertext
 	required int32 he_level = 3;   // level of this ciphertext
 	required double scale = 4;     // CKKS scale of this ciphertext
 }

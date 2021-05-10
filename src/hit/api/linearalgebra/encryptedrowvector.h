@@ -58,10 +58,10 @@ namespace hit {
         EncryptedRowVector() = default;
 
         // Returns a EncryptedRowVector, which is deserialized from protobuf::EncryptedRowVector.
-        EncryptedRowVector(const std::shared_ptr<LattigoCtxt> &context,
+        EncryptedRowVector(const std::shared_ptr<HEContext> &context,
                            const protobuf::EncryptedRowVector &encrypted_row_vector);
         // Returns a EncryptedRowVector, which is deserialized from a stream containing a protobuf::EncryptedRowVector.
-        EncryptedRowVector(const std::shared_ptr<LattigoCtxt> &context, std::istream &stream);
+        EncryptedRowVector(const std::shared_ptr<HEContext> &context, std::istream &stream);
         // Returns a protobuf::EncryptedRowVector, which is serialized from EncryptedRowVector.
         // This function is typically used in protobuf serialization code for objects which
         // contain a protobuf::EncryptedRowVector. When used directly, you are responsible for
@@ -92,7 +92,7 @@ namespace hit {
         Vector plaintext() const override;
 
        private:
-        void read_from_proto(const std::shared_ptr<LattigoCtxt> &context,
+        void read_from_proto(const std::shared_ptr<HEContext> &context,
                              const protobuf::EncryptedRowVector &encrypted_row_vector);
 
         EncryptedRowVector(int width, const EncodingUnit &unit, std::vector<CKKSCiphertext> &cts);
