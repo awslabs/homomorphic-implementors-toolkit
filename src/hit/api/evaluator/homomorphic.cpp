@@ -242,37 +242,34 @@ namespace hit {
     }
 
     CKKSCiphertext HomomorphicEval::encrypt(const vector<double> &coeffs, int level) {
-        // int num_slots_ = encoder->slot_count();
-        // if (coeffs.size() != num_slots_) {
-        //     // bad things can happen if you don't plan for your input to be smaller than the ciphertext
-        //     // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
-        //     LOG_AND_THROW_STREAM("You can only encrypt vectors which have exactly as many "
-        //                          << " coefficients as the number of plaintext slots: Expected " << num_slots_
-        //                          << " coefficients, but " << coeffs.size() << " were provided");
-        // }
+        int num_slots_ = num_slots();
+        if (coeffs.size() != num_slots_) {
+            // bad things can happen if you don't plan for your input to be smaller than the ciphertext
+            // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
+            LOG_AND_THROW_STREAM("You can only encrypt vectors which have exactly as many "
+                                 << " coefficients as the number of plaintext slots: Expected " << num_slots_
+                                 << " coefficients, but " << coeffs.size() << " were provided");
+        }
 
-        // if (level == -1) {
-        //     level = context->first_context_data()->chain_index();
-        // }
+        if (level == -1) {
+            level = context->max_ciphertext_level();
+        }
 
-        // auto context_data = context->first_context_data();
-        // double scale = pow(2, log_scale_);
-        // while (context_data->chain_index() > level) {
-        //     // order of operations is very important: floating point arithmetic is not associative
-        //     scale = (scale * scale) / static_cast<double>(context_data->parms().coeff_modulus().back().value());
-        //     context_data = context_data->next_context_data();
-        // }
+        double scale = pow(2, log_scale_);
+        // order of operations is very important: floating point arithmetic is not associative
+        for (int i = context->max_ciphertext_level(); i > level; i--) {
+            scale = (scale * scale) / static_cast<double>(context->last_prime(i));
+        }
 
         CKKSCiphertext destination;
-        // destination.he_level_ = level;
-        // destination.scale_ = scale;
+        destination.he_level_ = level;
+        destination.scale_ = scale;
 
-        // Plaintext temp;
-        // encoder->encode(coeffs, context_data->parms_id(), scale, temp);
-        // seal_encryptor->encrypt(temp, destination.seal_ct);
+        Plaintext temp = encodeNew(seal_encoder, coeffs);
+        destination.backend_ct = encryptNew(seal_encryptor, temp);
 
-        // destination.num_slots_ = num_slots_;
-        // destination.initialized = true;
+        destination.num_slots_ = num_slots_;
+        destination.initialized = true;
 
         return destination;
     }
@@ -282,23 +279,17 @@ namespace hit {
     }
 
     vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const {
-        // if (seal_decryptor == nullptr) {
-        //     LOG_AND_THROW_STREAM(
-        //         "Decryption is only possible from a deserialized instance when the secret key is provided.");
-        // }
+        if (!seal_decryptor.getRawHandle()) {
+            LOG_AND_THROW_STREAM(
+                "Decryption is only possible from a deserialized instance when the secret key is provided.");
+        }
 
-        // Plaintext temp;
+        if (!suppress_warnings) {
+            decryption_warning(encrypted.he_level());
+        }
 
-        // if (!suppress_warnings) {
-        //     decryption_warning(encrypted.he_level());
-        // }
-
-        // seal_decryptor->decrypt(encrypted.seal_ct, temp);
-
-        vector<double> decoded_output;
-        // encoder->decode(temp, decoded_output);
-
-        return decoded_output;
+        Plaintext temp = decryptNew(seal_decryptor, encrypted.backend_ct);
+        return decode(seal_encoder, temp, log2(num_slots()));
     }
 
     int HomomorphicEval::num_slots() const {
@@ -310,11 +301,11 @@ namespace hit {
     }
 
     void HomomorphicEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
-        // seal_evaluator->rotate_vector_inplace(ct.seal_ct, -steps, galois_keys);
+        rotate(seal_evaluator, ct.backend_ct, -steps, galois_keys, ct.backend_ct);
     }
 
     void HomomorphicEval::rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) {
-        // seal_evaluator->rotate_vector_inplace(ct.seal_ct, steps, galois_keys);
+        rotate(seal_evaluator, ct.backend_ct, steps, galois_keys, ct.backend_ct);
     }
 
     void HomomorphicEval::negate_inplace_internal(CKKSCiphertext &ct) {
