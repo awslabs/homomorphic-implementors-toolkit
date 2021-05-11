@@ -106,6 +106,19 @@ namespace hit {
         return destination;
     }
 
+    void ScaleEstimator::update_plaintext_max_val(const vector<double> &coeffs) {
+        double x = l_inf_norm(coeffs);
+        // account for a freshly-encrypted ciphertext
+        // if this is a depth-0 computation *AND* the parameters are such that it is a no-op,
+        // this is the only way we can account for the values in the input. We have to encrypt them,
+        // and if the scale is ~2^60, encoding will (rightly) fail
+        int top_he_level = context->max_ciphertext_level();
+        if (top_he_level == 0) {
+            scoped_lock lock(mutex_);
+            estimated_max_log_scale_ = min(estimated_max_log_scale_, PLAINTEXT_LOG_MAX - log2(x));
+        }
+    }
+
     uint64_t ScaleEstimator::get_last_prime_internal(const CKKSCiphertext &ct) const {
         return get_last_prime(context, ct.he_level());
     }
@@ -130,7 +143,7 @@ namespace hit {
     }
 
     // At all times, we need ct.scale*l_inf_norm(ct.getPlaintext()) <~ q/4
-    // Define ct.scale = i*pow(2,log_scale_) for i \in {1,2}
+    // Define ct.scale = pow(2, log_scale_ * i) for i \in {1,2}
     // If(i > ct.he_level): estimated_max_log_scale_ \le
     //      (PLAINTEXT_LOG_MAX-log2(l_inf_norm(ct.getPlaintext()))/(i-ct.he_level))
     // Else if (i == ct.he_level):
@@ -261,19 +274,6 @@ namespace hit {
         // internal functions should not update the ciphertext metadata
         ct.he_level_ = input_level;
         ct.scale_ = input_scale;
-    }
-
-    void ScaleEstimator::update_plaintext_max_val(const vector<double> &coeffs) {
-        double x = l_inf_norm(coeffs);
-        // account for a freshly-encrypted ciphertext
-        // if this is a depth-0 computation *AND* the parameters are such that it is a no-op,
-        // this is the only way we can account for the values in the input. We have to encrypt them,
-        // and if the scale is ~2^60, encoding will (rightly) fail
-        int top_he_level = context->max_ciphertext_level();
-        if (top_he_level == 0) {
-            scoped_lock lock(mutex_);
-            estimated_max_log_scale_ = min(estimated_max_log_scale_, PLAINTEXT_LOG_MAX - log2(x));
-        }
     }
 
     double ScaleEstimator::get_estimated_max_log_scale() const {

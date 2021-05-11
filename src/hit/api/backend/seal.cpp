@@ -25,7 +25,7 @@ namespace hit {
     }
 
     SealCtx::SealCtx(int logSlots, int mult_depth, int precisionBits) {
-        vector<int> modulusVector = gen_modulus_vec(mult_depth + 2, log_scale_);
+        vector<int> modulusVector = gen_modulus_vec(mult_depth + 2, precisionBits);
 
         EncryptionParameters params = EncryptionParameters(scheme_type::ckks);
         params.set_poly_modulus_degree(2 * logSlots);
@@ -56,8 +56,7 @@ namespace hit {
     }
 
     uint64_t SealCtx::last_prime(int he_level) {
-        auto context_data = get_context_data(he_level);
-        return context_data->parms().coeff_modulus().back().value();
+        return get_context_data(he_level)->parms().coeff_modulus().back().value();
     }
 
     int SealCtx::min_log_scale() {

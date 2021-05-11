@@ -11,6 +11,7 @@
 #include "hit/protobuf/ckksparams.pb.h"
 
 using namespace std;
+using namespace latticpp;
 
 namespace hit {
     /* Note: there is a flag to update_metadata of ciphertexts
@@ -359,27 +360,26 @@ namespace hit {
 
     /* WARNING: This function is not constant time in the scalar argument. */
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        // if (scalar != double{0}) {
-        //     Plaintext encoded_plain;
-        //     encoder->encode(scalar, ct.seal_ct.parms_id(), ct.seal_ct.scale(), encoded_plain);
-        //     seal_evaluator->multiply_plain_inplace(ct.seal_ct, encoded_plain);
-        // } else {
-        //     double previous_scale = ct.seal_ct.scale();
-        //     seal_encryptor->encrypt_zero(ct.seal_ct.parms_id(), ct.seal_ct);
-        //     // seal sets the scale to be 1, but our the debug evaluator always ensures that the SEAL scale is consistent
-        //     // with our mirror calculation
-        //     ct.seal_ct.scale() = previous_scale * previous_scale;
-        // }
+        if (scalar != double{0}) {
+            Plaintext encoded_plain;
+            encoder->encode(scalar, ct.seal_ct.parms_id(), ct.seal_ct.scale(), encoded_plain);
+            seal_evaluator->multiply_plain_inplace(ct.seal_ct, encoded_plain);
+        } else {
+            double previous_scale = ct.seal_ct.scale();
+            seal_encryptor->encrypt_zero(ct.seal_ct.parms_id(), ct.seal_ct);
+            // seal sets the scale to be 1, but our the debug evaluator always ensures that the SEAL scale is consistent
+            // with our mirror calculation
+            ct.seal_ct.scale() = previous_scale * previous_scale;
+        }
     }
 
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        // Plaintext temp;
-        // encoder->encode(plain, ct.seal_ct.parms_id(), ct.seal_ct.scale(), temp);
-        // seal_evaluator->multiply_plain_inplace(ct.seal_ct, temp);
+        Plaintext temp = encodeNew(seal_encoder, plain);
+        mulPlain(seal_evaluator, ct.backend_ct, temp, ct.backend_ct);
     }
 
     void HomomorphicEval::square_inplace_internal(CKKSCiphertext &ct) {
-        // seal_evaluator->square_inplace(ct.seal_ct);
+        multiply_inplace_internal(ct, ct);
     }
 
     void HomomorphicEval::reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level) {
@@ -390,10 +390,11 @@ namespace hit {
     }
 
     void HomomorphicEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        // seal_evaluator->rescale_to_next_inplace(ct.seal_ct);
+        rescaleMany(seal_evaluator, ct.backend_ct, 1, ct.backend_ct);
+        dropLevel(seal_evaluator, ct.backend_ct, 1);
     }
 
     void HomomorphicEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
-        // seal_evaluator->relinearize_inplace(ct.seal_ct, relin_keys);
+        relinearize(seal_evaluator, ct.backend_ct, relin_keys, ct.backend_ct);
     }
 }  // namespace hit

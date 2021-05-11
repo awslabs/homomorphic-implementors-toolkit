@@ -103,10 +103,10 @@ namespace hit {
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
        private:
-        latticpp::Encoder *encoder = nullptr;       // no default constructor
-        latticpp::Evaluator *seal_evaluator = nullptr;  // no default constructor
-        latticpp::Encryptor *seal_encryptor = nullptr;  // no default constructor
-        latticpp::Decryptor *seal_decryptor = nullptr;  // no default constructor
+        latticpp::Encoder seal_encoder;
+        latticpp::Evaluator seal_evaluator;
+        latticpp::Encryptor seal_encryptor;
+        latticpp::Decryptor seal_decryptor;
         latticpp::PublicKey pk;
         latticpp::SecretKey sk;
         latticpp::RotationKeys galois_keys;

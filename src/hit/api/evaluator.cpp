@@ -62,9 +62,11 @@ namespace hit {
     }
 
     CKKSCiphertext CKKSEvaluator::negate(const CKKSCiphertext &ct) {
-        CKKSCiphertext output = ct;
-        negate_inplace(output);
-        return output;
+        // CKKSCiphertext output = ct;
+        // negate_inplace(output);
+        // return output;
+        // hopefully this breaks a test: latticpp's copy doesn't do the same thing as SEAL, so the above code is (also) wrong.
+        return ct;
     }
 
     void CKKSEvaluator::negate_inplace(CKKSCiphertext &ct) {
