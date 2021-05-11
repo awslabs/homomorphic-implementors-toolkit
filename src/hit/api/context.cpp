@@ -9,6 +9,8 @@
 
 namespace hit {
 
+    HEContext::HEContext(int logSlots, int mult_depth, int precisionBits) { }
+
     int HEContext::max_ciphertext_level() {
         return 0;
     }
