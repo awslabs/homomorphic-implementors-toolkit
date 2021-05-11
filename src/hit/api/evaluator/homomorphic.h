@@ -89,7 +89,6 @@ namespace hit {
 
         void multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
 
-        /* WARNING: This function is not constant time in the scalar argument. */
         void multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) override;
 
         void multiply_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain) override;
@@ -118,7 +117,6 @@ namespace hit {
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 
         void deserialize_common(std::istream &params_stream);
-        // void makeSealCtxt(const seal::EncryptionParameters &params, const hit::timepoint &start);
 
         friend class DebugEval;
         friend class ScaleEstimator;
