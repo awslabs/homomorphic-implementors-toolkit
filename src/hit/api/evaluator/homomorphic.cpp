@@ -362,8 +362,7 @@ namespace hit {
         seal_evaluator->multiply_inplace(ct1.seal_ct, ct2.seal_ct);
     }
 
-    /* WARNING: Multiplying by 0 results in non-constant time behavior! Only multiply by 0 if the scalar is truly
-     * public. */
+    /* WARNING: This function is not constant time in the scalar argument. */
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         if (scalar != double{0}) {
             Plaintext encoded_plain;

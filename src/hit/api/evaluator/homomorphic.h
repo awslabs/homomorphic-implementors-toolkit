@@ -91,8 +91,7 @@ namespace hit {
 
         void multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
 
-        /* WARNING: Multiplying by 0 results in non-constant time behavior! Only multiply by 0 if the scalar is truly
-         * public. */
+        /* WARNING: This function is not constant time in the scalar argument. */
         void multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) override;
 
         void multiply_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain) override;
