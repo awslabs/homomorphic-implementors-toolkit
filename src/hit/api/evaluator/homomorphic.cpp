@@ -314,7 +314,6 @@ namespace hit {
     }
 
     void HomomorphicEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
-        CKKSCiphertext dest = ct;
         seal_evaluator->rotate_vector_inplace(ct.seal_ct, -steps, galois_keys);
     }
 
