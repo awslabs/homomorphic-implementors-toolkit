@@ -105,24 +105,19 @@ namespace hit {
         // seal_decryptor = new Decryptor(*context, sk);
     }
 
-    HomomorphicEval::~HomomorphicEval() {
-        // delete encoder;
-        // delete seal_evaluator;
-        // delete seal_encryptor;
-        // delete seal_decryptor;
-    }
-
     void HomomorphicEval::deserialize_common(istream &params_stream) {
         protobuf::CKKSParams ckks_params;
         ckks_params.ParseFromIstream(&params_stream);
 
-        Parameters params = unmarshalBinaryParameters(ckks_params.ctx());
+        istringstream ctx_stream(ckks_params.ctx());
+        Parameters params = unmarshalBinaryParameters(ctx_stream);
         context = shared_ptr<HEContext>(new HEContext(params));
 
         seal_evaluator = newEvaluator(params);
         seal_encoder = newEncoder(params);
 
-        PublicKey pk = unmarshalBinaryPublicKey(ckks_params.pubkey());
+        istringstream pk_stream(ckks_params.pubkey());
+        PublicKey pk = unmarshalBinaryPublicKey(pk_stream);
         seal_encryptor = newEncryptorFromPk(params, pk);
 
         standard_params_ = ckks_params.standardparams();
@@ -130,25 +125,23 @@ namespace hit {
 
     /* An evaluation instance */
     HomomorphicEval::HomomorphicEval(istream &params_stream, istream &galois_key_stream, istream &relin_key_stream) {
-        // deserialize_common(params_stream);
-
-        // timepoint start = chrono::steady_clock::now();
-        // galois_keys.load(*context, galois_key_stream);
-        // relin_keys.load(*context, relin_key_stream);
-        // log_elapsed_time(start, "Reading keys...");
+        deserialize_common(params_stream);
+        timepoint start = chrono::steady_clock::now();
+        galois_keys = unmarshalBinaryRotationKeys(galois_key_stream);
+        relin_keys = unmarshalBinaryEvaluationKey(relin_key_stream);
+        log_elapsed_time(start, "Reading keys...");
     }
 
     /* A full instance */
     HomomorphicEval::HomomorphicEval(istream &params_stream, istream &galois_key_stream, istream &relin_key_stream,
                                      istream &secret_key_stream) {
-        // deserialize_common(params_stream);
-
-        // timepoint start = chrono::steady_clock::now();
-        // sk.load(*context, secret_key_stream);
-        // galois_keys.load(*context, galois_key_stream);
-        // relin_keys.load(*context, relin_key_stream);
-        // log_elapsed_time(start, "Reading keys...");
-        // seal_decryptor = new Decryptor(*context, sk);
+        deserialize_common(params_stream);
+        timepoint start = chrono::steady_clock::now();
+        sk = unmarshalBinarySecretKey(secret_key_stream);
+        galois_keys = unmarshalBinaryRotationKeys(galois_key_stream);
+        relin_keys = unmarshalBinaryEvaluationKey(relin_key_stream);
+        log_elapsed_time(start, "Reading keys...");
+        seal_decryptor = newDecryptor(context->params, sk);
     }
 
     void HomomorphicEval::save(ostream &params_stream, ostream &galois_key_stream, ostream &relin_key_stream,

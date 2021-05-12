@@ -42,7 +42,7 @@ namespace hit {
                         std::istream &secret_key_stream);
 
         /* For documentation on the API, see ../evaluator.h */
-        ~HomomorphicEval() override;
+        ~HomomorphicEval() = default;
 
         HomomorphicEval(const HomomorphicEval &) = delete;
         HomomorphicEval &operator=(const HomomorphicEval &) = delete;
