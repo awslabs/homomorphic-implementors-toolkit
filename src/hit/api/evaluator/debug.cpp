@@ -274,7 +274,7 @@ namespace hit {
     }
 
     void DebugEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        uint64_t p = homomorphic_eval->context->last_prime(ct.he_level());
+        uint64_t p = homomorphic_eval->context->getQi(ct.he_level());
         double prime_bit_len = log2(p);
 
         homomorphic_eval->rescale_to_next_inplace_internal(ct);

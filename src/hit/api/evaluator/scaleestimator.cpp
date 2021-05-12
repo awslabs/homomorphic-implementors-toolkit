@@ -48,8 +48,8 @@ namespace hit {
 
         // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
-        for (int i = 0; i <= context->max_ciphertext_level(); i++) {
-            estimated_max_log_scale_ += log2(context->last_prime(i));
+        for (int i = 0; i < context->numQi(); i++) {
+            estimated_max_log_scale_ += log2(context->getQi(i));
         }
     }
 
@@ -62,8 +62,8 @@ namespace hit {
 
         // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
-        for (int i = 0; i <= context->max_ciphertext_level(); i++) {
-            estimated_max_log_scale_ += log2(context->last_prime(i));
+        for (int i = 0; i < context->numQi(); i++) {
+            estimated_max_log_scale_ += log2(context->getQi(i));
         }
     }
 
@@ -93,7 +93,7 @@ namespace hit {
         double scale = pow(2, log_scale_);
         // order of operations is very important: floating point arithmetic is not associative
         for (int i = context->max_ciphertext_level(); i > level; i--) {
-            scale = (scale * scale) / static_cast<double>(context->last_prime(i));
+            scale = (scale * scale) / static_cast<double>(context->getQi(i));
         }
 
         CKKSCiphertext destination;
@@ -132,7 +132,7 @@ namespace hit {
         double exact_plaintext_max_val = l_inf_norm(ct.raw_pt);
         double log_modulus = 0;
         for (int i = 0; i <= ct.he_level(); i++) {
-            log_modulus += log2(context->last_prime(i));
+            log_modulus += log2(context->getQi(i));
         }
         plaintext_eval->print_stats(ct);
         VLOG(VLOG_EVAL) << "    + Level: " << ct.he_level();

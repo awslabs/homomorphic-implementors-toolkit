@@ -4,15 +4,25 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
+#include "hit/api/backend.h"
 
 namespace hit {
+    std::vector<int> gen_modulus_vec(int num_primes, int mult_depth, int log_scale);
+
     class HEContext {
     public:
         HEContext(int logSlots, int mult_depth, int precisionBits);
+        HEContext(const latticpp::Parameters &params);
 
         int max_ciphertext_level();
         int num_slots();
-        int last_prime(int he_level);
+        uint64_t getQi(int he_level);
+        uint64_t getPi(int i);
+        int numQi();
+        int numPi();
         int min_log_scale();
+
+        latticpp::Parameters params;
     };
 }  // namespace hit

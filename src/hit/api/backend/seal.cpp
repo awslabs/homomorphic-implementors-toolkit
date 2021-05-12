@@ -55,8 +55,26 @@ namespace hit {
         return context->first_context_data()->parms().poly_modulus_degree() / 2;
     }
 
-    uint64_t SealCtx::last_prime(int he_level) {
+    uint64_t SealCtx::getQi(int he_level) {
+        if (he_level > max_ciphertext_level()) {
+            LOG_AND_THROW_STREAM("Q_i index-out-of-bounds exception");
+        }
         return get_context_data(he_level)->parms().coeff_modulus().back().value();
+    }
+
+    uint64_t SealCtx::getPi(int i) {
+        if (i != 0) {
+            LOG_AND_THROW_STREAM("SEAL only supports a single key-switch modulus");
+        }
+        return context->key_context_data()->parms().coeff_modulus().back().value();
+    }
+
+    uint64_t SealCtx::numQi() {
+        return max_ciphertext_level() + 1;
+    }
+
+    uint64_t SealCtx::numPi(int i) {
+        return 1;
     }
 
     int SealCtx::min_log_scale() {

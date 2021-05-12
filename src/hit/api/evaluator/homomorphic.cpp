@@ -112,79 +112,20 @@ namespace hit {
         // delete seal_decryptor;
     }
 
-    // void HomomorphicEval::makeSealCtxt(const seal::EncryptionParameters &params, const timepoint &start) {
-        // if (standard_params_) {
-        //     context = make_unique<SEALContext>(params);
-        // } else {
-        //     LOG(WARNING) << "YOU ARE NOT USING STANDARD SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security"
-        //                  << "DO NOT USE IN PRODUCTION";
-        //     // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-        //     context = make_unique<SEALContext>(params, true, sec_level_type::none);
-        // }
-        // log_elapsed_time(start, "Creating encryption context...");
-    // }
-
     void HomomorphicEval::deserialize_common(istream &params_stream) {
-        // protobuf::CKKSParams ckks_params;
-        // ckks_params.ParseFromIstream(&params_stream);
+        protobuf::CKKSParams ckks_params;
+        ckks_params.ParseFromIstream(&params_stream);
 
-        // log_scale_ = ckks_params.logscale();
-        // if (log_scale_ <= MIN_LOG_SCALE) {
-        //     LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: log scale too small. Minimum value is "
-        //                          << MIN_LOG_SCALE << ", got " << log_scale_);
-        // }
+        Parameters params = unmarshalBinaryParameters(ckks_params.ctx());
+        context = shared_ptr<HEContext>(new HEContext(params));
 
-        // int num_slots = ckks_params.numslots();
-        // if (num_slots < 4096 || !is_pow2(num_slots)) {
-        //     LOG_AND_THROW_STREAM(
-        //         "Error deserializing CKKS parameters: num_slots is invalid. Expected a power of two at least 4096, got "
-        //         << num_slots);
-        // }
+        seal_evaluator = newEvaluator(params);
+        seal_encoder = newEncoder(params);
 
-        // int poly_modulus_degree = num_slots * 2;
-        // int num_primes = ckks_params.modulusvec_size();
-        // if (num_primes < 2) {
-        //     LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: at least two primes are required, but only got "
-        //                          << num_primes);
-        // }
+        PublicKey pk = unmarshalBinaryPublicKey(ckks_params.pubkey());
+        seal_encryptor = newEncryptorFromPk(params, pk);
 
-        // vector<Modulus> modulus_vector;
-        // modulus_vector.reserve(num_primes);
-        // for (int i = 0; i < num_primes; i++) {
-        //     auto val = Modulus(ckks_params.modulusvec(i));
-        //     modulus_vector.push_back(val);
-        // }
-
-        // if (round(log2(modulus_vector[0].value())) != 60) {
-        //     LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: Last prime must be 60 bits, got "
-        //                          << log2(modulus_vector[0].value()) << " bits");
-        // }
-        // if (round(log2(modulus_vector[num_primes - 1].value())) != 60) {
-        //     LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: Special prime must be 60 bits, got "
-        //                          << log2(modulus_vector[num_primes - 1].value()) << " bits");
-        // }
-        // int expected_log_scale = static_cast<int>(round(log2(modulus_vector[1].value())));
-        // for (int i = 2; i < num_primes - 1; i++) {
-        //     int log_prime = static_cast<int>(round(log2(modulus_vector[i].value())));
-        //     if (log_prime != expected_log_scale) {
-        //         LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: modulus primes expected to be "
-        //                              << expected_log_scale << " bits, got " << log_prime << " bits");
-        //     }
-        // }
-
-        // EncryptionParameters params = EncryptionParameters(scheme_type::ckks);
-        // params.set_poly_modulus_degree(poly_modulus_degree);
-        // params.set_coeff_modulus(modulus_vector);
-
-        // standard_params_ = ckks_params.standardparams();
-        // timepoint start = chrono::steady_clock::now();
-        // makeSealCtxt(params, start);
-        // seal_evaluator = new Evaluator(*context);
-        // encoder = new CKKSEncoder(*context);
-
-        // istringstream pkstream(ckks_params.pubkey());
-        // pk.load(*context, pkstream);
-        // seal_encryptor = new Encryptor(*context, pk);
+        standard_params_ = ckks_params.standardparams();
     }
 
     /* An evaluation instance */
@@ -212,29 +153,17 @@ namespace hit {
 
     void HomomorphicEval::save(ostream &params_stream, ostream &galois_key_stream, ostream &relin_key_stream,
                                ostream *secret_key_stream) {
-        // if (secret_key_stream != nullptr) {
-        //     sk.save(*secret_key_stream);
-        // }
+        if (secret_key_stream != nullptr) {
+            (*secret_key_stream) << marshalBinarySecretKey(sk);
+        }
 
-        // protobuf::CKKSParams ckks_params;
-        // auto context_data = context->key_context_data();
-        // ckks_params.set_numslots(context_data->parms().poly_modulus_degree() / 2);
-        // ckks_params.set_logscale(log_scale_);
-        // ckks_params.set_standardparams(standard_params_);
+        protobuf::CKKSParams ckks_params;
+        ckks_params.set_standardparams(standard_params_);
+        ckks_params.set_ctx(marshalBinaryParameters(context->params));
+        ckks_params.set_pubkey(marshalBinaryPublicKey(pk));
 
-        // ostringstream sealpkBuf;
-        // pk.save(sealpkBuf);
-        // ckks_params.set_pubkey(sealpkBuf.str());
-
-        // for (const auto &prime : context_data->parms().coeff_modulus()) {
-        //     ckks_params.add_modulusvec(prime.value());
-        // }
-        // ckks_params.SerializeToOstream(&params_stream);
-
-        // // There is a SEAL limitation that prevents saving large files with compression
-        // // This is reported at https://github.com/microsoft/SEAL/issues/142
-        // galois_keys.save(galois_key_stream, compr_mode_type::none);
-        // relin_keys.save(relin_key_stream);
+        galois_key_stream << marshalBinaryRotationKeys(galois_keys);
+        relin_key_stream << marshalBinaryEvaluationKey(relin_keys);
     }
 
     CKKSCiphertext HomomorphicEval::encrypt(const vector<double> &coeffs) {
@@ -258,7 +187,7 @@ namespace hit {
         double scale = pow(2, log_scale_);
         // order of operations is very important: floating point arithmetic is not associative
         for (int i = context->max_ciphertext_level(); i > level; i--) {
-            scale = (scale * scale) / static_cast<double>(context->last_prime(i));
+            scale = (scale * scale) / static_cast<double>(context->getQi(i));
         }
 
         CKKSCiphertext destination;
@@ -297,7 +226,7 @@ namespace hit {
     }
 
     uint64_t HomomorphicEval::get_last_prime_internal(const CKKSCiphertext &ct) const {
-        return context->last_prime(ct.he_level());
+        return context->getQi(ct.he_level());
     }
 
     void HomomorphicEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
