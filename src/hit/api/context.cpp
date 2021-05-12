@@ -55,7 +55,7 @@ namespace hit {
         return sk_bytes + pk_bytes + rk_bytes + gk_bytes;
     }
 
-    HEContext::HEContext(const Parameters &params) : params(params) { }
+    HEContext::HEContext(Parameters &params) : params(move(params)) { }
 
     HEContext::HEContext(int num_slots, int mult_depth, int precisionBits) {
         if (!is_pow2(num_slots) || num_slots < 4096) {
@@ -88,31 +88,31 @@ namespace hit {
         params = newParametersFromLogModuli(log2(num_slots) + 1, logQi, mult_depth + 1, logPi, 1);
     }
 
-    int HEContext::max_ciphertext_level() {
+    int HEContext::max_ciphertext_level() const {
         return maxLevel(params);
     }
 
-    int HEContext::num_slots() {
+    int HEContext::num_slots() const {
         return numSlots(params);
     }
 
-    uint64_t HEContext::getQi(int he_level) {
+    uint64_t HEContext::getQi(int he_level) const {
         return qi(params, he_level);
     }
 
-    uint64_t HEContext::getPi(int i) {
+    uint64_t HEContext::getPi(int i) const {
         return pi(params, i);
     }
 
-    int HEContext::numQi() {
+    int HEContext::numQi() const {
         return qiCount(params);
     }
 
-    int HEContext::numPi() {
+    int HEContext::numPi() const {
         return piCount(params);
     }
 
-    int HEContext::min_log_scale() {
+    int HEContext::min_log_scale() const { // NOLINT(readability-convert-member-functions-to-static)
         // SEAL throws an error for 21, but allows 22
         // I haven't updated this for Lattigo; but this is WAY lower than would work in practice anyway,
         // so I'm not too concerned.

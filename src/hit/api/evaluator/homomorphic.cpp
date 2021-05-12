@@ -27,7 +27,7 @@ namespace hit {
     HomomorphicEval::HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,
                                      const vector<int> &galois_steps)
         : log_scale_(log_scale) {
-        context = shared_ptr<HEContext>(new HEContext(num_slots, multiplicative_depth, log_scale));
+        context = make_shared<HEContext>(HEContext(num_slots, multiplicative_depth, log_scale));
         standard_params_ = use_seal_params;
         seal_evaluator = newEvaluator(context->params);
         seal_encoder = newEncoder(context->params);
@@ -83,13 +83,13 @@ namespace hit {
 
         istringstream ctx_stream(ckks_params.ctx());
         Parameters params = unmarshalBinaryParameters(ctx_stream);
-        context = shared_ptr<HEContext>(new HEContext(params));
+        context = make_shared<HEContext>(HEContext(params));
 
         seal_evaluator = newEvaluator(params);
         seal_encoder = newEncoder(params);
 
         istringstream pk_stream(ckks_params.pubkey());
-        PublicKey pk = unmarshalBinaryPublicKey(pk_stream);
+        pk = unmarshalBinaryPublicKey(pk_stream);
         seal_encryptor = newEncryptorFromPk(params, pk);
 
         standard_params_ = ckks_params.standardparams();
@@ -126,6 +126,7 @@ namespace hit {
         ckks_params.set_standardparams(standard_params_);
         ckks_params.set_ctx(marshalBinaryParameters(context->params));
         ckks_params.set_pubkey(marshalBinaryPublicKey(pk));
+        ckks_params.SerializeToOstream(&params_stream);
 
         galois_key_stream << marshalBinaryRotationKeys(galois_keys);
         relin_key_stream << marshalBinaryEvaluationKey(relin_keys);
@@ -173,7 +174,7 @@ namespace hit {
     }
 
     vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const {
-        if (!seal_decryptor.getRawHandle()) {
+        if (seal_decryptor.getRawHandle() == 0) {
             LOG_AND_THROW_STREAM(
                 "Decryption is only possible from a deserialized instance when the secret key is provided.");
         }

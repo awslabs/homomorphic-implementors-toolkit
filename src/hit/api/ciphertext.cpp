@@ -62,7 +62,7 @@ namespace hit {
         proto_ct->set_he_level(he_level_);
 
         // if the backend_ct is initialized, serialize it
-        if (backend_ct.getRawHandle()) {
+        if (backend_ct.getRawHandle() != 0) {
             proto_ct->set_ct(marshalBinaryCiphertext(backend_ct));
         }
 

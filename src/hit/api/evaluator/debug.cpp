@@ -38,12 +38,12 @@ namespace hit {
         double totalBits = 0;
         stringstream coeff_bit_size_info;
         for (int i = 0; i < homomorphic_eval->context->numQi(); i++) {
-            double bits = log2((double)homomorphic_eval->context->getQi(i));
+            double bits = log2(static_cast<double>(homomorphic_eval->context->getQi(i)));
             totalBits += bits;
             coeff_bit_size_info << ceil(bits) << " + ";
         }
         for (int i = 0; i < homomorphic_eval->context->numPi(); i++) {
-            double bits = log2((double)homomorphic_eval->context->getPi(i));
+            double bits = log2(static_cast<double>(homomorphic_eval->context->getPi(i)));
             totalBits += bits;
             coeff_bit_size_info << ceil(bits) << " + ";
         }

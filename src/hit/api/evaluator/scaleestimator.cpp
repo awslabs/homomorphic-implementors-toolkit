@@ -22,7 +22,7 @@ namespace hit {
         : log_scale_(defaultScaleBits), num_slots_(num_slots) {
         plaintext_eval = new PlaintextEval(num_slots);
 
-        context = shared_ptr<HEContext>(new HEContext(num_slots, multiplicative_depth, log_scale_));
+        context = make_shared<HEContext>(HEContext(num_slots, multiplicative_depth, log_scale_));
 
         // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;

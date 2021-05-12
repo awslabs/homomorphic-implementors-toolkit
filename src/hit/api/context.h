@@ -14,15 +14,15 @@ namespace hit {
     class HEContext {
     public:
         HEContext(int num_slots, int mult_depth, int precisionBits);
-        HEContext(const latticpp::Parameters &params);
+        explicit HEContext(latticpp::Parameters &params);
 
-        int max_ciphertext_level();
-        int num_slots();
-        uint64_t getQi(int he_level);
-        uint64_t getPi(int i);
-        int numQi();
-        int numPi();
-        int min_log_scale();
+        int max_ciphertext_level() const;
+        int num_slots() const;
+        uint64_t getQi(int he_level) const;
+        uint64_t getPi(int i) const;
+        int numQi() const;
+        int numPi() const;
+        int min_log_scale() const;
 
         latticpp::Parameters params;
     };
