@@ -9,10 +9,11 @@
 
 namespace hit {
     std::vector<int> gen_modulus_vec(int num_primes, int mult_depth, int log_scale);
+    uint64_t estimate_key_size(int num_galois_shift, int plaintext_slots, int depth);
 
     class HEContext {
     public:
-        HEContext(int logSlots, int mult_depth, int precisionBits);
+        HEContext(int num_slots, int mult_depth, int precisionBits);
         HEContext(const latticpp::Parameters &params);
 
         int max_ciphertext_level();

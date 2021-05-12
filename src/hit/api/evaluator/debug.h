@@ -96,5 +96,7 @@ namespace hit {
 
         void print_stats(const CKKSCiphertext &ct) const override;
         void constructor_common(int num_slots);
+        void print_parameters();
+        int totalModBitCount();
     };
 }  // namespace hit

@@ -22,29 +22,7 @@ namespace hit {
         : log_scale_(defaultScaleBits), num_slots_(num_slots) {
         plaintext_eval = new PlaintextEval(num_slots);
 
-        if (!is_pow2(num_slots) || num_slots < 4096) {
-            LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
-                                 << "num_slots must be a power of 2, and at least 4096. Got " << num_slots);
-        }
-
-        // SEAL uses a single 60-bit "special" modulus for key switching.
-        // Lattigo (https://eprint.iacr.org/2020/1203.pdf) supports *multiple* key-switch moduli.
-        // Using multiple moduli makes keys smaller and makes key-switching faster. For now, I'm
-        // just using the same scheme that SEAL supports, but eventually it would be nice to make
-        // HIT for Lattigo support multiple key-switch moduli.
-        int num_primes = multiplicative_depth + 2;
-
-        int modBits = 120 + multiplicative_depth * log_scale_;
-
-        int min_poly_degree = modulus_to_poly_degree(modBits);
-        int poly_modulus_degree = num_slots * 2;
-        if (poly_modulus_degree < min_poly_degree) {
-            LOG_AND_THROW_STREAM("Invalid parameters when creating ScaleEstimator instance: "
-                                 << "Parameters for depth " << multiplicative_depth << " circuits and scale "
-                                 << log_scale_ << " bits require more than " << num_slots << " plaintext slots.");
-        }
-
-        context = shared_ptr<HEContext>(new HEContext(log2(num_slots), multiplicative_depth, log_scale_));
+        context = shared_ptr<HEContext>(new HEContext(num_slots, multiplicative_depth, log_scale_));
 
         // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;

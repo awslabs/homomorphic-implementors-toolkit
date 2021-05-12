@@ -9,6 +9,7 @@
 
 #include "homomorphic.h"
 #include "hit/protobuf/ckksparams.pb.h"
+#include <iomanip>
 
 using namespace std;
 using namespace latticpp;
@@ -26,83 +27,54 @@ namespace hit {
     HomomorphicEval::HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,
                                      const vector<int> &galois_steps)
         : log_scale_(log_scale) {
-        // if (!is_pow2(num_slots) || num_slots < 4096) {
-        //     LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
-        //                          << "num_slots must be a power of 2, and at least 4096. Got " << num_slots);
-        // }
+        context = shared_ptr<HEContext>(new HEContext(num_slots, multiplicative_depth, log_scale));
+        standard_params_ = use_seal_params;
+        seal_evaluator = newEvaluator(context->params);
+        seal_encoder = newEncoder(context->params);
 
-        // int poly_modulus_degree = num_slots * 2;
-        // if (log_scale_ < MIN_LOG_SCALE) {
-        //     LOG(ERROR) << "poly_modulus_degree is " << poly_modulus_degree << ", which limits the modulus to "
-        //                << poly_degree_to_max_mod_bits(poly_modulus_degree) << " bits";
-        //     LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
-        //                          << "log_scale is " << log_scale_ << ", which is less than the minimum "
-        //                          << MIN_LOG_SCALE
-        //                          << ". Either increase the number of slots or decrease the number of primes.");
-        // }
+        int num_galois_keys = galois_steps.size();
+        VLOG(VLOG_VERBOSE) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth
+                           << ", including " << (num_galois_keys != 0 ? to_string(num_galois_keys) : "all")
+                           << " Galois keys.";
 
-        // int num_primes = multiplicative_depth + 2;
-        // vector<int> modulusVector = gen_modulus_vec(num_primes, log_scale_);
-        // int mod_bits = 0;
-        // for (const auto &bits : modulusVector) {
-        //     mod_bits += bits;
-        // }
-        // int min_poly_degree = modulus_to_poly_degree(mod_bits);
-        // if (poly_modulus_degree < min_poly_degree) {
-        //     LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
-        //                          << "Parameters for depth " << multiplicative_depth << " circuits and scale "
-        //                          << log_scale << " bits require more than " << num_slots << " plaintext slots.");
-        // }
-        // EncryptionParameters params = EncryptionParameters(scheme_type::ckks);
-        // params.set_poly_modulus_degree(poly_modulus_degree);
-        // params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulusVector));
-        // timepoint start = chrono::steady_clock::now();
-        // standard_params_ = use_seal_params;
-        // makeSealCtxt(params, start);
-        // seal_evaluator = new Evaluator(*context);
-        // encoder = new CKKSEncoder(*context);
+        double keys_size_bytes = estimate_key_size(galois_steps.size(), num_slots, multiplicative_depth);
+        VLOG(VLOG_VERBOSE) << "Estimated size is " << setprecision(3);
+        // using base-10 (SI) units, rather than base-2 units.
+        double unit_multiplier = 1000;
+        double bytes_per_kb = unit_multiplier;
+        double bytes_per_mb = bytes_per_kb * unit_multiplier;
+        double bytes_per_gb = bytes_per_mb * unit_multiplier;
+        if (keys_size_bytes < bytes_per_kb) {
+            VLOG(VLOG_VERBOSE) << keys_size_bytes << " bytes";
+        } else if (keys_size_bytes < bytes_per_mb) {
+            VLOG(VLOG_VERBOSE) << keys_size_bytes / bytes_per_kb << " kilobytes (base 10)";
+        } else if (keys_size_bytes < bytes_per_gb) {
+            VLOG(VLOG_VERBOSE) << keys_size_bytes / bytes_per_mb << " megabytes (base 10)";
+        } else {
+            VLOG(VLOG_VERBOSE) << keys_size_bytes / bytes_per_gb << " gigabytes (base 10)";
+        }
 
-        // int num_galois_keys = galois_steps.size();
-        // VLOG(VLOG_VERBOSE) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth
-        //                    << ", including " << (num_galois_keys != 0 ? to_string(num_galois_keys) : "all")
-        //                    << " Galois keys.";
-
-        // double keys_size_bytes = estimate_key_size(galois_steps.size(), num_slots, multiplicative_depth);
-        // VLOG(VLOG_VERBOSE) << "Estimated size is " << setprecision(3);
-        // // using base-10 (SI) units, rather than base-2 units.
-        // double unit_multiplier = 1000;
-        // double bytes_per_kb = unit_multiplier;
-        // double bytes_per_mb = bytes_per_kb * unit_multiplier;
-        // double bytes_per_gb = bytes_per_mb * unit_multiplier;
-        // if (keys_size_bytes < bytes_per_kb) {
-        //     VLOG(VLOG_VERBOSE) << keys_size_bytes << " bytes";
-        // } else if (keys_size_bytes < bytes_per_mb) {
-        //     VLOG(VLOG_VERBOSE) << keys_size_bytes / bytes_per_kb << " kilobytes (base 10)";
-        // } else if (keys_size_bytes < bytes_per_gb) {
-        //     VLOG(VLOG_VERBOSE) << keys_size_bytes / bytes_per_mb << " megabytes (base 10)";
-        // } else {
-        //     VLOG(VLOG_VERBOSE) << keys_size_bytes / bytes_per_gb << " gigabytes (base 10)";
-        // }
-
-        // start = chrono::steady_clock::now();
-        // // generate keys
-        // // This call generates a KeyGenerator with fresh randomness
-        // // The KeyGenerator object contains deterministic keys.
-        // KeyGenerator keygen(*context);
-        // sk = keygen.secret_key();
-        // keygen.create_public_key(pk);
+        timepoint start = chrono::steady_clock::now();
+        // generate keys
+        // This call generates a KeyGenerator with fresh randomness
+        // The KeyGenerator object contains deterministic keys.
+        KeyGenerator keyGenerator = newKeyGenerator(context->params);
+        KeyPairHandle kp = genKeyPair(keyGenerator);
+        sk = kp.sk;
+        pk = kp.pk;
         // if (num_galois_keys > 0) {
         //     keygen.create_galois_keys(galois_steps, galois_keys);
         // } else {
         //     // generate all galois keys
         //     keygen.create_galois_keys(galois_keys);
         // }
-        // keygen.create_relin_keys(relin_keys);
+        galois_keys = genRotationKeysPow2(keyGenerator, sk);
+        relin_keys = genRelinKey(keyGenerator, sk);
 
-        // log_elapsed_time(start, "Generating keys...");
+        log_elapsed_time(start, "Generating keys...");
 
-        // seal_encryptor = new Encryptor(*context, pk);
-        // seal_decryptor = new Decryptor(*context, sk);
+        seal_encryptor = newEncryptorFromPk(context->params, pk);
+        seal_decryptor = newDecryptor(context->params, sk);
     }
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {
