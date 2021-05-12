@@ -57,10 +57,9 @@ namespace hit {
         VLOG(VLOG_VERBOSE) << "Print the modulus switching chain.";
 
         // First print the key level parameter information.
-        // auto context_data = homomorphic_eval->context->key_context_data();
         VLOG(VLOG_VERBOSE) << "----> Level (chain index): " << homomorphic_eval->context->numQi()
                            << " ...... key_context_data()";
-        // VLOG(VLOG_VERBOSE) << "      parms_id: " << context_data->parms_id();
+        VLOG(VLOG_VERBOSE) << "      parms_id: lvl<" << i << ">";
         stringstream key_level_primes;
         for (int i = 0; i < homomorphic_eval->context->numQi(); i++) {
             key_level_primes << homomorphic_eval->context->getQi(i) << " ";
