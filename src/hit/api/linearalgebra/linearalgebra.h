@@ -47,7 +47,7 @@
 #ifdef DISABLE_PARALLELISM
 #define UNIQUE_ID() COMBINE(i,__LINE__)
 #define parallel_for(max_idx, body)                                                     \
-    for(int UNIQUE_ID() = 0; UNIQUE_ID() < max_idx; UNIQUE_ID()++) {                    \
+    for(int UNIQUE_ID() = 0; UNIQUE_ID() < (max_idx); UNIQUE_ID()++) {                  \
         body(UNIQUE_ID());                                                              \
     }
 #else /* !DISABLE_PARALLELISM */
