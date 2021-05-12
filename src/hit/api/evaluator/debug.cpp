@@ -18,7 +18,6 @@ namespace hit {
     void DebugEval::constructor_common(int num_slots) {
         // use the _private_ ScaleEstimator constructor to avoid creating two sets of CKKS params
         scale_estimator = new ScaleEstimator(num_slots, *homomorphic_eval);
-        log_scale_ = homomorphic_eval->log_scale_;
         print_parameters();
     }
 
@@ -59,7 +58,7 @@ namespace hit {
         // First print the key level parameter information.
         VLOG(VLOG_VERBOSE) << "----> Level (chain index): " << homomorphic_eval->context->numQi()
                            << " ...... key_context_data()";
-        VLOG(VLOG_VERBOSE) << "      parms_id: lvl<" << i << ">";
+        VLOG(VLOG_VERBOSE) << "      parms_id: lvl<" << homomorphic_eval->context->numQi() << ">";
         stringstream key_level_primes;
         for (int i = 0; i < homomorphic_eval->context->numQi(); i++) {
             key_level_primes << homomorphic_eval->context->getQi(i) << " ";
@@ -218,7 +217,7 @@ namespace hit {
             LOG(ERROR) << "Encryption norm: " << norm3;
 
             LOG_AND_THROW_STREAM("Plaintext and ciphertext divergence: " << norm << " > " << MAX_NORM << ". Scale is "
-                                                                         << log_scale_
+                                                                         << homomorphic_eval->context->log_scale()
                                                                          << " bits. See error log for more details.");
         }
     }

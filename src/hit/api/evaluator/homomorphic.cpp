@@ -25,8 +25,7 @@ namespace hit {
      */
 
     HomomorphicEval::HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,
-                                     const vector<int> &galois_steps)
-        : log_scale_(log_scale) {
+                                     const vector<int> &galois_steps) {
         context = make_shared<HEContext>(HEContext(num_slots, multiplicative_depth, log_scale));
         standard_params_ = use_seal_params;
         seal_evaluator = newEvaluator(context->params);
@@ -150,7 +149,7 @@ namespace hit {
             level = context->max_ciphertext_level();
         }
 
-        double scale = pow(2, log_scale_);
+        double scale = pow(2, context->log_scale());
         // order of operations is very important: floating point arithmetic is not associative
         for (int i = context->max_ciphertext_level(); i > level; i--) {
             scale = (scale * scale) / static_cast<double>(context->getQi(i));

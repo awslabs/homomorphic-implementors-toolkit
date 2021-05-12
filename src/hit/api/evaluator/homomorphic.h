@@ -112,8 +112,6 @@ namespace hit {
         latticpp::EvaluationKey relin_keys;
         bool standard_params_;
 
-        int log_scale_;
-
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 
         void deserialize_common(std::istream &params_stream);

@@ -23,7 +23,10 @@ namespace hit {
         int numQi() const;
         int numPi() const;
         int min_log_scale() const;
+        int log_scale() const;
 
         latticpp::Parameters params;
+    private:
+        void validateParams(int num_slots, int mult_depth, int precisionBits) const;
     };
 }  // namespace hit

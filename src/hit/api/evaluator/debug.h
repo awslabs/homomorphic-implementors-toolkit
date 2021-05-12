@@ -87,8 +87,6 @@ namespace hit {
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
        private:
-        int log_scale_;
-
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 
         HomomorphicEval *homomorphic_eval;

@@ -55,16 +55,11 @@ namespace hit {
         return sk_bytes + pk_bytes + rk_bytes + gk_bytes;
     }
 
-    HEContext::HEContext(Parameters &params) : params(move(params)) { }
-
-    HEContext::HEContext(int num_slots, int mult_depth, int precisionBits) {
+    void HEContext::validateParams(int num_slots, int mult_depth, int precisionBits) const {
         if (!is_pow2(num_slots) || num_slots < 4096) {
             LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
                                  << "num_slots must be a power of 2, and at least 4096. Got " << num_slots);
         }
-
-        vector<uint8_t> logQi = gen_ciphertext_modulus_vec(mult_depth + 1, precisionBits);
-        vector<uint8_t> logPi(1);
 
         int poly_modulus_degree = num_slots * 2;
         if (precisionBits < min_log_scale()) {
@@ -83,7 +78,16 @@ namespace hit {
                                  << "Parameters for depth " << mult_depth << " circuits and scale "
                                  << precisionBits << " bits require more than " << num_slots << " plaintext slots.");
         }
+    }
 
+    HEContext::HEContext(Parameters &params) : params(move(params)) {
+        validateParams(num_slots(), max_ciphertext_level() - 1, ceil(log2(scale(params))));
+    }
+
+    HEContext::HEContext(int num_slots, int mult_depth, int precisionBits) {
+        validateParams(num_slots, mult_depth, precisionBits);
+        vector<uint8_t> logQi = gen_ciphertext_modulus_vec(mult_depth + 1, precisionBits);
+        vector<uint8_t> logPi(1);
         logPi[0] = 60; // special modulus. For now, we just use a single modulus like SEAL.
         params = newParametersFromLogModuli(log2(num_slots) + 1, logQi, mult_depth + 1, logPi, 1);
     }
@@ -117,5 +121,9 @@ namespace hit {
         // I haven't updated this for Lattigo; but this is WAY lower than would work in practice anyway,
         // so I'm not too concerned.
         return 22;
+    }
+
+    int HEContext::log_scale() const {
+        return ceil(log2(scale(params)));
     }
 }  // namespace hit

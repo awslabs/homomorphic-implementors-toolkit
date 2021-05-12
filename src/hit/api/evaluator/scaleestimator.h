@@ -82,10 +82,7 @@ namespace hit {
         void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
 
        private:
-        const int log_scale_ = 0;
-        const int num_slots_ = 0;
         ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval);
-        bool has_shared_params_ = false;
 
         PlaintextEval *plaintext_eval;
 

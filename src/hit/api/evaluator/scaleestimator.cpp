@@ -18,11 +18,10 @@ namespace hit {
     // encoding/decoding, this should be set to as high as possible.
     int defaultScaleBits = 30;
 
-    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth)
-        : log_scale_(defaultScaleBits), num_slots_(num_slots) {
+    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth) {
         plaintext_eval = new PlaintextEval(num_slots);
 
-        context = make_shared<HEContext>(HEContext(num_slots, multiplicative_depth, log_scale_));
+        context = make_shared<HEContext>(HEContext(num_slots, multiplicative_depth, defaultScaleBits));
 
         // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
@@ -31,8 +30,7 @@ namespace hit {
         }
     }
 
-    ScaleEstimator::ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval)
-        : log_scale_(homom_eval.log_scale_), num_slots_(num_slots), has_shared_params_(true) {
+    ScaleEstimator::ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval) {
         plaintext_eval = new PlaintextEval(num_slots);
 
         // instead of creating a new instance, use the instance provided
@@ -56,11 +54,11 @@ namespace hit {
     CKKSCiphertext ScaleEstimator::encrypt(const vector<double> &coeffs, int level) {
         update_plaintext_max_val(coeffs);
 
-        if (coeffs.size() != num_slots_) {
+        if (coeffs.size() != context->num_slots()) {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
             LOG_AND_THROW_STREAM("You can only encrypt vectors which have exactly as many "
-                                 << " coefficients as the number of plaintext slots: Expected " << num_slots_
+                                 << " coefficients as the number of plaintext slots: Expected " << context->num_slots()
                                  << " coefficients, but " << coeffs.size() << " were provided");
         }
 
@@ -68,7 +66,7 @@ namespace hit {
             level = context->max_ciphertext_level();
         }
 
-        double scale = pow(2, log_scale_);
+        double scale = pow(2, context->log_scale());
         // order of operations is very important: floating point arithmetic is not associative
         for (int i = context->max_ciphertext_level(); i > level; i--) {
             scale = (scale * scale) / static_cast<double>(context->getQi(i));
@@ -78,7 +76,7 @@ namespace hit {
         destination.he_level_ = level;
         destination.scale_ = scale;
         destination.raw_pt = coeffs;
-        destination.num_slots_ = num_slots_;
+        destination.num_slots_ = context->num_slots();
         destination.initialized = true;
 
         return destination;
@@ -102,7 +100,7 @@ namespace hit {
     }
 
     int ScaleEstimator::num_slots() const {
-        return num_slots_;
+        return context->num_slots();
     }
 
     // print some debug info
@@ -131,12 +129,12 @@ namespace hit {
     //      this is bogus, so nothing to do.
     void ScaleEstimator::update_max_log_scale(const CKKSCiphertext &ct) {
         // update the estimated_max_log_scale_
-        auto scale_exp = static_cast<int>(round(log2(ct.scale()) / log2(pow(2, log_scale_))));
+        auto scale_exp = static_cast<int>(round(log2(ct.scale()) / log2(pow(2, context->log_scale()))));
         if (scale_exp != 1 && scale_exp != 2) {
             LOG_AND_THROW_STREAM("Internal error: scale_exp is not 1 or 2: got "
                                  << scale_exp << ". "
                                  << "HIT ciphertext scale is " << log2(ct.scale()) << " bits, and nominal scale is "
-                                 << log_scale_ << " bits");
+                                 << context->log_scale() << " bits");
         }
         if (scale_exp > ct.he_level()) {
             auto estimated_scale = (PLAINTEXT_LOG_MAX - log2(l_inf_norm(ct.raw_pt))) / (scale_exp - ct.he_level());
@@ -272,7 +270,7 @@ namespace hit {
         }
         int top_he_level = context->max_ciphertext_level();
         if (top_he_level > 0) {
-            int max_mod_bits = poly_degree_to_max_mod_bits(2 * num_slots_);
+            int max_mod_bits = poly_degree_to_max_mod_bits(2 * context->num_slots());
             return min(estimated_log_scale, (max_mod_bits - 120) / static_cast<double>(top_he_level));
         }
         return estimated_log_scale;
