@@ -5,11 +5,12 @@
  * SEAL's Evaluator API, and those functions now have a simpler interface.
  */
 
-#include <glog/logging.h>
-
 #include "homomorphic.h"
-#include "hit/protobuf/ckksparams.pb.h"
+
+#include <glog/logging.h>
 #include <iomanip>
+
+#include "hit/protobuf/ckksparams.pb.h"
 
 using namespace std;
 using namespace latticpp;
