@@ -20,7 +20,7 @@ namespace hit {
         // the SEAL examples recommend the last modulus be 60 bits; it's unclear why,
         // and also unclear how closely that choice is related to log_scale (they use 40 in their examples)
         modulusVector[0] = 60;
-        for (int i = 1; i < num_primes - 1; i++) {
+        for (int i = 1; i < num_primes; i++) {
             modulusVector[i] = log_scale;
         }
         return modulusVector;
@@ -89,7 +89,7 @@ namespace hit {
         vector<uint8_t> logQi = gen_ciphertext_modulus_vec(mult_depth + 1, precisionBits);
         vector<uint8_t> logPi(1);
         logPi[0] = 60; // special modulus. For now, we just use a single modulus like SEAL.
-        params = newParametersFromLogModuli(log2(num_slots) + 1, logQi, mult_depth + 1, logPi, 1);
+        params = newParametersFromLogModuli(log2(num_slots) + 1, logQi, mult_depth + 1, logPi, 1, precisionBits);
     }
 
     int HEContext::max_ciphertext_level() const {
