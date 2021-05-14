@@ -160,7 +160,7 @@ namespace hit {
         destination.he_level_ = level;
         destination.scale_ = scale;
 
-        Plaintext temp = encodeNew(seal_encoder, coeffs);
+        Plaintext temp = encodeNTTAtLvlNew(context->params, seal_encoder, coeffs, level, scale);
         destination.backend_ct = encryptNew(seal_encryptor, temp);
 
         destination.num_slots_ = num_slots_;
@@ -216,7 +216,7 @@ namespace hit {
     }
 
     void HomomorphicEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        Plaintext temp = encodeNew(seal_encoder, plain);
+        Plaintext temp = encodeNTTAtLvlNew(context->params, seal_encoder, plain, ct.he_level(), ct.scale());
         addPlain(seal_evaluator, ct.backend_ct, temp, ct.backend_ct);
     }
 
@@ -229,7 +229,7 @@ namespace hit {
     }
 
     void HomomorphicEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        Plaintext temp = encodeNew(seal_encoder, plain);
+        Plaintext temp = encodeNTTAtLvlNew(context->params, seal_encoder, plain, ct.he_level(), ct.scale());
         subPlain(seal_evaluator, ct.backend_ct, temp, ct.backend_ct);
     }
 
@@ -242,7 +242,7 @@ namespace hit {
     }
 
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        Plaintext temp = encodeNew(seal_encoder, plain);
+        Plaintext temp = encodeNTTAtLvlNew(context->params, seal_encoder, plain, ct.he_level(), ct.scale());
         mulPlain(seal_evaluator, ct.backend_ct, temp, ct.backend_ct);
     }
 

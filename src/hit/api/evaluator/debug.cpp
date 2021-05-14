@@ -199,7 +199,7 @@ namespace hit {
             actual_debug_result << ">";
             LOG(ERROR) << actual_debug_result.str();
 
-            Plaintext encoded_plain = encodeNew(homomorphic_eval->seal_encoder, ct.raw_pt);
+            Plaintext encoded_plain = encodeNTTAtLvlNew(homomorphic_eval->context->params, homomorphic_eval->seal_encoder, ct.raw_pt, ct.he_level(), ct.scale());
 
             vector<double> decoded_plain;
             decoded_plain = decode(homomorphic_eval->seal_encoder, encoded_plain, log2(ct.num_slots()));
