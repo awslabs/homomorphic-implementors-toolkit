@@ -238,7 +238,10 @@ namespace hit {
     }
 
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        multByConst(seal_evaluator, ct.backend_ct, scalar, ct.backend_ct);
+        // multByConst(seal_evaluator, ct.backend_ct, scalar, ct.backend_ct);
+        vector<double> temp(num_slots());
+        temp.assign(num_slots(), scalar);
+        multiply_plain_inplace_internal(ct, temp);
     }
 
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
@@ -259,7 +262,6 @@ namespace hit {
 
     void HomomorphicEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
         rescaleMany(seal_evaluator, ct.backend_ct, 1, ct.backend_ct);
-        dropLevel(seal_evaluator, ct.backend_ct, 1);
     }
 
     void HomomorphicEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
