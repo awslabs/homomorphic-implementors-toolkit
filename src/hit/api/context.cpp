@@ -101,10 +101,16 @@ namespace hit {
     }
 
     uint64_t HEContext::getQi(int he_level) const {
+        if (he_level >= numQi()) {
+            LOG_AND_THROW_STREAM("Q_i index-out-of-bounds exception");
+        }
         return qi(params, he_level);
     }
 
     uint64_t HEContext::getPi(int i) const {
+        if (i >= numPi()) {
+            LOG_AND_THROW_STREAM("P_i index-out-of-bounds exception");
+        }
         return pi(params, i);
     }
 
