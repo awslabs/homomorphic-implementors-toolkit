@@ -56,7 +56,7 @@
 #define parallel_for(max_idx, body)                                                     \
     std::vector<int> COMBINE(iterIdxs, __LINE__)(max_idx);                              \
     std::iota(begin(COMBINE(iterIdxs, __LINE__)), end(COMBINE(iterIdxs, __LINE__)), 0); \
-    for_each(__pstl::execution::par, begin(COMBINE(iterIdxs, __LINE__)), end(COMBINE(iterIdxs, __LINE__)), body)
+    std::for_each(__pstl::execution::par, begin(COMBINE(iterIdxs, __LINE__)), end(COMBINE(iterIdxs, __LINE__)), body)
 #endif /* DISABLE_PARALLELISM */
 
 namespace hit {

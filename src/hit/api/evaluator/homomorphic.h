@@ -62,8 +62,8 @@ namespace hit {
          * inefficient. However you may want to suppress the warning for testing either by
          * setting suppress_warnings=true or by setting the log level to 0.
          */
-        std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
-        std::vector<double> decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const override;
+        std::vector<double> decrypt(const CKKSCiphertext &encrypted) override;
+        std::vector<double> decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) override;
 
         std::shared_ptr<HEContext> context;
 
@@ -103,9 +103,16 @@ namespace hit {
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
        private:
-        latticpp::Encoder seal_encoder;
-        boost::thread_specific_ptr<latticpp::Evaluator> seal_evaluator;
-        latticpp::Encryptor seal_encryptor;
+        template<typename T>
+        struct ParameterizedLattigoType {
+            ParameterizedLattigoType(T object, latticpp::Parameters &params) : object(std::move(object)), params(params) { }
+            T object;
+            const latticpp::Parameters params;
+        };
+
+        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Encoder>> seal_encoder;
+        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Evaluator>> seal_evaluator;
+        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Encryptor>> seal_encryptor;
         latticpp::Decryptor seal_decryptor;
         latticpp::PublicKey pk;
         latticpp::SecretKey sk;
@@ -114,6 +121,8 @@ namespace hit {
         bool standard_params_;
 
         latticpp::Evaluator& get_evaluator();
+        latticpp::Encoder& get_encoder();
+        latticpp::Encryptor& get_encryptor();
 
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 

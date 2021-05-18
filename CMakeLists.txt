@@ -122,7 +122,7 @@ target_include_directories(aws-hit
 set_common_flags(aws-hit)
 
 # Link dependencies
-target_link_libraries(aws-hit PUBLIC aws-lattigo-cpp glog::glog ${Protobuf_LIBRARIES} ${TBB_IMPORTED_TARGETS})
+target_link_libraries(aws-hit PUBLIC aws-lattigo-cpp glog::glog ${Protobuf_LIBRARIES} ${TBB_IMPORTED_TARGETS} boost_thread)
 
 install(TARGETS aws-hit EXPORT HITTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

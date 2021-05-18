@@ -9,6 +9,7 @@
 
 #include <glog/logging.h>
 #include <iomanip>
+#include <thread>
 
 #include "hit/protobuf/ckksparams.pb.h"
 
@@ -29,8 +30,6 @@ namespace hit {
                                      const vector<int> &galois_steps) {
         context = make_shared<HEContext>(HEContext(num_slots, multiplicative_depth, log_scale));
         standard_params_ = use_seal_params;
-        // seal_evaluator = newEvaluator(context->params);
-        seal_encoder = newEncoder(context->params);
 
         int num_galois_keys = galois_steps.size();
         VLOG(VLOG_VERBOSE) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth
@@ -73,7 +72,6 @@ namespace hit {
 
         log_elapsed_time(start, "Generating keys...");
 
-        seal_encryptor = newEncryptorFromPk(context->params, pk);
         seal_decryptor = newDecryptor(context->params, sk);
     }
 
@@ -85,12 +83,8 @@ namespace hit {
         Parameters params = unmarshalBinaryParameters(ctx_stream);
         context = make_shared<HEContext>(HEContext(params));
 
-        // seal_evaluator = newEvaluator(params);
-        seal_encoder = newEncoder(params);
-
         istringstream pk_stream(ckks_params.pubkey());
         pk = unmarshalBinaryPublicKey(pk_stream);
-        seal_encryptor = newEncryptorFromPk(params, pk);
 
         standard_params_ = ckks_params.standardparams();
     }
@@ -160,8 +154,8 @@ namespace hit {
         destination.he_level_ = level;
         destination.scale_ = scale;
 
-        Plaintext temp = encodeNTTAtLvlNew(context->params, seal_encoder, coeffs, level, scale);
-        destination.backend_ct = encryptNew(seal_encryptor, temp);
+        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder(), coeffs, level, scale);
+        destination.backend_ct = encryptNew(get_encryptor(), temp);
 
         destination.num_slots_ = num_slots_;
         destination.initialized = true;
@@ -169,11 +163,11 @@ namespace hit {
         return destination;
     }
 
-    vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted) const {
+    vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted) {
         return decrypt(encrypted, false);
     }
 
-    vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const {
+    vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) {
         if (seal_decryptor.getRawHandle() == 0) {
             LOG_AND_THROW_STREAM(
                 "Decryption is only possible from a deserialized instance when the secret key is provided.");
@@ -184,7 +178,7 @@ namespace hit {
         }
 
         Plaintext temp = decryptNew(seal_decryptor, encrypted.backend_ct);
-        return decode(seal_encoder, temp, log2(num_slots()));
+        return decode(get_encoder(), temp, log2(num_slots()));
     }
 
     int HomomorphicEval::num_slots() const {
@@ -195,12 +189,48 @@ namespace hit {
         return context->getQi(ct.he_level());
     }
 
+    /* Lattigo classes are not thread-safe, but HIT should expose a thread-safe API. We solve
+     * this problem by using boost::thread_specific_ptr on stateful Lattigo types. This means
+     * that all accesses to the Lattigo objects must be guarded: we first have to ensure that
+     * the object has been allocated for this thread, and allocate it if not.
+     *
+     * However, there is an additional subtlety. C++ creates threads, e.g., when using a parallel
+     * `for_each` loop. However, it need not kill those threads at the end of the loop. In practice,
+     * it seems that C++ tends to keep those idle threads around to reduce the overhead of the next
+     * `for_each` invocation. This can cause a problem for us. Consider the unit tests: two tests
+     * may use different parameters P1 and P2 (possibly with different ring dimensions). If thread 1
+     * creates an Evaluator for P1, but C++ reuses this thread (without killing it) on a test that uses
+     * P2, then our code would use an evaluator for the wrong parameter set. To avoid this, we actually
+     * store a struct inside the thread_specific_ptr that maintains the type we actually care about
+     * along with a copy of (not a reference to!) the parameters it was created with. This way, if
+     * an evaluator is already allocated, we can check that it was allocated _with the correct parameters_.
+     * If it was allocated with different parameters, we throw away the old evaluator and create a new one.
+     */
     Evaluator& HomomorphicEval::get_evaluator() {
-        if (seal_evaluator == nullptr) {
-            seal_evaluator = new Evaluator();
-            *seal_evaluator = newEvaluator(context->params);
+        if (seal_evaluator.get() == nullptr || !(seal_evaluator->params == context->params)) {
+            ParameterizedLattigoType<Evaluator> *tmp =
+                new ParameterizedLattigoType<Evaluator>(newEvaluator(context->params), context->params);
+            seal_evaluator.reset(tmp);
         }
-        return *seal_evaluator
+        return seal_evaluator->object;
+    }
+
+    Encoder& HomomorphicEval::get_encoder() {
+        if (seal_encoder.get() == nullptr || !(seal_encoder->params == context->params)) {
+            ParameterizedLattigoType<Encoder> *tmp =
+                new ParameterizedLattigoType<Encoder>(newEncoder(context->params), context->params);
+            seal_encoder.reset(tmp);
+        }
+        return seal_encoder->object;
+    }
+
+    Encryptor& HomomorphicEval::get_encryptor() {
+        if (seal_encryptor.get() == nullptr || seal_encryptor->params != context->params) {
+            ParameterizedLattigoType<Encryptor> *tmp =
+                new ParameterizedLattigoType<Encryptor>(newEncryptorFromPk(context->params, pk), context->params);
+            seal_encryptor.reset(tmp);
+        }
+        return seal_encryptor->object;
     }
 
     void HomomorphicEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
@@ -224,7 +254,7 @@ namespace hit {
     }
 
     void HomomorphicEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        Plaintext temp = encodeNTTAtLvlNew(context->params, seal_encoder, plain, ct.he_level(), ct.scale());
+        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder(), plain, ct.he_level(), ct.scale());
         addPlain(get_evaluator(), ct.backend_ct, temp, ct.backend_ct);
     }
 
@@ -237,7 +267,7 @@ namespace hit {
     }
 
     void HomomorphicEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        Plaintext temp = encodeNTTAtLvlNew(context->params, seal_encoder, plain, ct.he_level(), ct.scale());
+        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder(), plain, ct.he_level(), ct.scale());
         subPlain(get_evaluator(), ct.backend_ct, temp, ct.backend_ct);
     }
 
@@ -253,7 +283,7 @@ namespace hit {
     }
 
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        Plaintext temp = encodeNTTAtLvlNew(context->params, seal_encoder, plain, ct.he_level(), ct.scale());
+        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder(), plain, ct.he_level(), ct.scale());
         mulPlain(get_evaluator(), ct.backend_ct, temp, ct.backend_ct);
     }
 

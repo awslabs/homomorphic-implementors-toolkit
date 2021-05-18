@@ -53,8 +53,8 @@ namespace hit {
         // This function will log a message if you try to decrypt a ciphertext which
         // is not at level 0. Sometimes it is expected for a ciphertext to be at a higher
         // level, so you can suppress the warning by setting `suppress_warnings` to true.
-        virtual std::vector<double> decrypt(const CKKSCiphertext &ct) const;
-        virtual std::vector<double> decrypt(const CKKSCiphertext &ct, bool suppress_warnings) const;
+        virtual std::vector<double> decrypt(const CKKSCiphertext &ct);
+        virtual std::vector<double> decrypt(const CKKSCiphertext &ct, bool suppress_warnings);
 
         // Get the number of plaintext slots expected by this evaluator
         virtual int num_slots() const = 0;
@@ -362,7 +362,7 @@ namespace hit {
         virtual void reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level);
         virtual void rescale_to_next_inplace_internal(CKKSCiphertext &ct);
         virtual void relinearize_inplace_internal(CKKSCiphertext &ct);
-        virtual void print_stats(const CKKSCiphertext &ct) const;
+        virtual void print_stats(const CKKSCiphertext &ct);
         virtual uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const;
 
         void reduce_metadata_to_level(CKKSCiphertext &ct, int level);

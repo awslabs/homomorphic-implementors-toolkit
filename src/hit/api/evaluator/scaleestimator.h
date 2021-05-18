@@ -91,7 +91,7 @@ namespace hit {
         // This helper function squares the scale of the input and then updates
         // the max_log_scale.
         void temp_square_scale(CKKSCiphertext &ct);
-        void print_stats(const CKKSCiphertext &ct) const override;
+        void print_stats(const CKKSCiphertext &ct) override;
         void update_max_log_scale(const CKKSCiphertext &ct);
 
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;

@@ -48,8 +48,8 @@ namespace hit {
          * inefficient. However for testing purposes, it may be useful, so you will want to
          * suppress the warning.
          */
-        std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
-        std::vector<double> decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const override;
+        std::vector<double> decrypt(const CKKSCiphertext &encrypted) override;
+        std::vector<double> decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) override;
 
         int num_slots() const override;
 
@@ -92,7 +92,7 @@ namespace hit {
         HomomorphicEval *homomorphic_eval;
         ScaleEstimator *scale_estimator;
 
-        void print_stats(const CKKSCiphertext &ct) const override;
+        void print_stats(const CKKSCiphertext &ct) override;
         void constructor_common(int num_slots);
         void print_parameters();
         int totalModBitCount();

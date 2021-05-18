@@ -104,7 +104,7 @@ namespace hit {
     }
 
     // print some debug info
-    void ScaleEstimator::print_stats(const CKKSCiphertext &ct) const {
+    void ScaleEstimator::print_stats(const CKKSCiphertext &ct) {
         double exact_plaintext_max_val = l_inf_norm(ct.raw_pt);
         double log_modulus = 0;
         for (int i = 0; i <= ct.he_level(); i++) {

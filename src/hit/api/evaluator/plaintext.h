@@ -68,7 +68,7 @@ namespace hit {
 
         void update_max_log_plain_val(const CKKSCiphertext &ct);
 
-        void print_stats(const CKKSCiphertext &ct) const override;
+        void print_stats(const CKKSCiphertext &ct) override;
 
         double plaintext_max_log_ = -100;
 

@@ -122,11 +122,11 @@ namespace hit {
         return destination;
     }
 
-    vector<double> DebugEval::decrypt(const CKKSCiphertext &encrypted) const {
+    vector<double> DebugEval::decrypt(const CKKSCiphertext &encrypted) {
         return decrypt(encrypted, false);
     }
 
-    vector<double> DebugEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const {
+    vector<double> DebugEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) {
         return homomorphic_eval->decrypt(encrypted, suppress_warnings);
     }
 
@@ -139,7 +139,7 @@ namespace hit {
     }
 
     // print some debug info
-    void DebugEval::print_stats(const CKKSCiphertext &ct) const {
+    void DebugEval::print_stats(const CKKSCiphertext &ct) {
         homomorphic_eval->print_stats(ct);
         scale_estimator->print_stats(ct);
 
@@ -199,10 +199,10 @@ namespace hit {
             actual_debug_result << ">";
             LOG(ERROR) << actual_debug_result.str();
 
-            Plaintext encoded_plain = encodeNTTAtLvlNew(homomorphic_eval->context->params, homomorphic_eval->seal_encoder, ct.raw_pt, ct.he_level(), ct.scale());
+            Plaintext encoded_plain = encodeNTTAtLvlNew(homomorphic_eval->context->params, homomorphic_eval->get_encoder(), ct.raw_pt, ct.he_level(), ct.scale());
 
             vector<double> decoded_plain;
-            decoded_plain = decode(homomorphic_eval->seal_encoder, encoded_plain, log2(ct.num_slots()));
+            decoded_plain = decode(homomorphic_eval->get_encoder(), encoded_plain, log2(ct.num_slots()));
 
             // the exact_plaintext and homom_plaintext should have the same length.
             // decoded_plain is full-dimensional, however. This may not match
