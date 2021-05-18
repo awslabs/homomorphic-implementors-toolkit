@@ -9,9 +9,9 @@ project(LATTICPP_DOWNLOAD VERSION 0.0.1)
 set(SUPPRESS_VAR_WARNING ${3P_INSTALL_DIR})
 
 if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/src)
-    message(STATUS "Found source code for LattiCpp in ${CMAKE_CURRENT_LIST_DIR}.")
+    message(STATUS "Found source code for Latticpp in ${CMAKE_CURRENT_LIST_DIR}.")
 else()
-    message(STATUS "No source code found for LattiCpp; downloading in ${CMAKE_CURRENT_LIST_DIR}.")
+    message(STATUS "No source code found for Latticpp; downloading in ${CMAKE_CURRENT_LIST_DIR}.")
     include(ExternalProject)
     ExternalProject_Add(EP_AWSLATIGO
         SOURCE_DIR           ${CMAKE_CURRENT_LIST_DIR}/src

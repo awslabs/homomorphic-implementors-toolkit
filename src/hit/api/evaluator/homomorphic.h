@@ -6,6 +6,7 @@
 #include "../ciphertext.h"
 #include "../evaluator.h"
 #include "../../common.h"
+#include <boost/thread/tss.hpp>
 
 namespace hit {
 
@@ -103,7 +104,7 @@ namespace hit {
 
        private:
         latticpp::Encoder seal_encoder;
-        latticpp::Evaluator seal_evaluator;
+        boost::thread_specific_ptr<latticpp::Evaluator> seal_evaluator;
         latticpp::Encryptor seal_encryptor;
         latticpp::Decryptor seal_decryptor;
         latticpp::PublicKey pk;
@@ -111,6 +112,8 @@ namespace hit {
         latticpp::RotationKeys galois_keys;
         latticpp::EvaluationKey relin_keys;
         bool standard_params_;
+
+        latticpp::Evaluator& get_evaluator();
 
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 
