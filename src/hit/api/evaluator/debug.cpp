@@ -12,7 +12,6 @@
 #include "../evaluator.h"
 
 using namespace std;
-using namespace latticpp;
 
 namespace hit {
     void DebugEval::constructor_common(int num_slots) {

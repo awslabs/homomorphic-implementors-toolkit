@@ -127,11 +127,11 @@ namespace hit {
         return ceil(log2(scale(params)));
     }
 
-    Plaintext HEContext::encode(const Encoder &e, const vector<double> &raw_pt, int level, double scale) const {
+    BackendPlaintext HEContext::encode(const BackendEncoder &e, const vector<double> &raw_pt, int level, double scale) const {
         return encodeNTTAtLvlNew(params, e, raw_pt, level, scale);
     }
 
-    vector<double> HEContext::decode(const Encoder &e, const Plaintext &p) const {
+    vector<double> HEContext::decode(const BackendEncoder &e, const BackendPlaintext &p) const {
         return ::decode(e, p, log2(num_slots()));
     }
 }  // namespace hit
