@@ -25,7 +25,8 @@ Checks: >
   -readability-braces-around-statements,
   -readability-magic-numbers,
   -readability-named-parameter,
-  -readability-redundant-declaration
+  -readability-redundant-declaration,
+  -modernize-use-auto
 HeaderFilterRegex: "(src/hit/api/|src/hit/CKKSInstance|src/hit/common|src/hit/matrix|src/hit/sealutils).*\\.h$"
 WarningsAsErrors: '*'
 CheckOptions:

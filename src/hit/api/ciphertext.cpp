@@ -8,7 +8,7 @@
 #include "../common.h"
 
 using namespace std;
-using namespace seal;
+using namespace latticpp;
 
 namespace hit {
 
@@ -33,7 +33,7 @@ namespace hit {
 
         if (proto_ct.has_ct()) {
             istringstream ctstream(proto_ct.ct());
-            backend_ct.load(*(context->params), ctstream);
+            backend_ct = unmarshalBinaryCiphertext(ctstream);
         }
     }
 
@@ -61,10 +61,8 @@ namespace hit {
         proto_ct->set_he_level(he_level_);
 
         // if the backend_ct is initialized, serialize it
-        if (backend_ct.parms_id() != parms_id_zero) {
-            ostringstream sealctBuf;
-            backend_ct.save(sealctBuf);
-            proto_ct->set_ct(sealctBuf.str());
+        if (backend_ct.getRawHandle() != 0) {
+            proto_ct->set_ct(marshalBinaryCiphertext(backend_ct));
         }
 
         return proto_ct;
@@ -90,7 +88,7 @@ namespace hit {
     }
 
     double CKKSCiphertext::backend_scale() const {
-        return backend_ct.scale();
+        return ::scale(backend_ct);
     }
 
     bool CKKSCiphertext::needs_rescale() const {

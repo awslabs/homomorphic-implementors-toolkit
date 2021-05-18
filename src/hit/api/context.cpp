@@ -10,23 +10,20 @@
 #include "hit/common.h"
 
 using namespace std;
-using namespace seal;
+using namespace latticpp;
 
 namespace hit {
     /*
     Helper function: Generate a list of bit-lengths for the modulus primes.
     */
-    vector<int> gen_modulus_vec(int num_primes, int log_scale) {
-        vector<int> modulusVector(num_primes);
+    vector<uint8_t> gen_ciphertext_modulus_vec(int num_primes, uint8_t log_scale) {
+        vector<uint8_t> modulusVector(num_primes);
         // the SEAL examples recommend the last modulus be 60 bits; it's unclear why,
         // and also unclear how closely that choice is related to log_scale (they use 40 in their examples)
         modulusVector[0] = 60;
-        for (int i = 1; i < num_primes - 1; i++) {
+        for (int i = 1; i < num_primes; i++) {
             modulusVector[i] = log_scale;
         }
-        // The special modulus has to be as large as the largest prime in the chain.
-        modulusVector[num_primes - 1] = 60;
-
         return modulusVector;
     }
 
@@ -63,12 +60,12 @@ namespace hit {
         int num_slots_ = num_slots();
         int precision_bits = log_scale();
         if (!is_pow2(num_slots_) || num_slots_ < 4096) {
-            LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-SEAL instance: "
+            LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-Lattigo instance: "
                                  << "num_slots must be a power of 2, and at least 4096; got " << num_slots_ << ".");
         }
 
         if (precision_bits < min_log_scale()) {
-            LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-SEAL instance: "
+            LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-Lattigo instance: "
                                  << "log_scale is " << precision_bits << ", which is less than the minimum "
                                  << min_log_scale() << ".");
         }
@@ -77,72 +74,53 @@ namespace hit {
         int max_modulus_bits = poly_degree_to_max_mod_bits(poly_modulus_degree);
         uint64_t modulus_bits = total_modulus_bits();
         if (modulus_bits > max_modulus_bits) {
-            LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-SEAL instance: "
+            LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-Lattigo instance: "
                                  << "poly_modulus_degree is " << poly_modulus_degree << ", which limits the modulus to "
                                  << max_modulus_bits << " bits, but a " << modulus_bits
                                  << "-bit modulus was requested.");
         }
     }
 
-    HEContext::HEContext(const seal::EncryptionParameters &params, int precision_bits, bool use_standard_params)
-        : log_scale_(precision_bits) {
-        params_to_context(params, use_standard_params);
+    HEContext::HEContext(Parameters &params) : params(move(params)) {
         validateContext();
     }
 
-    void HEContext::params_to_context(
-        const EncryptionParameters &enc_params,
-        bool use_standard_params) {  // NOLINT(readability-convert-member-functions-to-static)
-        if (use_standard_params) {
-            params = make_shared<SEALContext>(enc_params);
-        } else {
-            LOG(WARNING)
-                << "YOU ARE NOT USING STANDARD SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security"
-                << "DO NOT USE IN PRODUCTION";
-            // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-            params = make_shared<SEALContext>(enc_params, true, sec_level_type::none);
-        }
-    }
-
-    HEContext::HEContext(int num_slots, int mult_depth, int precision_bits, bool use_standard_params)
-        : log_scale_(precision_bits) {
-        vector<int> modulus_vec = gen_modulus_vec(mult_depth + 2, precision_bits);
-        EncryptionParameters enc_params = EncryptionParameters(scheme_type::ckks);
-        int poly_modulus_degree = num_slots * 2;
-        enc_params.set_poly_modulus_degree(poly_modulus_degree);
-        enc_params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulus_vec));
-        params_to_context(enc_params, use_standard_params);
+    HEContext::HEContext(int num_slots, int mult_depth, int precisionBits) {
+        vector<uint8_t> logQi = gen_ciphertext_modulus_vec(mult_depth + 1, precisionBits);
+        vector<uint8_t> logPi(1);
+        logPi[0] = 60;  // special modulus. For now, we just use a single modulus like SEAL.
+        params = newParametersFromLogModuli(log2(num_slots) + 1, logQi, mult_depth + 1, logPi, 1, precisionBits);
         validateContext();
     }
 
     int HEContext::max_ciphertext_level() const {
-        return params->first_context_data()->chain_index();
+        return maxLevel(params);
     }
 
     int HEContext::num_slots() const {
-        return static_cast<int>(params->first_context_data()->parms().poly_modulus_degree() / 2);
+        return numSlots(params);
     }
 
     uint64_t HEContext::get_qi(int he_level) const {
-        if (he_level > max_ciphertext_level()) {
+        if (he_level >= num_qi()) {
             LOG_AND_THROW_STREAM("Q_i index-out-of-bounds exception");
         }
-        return get_context_data(he_level)->parms().coeff_modulus().back().value();
+        return qi(params, he_level);
     }
 
     uint64_t HEContext::get_pi(int i) const {
-        if (i != 0) {
-            LOG_AND_THROW_STREAM("SEAL only supports a single key-switch modulus");
+        if (i >= num_pi()) {
+            LOG_AND_THROW_STREAM("P_i index-out-of-bounds exception");
         }
-        return params->key_context_data()->parms().coeff_modulus().back().value();
+        return pi(params, i);
     }
 
     int HEContext::num_qi() const {
-        return max_ciphertext_level() + 1;
+        return qiCount(params);
     }
 
-    int HEContext::num_pi() const {  // NOLINT(readability-convert-member-functions-to-static)
-        return 1;
+    int HEContext::num_pi() const {
+        return piCount(params);
     }
 
     uint64_t HEContext::total_modulus_bits() const {
@@ -158,25 +136,12 @@ namespace hit {
 
     int HEContext::min_log_scale() const {  // NOLINT(readability-convert-member-functions-to-static)
         // SEAL throws an error for 21, but allows 22
+        // I haven't updated this for Lattigo; but this is WAY lower than would work in practice anyway,
+        // so I'm not too concerned.
         return 22;
     }
 
     int HEContext::log_scale() const {
-        return log_scale_;
-    }
-
-    /*
-    Helper function: Get the context data for the ciphertext's level
-    */
-    shared_ptr<const SEALContext::ContextData> HEContext::get_context_data(int level) const {
-        // get the context_data for this ciphertext level
-        // but do not use the ciphertext itself! Use the he_level,
-        // in case we are not doing ciphertext computations
-        auto context_data = params->first_context_data();
-        while (context_data->chain_index() > level) {
-            // Step forward in the chain.
-            context_data = context_data->next_context_data();
-        }
-        return context_data;
+        return ceil(log2(scale(params)));
     }
 }  // namespace hit

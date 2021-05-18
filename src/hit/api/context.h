@@ -6,8 +6,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "seal/context.h"
-#include "seal/seal.h"
+#include "latticpp/latticpp.h"
 
 namespace hit {
 
@@ -16,8 +15,8 @@ namespace hit {
 
     class HEContext {
        public:
-        HEContext(int num_slots, int mult_depth, int precision_bits, bool use_standard_params);
-        explicit HEContext(const seal::EncryptionParameters &params, int precision_bits, bool use_standard_params);
+        HEContext(int num_slots, int mult_depth, int precisionBits);
+        explicit HEContext(latticpp::Parameters &params);
 
         int max_ciphertext_level() const;
         int num_slots() const;
@@ -29,16 +28,9 @@ namespace hit {
         int min_log_scale() const;
         int log_scale() const;
 
-        std::shared_ptr<seal::SEALContext> params;
-
-        /*
-        Helper function: Get the context data for a specific ciphertext level
-        */
-        std::shared_ptr<const seal::SEALContext::ContextData> get_context_data(int level) const;
+        latticpp::Parameters params;
 
        private:
         void validateContext() const;
-        void params_to_context(const seal::EncryptionParameters &enc_params, bool use_standard_params);
-        int log_scale_;
     };
 }  // namespace hit

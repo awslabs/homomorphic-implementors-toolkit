@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <boost/thread/tss.hpp>
+
 #include "../../common.h"
 #include "../ciphertext.h"
 #include "../evaluator.h"
@@ -42,7 +44,7 @@ namespace hit {
                         std::istream &secret_key_stream);
 
         /* For documentation on the API, see ../evaluator.h */
-        ~HomomorphicEval() override;
+        ~HomomorphicEval() override = default;
 
         HomomorphicEval(const HomomorphicEval &) = delete;
         HomomorphicEval &operator=(const HomomorphicEval &) = delete;
@@ -89,7 +91,6 @@ namespace hit {
 
         void multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
 
-        /* WARNING: This function is not constant time in the scalar argument. */
         void multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) override;
 
         void multiply_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain) override;
@@ -103,15 +104,28 @@ namespace hit {
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
        private:
-        seal::CKKSEncoder *backend_encoder = nullptr;  // no default constructor
-        seal::Evaluator *backend_evaluator = nullptr;  // no default constructor
-        seal::Encryptor *backend_encryptor = nullptr;  // no default constructor
-        seal::Decryptor *backend_decryptor = nullptr;  // no default constructor
-        seal::PublicKey pk;
-        seal::SecretKey sk;
-        seal::GaloisKeys galois_keys;
-        seal::RelinKeys relin_keys;
+        template <typename T>
+        struct ParameterizedLattigoType {
+            ParameterizedLattigoType(T object, latticpp::Parameters &params)
+                : object(std::move(object)), params(params) {
+            }
+            T object;
+            const latticpp::Parameters params;
+        };
+
+        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Encoder>> backend_encoder;
+        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Evaluator>> backend_evaluator;
+        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Encryptor>> backend_encryptor;
+        latticpp::Decryptor backend_decryptor;
+        latticpp::PublicKey pk;
+        latticpp::SecretKey sk;
+        latticpp::RotationKeys galois_keys;
+        latticpp::EvaluationKey relin_keys;
         bool standard_params_;
+
+        latticpp::Evaluator &get_evaluator();
+        latticpp::Encoder &get_encoder();
+        latticpp::Encryptor &get_encryptor();
 
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 

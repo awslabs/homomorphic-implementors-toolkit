@@ -10,11 +10,12 @@
 #include <glog/logging.h>
 
 #include <iomanip>
+#include <thread>
 
 #include "hit/protobuf/ckksparams.pb.h"
 
 using namespace std;
-using namespace seal;
+using namespace latticpp;
 
 namespace hit {
     /* Note: there is a flag to update_metadata of ciphertexts
@@ -30,10 +31,8 @@ namespace hit {
                                      const vector<int> &galois_steps) {
         timepoint start = chrono::steady_clock::now();
         standard_params_ = use_standard_params;
-        context = make_shared<HEContext>(num_slots, multiplicative_depth, log_scale, use_standard_params);
+        context = make_shared<HEContext>(num_slots, multiplicative_depth, log_scale);
         log_elapsed_time(start, "Creating encryption context...");
-        backend_evaluator = new Evaluator(*(context->params));
-        backend_encoder = new CKKSEncoder(*(context->params));
 
         int num_galois_keys = galois_steps.size();
         VLOG(VLOG_VERBOSE) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth
@@ -61,50 +60,30 @@ namespace hit {
         // generate keys
         // This call generates a KeyGenerator with fresh randomness
         // The KeyGenerator object contains deterministic keys.
-        KeyGenerator keygen(*(context->params));
-        sk = keygen.secret_key();
-        keygen.create_public_key(pk);
-        if (num_galois_keys > 0) {
-            keygen.create_galois_keys(galois_steps, galois_keys);
-        } else {
-            // generate all galois keys
-            keygen.create_galois_keys(galois_keys);
-        }
-        keygen.create_relin_keys(relin_keys);
+        KeyGenerator keyGenerator = newKeyGenerator(context->params);
+        KeyPairHandle kp = genKeyPair(keyGenerator);
+        sk = kp.sk;
+        pk = kp.pk;
+        galois_keys = genRotationKeysPow2(keyGenerator, sk);
+        relin_keys = genRelinKey(keyGenerator, sk);
 
         log_elapsed_time(start, "Generating keys...");
 
-        backend_encryptor = new Encryptor(*(context->params), pk);
-        backend_decryptor = new Decryptor(*(context->params), sk);
-    }
-
-    HomomorphicEval::~HomomorphicEval() {
-        delete backend_encoder;
-        delete backend_evaluator;
-        delete backend_encryptor;
-        delete backend_decryptor;
+        backend_decryptor = newDecryptor(context->params, sk);
     }
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {
         protobuf::CKKSParams ckks_params;
         ckks_params.ParseFromIstream(&params_stream);
 
-        EncryptionParameters params = EncryptionParameters(scheme_type::none);
-        istringstream ctxstream(ckks_params.ctx());
-        params.load(ctxstream);
+        istringstream ctx_stream(ckks_params.ctx());
+        Parameters params = unmarshalBinaryParameters(ctx_stream);
+        context = make_shared<HEContext>(params);
 
-        int log_scale = ckks_params.logscale();
+        istringstream pk_stream(ckks_params.pubkey());
+        pk = unmarshalBinaryPublicKey(pk_stream);
 
         standard_params_ = ckks_params.standardparams();
-        timepoint start = chrono::steady_clock::now();
-        context = make_shared<HEContext>(params, log_scale, standard_params_);
-        log_elapsed_time(start, "Creating encryption context...");
-        backend_evaluator = new Evaluator(*(context->params));
-        backend_encoder = new CKKSEncoder(*(context->params));
-
-        istringstream pkstream(ckks_params.pubkey());
-        pk.load(*(context->params), pkstream);
-        backend_encryptor = new Encryptor(*(context->params), pk);
     }
 
     /* An evaluation instance */
@@ -112,8 +91,8 @@ namespace hit {
         deserialize_common(params_stream);
 
         timepoint start = chrono::steady_clock::now();
-        galois_keys.load(*(context->params), galois_key_stream);
-        relin_keys.load(*(context->params), relin_key_stream);
+        galois_keys = unmarshalBinaryRotationKeys(galois_key_stream);
+        relin_keys = unmarshalBinaryEvaluationKey(relin_key_stream);
         log_elapsed_time(start, "Reading keys...");
     }
 
@@ -123,36 +102,27 @@ namespace hit {
         deserialize_common(params_stream);
 
         timepoint start = chrono::steady_clock::now();
-        sk.load(*(context->params), secret_key_stream);
-        galois_keys.load(*(context->params), galois_key_stream);
-        relin_keys.load(*(context->params), relin_key_stream);
+        sk = unmarshalBinarySecretKey(secret_key_stream);
+        galois_keys = unmarshalBinaryRotationKeys(galois_key_stream);
+        relin_keys = unmarshalBinaryEvaluationKey(relin_key_stream);
         log_elapsed_time(start, "Reading keys...");
-        backend_decryptor = new Decryptor(*(context->params), sk);
+        backend_decryptor = newDecryptor(context->params, sk);
     }
 
     void HomomorphicEval::save(ostream &params_stream, ostream &galois_key_stream, ostream &relin_key_stream,
                                ostream *secret_key_stream) {
         if (secret_key_stream != nullptr) {
-            sk.save(*secret_key_stream);
+            (*secret_key_stream) << marshalBinarySecretKey(sk);
         }
 
         protobuf::CKKSParams ckks_params;
-        ostringstream sealctxBuf;
-        context->params->key_context_data()->parms().save(sealctxBuf);
-        ckks_params.set_ctx(sealctxBuf.str());
-        ckks_params.set_logscale(context->log_scale());
-
-        ostringstream sealpkBuf;
-        pk.save(sealpkBuf);
-        ckks_params.set_pubkey(sealpkBuf.str());
-
         ckks_params.set_standardparams(standard_params_);
+        ckks_params.set_ctx(marshalBinaryParameters(context->params));
+        ckks_params.set_pubkey(marshalBinaryPublicKey(pk));
         ckks_params.SerializeToOstream(&params_stream);
 
-        // There is a SEAL limitation that prevents saving large files with compression
-        // This is reported at https://github.com/microsoft/SEAL/issues/142
-        galois_keys.save(galois_key_stream, compr_mode_type::none);
-        relin_keys.save(relin_key_stream);
+        galois_key_stream << marshalBinaryRotationKeys(galois_keys);
+        relin_key_stream << marshalBinaryEvaluationKey(relin_keys);
     }
 
     CKKSCiphertext HomomorphicEval::encrypt(const vector<double> &coeffs) {
@@ -183,9 +153,8 @@ namespace hit {
         destination.he_level_ = level;
         destination.scale_ = scale;
 
-        Plaintext temp;
-        backend_encoder->encode(coeffs, context->get_context_data(level)->parms_id(), scale, temp);
-        backend_encryptor->encrypt(temp, destination.backend_ct);
+        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder(), coeffs, level, scale);
+        destination.backend_ct = encryptNew(get_encryptor(), temp);
 
         destination.num_slots_ = num_slots_;
         destination.initialized = true;
@@ -198,7 +167,7 @@ namespace hit {
     }
 
     vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) {
-        if (backend_decryptor == nullptr) {
+        if (backend_decryptor.getRawHandle() == 0) {
             LOG_AND_THROW_STREAM(
                 "Decryption is only possible from a deserialized instance when the secret key is provided.");
         }
@@ -207,11 +176,8 @@ namespace hit {
             decryption_warning(encrypted.he_level());
         }
 
-        Plaintext temp;
-        backend_decryptor->decrypt(encrypted.backend_ct, temp);
-        vector<double> decoded_output;
-        backend_encoder->decode(temp, decoded_output);
-        return decoded_output;
+        Plaintext temp = decryptNew(backend_decryptor, encrypted.backend_ct);
+        return decode(get_encoder(), temp, log2(num_slots()));
     }
 
     int HomomorphicEval::num_slots() const {
@@ -222,77 +188,106 @@ namespace hit {
         return context->get_qi(ct.he_level());
     }
 
+    /* Lattigo classes are not thread-safe, but HIT should expose a thread-safe API. We solve
+     * this problem by using boost::thread_specific_ptr on stateful Lattigo types. This means
+     * that all accesses to the Lattigo objects must be guarded: we first have to ensure that
+     * the object has been allocated for this thread, and allocate it if not.
+     *
+     * However, there is an additional subtlety. C++ creates threads, e.g., when using a parallel
+     * `for_each` loop. However, it need not kill those threads at the end of the loop. In practice,
+     * it seems that C++ tends to keep those idle threads around to reduce the overhead of the next
+     * `for_each` invocation. This can cause a problem for us. Consider the unit tests: two tests
+     * may use different parameters P1 and P2 (possibly with different ring dimensions). If thread 1
+     * creates an Evaluator for P1, but C++ reuses this thread (without killing it) on a test that uses
+     * P2, then our code would use an evaluator for the wrong parameter set. To avoid this, we actually
+     * store a struct inside the thread_specific_ptr that maintains the type we actually care about
+     * along with a copy of (not a reference to!) the parameters it was created with. This way, if
+     * an evaluator is already allocated, we can check that it was allocated _with the correct parameters_.
+     * If it was allocated with different parameters, we throw away the old evaluator and create a new one.
+     */
+    Evaluator &HomomorphicEval::get_evaluator() {
+        if (backend_evaluator.get() == nullptr || !(backend_evaluator->params == context->params)) {
+            ParameterizedLattigoType<Evaluator> *tmp =
+                new ParameterizedLattigoType<Evaluator>(newEvaluator(context->params), context->params);
+            backend_evaluator.reset(tmp);
+        }
+        return backend_evaluator->object;
+    }
+
+    Encoder &HomomorphicEval::get_encoder() {
+        if (backend_encoder.get() == nullptr || !(backend_encoder->params == context->params)) {
+            ParameterizedLattigoType<Encoder> *tmp =
+                new ParameterizedLattigoType<Encoder>(newEncoder(context->params), context->params);
+            backend_encoder.reset(tmp);
+        }
+        return backend_encoder->object;
+    }
+
+    Encryptor &HomomorphicEval::get_encryptor() {
+        if (backend_encryptor.get() == nullptr || backend_encryptor->params != context->params) {
+            ParameterizedLattigoType<Encryptor> *tmp =
+                new ParameterizedLattigoType<Encryptor>(newEncryptorFromPk(context->params, pk), context->params);
+            backend_encryptor.reset(tmp);
+        }
+        return backend_encryptor->object;
+    }
+
     void HomomorphicEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
-        backend_evaluator->rotate_vector_inplace(ct.backend_ct, -steps, galois_keys);
+        rotate(get_evaluator(), ct.backend_ct, -steps, galois_keys, ct.backend_ct);
     }
 
     void HomomorphicEval::rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) {
-        backend_evaluator->rotate_vector_inplace(ct.backend_ct, steps, galois_keys);
+        rotate(get_evaluator(), ct.backend_ct, steps, galois_keys, ct.backend_ct);
     }
 
     void HomomorphicEval::negate_inplace_internal(CKKSCiphertext &ct) {
-        backend_evaluator->negate_inplace(ct.backend_ct);
+        neg(get_evaluator(), ct.backend_ct, ct.backend_ct);
     }
 
     void HomomorphicEval::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        backend_evaluator->add_inplace(ct1.backend_ct, ct2.backend_ct);
+        ::add(get_evaluator(), ct1.backend_ct, ct2.backend_ct, ct1.backend_ct);
     }
 
     void HomomorphicEval::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        Plaintext encoded_plain;
-        backend_encoder->encode(scalar, ct.backend_ct.parms_id(), ct.scale(), encoded_plain);
-        backend_evaluator->add_plain_inplace(ct.backend_ct, encoded_plain);
+        addConst(get_evaluator(), ct.backend_ct, scalar, ct.backend_ct);
     }
 
     void HomomorphicEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        Plaintext temp;
-        backend_encoder->encode(plain, ct.backend_ct.parms_id(), ct.scale(), temp);
-        backend_evaluator->add_plain_inplace(ct.backend_ct, temp);
+        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder(), plain, ct.he_level(), ct.scale());
+        addPlain(get_evaluator(), ct.backend_ct, temp, ct.backend_ct);
     }
 
     void HomomorphicEval::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        backend_evaluator->sub_inplace(ct1.backend_ct, ct2.backend_ct);
+        ::sub(get_evaluator(), ct1.backend_ct, ct2.backend_ct, ct1.backend_ct);
     }
 
     void HomomorphicEval::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        Plaintext encoded_plain;
-        backend_encoder->encode(scalar, ct.backend_ct.parms_id(), ct.scale(), encoded_plain);
-        backend_evaluator->sub_plain_inplace(ct.backend_ct, encoded_plain);
+        add_plain_inplace_internal(ct, -scalar);
     }
 
     void HomomorphicEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        Plaintext temp;
-        backend_encoder->encode(plain, ct.backend_ct.parms_id(), ct.scale(), temp);
-        backend_evaluator->sub_plain_inplace(ct.backend_ct, temp);
+        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder(), plain, ct.he_level(), ct.scale());
+        subPlain(get_evaluator(), ct.backend_ct, temp, ct.backend_ct);
     }
 
     void HomomorphicEval::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        backend_evaluator->multiply_inplace(ct1.backend_ct, ct2.backend_ct);
+        mul(get_evaluator(), ct1.backend_ct, ct2.backend_ct, ct1.backend_ct);
     }
 
-    /* WARNING: This function is not constant time in the scalar argument. */
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        if (scalar != double{0}) {
-            Plaintext encoded_plain;
-            backend_encoder->encode(scalar, ct.backend_ct.parms_id(), ct.scale(), encoded_plain);
-            backend_evaluator->multiply_plain_inplace(ct.backend_ct, encoded_plain);
-        } else {
-            double previous_scale = ct.scale();
-            backend_encryptor->encrypt_zero(ct.backend_ct.parms_id(), ct.backend_ct);
-            // seal sets the scale to be 1, but our the debug evaluator always ensures that the SEAL scale is consistent
-            // with our mirror calculation
-            ct.backend_ct.scale() = previous_scale * previous_scale;
-        }
+        // multByConst(get_evaluator(), ct.backend_ct, scalar, ct.backend_ct);
+        vector<double> temp(num_slots());
+        temp.assign(num_slots(), scalar);
+        multiply_plain_inplace_internal(ct, temp);
     }
 
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        Plaintext temp;
-        backend_encoder->encode(plain, ct.backend_ct.parms_id(), ct.scale(), temp);
-        backend_evaluator->multiply_plain_inplace(ct.backend_ct, temp);
+        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder(), plain, ct.he_level(), ct.scale());
+        mulPlain(get_evaluator(), ct.backend_ct, temp, ct.backend_ct);
     }
 
     void HomomorphicEval::square_inplace_internal(CKKSCiphertext &ct) {
-        backend_evaluator->square_inplace(ct.backend_ct);
+        multiply_inplace_internal(ct, ct);
     }
 
     void HomomorphicEval::reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level) {
@@ -303,10 +298,10 @@ namespace hit {
     }
 
     void HomomorphicEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        backend_evaluator->rescale_to_next_inplace(ct.backend_ct);
+        rescaleMany(get_evaluator(), ct.backend_ct, 1, ct.backend_ct);
     }
 
     void HomomorphicEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
-        backend_evaluator->relinearize_inplace(ct.backend_ct, relin_keys);
+        relinearize(get_evaluator(), ct.backend_ct, relin_keys, ct.backend_ct);
     }
 }  // namespace hit

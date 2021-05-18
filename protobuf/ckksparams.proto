@@ -8,5 +8,4 @@ message CKKSParams {
     required bytes ctx = 1;
     required bytes pubkey = 2;
     required bool standardParams = 3;
-    required int32 logScale = 4;
 }
