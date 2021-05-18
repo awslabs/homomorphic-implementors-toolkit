@@ -6,7 +6,6 @@
 #include <glog/logging.h>
 
 #include "../common.h"
-#include "hit/api/backend.h"
 
 using namespace std;
 using namespace latticpp;
