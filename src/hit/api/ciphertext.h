@@ -10,7 +10,6 @@
 #include <cmath>
 
 namespace hit {
-    using BackendCiphertext = latticpp::Ciphertext;
 
     /* This is a wrapper around the SEAL `Ciphertext` type.
      */
