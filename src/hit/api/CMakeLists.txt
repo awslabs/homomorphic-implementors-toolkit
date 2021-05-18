@@ -5,6 +5,7 @@ target_sources(aws_hit_obj
     PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/ciphertext.cpp
         ${CMAKE_CURRENT_LIST_DIR}/evaluator.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/context.cpp
 )
 
 install(
@@ -12,6 +13,7 @@ install(
         ${CMAKE_CURRENT_LIST_DIR}/ciphertext.h
         ${CMAKE_CURRENT_LIST_DIR}/evaluator.h
         ${CMAKE_CURRENT_LIST_DIR}/metadata.h
+        ${CMAKE_CURRENT_LIST_DIR}/context.h
     DESTINATION
         ${HIT_INCLUDES_INSTALL_DIR}/api
 )

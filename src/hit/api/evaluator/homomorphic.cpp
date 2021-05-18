@@ -28,25 +28,24 @@ namespace hit {
      */
 
     HomomorphicEval::HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,
-                                     const vector<int> &galois_steps)
-        : log_scale_(log_scale) {
+                                     const vector<int> &galois_steps) {
         if (!is_pow2(num_slots) || num_slots < 4096) {
             LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
                                  << "num_slots must be a power of 2, and at least 4096. Got " << num_slots);
         }
 
         int poly_modulus_degree = num_slots * 2;
-        if (log_scale_ < MIN_LOG_SCALE) {
+        if (log_scale < MIN_LOG_SCALE) {
             LOG(ERROR) << "poly_modulus_degree is " << poly_modulus_degree << ", which limits the modulus to "
                        << poly_degree_to_max_mod_bits(poly_modulus_degree) << " bits";
             LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
-                                 << "log_scale is " << log_scale_ << ", which is less than the minimum "
+                                 << "log_scale is " << log_scale << ", which is less than the minimum "
                                  << MIN_LOG_SCALE
                                  << ". Either increase the number of slots or decrease the number of primes.");
         }
 
         int num_primes = multiplicative_depth + 2;
-        vector<int> modulusVector = gen_modulus_vec(num_primes, log_scale_);
+        vector<int> modulusVector = gen_modulus_vec(num_primes, log_scale);
         int mod_bits = 0;
         for (const auto &bits : modulusVector) {
             mod_bits += bits;
@@ -132,53 +131,53 @@ namespace hit {
         protobuf::CKKSParams ckks_params;
         ckks_params.ParseFromIstream(&params_stream);
 
-        log_scale_ = ckks_params.logscale();
-        if (log_scale_ <= MIN_LOG_SCALE) {
-            LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: log scale too small. Minimum value is "
-                                 << MIN_LOG_SCALE << ", got " << log_scale_);
-        }
+        // log_scale_ = ckks_params.logscale();
+        // if (log_scale_ <= MIN_LOG_SCALE) {
+        //     LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: log scale too small. Minimum value is "
+        //                          << MIN_LOG_SCALE << ", got " << log_scale_);
+        // }
 
-        int num_slots = ckks_params.numslots();
-        if (num_slots < 4096 || !is_pow2(num_slots)) {
-            LOG_AND_THROW_STREAM(
-                "Error deserializing CKKS parameters: num_slots is invalid. Expected a power of two at least 4096, got "
-                << num_slots);
-        }
+        // int num_slots = ckks_params.numslots();
+        // if (num_slots < 4096 || !is_pow2(num_slots)) {
+        //     LOG_AND_THROW_STREAM(
+        //         "Error deserializing CKKS parameters: num_slots is invalid. Expected a power of two at least 4096, got "
+        //         << num_slots);
+        // }
 
-        int poly_modulus_degree = num_slots * 2;
-        int num_primes = ckks_params.modulusvec_size();
-        if (num_primes < 2) {
-            LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: at least two primes are required, but only got "
-                                 << num_primes);
-        }
+        // int poly_modulus_degree = num_slots * 2;
+        // int num_primes = ckks_params.modulusvec_size();
+        // if (num_primes < 2) {
+        //     LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: at least two primes are required, but only got "
+        //                          << num_primes);
+        // }
 
-        vector<Modulus> modulus_vector;
-        modulus_vector.reserve(num_primes);
-        for (int i = 0; i < num_primes; i++) {
-            auto val = Modulus(ckks_params.modulusvec(i));
-            modulus_vector.push_back(val);
-        }
+        // vector<Modulus> modulus_vector;
+        // modulus_vector.reserve(num_primes);
+        // for (int i = 0; i < num_primes; i++) {
+        //     auto val = Modulus(ckks_params.modulusvec(i));
+        //     modulus_vector.push_back(val);
+        // }
 
-        if (round(log2(modulus_vector[0].value())) != 60) {
-            LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: Last prime must be 60 bits, got "
-                                 << log2(modulus_vector[0].value()) << " bits");
-        }
-        if (round(log2(modulus_vector[num_primes - 1].value())) != 60) {
-            LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: Special prime must be 60 bits, got "
-                                 << log2(modulus_vector[num_primes - 1].value()) << " bits");
-        }
-        int expected_log_scale = static_cast<int>(round(log2(modulus_vector[1].value())));
-        for (int i = 2; i < num_primes - 1; i++) {
-            int log_prime = static_cast<int>(round(log2(modulus_vector[i].value())));
-            if (log_prime != expected_log_scale) {
-                LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: modulus primes expected to be "
-                                     << expected_log_scale << " bits, got " << log_prime << " bits");
-            }
-        }
+        // if (round(log2(modulus_vector[0].value())) != 60) {
+        //     LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: Last prime must be 60 bits, got "
+        //                          << log2(modulus_vector[0].value()) << " bits");
+        // }
+        // if (round(log2(modulus_vector[num_primes - 1].value())) != 60) {
+        //     LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: Special prime must be 60 bits, got "
+        //                          << log2(modulus_vector[num_primes - 1].value()) << " bits");
+        // }
+        // int expected_log_scale = static_cast<int>(round(log2(modulus_vector[1].value())));
+        // for (int i = 2; i < num_primes - 1; i++) {
+        //     int log_prime = static_cast<int>(round(log2(modulus_vector[i].value())));
+        //     if (log_prime != expected_log_scale) {
+        //         LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: modulus primes expected to be "
+        //                              << expected_log_scale << " bits, got " << log_prime << " bits");
+        //     }
+        // }
 
-        EncryptionParameters params = EncryptionParameters(scheme_type::ckks);
-        params.set_poly_modulus_degree(poly_modulus_degree);
-        params.set_coeff_modulus(modulus_vector);
+        EncryptionParameters params = EncryptionParameters(scheme_type::none);
+        istringstream ctxstream(ckks_params.ctx());
+        params.load(ctxstream);
 
         standard_params_ = ckks_params.standardparams();
         timepoint start = chrono::steady_clock::now();
@@ -221,18 +220,15 @@ namespace hit {
         }
 
         protobuf::CKKSParams ckks_params;
-        auto context_data = context->key_context_data();
-        ckks_params.set_numslots(context_data->parms().poly_modulus_degree() / 2);
-        ckks_params.set_logscale(log_scale_);
-        ckks_params.set_standardparams(standard_params_);
+        ostringstream sealctxBuf;
+        context->key_context_data()->parms().save(sealctxBuf);
+        ckks_params.set_ctx(sealctxBuf.str());
 
         ostringstream sealpkBuf;
         pk.save(sealpkBuf);
         ckks_params.set_pubkey(sealpkBuf.str());
 
-        for (const auto &prime : context_data->parms().coeff_modulus()) {
-            ckks_params.add_modulusvec(prime.value());
-        }
+        ckks_params.set_standardparams(standard_params_);
         ckks_params.SerializeToOstream(&params_stream);
 
         // There is a SEAL limitation that prevents saving large files with compression

@@ -9,7 +9,6 @@
 #include "gtest/gtest.h"
 #include "hit/api/ciphertext.h"
 #include "hit/common.h"
-#include "hit/sealutils.h"
 
 using namespace std;
 using namespace hit;
@@ -370,7 +369,7 @@ TEST(HomomorphicTest, ReduceLevelTo) {
     ciphertext2 = ckks_instance.reduce_level_to(ciphertext1, ZERO_MULTI_DEPTH);
     // Check scale and he_level.
     ASSERT_EQ(ciphertext2.he_level(), ZERO_MULTI_DEPTH);
-    uint64_t prime = get_last_prime(ckks_instance.context, ONE_MULTI_DEPTH);
+    uint64_t prime = ckks_instance.context->getQi(ONE_MULTI_DEPTH);
     ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE * 2) / prime);
     // Check vector values.
     vector<double> vector2 = ckks_instance.decrypt(ciphertext2);
@@ -400,7 +399,7 @@ TEST(HomomorphicTest, ReduceLevelToMin) {
     ckks_instance.reduce_level_to_min_inplace(ciphertext2, ciphertext3);
     // Check scale and he_level.
     ASSERT_EQ(ciphertext3.he_level(), ZERO_MULTI_DEPTH);
-    uint64_t prime = get_last_prime(ckks_instance.context, ONE_MULTI_DEPTH);
+    uint64_t prime = ckks_instance.context->getQi(ONE_MULTI_DEPTH);
     ASSERT_EQ(ciphertext3.scale(), pow(2, LOG_SCALE * 2) / prime);
     // Check vector values.
     vector<double> vector2 = ckks_instance.decrypt(ciphertext1);
@@ -425,7 +424,7 @@ TEST(HomomorphicTest, RescaleToNextInPlace) {
     ckks_instance.rescale_to_next_inplace(ciphertext2);
     // Check scale and he_level.
     ASSERT_EQ(ciphertext2.he_level(), ZERO_MULTI_DEPTH);
-    uint64_t prime = get_last_prime(ckks_instance.context, ONE_MULTI_DEPTH);
+    uint64_t prime = ckks_instance.context->getQi(ONE_MULTI_DEPTH);
     ASSERT_EQ(ciphertext2.scale(), pow(2, LOG_SCALE * 2) / prime);
     // Check vector values.
     vector<double> vector3 = ckks_instance.decrypt(ciphertext2);

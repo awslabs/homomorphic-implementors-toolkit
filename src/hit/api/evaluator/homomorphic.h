@@ -115,7 +115,7 @@ namespace hit {
         seal::RelinKeys relin_keys;
         bool standard_params_;
 
-        int log_scale_;
+        // int log_scale_;
 
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 

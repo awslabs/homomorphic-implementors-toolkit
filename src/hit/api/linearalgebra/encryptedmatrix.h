@@ -48,10 +48,10 @@ namespace hit {
         // use `encrypt_matrix` in `LinearAlgebra` to construct an encrypted matrix
         EncryptedMatrix() = default;
         // Returns a EncryptedMatrix, which is deserialized from protobuf::EncryptedMatrix.
-        EncryptedMatrix(const std::shared_ptr<seal::SEALContext> &context,
+        EncryptedMatrix(const std::shared_ptr<HEContext> &context,
                         const protobuf::EncryptedMatrix &encrypted_matrix);
         // Returns a EncryptedMatrix, which is deserialized from a stream containing a protobuf::EncryptedMatrix.
-        EncryptedMatrix(const std::shared_ptr<seal::SEALContext> &context, std::istream &stream);
+        EncryptedMatrix(const std::shared_ptr<HEContext> &context, std::istream &stream);
         // Returns a protobuf::EncryptedMatrix, which is serialized from EncryptedMatrix.
         // This function is typically used in protobuf serialization code for objects which
         // contain a protobuf::EncryptedMatrix. When used directly, you are responsible for
@@ -87,7 +87,7 @@ namespace hit {
         Matrix plaintext() const override;
 
        private:
-        void read_from_proto(const std::shared_ptr<seal::SEALContext> &context,
+        void read_from_proto(const std::shared_ptr<HEContext> &context,
                              const protobuf::EncryptedMatrix &encrypted_matrix);
 
         EncryptedMatrix(int height, int width, const EncodingUnit &unit,

@@ -10,7 +10,7 @@
 #include "../../common.h"
 
 using namespace std;
-using namespace seal;
+
 namespace hit {
 
     OpCount::OpCount(int num_slots) : num_slots_(num_slots) {

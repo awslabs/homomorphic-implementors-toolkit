@@ -18,7 +18,6 @@ namespace hit {
     void DebugEval::constructor_common(int num_slots) {
         // use the _private_ ScaleEstimator constructor to avoid creating two sets of CKKS params
         scale_estimator = new ScaleEstimator(num_slots, *homomorphic_eval);
-        log_scale_ = homomorphic_eval->log_scale_;
 
         print_parameters(homomorphic_eval->context);
 
@@ -101,11 +100,11 @@ namespace hit {
         return destination;
     }
 
-    vector<double> DebugEval::decrypt(const CKKSCiphertext &encrypted) const {
+    vector<double> DebugEval::decrypt(const CKKSCiphertext &encrypted) {
         return decrypt(encrypted, false);
     }
 
-    vector<double> DebugEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const {
+    vector<double> DebugEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) {
         return homomorphic_eval->decrypt(encrypted, suppress_warnings);
     }
 
@@ -118,7 +117,7 @@ namespace hit {
     }
 
     // print some debug info
-    void DebugEval::print_stats(const CKKSCiphertext &ct) const {
+    void DebugEval::print_stats(const CKKSCiphertext &ct) {
         homomorphic_eval->print_stats(ct);
         scale_estimator->print_stats(ct);
 
@@ -179,7 +178,7 @@ namespace hit {
             LOG(ERROR) << actual_debug_result.str();
 
             Plaintext encoded_plain;
-            homomorphic_eval->encoder->encode(ct.raw_pt, pow(2, log_scale_), encoded_plain);
+            homomorphic_eval->encoder->encode(ct.raw_pt, ct.scale(), encoded_plain);
 
             vector<double> decoded_plain;
             homomorphic_eval->encoder->decode(encoded_plain, decoded_plain);
@@ -197,7 +196,7 @@ namespace hit {
             LOG(ERROR) << "Encryption norm: " << norm3;
 
             LOG_AND_THROW_STREAM("Plaintext and ciphertext divergence: " << norm << " > " << MAX_NORM << ". Scale is "
-                                                                         << log_scale_
+                                                                         << homomorphic_eval->context->log_scale()
                                                                          << " bits. See error log for more details.");
         }
     }
@@ -273,7 +272,7 @@ namespace hit {
     }
 
     void DebugEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        uint64_t p = get_last_prime(homomorphic_eval->context, ct.he_level());
+        uint64_t p = homomorphic_eval->context->getQi(ct.he_level());
         double prime_bit_len = log2(p);
 
         homomorphic_eval->rescale_to_next_inplace_internal(ct);

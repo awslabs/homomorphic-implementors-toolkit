@@ -8,8 +8,7 @@
 #include "depthfinder.h"
 #include "homomorphic.h"
 #include "plaintext.h"
-#include "seal/context.h"
-#include "seal/seal.h"
+#include "hit/api/context.h"
 
 namespace hit {
 
@@ -47,7 +46,7 @@ namespace hit {
         CKKSCiphertext encrypt(const std::vector<double> &coeffs) override;
         CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level) override;
 
-        std::shared_ptr<seal::SEALContext> context;
+        std::shared_ptr<HEContext> context;
 
         int num_slots() const override;
 
@@ -83,10 +82,7 @@ namespace hit {
         void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
 
        private:
-        const int log_scale_ = 0;
-        const int num_slots_ = 0;
         ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval);
-        bool has_shared_params_ = false;
 
         PlaintextEval *plaintext_eval;
 
@@ -95,7 +91,7 @@ namespace hit {
         // This helper function squares the scale of the input and then updates
         // the max_log_scale.
         void temp_square_scale(CKKSCiphertext &ct);
-        void print_stats(const CKKSCiphertext &ct) const override;
+        void print_stats(const CKKSCiphertext &ct) override;
         void update_max_log_scale(const CKKSCiphertext &ct);
 
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
