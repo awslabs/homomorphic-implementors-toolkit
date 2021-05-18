@@ -8,7 +8,6 @@
 #include "../../common.h"
 
 using namespace std;
-using namespace seal;
 
 namespace hit {
 
@@ -57,7 +56,7 @@ namespace hit {
 
     // print some debug info
     void DepthFinder::print_stats(         // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
-        const CKKSCiphertext &ct) const {  // NOLINT(readability-convert-member-functions-to-static)
+        const CKKSCiphertext &ct) {        // NOLINT(readability-convert-member-functions-to-static)
         VLOG(VLOG_EVAL) << "    + Level: " << ct.he_level();
     }
 

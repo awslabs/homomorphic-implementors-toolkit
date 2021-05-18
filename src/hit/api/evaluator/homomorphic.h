@@ -105,7 +105,7 @@ namespace hit {
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
        private:
-        seal::CKKSEncoder *encoder = nullptr;       // no default constructor
+        seal::CKKSEncoder *seal_encoder = nullptr;  // no default constructor
         seal::Evaluator *seal_evaluator = nullptr;  // no default constructor
         seal::Encryptor *seal_encryptor = nullptr;  // no default constructor
         seal::Decryptor *seal_decryptor = nullptr;  // no default constructor
@@ -115,7 +115,7 @@ namespace hit {
         seal::RelinKeys relin_keys;
         bool standard_params_;
 
-        int log_scale_;
+        // int log_scale_;
 
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 

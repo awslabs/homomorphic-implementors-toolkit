@@ -14,15 +14,14 @@
 #include "../common.h"
 
 using namespace std;
-using namespace seal;
 
 namespace hit {
 
-    vector<double> CKKSEvaluator::decrypt(const CKKSCiphertext &ct) const {
+    vector<double> CKKSEvaluator::decrypt(const CKKSCiphertext &ct) {
         return decrypt(ct, false);
     }
 
-    vector<double> CKKSEvaluator::decrypt(const CKKSCiphertext &, bool) const {
+    vector<double> CKKSEvaluator::decrypt(const CKKSCiphertext &, bool) {
         LOG_AND_THROW_STREAM("Decrypt can only be called with Homomorphic or Debug evaluators");
     }
 
@@ -388,5 +387,5 @@ namespace hit {
     void CKKSEvaluator::reduce_level_to_inplace_internal(CKKSCiphertext &, int){};
     void CKKSEvaluator::rescale_to_next_inplace_internal(CKKSCiphertext &){};
     void CKKSEvaluator::relinearize_inplace_internal(CKKSCiphertext &){};
-    void CKKSEvaluator::print_stats(const CKKSCiphertext &) const {};
+    void CKKSEvaluator::print_stats(const CKKSCiphertext &) {};
 }  // namespace hit

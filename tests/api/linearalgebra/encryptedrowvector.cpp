@@ -9,7 +9,6 @@
 #include "hit/api/evaluator/homomorphic.h"
 #include "hit/api/linearalgebra/linearalgebra.h"
 #include "hit/common.h"
-#include "hit/sealutils.h"
 
 using namespace std;
 using namespace hit;
