@@ -44,7 +44,6 @@
 #define COMBINE1(X, Y) X##Y  // helper macro
 #define COMBINE(X, Y) COMBINE1(X, Y)
 
-// #define DISABLE_PARALLELISM
 #ifdef DISABLE_PARALLELISM
 #define UNIQUE_ID() COMBINE(i,__LINE__)
 #define parallel_for(max_idx, body)                                                     \
