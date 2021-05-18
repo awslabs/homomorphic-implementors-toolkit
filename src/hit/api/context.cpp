@@ -126,4 +126,12 @@ namespace hit {
     int HEContext::log_scale() const {
         return ceil(log2(scale(params)));
     }
+
+    Plaintext HEContext::encode(const Encoder &e, const vector<double> &raw_pt, int level, double scale) const {
+        return encodeNTTAtLvlNew(params, e, raw_pt, level, scale);
+    }
+
+    vector<double> HEContext::decode(const Encoder &e, const Plaintext &p) const {
+        return ::decode(e, p, log2(num_slots()));
+    }
 }  // namespace hit

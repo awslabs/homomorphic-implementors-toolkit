@@ -128,6 +128,8 @@ namespace hit {
        private:
         void read_from_proto(const std::shared_ptr<HEContext> &context, const protobuf::Ciphertext &proto_ct);
 
+        double backend_scale() const;
+
         // The raw plaintxt. This is used with some of the evaluators tha track ciphertext
         // metadata (e.g., DebugEval and PlaintextEval), but not by the Homomorphic evaluator.
         // This plaintext is not CKKS-encoded; in particular it is not scaled by the scale factor.

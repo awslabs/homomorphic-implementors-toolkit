@@ -129,7 +129,7 @@ namespace hit {
     //      this is bogus, so nothing to do.
     void ScaleEstimator::update_max_log_scale(const CKKSCiphertext &ct) {
         // update the estimated_max_log_scale_
-        auto scale_exp = static_cast<int>(round(log2(ct.scale()) / log2(pow(2, context->log_scale()))));
+        auto scale_exp = static_cast<int>(round(log2(ct.scale()) / context->log_scale()));
         if (scale_exp != 1 && scale_exp != 2) {
             LOG_AND_THROW_STREAM("Internal error: scale_exp is not 1 or 2: got "
                                  << scale_exp << ". "

@@ -87,6 +87,10 @@ namespace hit {
         return scale_;
     }
 
+    double CKKSCiphertext::backend_scale() const {
+        return ::scale(backend_ct);
+    }
+
     bool CKKSCiphertext::needs_rescale() const {
         return needs_rescale_;
     }

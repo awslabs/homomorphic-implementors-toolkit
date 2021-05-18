@@ -150,9 +150,9 @@ namespace hit {
         vector<double> exact_plaintext = ct.raw_pt;
 
         norm = relative_error(exact_plaintext, homom_plaintext);
-        if (abs(log2(ct.scale()) - log2(scale(ct.backend_ct))) > 0.1) {
+        if (abs(log2(ct.scale()) - log2(ct.backend_scale())) > 0.1) {
             LOG_AND_THROW_STREAM("Internal error: HIT scale does not match SEAL scale: " << log2(ct.scale()) << " != "
-                                                                                         << scale(ct.backend_ct));
+                                                                                         << ct.backend_scale());
         }
 
         VLOG(VLOG_EVAL) << setprecision(8) << "    + Approximation norm: " << norm;
@@ -199,10 +199,9 @@ namespace hit {
             actual_debug_result << ">";
             LOG(ERROR) << actual_debug_result.str();
 
-            Plaintext encoded_plain = encodeNTTAtLvlNew(homomorphic_eval->context->params, homomorphic_eval->get_encoder(), ct.raw_pt, ct.he_level(), ct.scale());
-
-            vector<double> decoded_plain;
-            decoded_plain = decode(homomorphic_eval->get_encoder(), encoded_plain, log2(ct.num_slots()));
+            BackendEncoder e = homomorphic_eval->get_encoder();
+            BackendPlaintext encoded_plain = homomorphic_eval->context->encode(e, ct.raw_pt, ct.he_level(), ct.scale());
+            vector<double> decoded_plain = homomorphic_eval->context->decode(e, encoded_plain);
 
             // the exact_plaintext and homom_plaintext should have the same length.
             // decoded_plain is full-dimensional, however. This may not match
