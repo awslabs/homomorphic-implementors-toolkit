@@ -26,10 +26,12 @@ namespace hit {
      * metadata values, it will always be incorrect (no matter which order Debug calls its sub-evaluators).
      */
 
-    HomomorphicEval::HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,
+    HomomorphicEval::HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_standard_params,
                                      const vector<int> &galois_steps) {
+        timepoint start = chrono::steady_clock::now();
+        standard_params_ = use_standard_params;
         context = make_shared<HEContext>(HEContext(num_slots, multiplicative_depth, log_scale));
-        standard_params_ = use_seal_params;
+        log_elapsed_time(start, "Creating encryption context...");
 
         int num_galois_keys = galois_steps.size();
         VLOG(VLOG_VERBOSE) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth
@@ -53,7 +55,7 @@ namespace hit {
             VLOG(VLOG_VERBOSE) << keys_size_bytes / bytes_per_gb << " gigabytes (base 10)";
         }
 
-        timepoint start = chrono::steady_clock::now();
+        start = chrono::steady_clock::now();
         // generate keys
         // This call generates a KeyGenerator with fresh randomness
         // The KeyGenerator object contains deterministic keys.
@@ -61,12 +63,6 @@ namespace hit {
         KeyPairHandle kp = genKeyPair(keyGenerator);
         sk = kp.sk;
         pk = kp.pk;
-        // if (num_galois_keys > 0) {
-        //     keygen.create_galois_keys(galois_steps, galois_keys);
-        // } else {
-        //     // generate all galois keys
-        //     keygen.create_galois_keys(galois_keys);
-        // }
         galois_keys = genRotationKeysPow2(keyGenerator, sk);
         relin_keys = genRelinKey(keyGenerator, sk);
 
@@ -92,6 +88,7 @@ namespace hit {
     /* An evaluation instance */
     HomomorphicEval::HomomorphicEval(istream &params_stream, istream &galois_key_stream, istream &relin_key_stream) {
         deserialize_common(params_stream);
+
         timepoint start = chrono::steady_clock::now();
         galois_keys = unmarshalBinaryRotationKeys(galois_key_stream);
         relin_keys = unmarshalBinaryEvaluationKey(relin_key_stream);
@@ -102,6 +99,7 @@ namespace hit {
     HomomorphicEval::HomomorphicEval(istream &params_stream, istream &galois_key_stream, istream &relin_key_stream,
                                      istream &secret_key_stream) {
         deserialize_common(params_stream);
+
         timepoint start = chrono::steady_clock::now();
         sk = unmarshalBinarySecretKey(secret_key_stream);
         galois_keys = unmarshalBinaryRotationKeys(galois_key_stream);

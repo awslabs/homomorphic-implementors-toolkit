@@ -27,12 +27,12 @@ namespace hit {
          * When HomomorphicEval is used as a sub-evaluator (e.g., as a component of the Debug evaluator) where
          * other sub-evaluators compute the metadata, then update_metadata should be false.
          *
-         * The `use_seal_params` flag allows you to restrict to SEAL parameters, or to use larger
-         * rings. The SEAL paramters are designed to achieve 128-bits of security, while setting
-         * `use_seal_params` to false allows you to set parameters which may not achieve 128-bits
+         * The `use_standard_params` flag allows you to restrict to standardized parameters, or to use larger
+         * rings. The standard paramters are designed to achieve 128-bits of security, while setting
+         * `use_standard_params` to false allows you to set parameters which may not achieve 128-bits
          * of security.
          */
-        HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params = true,
+        HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_standard_params = true,
                         const std::vector<int> &galois_steps = std::vector<int>());
 
         /* An evaluation instance */
