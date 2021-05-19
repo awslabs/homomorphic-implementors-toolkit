@@ -63,7 +63,7 @@ namespace hit {
         // This plaintext is not CKKS-encoded; in particular it is not scaled by the scale factor.
         std::vector<double> raw_pt;
 
-        BackendCiphertext backend_ct;
+        seal::Ciphertext backend_ct;
 
         // `scale` is used by the ScaleEstimator evaluator
         double scale_ = pow(2, 30);
