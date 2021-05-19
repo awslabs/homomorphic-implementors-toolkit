@@ -30,23 +30,18 @@ namespace hit {
         /*
         Print the size of the true (product) coefficient modulus.
         */
+        int total_bits = homomorphic_eval->context->total_modulus_bits();
         stringstream coeff_modulus_size_info;
-        coeff_modulus_size_info << "|   coeff_modulus size: ";
-
-        double totalBits = 0;
-        stringstream coeff_bit_size_info;
-        for (int i = 0; i < homomorphic_eval->context->numQi(); i++) {
-            double bits = log2(static_cast<double>(homomorphic_eval->context->getQi(i)));
-            totalBits += bits;
-            coeff_bit_size_info << ceil(bits) << " + ";
+        coeff_modulus_size_info << "|   coeff_modulus size: " << total_bits << " (";
+        for (int i = 0; i < homomorphic_eval->context->num_qi(); i++) {
+            double bits = log2(static_cast<double>(homomorphic_eval->context->get_qi(i)));
+            coeff_modulus_size_info << ceil(bits) << " + ";
         }
-        for (int i = 0; i < homomorphic_eval->context->numPi(); i++) {
-            double bits = log2(static_cast<double>(homomorphic_eval->context->getPi(i)));
-            totalBits += bits;
-            coeff_bit_size_info << ceil(bits) << " + ";
+        for (int i = 0; i < homomorphic_eval->context->num_pi(); i++) {
+            double bits = log2(static_cast<double>(homomorphic_eval->context->get_pi(i)));
+            coeff_modulus_size_info << ceil(bits) << " + ";
         }
-        coeff_bit_size_info << ") bits";
-        coeff_modulus_size_info << ceil(totalBits) << " (" << coeff_bit_size_info.str();
+        coeff_modulus_size_info << ") bits";
         VLOG(VLOG_VERBOSE) << coeff_modulus_size_info.str();
 
         VLOG(VLOG_VERBOSE) << "\\";
@@ -55,15 +50,15 @@ namespace hit {
         VLOG(VLOG_VERBOSE) << "Print the modulus switching chain.";
 
         // First print the key level parameter information.
-        VLOG(VLOG_VERBOSE) << "----> Level (chain index): " << homomorphic_eval->context->numQi()
+        VLOG(VLOG_VERBOSE) << "----> Level (chain index): " << homomorphic_eval->context->num_qi()
                            << " ...... key_context_data()";
-        VLOG(VLOG_VERBOSE) << "      parms_id: lvl<" << homomorphic_eval->context->numQi() << ">";
+        VLOG(VLOG_VERBOSE) << "      parms_id: lvl<" << homomorphic_eval->context->num_qi() << ">";
         stringstream key_level_primes;
-        for (int i = 0; i < homomorphic_eval->context->numQi(); i++) {
-            key_level_primes << homomorphic_eval->context->getQi(i) << " ";
+        for (int i = 0; i < homomorphic_eval->context->num_qi(); i++) {
+            key_level_primes << homomorphic_eval->context->get_qi(i) << " ";
         }
-        for (int i = 0; i < homomorphic_eval->context->numPi(); i++) {
-            key_level_primes << homomorphic_eval->context->getPi(i) << " ";
+        for (int i = 0; i < homomorphic_eval->context->num_pi(); i++) {
+            key_level_primes << homomorphic_eval->context->get_pi(i) << " ";
         }
         VLOG(VLOG_VERBOSE) << "      coeff_modulus primes: " << hex << key_level_primes.str() << dec;
         VLOG(VLOG_VERBOSE) << "\\";
@@ -79,7 +74,7 @@ namespace hit {
             VLOG(VLOG_VERBOSE) << "      parms_id: lvl<" << i << ">";
             stringstream data_level_primes;
             for (int j = 0; j <= i; j++) {
-                data_level_primes << homomorphic_eval->context->getQi(j) << " ";
+                data_level_primes << homomorphic_eval->context->get_qi(j) << " ";
             }
             VLOG(VLOG_VERBOSE) << "      coeff_modulus primes: " << hex << data_level_primes.str() << dec;
             VLOG(VLOG_VERBOSE) << "\\";
@@ -291,7 +286,7 @@ namespace hit {
     }
 
     void DebugEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        uint64_t p = homomorphic_eval->context->getQi(ct.he_level());
+        uint64_t p = homomorphic_eval->context->get_qi(ct.he_level());
         double prime_bit_len = log2(p);
 
         homomorphic_eval->rescale_to_next_inplace_internal(ct);

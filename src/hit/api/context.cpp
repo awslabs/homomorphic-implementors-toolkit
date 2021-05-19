@@ -9,7 +9,7 @@
 #include "hit/common.h"
 
 using namespace std;
-using namespace latticpp;
+using namespace seal;
 
 namespace hit {
     /*
@@ -81,7 +81,7 @@ namespace hit {
         }
     }
 
-    HEContext::HEContext(const seal::EncryptionParameters &params, double log_scale, bool use_standard_params) : log_scale(log_scale) {
+    HEContext::HEContext(const seal::EncryptionParameters &params, double precision_bits, bool use_standard_params) : log_scale_(log_scale) {
         params_to_context(params, use_standard_params);
         validateParams(num_slots(), max_ciphertext_level() - 1, log_scale);
     }
@@ -97,7 +97,7 @@ namespace hit {
         }
     }
 
-    HEContext::HEContext(int num_slots, int mult_depth, int precision_bits, bool use_standard_params) {
+    HEContext::HEContext(int num_slots, int mult_depth, int precision_bits, bool use_standard_params) : log_scale_(precision_bits) {
         validateParams(num_slots, mult_depth, precision_bits);
         vector<int> modulus_vec = gen_modulus_vec(mult_depth + 2, precision_bits);
         EncryptionParameters params = EncryptionParameters(scheme_type::ckks);

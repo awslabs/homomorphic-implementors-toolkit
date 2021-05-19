@@ -63,10 +63,10 @@ namespace hit {
          * inefficient. However you may want to suppress the warning for testing either by
          * setting suppress_warnings=true or by setting the log level to 0.
          */
-        std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
-        std::vector<double> decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const override;
+        std::vector<double> decrypt(const CKKSCiphertext &encrypted) override;
+        std::vector<double> decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) override;
 
-        std::shared_ptr<seal::SEALContext> context;
+        std::shared_ptr<HEContext> context;
 
         int num_slots() const override;
 

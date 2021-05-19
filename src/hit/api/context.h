@@ -5,6 +5,8 @@
 
 #include <cstdint>
 #include <vector>
+#include "seal/seal.h"
+#include "seal/context.h"
 
 namespace hit {
     using BackendPlaintext = seal::Plaintext;
@@ -35,6 +37,6 @@ namespace hit {
     private:
         void validateParams(int num_slots, int mult_depth, int precision_bits) const;
         void params_to_context(const seal::EncryptionParameters &params, bool use_standard_params);
-        double log_scale;
+        double log_scale_;
     };
 }  // namespace hit

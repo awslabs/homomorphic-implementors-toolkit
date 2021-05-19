@@ -33,7 +33,7 @@ namespace hit {
 
         if (proto_ct.has_ct()) {
             istringstream ctstream(proto_ct.ct());
-            backend_ct.load(*context, ctstream);
+            backend_ct.load(*(context->params), ctstream);
         }
     }
 

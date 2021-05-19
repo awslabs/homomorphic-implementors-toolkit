@@ -25,8 +25,8 @@ namespace hit {
 
         // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
-        for (int i = 0; i < context->numQi(); i++) {
-            estimated_max_log_scale_ += log2(context->getQi(i));
+        for (int i = 0; i < context->num_qi(); i++) {
+            estimated_max_log_scale_ += log2(context->get_qi(i));
         }
     }
 
@@ -38,8 +38,8 @@ namespace hit {
 
         // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
-        for (int i = 0; i < context->numQi(); i++) {
-            estimated_max_log_scale_ += log2(context->getQi(i));
+        for (int i = 0; i < context->num_qi(); i++) {
+            estimated_max_log_scale_ += log2(context->get_qi(i));
         }
     }
 
@@ -69,7 +69,7 @@ namespace hit {
         double scale = pow(2, context->log_scale());
         // order of operations is very important: floating point arithmetic is not associative
         for (int i = context->max_ciphertext_level(); i > level; i--) {
-            scale = (scale * scale) / static_cast<double>(context->getQi(i));
+            scale = (scale * scale) / static_cast<double>(context->get_qi(i));
         }
 
         CKKSCiphertext destination;
@@ -96,7 +96,7 @@ namespace hit {
     }
 
     uint64_t ScaleEstimator::get_last_prime_internal(const CKKSCiphertext &ct) const {
-        return context->getQi(ct.he_level());
+        return context->get_qi(ct.he_level());
     }
 
     int ScaleEstimator::num_slots() const {
@@ -108,7 +108,7 @@ namespace hit {
         double exact_plaintext_max_val = l_inf_norm(ct.raw_pt);
         double log_modulus = 0;
         for (int i = 0; i <= ct.he_level(); i++) {
-            log_modulus += log2(context->getQi(i));
+            log_modulus += log2(context->get_qi(i));
         }
         plaintext_eval->print_stats(ct);
         VLOG(VLOG_EVAL) << "    + Level: " << ct.he_level();

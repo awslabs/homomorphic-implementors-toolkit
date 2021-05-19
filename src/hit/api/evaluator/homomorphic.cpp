@@ -33,8 +33,8 @@ namespace hit {
         standard_params_ = use_standard_params;
         context = make_shared<HEContext>(num_slots, multiplicative_depth, log_scale, use_standard_params);
         log_elapsed_time(start, "Creating encryption context...");
-        backend_evaluator = new Evaluator(*context);
-        backend_encoder = new CKKSEncoder(*context);
+        backend_evaluator = new Evaluator(*(context->params));
+        backend_encoder = new CKKSEncoder(*(context->params));
 
         int num_galois_keys = galois_steps.size();
         VLOG(VLOG_VERBOSE) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth
@@ -62,7 +62,7 @@ namespace hit {
         // generate keys
         // This call generates a KeyGenerator with fresh randomness
         // The KeyGenerator object contains deterministic keys.
-        KeyGenerator keygen(*context);
+        KeyGenerator keygen(*(context->params));
         sk = keygen.secret_key();
         keygen.create_public_key(pk);
         if (num_galois_keys > 0) {
@@ -75,8 +75,8 @@ namespace hit {
 
         log_elapsed_time(start, "Generating keys...");
 
-        backend_encryptor = new Encryptor(*context, pk);
-        backend_decryptor = new Decryptor(*context, sk);
+        backend_encryptor = new Encryptor(*(context->params), pk);
+        backend_decryptor = new Decryptor(*(context->params), sk);
     }
 
     HomomorphicEval::~HomomorphicEval() {
@@ -98,14 +98,14 @@ namespace hit {
 
         standard_params_ = ckks_params.standardparams();
         timepoint start = chrono::steady_clock::now();
-        context = make_shared<HEContext>(params, standard_params_);
+        context = make_shared<HEContext>(params, log_scale, standard_params_);
         log_elapsed_time(start, "Creating encryption context...");
-        backend_evaluator = new Evaluator(*context);
-        backend_encoder = new CKKSEncoder(*context);
+        backend_evaluator = new Evaluator(*(context->params));
+        backend_encoder = new CKKSEncoder(*(context->params));
 
         istringstream pkstream(ckks_params.pubkey());
-        pk.load(*context, pkstream);
-        backend_encryptor = new Encryptor(*context, pk);
+        pk.load(*(context->params), pkstream);
+        backend_encryptor = new Encryptor(*(context->params), pk);
     }
 
     /* An evaluation instance */
@@ -113,8 +113,8 @@ namespace hit {
         deserialize_common(params_stream);
 
         timepoint start = chrono::steady_clock::now();
-        galois_keys.load(*context, galois_key_stream);
-        relin_keys.load(*context, relin_key_stream);
+        galois_keys.load(*(context->params), galois_key_stream);
+        relin_keys.load(*(context->params), relin_key_stream);
         log_elapsed_time(start, "Reading keys...");
     }
 
@@ -124,11 +124,11 @@ namespace hit {
         deserialize_common(params_stream);
 
         timepoint start = chrono::steady_clock::now();
-        sk.load(*context, secret_key_stream);
-        galois_keys.load(*context, galois_key_stream);
-        relin_keys.load(*context, relin_key_stream);
+        sk.load(*(context->params), secret_key_stream);
+        galois_keys.load(*(context->params), galois_key_stream);
+        relin_keys.load(*(context->params), relin_key_stream);
         log_elapsed_time(start, "Reading keys...");
-        backend_decryptor = new Decryptor(*context, sk);
+        backend_decryptor = new Decryptor(*(context->params), sk);
     }
 
     void HomomorphicEval::save(ostream &params_stream, ostream &galois_key_stream, ostream &relin_key_stream,
@@ -139,7 +139,7 @@ namespace hit {
 
         protobuf::CKKSParams ckks_params;
         ostringstream sealctxBuf;
-        context->key_context_data()->parms().save(sealctxBuf);
+        context->params->key_context_data()->parms().save(sealctxBuf);
         ckks_params.set_ctx(sealctxBuf.str());
         ckks_params.set_logscale(context->log_scale());
 
@@ -171,7 +171,7 @@ namespace hit {
         }
 
         if (level == -1) {
-            level = context->first_context_data()->chain_index();
+            level = context->max_ciphertext_level();
         }
 
         auto context_data = context->first_context_data();
@@ -196,11 +196,11 @@ namespace hit {
         return destination;
     }
 
-    vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted) const {
+    vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted) {
         return decrypt(encrypted, false);
     }
 
-    vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const {
+    vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) {
         if (backend_decryptor == nullptr) {
             LOG_AND_THROW_STREAM(
                 "Decryption is only possible from a deserialized instance when the secret key is provided.");
