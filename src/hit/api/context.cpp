@@ -114,7 +114,7 @@ namespace hit {
         return pi(params, i);
     }
 
-    int HEContext::num_pi() const {
+    int HEContext::num_qi() const {
         return qiCount(params);
     }
 
@@ -142,13 +142,5 @@ namespace hit {
 
     int HEContext::log_scale() const {
         return ceil(log2(scale(params)));
-    }
-
-    BackendPlaintext HEContext::encode(const BackendEncoder &e, const vector<double> &raw_pt, int level, double scale) const {
-        return encodeNTTAtLvlNew(params, e, raw_pt, level, scale);
-    }
-
-    vector<double> HEContext::decode(const BackendEncoder &e, const BackendPlaintext &p) const {
-        return ::decode(e, p, log2(num_slots()));
     }
 }  // namespace hit

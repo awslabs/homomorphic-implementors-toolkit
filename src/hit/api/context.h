@@ -8,8 +8,6 @@
 #include "latticpp/latticpp.h"
 
 namespace hit {
-    using BackendPlaintext = latticpp::Plaintext;
-    using BackendEncoder = latticpp::Encoder;
 
     std::vector<int> gen_modulus_vec(int num_primes, int mult_depth, int log_scale);
     uint64_t estimate_key_size(int num_galois_shift, int plaintext_slots, int depth);
@@ -28,9 +26,6 @@ namespace hit {
         uint64_t total_modulus_bits() const;
         int min_log_scale() const;
         int log_scale() const;
-
-        BackendPlaintext encode(BackendEncoder &e, const std::vector<double> &raw_pt, int level, double scale) const;
-        std::vector<double> decode(BackendEncoder &e, const BackendPlaintext &p) const;
 
         latticpp::Parameters params;
     private:

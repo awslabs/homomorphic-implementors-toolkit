@@ -12,6 +12,7 @@
 #include "../evaluator.h"
 
 using namespace std;
+using namespace latticpp;
 
 namespace hit {
     void DebugEval::constructor_common(int num_slots) {
@@ -193,9 +194,9 @@ namespace hit {
             actual_debug_result << ">";
             LOG(ERROR) << actual_debug_result.str();
 
-            BackendEncoder e = homomorphic_eval->get_encoder();
-            BackendPlaintext encoded_plain = homomorphic_eval->context->encode(e, ct.raw_pt, ct.he_level(), ct.scale());
-            vector<double> decoded_plain = homomorphic_eval->context->decode(e, encoded_plain);
+            Encoder e = homomorphic_eval->get_encoder();
+            Plaintext encoded_plain = encodeNTTAtLvlNew(homomorphic_eval->context->params, e, ct.raw_pt, ct.he_level(), ct.scale());
+            vector<double> decoded_plain = ::decode(e, encoded_plain, log2(num_slots()));
 
             // the exact_plaintext and homom_plaintext should have the same length.
             // decoded_plain is full-dimensional, however. This may not match
