@@ -120,7 +120,7 @@ namespace hit {
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 
         void deserialize_common(std::istream &params_stream);
-        void makeSealCtxt(const seal::EncryptionParameters &params, const hit::timepoint &start);
+        void makeSealCtxt(const seal::EncryptionParameters &params, int log_scale, const hit::timepoint &start);
 
         friend class DebugEval;
         friend class ScaleEstimator;

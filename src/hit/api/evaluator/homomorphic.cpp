@@ -115,14 +115,14 @@ namespace hit {
         delete seal_decryptor;
     }
 
-    void HomomorphicEval::makeSealCtxt(const seal::EncryptionParameters &params, const timepoint &start) {
+    void HomomorphicEval::makeSealCtxt(const seal::EncryptionParameters &params, int log_scale, const timepoint &start) {
         if (standard_params_) {
-            context = make_unique<SEALContext>(params);
+            context = make_shared<HEContext>(make_shared<SEALContext>(params), log_scale);
         } else {
             LOG(WARNING) << "YOU ARE NOT USING STANDARD SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security"
                          << "DO NOT USE IN PRODUCTION";
             // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-            context = make_unique<SEALContext>(params, true, sec_level_type::none);
+            context = make_shared<HEContext>(make_shared<SEALContext>(params, true, sec_level_type::none), log_scale);
         }
         log_elapsed_time(start, "Creating encryption context...");
     }
@@ -131,57 +131,15 @@ namespace hit {
         protobuf::CKKSParams ckks_params;
         ckks_params.ParseFromIstream(&params_stream);
 
-        // log_scale_ = ckks_params.logscale();
-        // if (log_scale_ <= MIN_LOG_SCALE) {
-        //     LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: log scale too small. Minimum value is "
-        //                          << MIN_LOG_SCALE << ", got " << log_scale_);
-        // }
-
-        // int num_slots = ckks_params.numslots();
-        // if (num_slots < 4096 || !is_pow2(num_slots)) {
-        //     LOG_AND_THROW_STREAM(
-        //         "Error deserializing CKKS parameters: num_slots is invalid. Expected a power of two at least 4096, got "
-        //         << num_slots);
-        // }
-
-        // int poly_modulus_degree = num_slots * 2;
-        // int num_primes = ckks_params.modulusvec_size();
-        // if (num_primes < 2) {
-        //     LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: at least two primes are required, but only got "
-        //                          << num_primes);
-        // }
-
-        // vector<Modulus> modulus_vector;
-        // modulus_vector.reserve(num_primes);
-        // for (int i = 0; i < num_primes; i++) {
-        //     auto val = Modulus(ckks_params.modulusvec(i));
-        //     modulus_vector.push_back(val);
-        // }
-
-        // if (round(log2(modulus_vector[0].value())) != 60) {
-        //     LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: Last prime must be 60 bits, got "
-        //                          << log2(modulus_vector[0].value()) << " bits");
-        // }
-        // if (round(log2(modulus_vector[num_primes - 1].value())) != 60) {
-        //     LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: Special prime must be 60 bits, got "
-        //                          << log2(modulus_vector[num_primes - 1].value()) << " bits");
-        // }
-        // int expected_log_scale = static_cast<int>(round(log2(modulus_vector[1].value())));
-        // for (int i = 2; i < num_primes - 1; i++) {
-        //     int log_prime = static_cast<int>(round(log2(modulus_vector[i].value())));
-        //     if (log_prime != expected_log_scale) {
-        //         LOG_AND_THROW_STREAM("Error deserializing CKKS parameters: modulus primes expected to be "
-        //                              << expected_log_scale << " bits, got " << log_prime << " bits");
-        //     }
-        // }
-
         EncryptionParameters params = EncryptionParameters(scheme_type::none);
         istringstream ctxstream(ckks_params.ctx());
         params.load(ctxstream);
 
+        int log_scale = ckks_params.logscale();
+
         standard_params_ = ckks_params.standardparams();
         timepoint start = chrono::steady_clock::now();
-        makeSealCtxt(params, start);
+        makeSealCtxt(params, log_scale, start);
         seal_evaluator = new Evaluator(*context);
         encoder = new CKKSEncoder(*context);
 
@@ -223,6 +181,7 @@ namespace hit {
         ostringstream sealctxBuf;
         context->key_context_data()->parms().save(sealctxBuf);
         ckks_params.set_ctx(sealctxBuf.str());
+        ckks_params.set_logscale(context->log_scale());
 
         ostringstream sealpkBuf;
         pk.save(sealpkBuf);

@@ -17,14 +17,15 @@ namespace hit {
     class HEContext {
     public:
         HEContext(int num_slots, int mult_depth, int precisionBits);
-        explicit HEContext(std::shared_ptr<seal::SEALContext> &params);
+        explicit HEContext(std::shared_ptr<seal::SEALContext> &params, int precisionBits);
 
         int max_ciphertext_level() const;
         int num_slots() const;
-        uint64_t getQi(int he_level) const;
-        uint64_t getPi(int i) const;
-        int numQi() const;
-        int numPi() const;
+        uint64_t get_qi(int he_level) const;
+        uint64_t get_pi(int i) const;
+        int num_qi() const;
+        int num_pi() const;
+        uint64_t total_modulus_bits() const;
         int min_log_scale() const;
         int log_scale() const;
 

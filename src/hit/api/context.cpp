@@ -60,26 +60,24 @@ namespace hit {
 
     void HEContext::validateParams(int num_slots, int mult_depth, int precisionBits) const {
         if (!is_pow2(num_slots) || num_slots < 4096) {
-            LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
-                                 << "num_slots must be a power of 2, and at least 4096. Got " << num_slots);
+            LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-SEAL instance: "
+                                 << "num_slots must be a power of 2, and at least 4096; got "
+                                 << num_slots << ".");
+        }
+
+        if (precisionBits < min_log_scale()) {
+            LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-SEAL instance: "
+                                 << "log_scale is " << precisionBits << ", which is less than the minimum "
+                                 << min_log_scale() << ".");
         }
 
         int poly_modulus_degree = num_slots * 2;
-        if (precisionBits < min_log_scale()) {
-            LOG(ERROR) << "poly_modulus_degree is " << poly_modulus_degree << ", which limits the modulus to "
-                       << poly_degree_to_max_mod_bits(poly_modulus_degree) << " bits";
-            LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
-                                 << "log_scale is " << precisionBits << ", which is less than the minimum "
-                                 << min_log_scale()
-                                 << ". Either increase the number of slots or decrease the number of primes.");
-        }
-
-        int modBits = 120 + mult_depth * precisionBits;
-        int min_poly_degree = modulus_to_poly_degree(modBits);
-        if (poly_modulus_degree < min_poly_degree) {
-            LOG_AND_THROW_STREAM("Invalid parameters when creating ScaleEstimator instance: "
-                                 << "Parameters for depth " << mult_depth << " circuits and scale "
-                                 << precisionBits << " bits require more than " << num_slots << " plaintext slots.");
+        int max_modulus_bits = poly_degree_to_max_mod_bits(poly_modulus_degree);
+        uint64_t modulus_bits = total_modulus_bits();
+        if (modulus_bits > max_modulus_bits) {
+            LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-SEAL instance: "
+                                 << "poly_modulus_degree is " << poly_modulus_degree << ", which limits the modulus to "
+                                 << max_modulus_bits << " bits, but a " << modulus_bits << "-bit modulus was requested.");
         }
     }
 
@@ -103,26 +101,37 @@ namespace hit {
         return context->first_context_data()->parms().poly_modulus_degree() / 2;
     }
 
-    uint64_t HEContext::getQi(int he_level) const {
+    uint64_t HEContext::get_qi(int he_level) const {
         if (he_level > max_ciphertext_level()) {
             LOG_AND_THROW_STREAM("Q_i index-out-of-bounds exception");
         }
         return get_context_data(he_level)->parms().coeff_modulus().back().value();
     }
 
-    uint64_t HEContext::getPi(int i) const {
+    uint64_t HEContext::get_pi(int i) const {
         if (i != 0) {
             LOG_AND_THROW_STREAM("SEAL only supports a single key-switch modulus");
         }
         return context->key_context_data()->parms().coeff_modulus().back().value();
     }
 
-    int HEContext::numQi() const {
+    int HEContext::num_qi() const {
         return max_ciphertext_level() + 1;
     }
 
-    int HEContext::numPi() const { // NOLINT(readability-convert-member-functions-to-static)
+    int HEContext::num_pi() const { // NOLINT(readability-convert-member-functions-to-static)
         return 1;
+    }
+
+    uint64_t HEContext::total_modulus_bits() const {
+        double total = 0;
+        for (int i = 0; i < num_qi(); i++) {
+            total += log2(get_qi(i));
+        }
+        for (int i = 0; i < num_pi(); i++) {
+            total += log2(get_pi(i));
+        }
+        return static_cast<uint64_t>(round(total));
     }
 
     int HEContext::min_log_scale() const { // NOLINT(readability-convert-member-functions-to-static)
