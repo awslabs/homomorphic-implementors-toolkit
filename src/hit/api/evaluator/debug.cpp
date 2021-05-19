@@ -12,6 +12,7 @@
 #include "../evaluator.h"
 
 using namespace std;
+using namespace seal;
 
 namespace hit {
     void DebugEval::constructor_common(int num_slots) {
@@ -193,9 +194,10 @@ namespace hit {
             actual_debug_result << ">";
             LOG(ERROR) << actual_debug_result.str();
 
-            BackendEncoder &e = *(homomorphic_eval->backend_encoder);
-            BackendPlaintext encoded_plain = homomorphic_eval->context->encode(e, ct.raw_pt, ct.he_level(), ct.scale());
-            vector<double> decoded_plain = homomorphic_eval->context->decode(e, encoded_plain);
+            Plaintext encoded_plain;
+            homomorphic_eval->backend_encoder->encode(ct.raw_pt, ct.backend_ct.parms_id(), ct.scale(), encoded_plain);
+            vector<double> decoded_plain;
+            homomorphic_eval->backend_encoder->decode(encoded_plain, decoded_plain);
 
             // the exact_plaintext and homom_plaintext should have the same length.
             // decoded_plain is full-dimensional, however. This may not match

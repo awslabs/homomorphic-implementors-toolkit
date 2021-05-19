@@ -9,8 +9,6 @@
 #include "seal/context.h"
 
 namespace hit {
-    using BackendPlaintext = seal::Plaintext;
-    using BackendEncoder = seal::CKKSEncoder;
 
     std::vector<int> gen_modulus_vec(int num_primes, int mult_depth, int log_scale);
     uint64_t estimate_key_size(int num_galois_shift, int plaintext_slots, int depth);
@@ -30,18 +28,16 @@ namespace hit {
         int min_log_scale() const;
         int log_scale() const;
 
-        BackendPlaintext encode(BackendEncoder &e, const std::vector<double> &raw_pt, int level, double scale) const;
-        std::vector<double> decode(BackendEncoder &e, const BackendPlaintext &p) const;
-
         std::shared_ptr<seal::SEALContext> params;
-    private:
-        void validateContext() const;
-        void params_to_context(const seal::EncryptionParameters &enc_params, bool use_standard_params);
-        int log_scale_;
 
         /*
         Helper function: Get the context data for a specific ciphertext level
         */
         std::shared_ptr<const seal::SEALContext::ContextData> get_context_data(int level) const;
+    private:
+        void validateContext() const;
+        void params_to_context(const seal::EncryptionParameters &enc_params, bool use_standard_params);
+        int log_scale_;
+
     };
 }  // namespace hit

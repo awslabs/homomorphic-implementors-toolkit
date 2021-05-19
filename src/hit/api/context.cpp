@@ -159,19 +159,6 @@ namespace hit {
         return log_scale_;
     }
 
-    BackendPlaintext HEContext::encode(BackendEncoder &e, const vector<double> &raw_pt, int level, double scale) const { // NOLINT(readability-convert-member-functions-to-static)
-        Plaintext encoded_plain;
-        shared_ptr<const SEALContext::ContextData> ctx_data = get_context_data(level);
-        e.encode(raw_pt, ctx_data->parms_id(), scale, encoded_plain);
-        return encoded_plain;
-    }
-
-    vector<double> HEContext::decode(BackendEncoder &e, const BackendPlaintext &p) const { // NOLINT(readability-convert-member-functions-to-static)
-        vector<double> decoded_plain;
-        e.decode(p, decoded_plain);
-        return decoded_plain;
-    }
-
     /*
     Helper function: Get the context data for the ciphertext's level
     */
