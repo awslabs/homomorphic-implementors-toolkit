@@ -33,7 +33,7 @@ namespace hit {
 
         if (proto_ct.has_ct()) {
             istringstream ctstream(proto_ct.ct());
-            seal_ct.load(*context, ctstream);
+            backend_ct.load(*context, ctstream);
         }
     }
 
@@ -61,9 +61,9 @@ namespace hit {
         proto_ct->set_he_level(he_level_);
 
         // if the backend_ct is initialized, serialize it
-        if (seal_ct.parms_id() != parms_id_zero) {
+        if (backend_ct.parms_id() != parms_id_zero) {
             ostringstream sealctBuf;
-            seal_ct.save(sealctBuf);
+            backend_ct.save(sealctBuf);
             proto_ct->set_ct(sealctBuf.str());
         }
 
@@ -90,7 +90,7 @@ namespace hit {
     }
 
     double CKKSCiphertext::backend_scale() const {
-        return seal_ct.scale();
+        return backend_ct.scale();
     }
 
     bool CKKSCiphertext::needs_rescale() const {
