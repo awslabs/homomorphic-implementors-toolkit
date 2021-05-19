@@ -58,16 +58,16 @@ namespace hit {
         return sk_bytes + pk_bytes + rk_bytes + gk_bytes;
     }
 
-    void HEContext::validateParams(int num_slots, int mult_depth, int precisionBits) const {
+    void HEContext::validateParams(int num_slots, int mult_depth, int precision_bits) const {
         if (!is_pow2(num_slots) || num_slots < 4096) {
             LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-SEAL instance: "
                                  << "num_slots must be a power of 2, and at least 4096; got "
                                  << num_slots << ".");
         }
 
-        if (precisionBits < min_log_scale()) {
+        if (precision_bits < min_log_scale()) {
             LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-SEAL instance: "
-                                 << "log_scale is " << precisionBits << ", which is less than the minimum "
+                                 << "log_scale is " << precision_bits << ", which is less than the minimum "
                                  << min_log_scale() << ".");
         }
 
@@ -85,12 +85,18 @@ namespace hit {
         validateParams(num_slots(), max_ciphertext_level() - 1, log_scale);
     }
 
-    HEContext::HEContext(int num_slots, int mult_depth, int precisionBits) {
-        validateParams(num_slots, mult_depth, precisionBits);
-        vector<uint8_t> logQi = gen_ciphertext_modulus_vec(mult_depth + 1, precisionBits);
-        vector<uint8_t> logPi(1);
-        logPi[0] = 60; // special modulus. For now, we just use a single modulus like SEAL.
-        params = newParametersFromLogModuli(log2(num_slots) + 1, logQi, mult_depth + 1, logPi, 1, precisionBits);
+    HEContext::HEContext(int num_slots, int mult_depth, int precision_bits, use_standard_params) {
+        validateParams(num_slots, mult_depth, precision_bits);
+        vector<int> modulus_vec = gen_modulus_vec(mult_depth + 2, precision_bits);
+        EncryptionParameters params = EncryptionParameters(scheme_type::ckks);
+        int poly_modulus_degree = num_slots * 2;
+        params.set_poly_modulus_degree(poly_modulus_degree);
+        params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulus_vec));
+        if (use_standard_params) {
+            params = make_unique<SEALContext>(params);
+        } else {
+            params = make_unique<SEALContext>(params, true, sec_level_type::none);
+        }
     }
 
     int HEContext::max_ciphertext_level() const {

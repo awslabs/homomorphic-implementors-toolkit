@@ -16,12 +16,12 @@ namespace hit {
     // it turns out that the lossiness of encoding/decoding strongly depends on
     // this value. For evaluators that don't really use SEAL, but do use CKKS
     // encoding/decoding, this should be set to as high as possible.
-    int defaultScaleBits = 30;
+    int default_scale_bits = 30;
 
     ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth) {
         plaintext_eval = new PlaintextEval(num_slots);
 
-        context = make_shared<HEContext>(HEContext(num_slots, multiplicative_depth, defaultScaleBits));
+        context = make_shared<HEContext>(HEContext(num_slots, multiplicative_depth, default_scale_bits, false));
 
         // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;

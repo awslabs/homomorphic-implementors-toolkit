@@ -16,8 +16,8 @@ namespace hit {
 
     class HEContext {
     public:
-        HEContext(int num_slots, int mult_depth, int precisionBits);
-        explicit HEContext(std::shared_ptr<seal::SEALContext> &params, int precisionBits);
+        HEContext(int num_slots, int mult_depth, int precision_bits);
+        explicit HEContext(std::shared_ptr<seal::SEALContext> &params, int precision_bits);
 
         int max_ciphertext_level() const;
         int num_slots() const;
@@ -34,7 +34,7 @@ namespace hit {
 
         std::shared_ptr<seal::SEALContext> params;
     private:
-        void validateParams(int num_slots, int mult_depth, int precisionBits) const;
+        void validateParams(int num_slots, int mult_depth, int precision_bits) const;
         double log_scale;
     };
 }  // namespace hit
