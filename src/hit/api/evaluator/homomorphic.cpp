@@ -8,6 +8,7 @@
 #include "homomorphic.h"
 
 #include <glog/logging.h>
+
 #include <iomanip>
 #include <thread>
 
@@ -204,7 +205,7 @@ namespace hit {
      * an evaluator is already allocated, we can check that it was allocated _with the correct parameters_.
      * If it was allocated with different parameters, we throw away the old evaluator and create a new one.
      */
-    Evaluator& HomomorphicEval::get_evaluator() {
+    Evaluator &HomomorphicEval::get_evaluator() {
         if (backend_evaluator.get() == nullptr || !(backend_evaluator->params == context->params)) {
             ParameterizedLattigoType<Evaluator> *tmp =
                 new ParameterizedLattigoType<Evaluator>(newEvaluator(context->params), context->params);
@@ -213,7 +214,7 @@ namespace hit {
         return backend_evaluator->object;
     }
 
-    Encoder& HomomorphicEval::get_encoder() {
+    Encoder &HomomorphicEval::get_encoder() {
         if (backend_encoder.get() == nullptr || !(backend_encoder->params == context->params)) {
             ParameterizedLattigoType<Encoder> *tmp =
                 new ParameterizedLattigoType<Encoder>(newEncoder(context->params), context->params);
@@ -222,7 +223,7 @@ namespace hit {
         return backend_encoder->object;
     }
 
-    Encryptor& HomomorphicEval::get_encryptor() {
+    Encryptor &HomomorphicEval::get_encryptor() {
         if (backend_encryptor.get() == nullptr || backend_encryptor->params != context->params) {
             ParameterizedLattigoType<Encryptor> *tmp =
                 new ParameterizedLattigoType<Encryptor>(newEncryptorFromPk(context->params, pk), context->params);

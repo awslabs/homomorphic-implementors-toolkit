@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <vector>
+
 #include "latticpp/latticpp.h"
 
 namespace hit {
@@ -13,7 +14,7 @@ namespace hit {
     uint64_t estimate_key_size(int num_galois_shift, int plaintext_slots, int depth);
 
     class HEContext {
-    public:
+       public:
         HEContext(int num_slots, int mult_depth, int precisionBits);
         explicit HEContext(latticpp::Parameters &params);
 
@@ -28,7 +29,8 @@ namespace hit {
         int log_scale() const;
 
         latticpp::Parameters params;
-    private:
+
+       private:
         void validateContext() const;
     };
 }  // namespace hit

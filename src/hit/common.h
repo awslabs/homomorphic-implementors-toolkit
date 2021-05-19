@@ -3,10 +3,11 @@
 
 #pragma once
 
+#include <glog/logging.h>
+
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 #include <chrono>
-#include <glog/logging.h>
 
 #include "api/ciphertext.h"
 #include "hit/protobuf/ciphertext.pb.h"

@@ -3,10 +3,11 @@
 
 #pragma once
 
+#include <boost/thread/tss.hpp>
+
+#include "../../common.h"
 #include "../ciphertext.h"
 #include "../evaluator.h"
-#include "../../common.h"
-#include <boost/thread/tss.hpp>
 
 namespace hit {
 
@@ -103,9 +104,11 @@ namespace hit {
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
        private:
-        template<typename T>
+        template <typename T>
         struct ParameterizedLattigoType {
-            ParameterizedLattigoType(T object, latticpp::Parameters &params) : object(std::move(object)), params(params) { }
+            ParameterizedLattigoType(T object, latticpp::Parameters &params)
+                : object(std::move(object)), params(params) {
+            }
             T object;
             const latticpp::Parameters params;
         };
@@ -120,9 +123,9 @@ namespace hit {
         latticpp::EvaluationKey relin_keys;
         bool standard_params_;
 
-        latticpp::Evaluator& get_evaluator();
-        latticpp::Encoder& get_encoder();
-        latticpp::Encryptor& get_encryptor();
+        latticpp::Evaluator &get_evaluator();
+        latticpp::Encoder &get_encoder();
+        latticpp::Encryptor &get_encryptor();
 
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 

@@ -45,10 +45,10 @@
 #define COMBINE(X, Y) COMBINE1(X, Y)
 
 #ifdef DISABLE_PARALLELISM
-#define UNIQUE_ID() COMBINE(i,__LINE__)
-#define parallel_for(max_idx, body)                                                     \
-    for(int UNIQUE_ID() = 0; UNIQUE_ID() < (max_idx); UNIQUE_ID()++) {                  \
-        body(UNIQUE_ID());                                                              \
+#define UNIQUE_ID() COMBINE(i, __LINE__)
+#define parallel_for(max_idx, body)                                     \
+    for (int UNIQUE_ID() = 0; UNIQUE_ID() < (max_idx); UNIQUE_ID()++) { \
+        body(UNIQUE_ID());                                              \
     }
 #else /* !DISABLE_PARALLELISM */
 // https://stackoverflow.com/a/17694752/925978

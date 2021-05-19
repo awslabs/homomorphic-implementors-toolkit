@@ -6,6 +6,7 @@
  */
 
 #include "context.h"
+
 #include "hit/common.h"
 
 using namespace std;
@@ -60,8 +61,7 @@ namespace hit {
         int precision_bits = log_scale();
         if (!is_pow2(num_slots_) || num_slots_ < 4096) {
             LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-Lattigo instance: "
-                                 << "num_slots must be a power of 2, and at least 4096; got "
-                                 << num_slots_ << ".");
+                                 << "num_slots must be a power of 2, and at least 4096; got " << num_slots_ << ".");
         }
 
         if (precision_bits < min_log_scale()) {
@@ -76,7 +76,8 @@ namespace hit {
         if (modulus_bits > max_modulus_bits) {
             LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-Lattigo instance: "
                                  << "poly_modulus_degree is " << poly_modulus_degree << ", which limits the modulus to "
-                                 << max_modulus_bits << " bits, but a " << modulus_bits << "-bit modulus was requested.");
+                                 << max_modulus_bits << " bits, but a " << modulus_bits
+                                 << "-bit modulus was requested.");
         }
     }
 
@@ -87,7 +88,7 @@ namespace hit {
     HEContext::HEContext(int num_slots, int mult_depth, int precisionBits) {
         vector<uint8_t> logQi = gen_ciphertext_modulus_vec(mult_depth + 1, precisionBits);
         vector<uint8_t> logPi(1);
-        logPi[0] = 60; // special modulus. For now, we just use a single modulus like SEAL.
+        logPi[0] = 60;  // special modulus. For now, we just use a single modulus like SEAL.
         params = newParametersFromLogModuli(log2(num_slots) + 1, logQi, mult_depth + 1, logPi, 1, precisionBits);
         validateContext();
     }
@@ -133,7 +134,7 @@ namespace hit {
         return static_cast<uint64_t>(round(total));
     }
 
-    int HEContext::min_log_scale() const { // NOLINT(readability-convert-member-functions-to-static)
+    int HEContext::min_log_scale() const {  // NOLINT(readability-convert-member-functions-to-static)
         // SEAL throws an error for 21, but allows 22
         // I haven't updated this for Lattigo; but this is WAY lower than would work in practice anyway,
         // so I'm not too concerned.

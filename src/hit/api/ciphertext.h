@@ -3,10 +3,11 @@
 
 #pragma once
 
+#include <cmath>
+
+#include "hit/api/context.h"
 #include "hit/protobuf/ciphertext.pb.h"
 #include "metadata.h"
-#include "hit/api/context.h"
-#include <cmath>
 
 namespace hit {
 
@@ -22,7 +23,7 @@ namespace hit {
         // throughout HIT and in applications which consume HIT.
 
         // copy constructor
-        CKKSCiphertext(const CKKSCiphertext& other) {
+        CKKSCiphertext(const CKKSCiphertext &other) {
             if (this == &other) {
                 return;
             }
@@ -38,7 +39,7 @@ namespace hit {
         }
 
         // copy assignment operator
-        CKKSCiphertext& operator= (const CKKSCiphertext& other) {
+        CKKSCiphertext &operator=(const CKKSCiphertext &other) {
             if (this != &other) {
                 raw_pt = other.raw_pt;
                 // do a deep copy of the Go object
@@ -55,7 +56,7 @@ namespace hit {
 
         // move contructor: the moved-from object *will still be destructed*
         // https://stackoverflow.com/a/20589077/925978
-        CKKSCiphertext (const CKKSCiphertext&& other) noexcept {
+        CKKSCiphertext(const CKKSCiphertext &&other) noexcept {
             if (this == &other) {
                 return;
             }
@@ -71,7 +72,7 @@ namespace hit {
         }
 
         // move assignment operator
-        CKKSCiphertext& operator= (CKKSCiphertext&& other) noexcept {
+        CKKSCiphertext &operator=(CKKSCiphertext &&other) noexcept {
             if (this != &other) {
                 raw_pt = move(other.raw_pt);
                 // copy the reference to the Go object

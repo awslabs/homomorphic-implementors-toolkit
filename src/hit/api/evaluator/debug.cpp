@@ -8,8 +8,8 @@
 #include <iomanip>
 
 #include "../../common.h"
-#include "hit/api/context.h"
 #include "../evaluator.h"
+#include "hit/api/context.h"
 
 using namespace std;
 using namespace latticpp;
@@ -195,7 +195,8 @@ namespace hit {
             LOG(ERROR) << actual_debug_result.str();
 
             Encoder e = homomorphic_eval->get_encoder();
-            Plaintext encoded_plain = encodeNTTAtLvlNew(homomorphic_eval->context->params, e, ct.raw_pt, ct.he_level(), ct.scale());
+            Plaintext encoded_plain =
+                encodeNTTAtLvlNew(homomorphic_eval->context->params, e, ct.raw_pt, ct.he_level(), ct.scale());
             vector<double> decoded_plain = ::decode(e, encoded_plain, log2(num_slots()));
 
             // the exact_plaintext and homom_plaintext should have the same length.
