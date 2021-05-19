@@ -6,7 +6,6 @@
 #include "hit/protobuf/ciphertext.pb.h"
 #include "metadata.h"
 #include "hit/api/context.h"
-#include "hit/api/backend.h"
 #include <cmath>
 
 namespace hit {
