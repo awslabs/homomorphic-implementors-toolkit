@@ -16,6 +16,7 @@ RUN set -ex && \
     build-essential \
     software-properties-common \
     curl \
+    golang \
     libboost-math-dev \
     protobuf-compiler \
     libprotobuf-dev \
