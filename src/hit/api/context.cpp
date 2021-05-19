@@ -81,30 +81,38 @@ namespace hit {
         }
     }
 
-    HEContext::HEContext(std::shared_ptr<seal::SEALContext> &params, double log_scale) : params(params), log_scale(log_scale) {
+    HEContext::HEContext(const seal::EncryptionParameters &params, double log_scale, bool use_standard_params) : log_scale(log_scale) {
+        params_to_context(params, use_standard_params);
         validateParams(num_slots(), max_ciphertext_level() - 1, log_scale);
     }
 
-    HEContext::HEContext(int num_slots, int mult_depth, int precision_bits, use_standard_params) {
+    void HEContext::params_to_context(const EncryptionParameters &params, bool use_standard_params) {
+        if (use_standard_params) {
+            params = make_shared<SEALContext>(params);
+        } else {
+            LOG(WARNING) << "YOU ARE NOT USING STANDARD SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security"
+                         << "DO NOT USE IN PRODUCTION";
+            // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
+            params = make_shared<SEALContext>(params, true, sec_level_type::none);
+        }
+    }
+
+    HEContext::HEContext(int num_slots, int mult_depth, int precision_bits, bool use_standard_params) {
         validateParams(num_slots, mult_depth, precision_bits);
         vector<int> modulus_vec = gen_modulus_vec(mult_depth + 2, precision_bits);
         EncryptionParameters params = EncryptionParameters(scheme_type::ckks);
         int poly_modulus_degree = num_slots * 2;
         params.set_poly_modulus_degree(poly_modulus_degree);
         params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulus_vec));
-        if (use_standard_params) {
-            params = make_unique<SEALContext>(params);
-        } else {
-            params = make_unique<SEALContext>(params, true, sec_level_type::none);
-        }
+        params_to_context(params, use_standard_params);
     }
 
     int HEContext::max_ciphertext_level() const {
-        return context->first_context_data()->chain_index();
+        return params->first_context_data()->chain_index();
     }
 
     int HEContext::num_slots() const {
-        return context->first_context_data()->parms().poly_modulus_degree() / 2;
+        return params->first_context_data()->parms().poly_modulus_degree() / 2;
     }
 
     uint64_t HEContext::get_qi(int he_level) const {
@@ -118,7 +126,7 @@ namespace hit {
         if (i != 0) {
             LOG_AND_THROW_STREAM("SEAL only supports a single key-switch modulus");
         }
-        return context->key_context_data()->parms().coeff_modulus().back().value();
+        return params->key_context_data()->parms().coeff_modulus().back().value();
     }
 
     int HEContext::num_qi() const {
@@ -151,7 +159,7 @@ namespace hit {
 
     BackendPlaintext HEContext::encode(const BackendEncoder &e, const vector<double> &raw_pt, int level, double scale) const {
         Plaintext encoded_plain;
-        shared_ptr<const SEALContext::ContextData> ctx_data = get_context_data(context, level);
+        shared_ptr<const SEALContext::ContextData> ctx_data = get_context_data(params, level);
         e.encode(raw_pt, ctx_data->parms_id(), scale, encoded_plain);
         return encoded_plain;
     }

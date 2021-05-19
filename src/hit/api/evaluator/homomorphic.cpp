@@ -27,43 +27,14 @@ namespace hit {
      * metadata values, it will always be incorrect (no matter which order Debug calls its sub-evaluators).
      */
 
-    HomomorphicEval::HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,
+    HomomorphicEval::HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_standard_params,
                                      const vector<int> &galois_steps) {
-        if (!is_pow2(num_slots) || num_slots < 4096) {
-            LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
-                                 << "num_slots must be a power of 2, and at least 4096. Got " << num_slots);
-        }
-
-        int poly_modulus_degree = num_slots * 2;
-        if (log_scale < MIN_LOG_SCALE) {
-            LOG(ERROR) << "poly_modulus_degree is " << poly_modulus_degree << ", which limits the modulus to "
-                       << poly_degree_to_max_mod_bits(poly_modulus_degree) << " bits";
-            LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
-                                 << "log_scale is " << log_scale << ", which is less than the minimum "
-                                 << MIN_LOG_SCALE
-                                 << ". Either increase the number of slots or decrease the number of primes.");
-        }
-
-        int num_primes = multiplicative_depth + 2;
-        vector<int> modulusVector = gen_modulus_vec(num_primes, log_scale);
-        int mod_bits = 0;
-        for (const auto &bits : modulusVector) {
-            mod_bits += bits;
-        }
-        int min_poly_degree = modulus_to_poly_degree(mod_bits);
-        if (poly_modulus_degree < min_poly_degree) {
-            LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
-                                 << "Parameters for depth " << multiplicative_depth << " circuits and scale "
-                                 << log_scale << " bits require more than " << num_slots << " plaintext slots.");
-        }
-        EncryptionParameters params = EncryptionParameters(scheme_type::ckks);
-        params.set_poly_modulus_degree(poly_modulus_degree);
-        params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulusVector));
         timepoint start = chrono::steady_clock::now();
-        standard_params_ = use_seal_params;
-        makeSealCtxt(params, start);
-        seal_evaluator = new Evaluator(*context);
-        encoder = new CKKSEncoder(*context);
+        standard_params_ = use_standard_params;
+        context = make_shared<HEContext>(num_slots, multiplicative_depth, log_scale, use_standard_params);
+        log_elapsed_time(start, "Creating encryption context...");
+        backend_evaluator = new Evaluator(*context);
+        backend_encoder = new CKKSEncoder(*context);
 
         int num_galois_keys = galois_steps.size();
         VLOG(VLOG_VERBOSE) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth
@@ -104,27 +75,15 @@ namespace hit {
 
         log_elapsed_time(start, "Generating keys...");
 
-        seal_encryptor = new Encryptor(*context, pk);
-        seal_decryptor = new Decryptor(*context, sk);
+        backend_encryptor = new Encryptor(*context, pk);
+        backend_decryptor = new Decryptor(*context, sk);
     }
 
     HomomorphicEval::~HomomorphicEval() {
-        delete encoder;
-        delete seal_evaluator;
-        delete seal_encryptor;
-        delete seal_decryptor;
-    }
-
-    void HomomorphicEval::makeSealCtxt(const seal::EncryptionParameters &params, int log_scale, const timepoint &start) {
-        if (standard_params_) {
-            context = make_shared<HEContext>(make_shared<SEALContext>(params), log_scale);
-        } else {
-            LOG(WARNING) << "YOU ARE NOT USING STANDARD SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security"
-                         << "DO NOT USE IN PRODUCTION";
-            // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-            context = make_shared<HEContext>(make_shared<SEALContext>(params, true, sec_level_type::none), log_scale);
-        }
-        log_elapsed_time(start, "Creating encryption context...");
+        delete backend_encoder;
+        delete backend_evaluator;
+        delete backend_encryptor;
+        delete backend_decryptor;
     }
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {
@@ -139,13 +98,14 @@ namespace hit {
 
         standard_params_ = ckks_params.standardparams();
         timepoint start = chrono::steady_clock::now();
-        makeSealCtxt(params, log_scale, start);
-        seal_evaluator = new Evaluator(*context);
-        encoder = new CKKSEncoder(*context);
+        context = make_shared<HEContext>(params, standard_params_);
+        log_elapsed_time(start, "Creating encryption context...");
+        backend_evaluator = new Evaluator(*context);
+        backend_encoder = new CKKSEncoder(*context);
 
         istringstream pkstream(ckks_params.pubkey());
         pk.load(*context, pkstream);
-        seal_encryptor = new Encryptor(*context, pk);
+        backend_encryptor = new Encryptor(*context, pk);
     }
 
     /* An evaluation instance */
@@ -168,7 +128,7 @@ namespace hit {
         galois_keys.load(*context, galois_key_stream);
         relin_keys.load(*context, relin_key_stream);
         log_elapsed_time(start, "Reading keys...");
-        seal_decryptor = new Decryptor(*context, sk);
+        backend_decryptor = new Decryptor(*context, sk);
     }
 
     void HomomorphicEval::save(ostream &params_stream, ostream &galois_key_stream, ostream &relin_key_stream,
@@ -201,7 +161,7 @@ namespace hit {
     }
 
     CKKSCiphertext HomomorphicEval::encrypt(const vector<double> &coeffs, int level) {
-        int num_slots_ = encoder->slot_count();
+        int num_slots_ = backend_encoder->slot_count();
         if (coeffs.size() != num_slots_) {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
@@ -227,8 +187,8 @@ namespace hit {
         destination.scale_ = scale;
 
         Plaintext temp;
-        encoder->encode(coeffs, context_data->parms_id(), scale, temp);
-        seal_encryptor->encrypt(temp, destination.backend_ct);
+        backend_encoder->encode(coeffs, context_data->parms_id(), scale, temp);
+        backend_encryptor->encrypt(temp, destination.backend_ct);
 
         destination.num_slots_ = num_slots_;
         destination.initialized = true;
@@ -241,7 +201,7 @@ namespace hit {
     }
 
     vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const {
-        if (seal_decryptor == nullptr) {
+        if (backend_decryptor == nullptr) {
             LOG_AND_THROW_STREAM(
                 "Decryption is only possible from a deserialized instance when the secret key is provided.");
         }
@@ -252,10 +212,10 @@ namespace hit {
             decryption_warning(encrypted.he_level());
         }
 
-        seal_decryptor->decrypt(encrypted.backend_ct, temp);
+        backend_decryptor->decrypt(encrypted.backend_ct, temp);
 
         vector<double> decoded_output;
-        encoder->decode(temp, decoded_output);
+        backend_encoder->decode(temp, decoded_output);
 
         return decoded_output;
     }
@@ -269,62 +229,62 @@ namespace hit {
     }
 
     void HomomorphicEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
-        seal_evaluator->rotate_vector_inplace(ct.backend_ct, -steps, galois_keys);
+        backend_evaluator->rotate_vector_inplace(ct.backend_ct, -steps, galois_keys);
     }
 
     void HomomorphicEval::rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) {
-        seal_evaluator->rotate_vector_inplace(ct.backend_ct, steps, galois_keys);
+        backend_evaluator->rotate_vector_inplace(ct.backend_ct, steps, galois_keys);
     }
 
     void HomomorphicEval::negate_inplace_internal(CKKSCiphertext &ct) {
-        seal_evaluator->negate_inplace(ct.backend_ct);
+        backend_evaluator->negate_inplace(ct.backend_ct);
     }
 
     void HomomorphicEval::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        seal_evaluator->add_inplace(ct1.backend_ct, ct2.backend_ct);
+        backend_evaluator->add_inplace(ct1.backend_ct, ct2.backend_ct);
     }
 
     void HomomorphicEval::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         Plaintext encoded_plain;
-        encoder->encode(scalar, ct.backend_ct.parms_id(), ct.backend_ct.scale(), encoded_plain);
-        seal_evaluator->add_plain_inplace(ct.backend_ct, encoded_plain);
+        backend_encoder->encode(scalar, ct.backend_ct.parms_id(), ct.backend_ct.scale(), encoded_plain);
+        backend_evaluator->add_plain_inplace(ct.backend_ct, encoded_plain);
     }
 
     void HomomorphicEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
         Plaintext temp;
-        encoder->encode(plain, ct.backend_ct.parms_id(), ct.backend_ct.scale(), temp);
-        seal_evaluator->add_plain_inplace(ct.backend_ct, temp);
+        backend_encoder->encode(plain, ct.backend_ct.parms_id(), ct.backend_ct.scale(), temp);
+        backend_evaluator->add_plain_inplace(ct.backend_ct, temp);
     }
 
     void HomomorphicEval::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        seal_evaluator->sub_inplace(ct1.backend_ct, ct2.backend_ct);
+        backend_evaluator->sub_inplace(ct1.backend_ct, ct2.backend_ct);
     }
 
     void HomomorphicEval::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         Plaintext encoded_plain;
-        encoder->encode(scalar, ct.backend_ct.parms_id(), ct.backend_ct.scale(), encoded_plain);
-        seal_evaluator->sub_plain_inplace(ct.backend_ct, encoded_plain);
+        backend_encoder->encode(scalar, ct.backend_ct.parms_id(), ct.backend_ct.scale(), encoded_plain);
+        backend_evaluator->sub_plain_inplace(ct.backend_ct, encoded_plain);
     }
 
     void HomomorphicEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
         Plaintext temp;
-        encoder->encode(plain, ct.backend_ct.parms_id(), ct.backend_ct.scale(), temp);
-        seal_evaluator->sub_plain_inplace(ct.backend_ct, temp);
+        backend_encoder->encode(plain, ct.backend_ct.parms_id(), ct.backend_ct.scale(), temp);
+        backend_evaluator->sub_plain_inplace(ct.backend_ct, temp);
     }
 
     void HomomorphicEval::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        seal_evaluator->multiply_inplace(ct1.backend_ct, ct2.backend_ct);
+        backend_evaluator->multiply_inplace(ct1.backend_ct, ct2.backend_ct);
     }
 
     /* WARNING: This function is not constant time in the scalar argument. */
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         if (scalar != double{0}) {
             Plaintext encoded_plain;
-            encoder->encode(scalar, ct.backend_ct.parms_id(), ct.backend_ct.scale(), encoded_plain);
-            seal_evaluator->multiply_plain_inplace(ct.backend_ct, encoded_plain);
+            backend_encoder->encode(scalar, ct.backend_ct.parms_id(), ct.backend_ct.scale(), encoded_plain);
+            backend_evaluator->multiply_plain_inplace(ct.backend_ct, encoded_plain);
         } else {
             double previous_scale = ct.backend_ct.scale();
-            seal_encryptor->encrypt_zero(ct.backend_ct.parms_id(), ct.backend_ct);
+            backend_encryptor->encrypt_zero(ct.backend_ct.parms_id(), ct.backend_ct);
             // seal sets the scale to be 1, but our the debug evaluator always ensures that the SEAL scale is consistent
             // with our mirror calculation
             ct.backend_ct.scale() = previous_scale * previous_scale;
@@ -332,13 +292,13 @@ namespace hit {
     }
 
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        BackendPlaintext temp = context->encode(seal_encoder, plain, , ct.backend_ct.scale())
-        encoder->encode(plain, ct.backend_ct.parms_id(), ct.backend_ct.scale(), temp);
-        seal_evaluator->multiply_plain_inplace(ct.backend_ct, temp);
+        BackendPlaintext temp = context->encode(backend_encoder, plain, , ct.backend_ct.scale())
+        backend_encoder->encode(plain, ct.backend_ct.parms_id(), ct.backend_ct.scale(), temp);
+        backend_evaluator->multiply_plain_inplace(ct.backend_ct, temp);
     }
 
     void HomomorphicEval::square_inplace_internal(CKKSCiphertext &ct) {
-        seal_evaluator->square_inplace(ct.backend_ct);
+        backend_evaluator->square_inplace(ct.backend_ct);
     }
 
     void HomomorphicEval::reduce_level_to_inplace_internal(CKKSCiphertext &ct, int level) {
@@ -349,10 +309,10 @@ namespace hit {
     }
 
     void HomomorphicEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        seal_evaluator->rescale_to_next_inplace(ct.backend_ct);
+        backend_evaluator->rescale_to_next_inplace(ct.backend_ct);
     }
 
     void HomomorphicEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
-        seal_evaluator->relinearize_inplace(ct.backend_ct, relin_keys);
+        backend_evaluator->relinearize_inplace(ct.backend_ct, relin_keys);
     }
 }  // namespace hit
