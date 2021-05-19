@@ -10,7 +10,6 @@
 namespace hit {
     using BackendPlaintext = latticpp::Plaintext;
     using BackendEncoder = latticpp::Encoder;
-    using BackendCiphertext = latticpp::Ciphertext;
 
     std::vector<int> gen_modulus_vec(int num_primes, int mult_depth, int log_scale);
     uint64_t estimate_key_size(int num_galois_shift, int plaintext_slots, int depth);
