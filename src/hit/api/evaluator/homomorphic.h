@@ -28,7 +28,7 @@ namespace hit {
          * other sub-evaluators compute the metadata, then update_metadata should be false.
          *
          * The `use_standard_params` flag allows you to restrict to standardized parameters, or to use larger
-         * rings. The standard paramters are designed to achieve 128-bits of security, while setting
+         * rings. The standard parameters are designed to achieve 128-bits of security, while setting
          * `use_standard_params` to false allows you to set parameters which may not achieve 128-bits
          * of security.
          */
