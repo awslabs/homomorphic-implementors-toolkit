@@ -145,7 +145,7 @@ namespace hit {
         double scale = pow(2, context->log_scale());
         // order of operations is very important: floating point arithmetic is not associative
         for (int i = context->max_ciphertext_level(); i > level; i--) {
-            scale = (scale * scale) / static_cast<double>(context->getQi(i));
+            scale = (scale * scale) / static_cast<double>(context->get_qi(i));
         }
 
         CKKSCiphertext destination;
@@ -184,7 +184,7 @@ namespace hit {
     }
 
     uint64_t HomomorphicEval::get_last_prime_internal(const CKKSCiphertext &ct) const {
-        return context->getQi(ct.he_level());
+        return context->get_qi(ct.he_level());
     }
 
     /* Lattigo classes are not thread-safe, but HIT should expose a thread-safe API. We solve
