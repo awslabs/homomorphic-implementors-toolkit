@@ -9,7 +9,6 @@
 
 #include <glog/logging.h>
 #include <iomanip>
-#include <future>
 
 #include "hit/protobuf/ckksparams.pb.h"
 
@@ -160,7 +159,7 @@ namespace hit {
     }
 
     CKKSCiphertext HomomorphicEval::encrypt(const vector<double> &coeffs, int level) {
-        int num_slots_ = backend_encoder->slot_count();
+        int num_slots_ = num_slots();
         if (coeffs.size() != num_slots_) {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
