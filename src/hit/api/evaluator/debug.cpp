@@ -41,7 +41,7 @@ namespace hit {
             double bits = log2(static_cast<double>(homomorphic_eval->context->get_pi(i)));
             coeff_modulus_size_info << ceil(bits) << " + ";
         }
-        coeff_bit_size_info << ") bits";
+        coeff_modulus_size_info << ") bits";
         VLOG(VLOG_VERBOSE) << coeff_modulus_size_info.str();
 
         VLOG(VLOG_VERBOSE) << "\\";

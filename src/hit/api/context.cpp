@@ -55,41 +55,41 @@ namespace hit {
         return sk_bytes + pk_bytes + rk_bytes + gk_bytes;
     }
 
-    void HEContext::validateParams(int num_slots, int mult_depth, int precisionBits) const {
-        if (!is_pow2(num_slots) || num_slots < 4096) {
-            LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
-                                 << "num_slots must be a power of 2, and at least 4096. Got " << num_slots);
+    void HEContext::validateContext() const {
+        int num_slots_ = num_slots();
+        int precision_bits = log_scale();
+        if (!is_pow2(num_slots_) || num_slots_ < 4096) {
+            LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-Lattigo instance: "
+                                 << "num_slots must be a power of 2, and at least 4096; got "
+                                 << num_slots_ << ".");
         }
 
-        int poly_modulus_degree = num_slots * 2;
-        if (precisionBits < min_log_scale()) {
-            LOG(ERROR) << "poly_modulus_degree is " << poly_modulus_degree << ", which limits the modulus to "
-                       << poly_degree_to_max_mod_bits(poly_modulus_degree) << " bits";
-            LOG_AND_THROW_STREAM("Invalid parameters when creating HomomorphicEval instance: "
-                                 << "log_scale is " << precisionBits << ", which is less than the minimum "
-                                 << min_log_scale()
-                                 << ". Either increase the number of slots or decrease the number of primes.");
+        if (precision_bits < min_log_scale()) {
+            LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-Lattigo instance: "
+                                 << "log_scale is " << precision_bits << ", which is less than the minimum "
+                                 << min_log_scale() << ".");
         }
 
-        int modBits = 120 + mult_depth * precisionBits;
-        int min_poly_degree = modulus_to_poly_degree(modBits);
-        if (poly_modulus_degree < min_poly_degree) {
-            LOG_AND_THROW_STREAM("Invalid parameters when creating ScaleEstimator instance: "
-                                 << "Parameters for depth " << mult_depth << " circuits and scale "
-                                 << precisionBits << " bits require more than " << num_slots << " plaintext slots.");
+        int poly_modulus_degree = num_slots_ * 2;
+        int max_modulus_bits = poly_degree_to_max_mod_bits(poly_modulus_degree);
+        uint64_t modulus_bits = total_modulus_bits();
+        if (modulus_bits > max_modulus_bits) {
+            LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-Lattigo instance: "
+                                 << "poly_modulus_degree is " << poly_modulus_degree << ", which limits the modulus to "
+                                 << max_modulus_bits << " bits, but a " << modulus_bits << "-bit modulus was requested.");
         }
     }
 
     HEContext::HEContext(Parameters &params) : params(move(params)) {
-        validateParams(num_slots(), max_ciphertext_level() - 1, ceil(log2(scale(params))));
+        validateContext();
     }
 
     HEContext::HEContext(int num_slots, int mult_depth, int precisionBits) {
-        validateParams(num_slots, mult_depth, precisionBits);
         vector<uint8_t> logQi = gen_ciphertext_modulus_vec(mult_depth + 1, precisionBits);
         vector<uint8_t> logPi(1);
         logPi[0] = 60; // special modulus. For now, we just use a single modulus like SEAL.
         params = newParametersFromLogModuli(log2(num_slots) + 1, logQi, mult_depth + 1, logPi, 1, precisionBits);
+        validateContext();
     }
 
     int HEContext::max_ciphertext_level() const {
@@ -100,26 +100,37 @@ namespace hit {
         return numSlots(params);
     }
 
-    uint64_t HEContext::getQi(int he_level) const {
-        if (he_level >= numQi()) {
+    uint64_t HEContext::get_qi(int he_level) const {
+        if (he_level >= num_qi()) {
             LOG_AND_THROW_STREAM("Q_i index-out-of-bounds exception");
         }
         return qi(params, he_level);
     }
 
-    uint64_t HEContext::getPi(int i) const {
-        if (i >= numPi()) {
+    uint64_t HEContext::get_pi(int i) const {
+        if (i >= num_pi()) {
             LOG_AND_THROW_STREAM("P_i index-out-of-bounds exception");
         }
         return pi(params, i);
     }
 
-    int HEContext::numQi() const {
+    int HEContext::num_pi() const {
         return qiCount(params);
     }
 
-    int HEContext::numPi() const {
+    int HEContext::num_pi() const {
         return piCount(params);
+    }
+
+    uint64_t HEContext::total_modulus_bits() const {
+        double total = 0;
+        for (int i = 0; i < num_qi(); i++) {
+            total += log2(get_qi(i));
+        }
+        for (int i = 0; i < num_pi(); i++) {
+            total += log2(get_pi(i));
+        }
+        return static_cast<uint64_t>(round(total));
     }
 
     int HEContext::min_log_scale() const { // NOLINT(readability-convert-member-functions-to-static)

@@ -34,6 +34,6 @@ namespace hit {
 
         latticpp::Parameters params;
     private:
-        void validateParams(int num_slots, int mult_depth, int precisionBits) const;
+        void validateContext() const;
     };
 }  // namespace hit
