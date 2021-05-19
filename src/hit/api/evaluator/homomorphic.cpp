@@ -8,10 +8,9 @@
 #include "homomorphic.h"
 
 #include <glog/logging.h>
-
+#include <iomanip>
 #include <future>
 
-#include "../../sealutils.h"
 #include "hit/protobuf/ckksparams.pb.h"
 
 using namespace std;
@@ -174,20 +173,17 @@ namespace hit {
             level = context->max_ciphertext_level();
         }
 
-        auto context_data = context->first_context_data();
-        double scale = pow(2, log_scale_);
-        while (context_data->chain_index() > level) {
-            // order of operations is very important: floating point arithmetic is not associative
-            scale = (scale * scale) / static_cast<double>(context_data->parms().coeff_modulus().back().value());
-            context_data = context_data->next_context_data();
+        double scale = pow(2, context->log_scale());
+        // order of operations is very important: floating point arithmetic is not associative
+        for (int i = context->max_ciphertext_level(); i > level; i--) {
+            scale = (scale * scale) / static_cast<double>(context->get_qi(i));
         }
 
         CKKSCiphertext destination;
         destination.he_level_ = level;
         destination.scale_ = scale;
 
-        Plaintext temp;
-        backend_encoder->encode(coeffs, context_data->parms_id(), scale, temp);
+        Plaintext temp = context->encode(*backend_encoder, coeffs, level, scale);
         backend_encryptor->encrypt(temp, destination.backend_ct);
 
         destination.num_slots_ = num_slots_;
@@ -206,17 +202,14 @@ namespace hit {
                 "Decryption is only possible from a deserialized instance when the secret key is provided.");
         }
 
-        Plaintext temp;
-
         if (!suppress_warnings) {
             decryption_warning(encrypted.he_level());
         }
 
+        Plaintext temp;
         backend_decryptor->decrypt(encrypted.backend_ct, temp);
-
         vector<double> decoded_output;
         backend_encoder->decode(temp, decoded_output);
-
         return decoded_output;
     }
 
@@ -225,7 +218,7 @@ namespace hit {
     }
 
     uint64_t HomomorphicEval::get_last_prime_internal(const CKKSCiphertext &ct) const {
-        return context->getQi(ct.he_level());
+        return context->get_qi(ct.he_level());
     }
 
     void HomomorphicEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
@@ -246,13 +239,12 @@ namespace hit {
 
     void HomomorphicEval::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         Plaintext encoded_plain;
-        backend_encoder->encode(scalar, ct.backend_ct.parms_id(), ct.backend_ct.scale(), encoded_plain);
+        backend_encoder->encode(scalar, ct.backend_ct.parms_id(), ct.scale(), encoded_plain);
         backend_evaluator->add_plain_inplace(ct.backend_ct, encoded_plain);
     }
 
     void HomomorphicEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        Plaintext temp;
-        backend_encoder->encode(plain, ct.backend_ct.parms_id(), ct.backend_ct.scale(), temp);
+        Plaintext temp = context->encode(*backend_encoder, plain, ct.he_level(), ct.scale());
         backend_evaluator->add_plain_inplace(ct.backend_ct, temp);
     }
 
@@ -262,13 +254,12 @@ namespace hit {
 
     void HomomorphicEval::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         Plaintext encoded_plain;
-        backend_encoder->encode(scalar, ct.backend_ct.parms_id(), ct.backend_ct.scale(), encoded_plain);
+        backend_encoder->encode(scalar, ct.backend_ct.parms_id(), ct.scale(), encoded_plain);
         backend_evaluator->sub_plain_inplace(ct.backend_ct, encoded_plain);
     }
 
     void HomomorphicEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        Plaintext temp;
-        backend_encoder->encode(plain, ct.backend_ct.parms_id(), ct.backend_ct.scale(), temp);
+        Plaintext temp = context->encode(*backend_encoder, plain, ct.he_level(), ct.scale());
         backend_evaluator->sub_plain_inplace(ct.backend_ct, temp);
     }
 
@@ -280,10 +271,10 @@ namespace hit {
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         if (scalar != double{0}) {
             Plaintext encoded_plain;
-            backend_encoder->encode(scalar, ct.backend_ct.parms_id(), ct.backend_ct.scale(), encoded_plain);
+            backend_encoder->encode(scalar, ct.backend_ct.parms_id(), ct.scale(), encoded_plain);
             backend_evaluator->multiply_plain_inplace(ct.backend_ct, encoded_plain);
         } else {
-            double previous_scale = ct.backend_ct.scale();
+            double previous_scale = ct.scale();
             backend_encryptor->encrypt_zero(ct.backend_ct.parms_id(), ct.backend_ct);
             // seal sets the scale to be 1, but our the debug evaluator always ensures that the SEAL scale is consistent
             // with our mirror calculation
@@ -292,8 +283,8 @@ namespace hit {
     }
 
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        BackendPlaintext temp = context->encode(backend_encoder, plain, , ct.backend_ct.scale())
-        backend_encoder->encode(plain, ct.backend_ct.parms_id(), ct.backend_ct.scale(), temp);
+        BackendPlaintext temp = context->encode(*backend_encoder, plain, ct.he_level(), ct.scale());
+        backend_encoder->encode(plain, ct.backend_ct.parms_id(), ct.scale(), temp);
         backend_evaluator->multiply_plain_inplace(ct.backend_ct, temp);
     }
 

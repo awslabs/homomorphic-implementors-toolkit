@@ -58,11 +58,13 @@ namespace hit {
         return sk_bytes + pk_bytes + rk_bytes + gk_bytes;
     }
 
-    void HEContext::validateParams(int num_slots, int mult_depth, int precision_bits) const {
-        if (!is_pow2(num_slots) || num_slots < 4096) {
+    void HEContext::validateContext() const {
+        int num_slots_ = num_slots();
+        int precision_bits = log_scale();
+        if (!is_pow2(num_slots_) || num_slots_ < 4096) {
             LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-SEAL instance: "
                                  << "num_slots must be a power of 2, and at least 4096; got "
-                                 << num_slots << ".");
+                                 << num_slots_ << ".");
         }
 
         if (precision_bits < min_log_scale()) {
@@ -71,7 +73,7 @@ namespace hit {
                                  << min_log_scale() << ".");
         }
 
-        int poly_modulus_degree = num_slots * 2;
+        int poly_modulus_degree = num_slots_ * 2;
         int max_modulus_bits = poly_degree_to_max_mod_bits(poly_modulus_degree);
         uint64_t modulus_bits = total_modulus_bits();
         if (modulus_bits > max_modulus_bits) {
@@ -81,30 +83,30 @@ namespace hit {
         }
     }
 
-    HEContext::HEContext(const seal::EncryptionParameters &params, double precision_bits, bool use_standard_params) : log_scale_(log_scale) {
+    HEContext::HEContext(const seal::EncryptionParameters &params, int precision_bits, bool use_standard_params) : log_scale_(precision_bits) {
         params_to_context(params, use_standard_params);
-        validateParams(num_slots(), max_ciphertext_level() - 1, log_scale);
+        validateContext();
     }
 
-    void HEContext::params_to_context(const EncryptionParameters &params, bool use_standard_params) {
+ void HEContext::params_to_context(const EncryptionParameters &enc_params, bool use_standard_params) { // NOLINT(readability-convert-member-functions-to-static)
         if (use_standard_params) {
-            params = make_shared<SEALContext>(params);
+            params = make_shared<SEALContext>(enc_params);
         } else {
             LOG(WARNING) << "YOU ARE NOT USING STANDARD SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security"
                          << "DO NOT USE IN PRODUCTION";
             // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-            params = make_shared<SEALContext>(params, true, sec_level_type::none);
+            params = make_shared<SEALContext>(enc_params, true, sec_level_type::none);
         }
     }
 
     HEContext::HEContext(int num_slots, int mult_depth, int precision_bits, bool use_standard_params) : log_scale_(precision_bits) {
-        validateParams(num_slots, mult_depth, precision_bits);
         vector<int> modulus_vec = gen_modulus_vec(mult_depth + 2, precision_bits);
-        EncryptionParameters params = EncryptionParameters(scheme_type::ckks);
+        EncryptionParameters enc_params = EncryptionParameters(scheme_type::ckks);
         int poly_modulus_degree = num_slots * 2;
-        params.set_poly_modulus_degree(poly_modulus_degree);
-        params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulus_vec));
-        params_to_context(params, use_standard_params);
+        enc_params.set_poly_modulus_degree(poly_modulus_degree);
+        enc_params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulus_vec));
+        params_to_context(enc_params, use_standard_params);
+        validateContext();
     }
 
     int HEContext::max_ciphertext_level() const {
@@ -112,7 +114,7 @@ namespace hit {
     }
 
     int HEContext::num_slots() const {
-        return params->first_context_data()->parms().poly_modulus_degree() / 2;
+        return static_cast<int>(params->first_context_data()->parms().poly_modulus_degree() / 2);
     }
 
     uint64_t HEContext::get_qi(int he_level) const {
@@ -154,19 +156,34 @@ namespace hit {
     }
 
     int HEContext::log_scale() const {
-        return ceil(log2(scale(params)));
+        return log_scale_;
     }
 
-    BackendPlaintext HEContext::encode(const BackendEncoder &e, const vector<double> &raw_pt, int level, double scale) const {
+    BackendPlaintext HEContext::encode(BackendEncoder &e, const vector<double> &raw_pt, int level, double scale) const { // NOLINT(readability-convert-member-functions-to-static)
         Plaintext encoded_plain;
-        shared_ptr<const SEALContext::ContextData> ctx_data = get_context_data(params, level);
+        shared_ptr<const SEALContext::ContextData> ctx_data = get_context_data(level);
         e.encode(raw_pt, ctx_data->parms_id(), scale, encoded_plain);
         return encoded_plain;
     }
 
-    vector<double> HEContext::decode(const BackendEncoder &e, const BackendPlaintext &p) const {
+    vector<double> HEContext::decode(BackendEncoder &e, const BackendPlaintext &p) const { // NOLINT(readability-convert-member-functions-to-static)
         vector<double> decoded_plain;
         e.decode(p, decoded_plain);
         return decoded_plain;
+    }
+
+    /*
+    Helper function: Get the context data for the ciphertext's level
+    */
+    shared_ptr<const SEALContext::ContextData> HEContext::get_context_data(int level) const {
+        // get the context_data for this ciphertext level
+        // but do not use the ciphertext itself! Use the he_level,
+        // in case we are not doing ciphertext computations
+        auto context_data = params->first_context_data();
+        while (context_data->chain_index() > level) {
+            // Step forward in the chain.
+            context_data = context_data->next_context_data();
+        }
+        return context_data;
     }
 }  // namespace hit

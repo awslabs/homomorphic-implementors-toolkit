@@ -30,13 +30,18 @@ namespace hit {
         int min_log_scale() const;
         int log_scale() const;
 
-        BackendPlaintext encode(const BackendEncoder &e, const std::vector<double> &raw_pt, int level, double scale) const;
-        std::vector<double> decode(const BackendEncoder &e, const BackendPlaintext &p) const;
+        BackendPlaintext encode(BackendEncoder &e, const std::vector<double> &raw_pt, int level, double scale) const;
+        std::vector<double> decode(BackendEncoder &e, const BackendPlaintext &p) const;
 
         std::shared_ptr<seal::SEALContext> params;
     private:
-        void validateParams(int num_slots, int mult_depth, int precision_bits) const;
-        void params_to_context(const seal::EncryptionParameters &params, bool use_standard_params);
-        double log_scale_;
+        void validateContext() const;
+        void params_to_context(const seal::EncryptionParameters &enc_params, bool use_standard_params);
+        int log_scale_;
+
+        /*
+        Helper function: Get the context data for a specific ciphertext level
+        */
+        std::shared_ptr<const seal::SEALContext::ContextData> get_context_data(int level) const;
     };
 }  // namespace hit
