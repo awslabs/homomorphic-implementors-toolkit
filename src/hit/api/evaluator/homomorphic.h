@@ -110,10 +110,10 @@ namespace hit {
             const latticpp::Parameters params;
         };
 
-        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Encoder>> seal_encoder;
-        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Evaluator>> seal_evaluator;
-        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Encryptor>> seal_encryptor;
-        latticpp::Decryptor seal_decryptor;
+        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Encoder>> backend_encoder;
+        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Evaluator>> backend_evaluator;
+        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Encryptor>> backend_encryptor;
+        latticpp::Decryptor backend_decryptor;
         latticpp::PublicKey pk;
         latticpp::SecretKey sk;
         latticpp::RotationKeys galois_keys;

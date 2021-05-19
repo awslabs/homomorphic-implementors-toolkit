@@ -68,7 +68,7 @@ namespace hit {
 
         log_elapsed_time(start, "Generating keys...");
 
-        seal_decryptor = newDecryptor(context->params, sk);
+        backend_decryptor = newDecryptor(context->params, sk);
     }
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {
@@ -105,7 +105,7 @@ namespace hit {
         galois_keys = unmarshalBinaryRotationKeys(galois_key_stream);
         relin_keys = unmarshalBinaryEvaluationKey(relin_key_stream);
         log_elapsed_time(start, "Reading keys...");
-        seal_decryptor = newDecryptor(context->params, sk);
+        backend_decryptor = newDecryptor(context->params, sk);
     }
 
     void HomomorphicEval::save(ostream &params_stream, ostream &galois_key_stream, ostream &relin_key_stream,
@@ -166,7 +166,7 @@ namespace hit {
     }
 
     vector<double> HomomorphicEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) {
-        if (seal_decryptor.getRawHandle() == 0) {
+        if (backend_decryptor.getRawHandle() == 0) {
             LOG_AND_THROW_STREAM(
                 "Decryption is only possible from a deserialized instance when the secret key is provided.");
         }
@@ -175,7 +175,7 @@ namespace hit {
             decryption_warning(encrypted.he_level());
         }
 
-        Plaintext temp = decryptNew(seal_decryptor, encrypted.backend_ct);
+        Plaintext temp = decryptNew(backend_decryptor, encrypted.backend_ct);
         return decode(get_encoder(), temp, log2(num_slots()));
     }
 
@@ -205,30 +205,30 @@ namespace hit {
      * If it was allocated with different parameters, we throw away the old evaluator and create a new one.
      */
     Evaluator& HomomorphicEval::get_evaluator() {
-        if (seal_evaluator.get() == nullptr || !(seal_evaluator->params == context->params)) {
+        if (backend_evaluator.get() == nullptr || !(backend_evaluator->params == context->params)) {
             ParameterizedLattigoType<Evaluator> *tmp =
                 new ParameterizedLattigoType<Evaluator>(newEvaluator(context->params), context->params);
-            seal_evaluator.reset(tmp);
+            backend_evaluator.reset(tmp);
         }
-        return seal_evaluator->object;
+        return backend_evaluator->object;
     }
 
     Encoder& HomomorphicEval::get_encoder() {
-        if (seal_encoder.get() == nullptr || !(seal_encoder->params == context->params)) {
+        if (backend_encoder.get() == nullptr || !(backend_encoder->params == context->params)) {
             ParameterizedLattigoType<Encoder> *tmp =
                 new ParameterizedLattigoType<Encoder>(newEncoder(context->params), context->params);
-            seal_encoder.reset(tmp);
+            backend_encoder.reset(tmp);
         }
-        return seal_encoder->object;
+        return backend_encoder->object;
     }
 
     Encryptor& HomomorphicEval::get_encryptor() {
-        if (seal_encryptor.get() == nullptr || seal_encryptor->params != context->params) {
+        if (backend_encryptor.get() == nullptr || backend_encryptor->params != context->params) {
             ParameterizedLattigoType<Encryptor> *tmp =
                 new ParameterizedLattigoType<Encryptor>(newEncryptorFromPk(context->params, pk), context->params);
-            seal_encryptor.reset(tmp);
+            backend_encryptor.reset(tmp);
         }
-        return seal_encryptor->object;
+        return backend_encryptor->object;
     }
 
     void HomomorphicEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
