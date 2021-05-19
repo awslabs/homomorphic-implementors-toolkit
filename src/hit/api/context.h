@@ -5,7 +5,6 @@
 
 #include <cstdint>
 #include <vector>
-#include "hit/api/backend.h"
 
 namespace hit {
     using BackendPlaintext = seal::Plaintext;
