@@ -3,9 +3,9 @@
 
 #pragma once
 
+#include "hit/api/context.h"
 #include "hit/protobuf/ciphertext.pb.h"
 #include "metadata.h"
-#include "hit/api/context.h"
 
 namespace hit {
 

@@ -3,9 +3,9 @@
 
 #pragma once
 
+#include "../../common.h"
 #include "../ciphertext.h"
 #include "../evaluator.h"
-#include "../../common.h"
 
 namespace hit {
 

@@ -6,6 +6,7 @@
  */
 
 #include "context.h"
+
 #include "hit/common.h"
 
 using namespace std;
@@ -63,8 +64,7 @@ namespace hit {
         int precision_bits = log_scale();
         if (!is_pow2(num_slots_) || num_slots_ < 4096) {
             LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-SEAL instance: "
-                                 << "num_slots must be a power of 2, and at least 4096; got "
-                                 << num_slots_ << ".");
+                                 << "num_slots must be a power of 2, and at least 4096; got " << num_slots_ << ".");
         }
 
         if (precision_bits < min_log_scale()) {
@@ -79,27 +79,33 @@ namespace hit {
         if (modulus_bits > max_modulus_bits) {
             LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-SEAL instance: "
                                  << "poly_modulus_degree is " << poly_modulus_degree << ", which limits the modulus to "
-                                 << max_modulus_bits << " bits, but a " << modulus_bits << "-bit modulus was requested.");
+                                 << max_modulus_bits << " bits, but a " << modulus_bits
+                                 << "-bit modulus was requested.");
         }
     }
 
-    HEContext::HEContext(const seal::EncryptionParameters &params, int precision_bits, bool use_standard_params) : log_scale_(precision_bits) {
+    HEContext::HEContext(const seal::EncryptionParameters &params, int precision_bits, bool use_standard_params)
+        : log_scale_(precision_bits) {
         params_to_context(params, use_standard_params);
         validateContext();
     }
 
- void HEContext::params_to_context(const EncryptionParameters &enc_params, bool use_standard_params) { // NOLINT(readability-convert-member-functions-to-static)
+    void HEContext::params_to_context(
+        const EncryptionParameters &enc_params,
+        bool use_standard_params) {  // NOLINT(readability-convert-member-functions-to-static)
         if (use_standard_params) {
             params = make_shared<SEALContext>(enc_params);
         } else {
-            LOG(WARNING) << "YOU ARE NOT USING STANDARD SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security"
-                         << "DO NOT USE IN PRODUCTION";
+            LOG(WARNING)
+                << "YOU ARE NOT USING STANDARD SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security"
+                << "DO NOT USE IN PRODUCTION";
             // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
             params = make_shared<SEALContext>(enc_params, true, sec_level_type::none);
         }
     }
 
-    HEContext::HEContext(int num_slots, int mult_depth, int precision_bits, bool use_standard_params) : log_scale_(precision_bits) {
+    HEContext::HEContext(int num_slots, int mult_depth, int precision_bits, bool use_standard_params)
+        : log_scale_(precision_bits) {
         vector<int> modulus_vec = gen_modulus_vec(mult_depth + 2, precision_bits);
         EncryptionParameters enc_params = EncryptionParameters(scheme_type::ckks);
         int poly_modulus_degree = num_slots * 2;
@@ -135,7 +141,7 @@ namespace hit {
         return max_ciphertext_level() + 1;
     }
 
-    int HEContext::num_pi() const { // NOLINT(readability-convert-member-functions-to-static)
+    int HEContext::num_pi() const {  // NOLINT(readability-convert-member-functions-to-static)
         return 1;
     }
 
@@ -150,7 +156,7 @@ namespace hit {
         return static_cast<uint64_t>(round(total));
     }
 
-    int HEContext::min_log_scale() const { // NOLINT(readability-convert-member-functions-to-static)
+    int HEContext::min_log_scale() const {  // NOLINT(readability-convert-member-functions-to-static)
         // SEAL throws an error for 21, but allows 22
         return 22;
     }

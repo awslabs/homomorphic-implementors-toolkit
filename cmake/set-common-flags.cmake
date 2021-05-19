@@ -7,7 +7,7 @@ function(set_common_flags target_name)
             -Wunused-result -Wfatal-errors)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         target_compile_options(${target_name} PRIVATE -Wmissing-declarations -Wmissing-field-initializers -Wshadow
-                -Wpedantic -Wno-c99-extensions)
+                -Wpedantic)
     endif()
     #-Wextra turns on sign-compare which is strict on comparing loop indexes (int) with size_t from vector length
     target_compile_options(${target_name} PRIVATE -Wno-sign-compare)

@@ -5,8 +5,9 @@
 
 #include <cstdint>
 #include <vector>
-#include "seal/seal.h"
+
 #include "seal/context.h"
+#include "seal/seal.h"
 
 namespace hit {
 
@@ -14,7 +15,7 @@ namespace hit {
     uint64_t estimate_key_size(int num_galois_shift, int plaintext_slots, int depth);
 
     class HEContext {
-    public:
+       public:
         HEContext(int num_slots, int mult_depth, int precision_bits, bool use_standard_params);
         explicit HEContext(const seal::EncryptionParameters &params, int precision_bits, bool use_standard_params);
 
@@ -34,10 +35,10 @@ namespace hit {
         Helper function: Get the context data for a specific ciphertext level
         */
         std::shared_ptr<const seal::SEALContext::ContextData> get_context_data(int level) const;
-    private:
+
+       private:
         void validateContext() const;
         void params_to_context(const seal::EncryptionParameters &enc_params, bool use_standard_params);
         int log_scale_;
-
     };
 }  // namespace hit

@@ -8,8 +8,8 @@
 #include <iomanip>
 
 #include "../../common.h"
-#include "hit/api/context.h"
 #include "../evaluator.h"
+#include "hit/api/context.h"
 
 using namespace std;
 using namespace seal;

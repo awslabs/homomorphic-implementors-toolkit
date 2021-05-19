@@ -55,8 +55,8 @@ namespace hit {
     }
 
     // print some debug info
-    void DepthFinder::print_stats(         // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
-        const CKKSCiphertext &ct) {        // NOLINT(readability-convert-member-functions-to-static)
+    void DepthFinder::print_stats(   // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
+        const CKKSCiphertext &ct) {  // NOLINT(readability-convert-member-functions-to-static)
         VLOG(VLOG_EVAL) << "    + Level: " << ct.he_level();
     }
 

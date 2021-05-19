@@ -48,8 +48,7 @@ namespace hit {
         // use `encrypt_matrix` in `LinearAlgebra` to construct an encrypted matrix
         EncryptedMatrix() = default;
         // Returns a EncryptedMatrix, which is deserialized from protobuf::EncryptedMatrix.
-        EncryptedMatrix(const std::shared_ptr<HEContext> &context,
-                        const protobuf::EncryptedMatrix &encrypted_matrix);
+        EncryptedMatrix(const std::shared_ptr<HEContext> &context, const protobuf::EncryptedMatrix &encrypted_matrix);
         // Returns a EncryptedMatrix, which is deserialized from a stream containing a protobuf::EncryptedMatrix.
         EncryptedMatrix(const std::shared_ptr<HEContext> &context, std::istream &stream);
         // Returns a protobuf::EncryptedMatrix, which is serialized from EncryptedMatrix.
