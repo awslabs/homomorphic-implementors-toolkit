@@ -17,13 +17,15 @@ namespace hit {
     Helper function: Generate a list of bit-lengths for the modulus primes.
     */
     vector<int> gen_modulus_vec(int num_primes, int log_scale) {
-        vector<int> modulusVector(num_primes);
+        if (num_primes < 2) {
+            LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-SEAL instance: "
+                                 << "there must be at least two primes in the modulus.");
+        }
+
+        vector<int> modulusVector(num_primes, log_scale);
         // the SEAL examples recommend the last modulus be 60 bits; it's unclear why,
         // and also unclear how closely that choice is related to log_scale (they use 40 in their examples)
         modulusVector[0] = 60;
-        for (int i = 1; i < num_primes - 1; i++) {
-            modulusVector[i] = log_scale;
-        }
         // The special modulus has to be as large as the largest prime in the chain.
         modulusVector[num_primes - 1] = 60;
 
