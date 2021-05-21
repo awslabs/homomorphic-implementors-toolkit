@@ -48,7 +48,7 @@ namespace hit {
     }
 
     protobuf::Ciphertext *CKKSCiphertext::serialize() const {
-        auto *proto_ct = new protobuf::Ciphertext();
+        protobuf::Ciphertext *proto_ct = new protobuf::Ciphertext();
 
         if (!raw_pt.empty()) {
             LOG_AND_THROW_STREAM(
@@ -62,7 +62,9 @@ namespace hit {
 
         // if the backend_ct is initialized, serialize it
         if (backend_ct.getRawHandle() != 0) {
-            proto_ct->set_ct(marshalBinaryCiphertext(backend_ct));
+            ostringstream ct_stream;
+            marshalBinaryCiphertext(backend_ct, ct_stream);
+            proto_ct->set_ct(ct_stream.str());
         }
 
         return proto_ct;
