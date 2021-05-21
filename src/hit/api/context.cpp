@@ -17,6 +17,11 @@ namespace hit {
     Helper function: Generate a list of bit-lengths for the modulus primes.
     */
     vector<uint8_t> gen_ciphertext_modulus_vec(int num_primes, uint8_t log_scale) {
+        if (num_primes < 1) {
+            LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-Lattigo instance: "
+                                 << "there must be at least one ciphertext modulus.");
+        }
+
         vector<uint8_t> modulusVector(num_primes);
         // the SEAL examples recommend the last modulus be 60 bits; it's unclear why,
         // and also unclear how closely that choice is related to log_scale (they use 40 in their examples)
