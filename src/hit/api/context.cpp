@@ -22,13 +22,10 @@ namespace hit {
                                  << "there must be at least one ciphertext modulus.");
         }
 
-        vector<uint8_t> modulusVector(num_primes);
+        vector<uint8_t> modulusVector(num_primes, log_scale);
         // the SEAL examples recommend the last modulus be 60 bits; it's unclear why,
         // and also unclear how closely that choice is related to log_scale (they use 40 in their examples)
         modulusVector[0] = 60;
-        for (int i = 1; i < num_primes; i++) {
-            modulusVector[i] = log_scale;
-        }
         return modulusVector;
     }
 
