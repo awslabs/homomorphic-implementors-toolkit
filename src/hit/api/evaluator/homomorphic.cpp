@@ -112,17 +112,21 @@ namespace hit {
     void HomomorphicEval::save(ostream &params_stream, ostream &galois_key_stream, ostream &relin_key_stream,
                                ostream *secret_key_stream) {
         if (secret_key_stream != nullptr) {
-            (*secret_key_stream) << marshalBinarySecretKey(sk);
+            marshalBinarySecretKey(sk, *secret_key_stream);
         }
 
         protobuf::CKKSParams ckks_params;
         ckks_params.set_standardparams(standard_params_);
-        ckks_params.set_ctx(marshalBinaryParameters(context->params));
-        ckks_params.set_pubkey(marshalBinaryPublicKey(pk));
+        ostringstream ctx_stream;
+        marshalBinaryParameters(context->params, ctx_stream);
+        ckks_params.set_ctx(ctx_stream.str());
+        ostringstream pk_stream;
+        marshalBinaryPublicKey(pk, pk_stream);
+        ckks_params.set_pubkey(pk_stream.str());
         ckks_params.SerializeToOstream(&params_stream);
 
-        galois_key_stream << marshalBinaryRotationKeys(galois_keys);
-        relin_key_stream << marshalBinaryEvaluationKey(relin_keys);
+        marshalBinaryRotationKeys(galois_keys, galois_key_stream);
+        marshalBinaryEvaluationKey(relin_keys, relin_key_stream);
     }
 
     CKKSCiphertext HomomorphicEval::encrypt(const vector<double> &coeffs) {
