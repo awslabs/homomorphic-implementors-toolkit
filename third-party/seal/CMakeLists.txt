@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-project(SEAL_DOWNLOAD VERSION 3.6.1)
+project(SEAL_DOWNLOAD VERSION 3.6.5)
 
 if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/src)
 	set(DOWNLOAD_URL)

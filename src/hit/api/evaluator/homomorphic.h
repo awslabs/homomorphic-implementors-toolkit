@@ -3,11 +3,9 @@
 
 #pragma once
 
+#include "../../common.h"
 #include "../ciphertext.h"
 #include "../evaluator.h"
-#include "seal/context.h"
-#include "seal/seal.h"
-#include "../../common.h"
 
 namespace hit {
 
@@ -28,12 +26,12 @@ namespace hit {
          * When HomomorphicEval is used as a sub-evaluator (e.g., as a component of the Debug evaluator) where
          * other sub-evaluators compute the metadata, then update_metadata should be false.
          *
-         * The `use_seal_params` flag allows you to restrict to SEAL parameters, or to use larger
-         * rings. The SEAL paramters are designed to achieve 128-bits of security, while setting
-         * `use_seal_params` to false allows you to set parameters which may not achieve 128-bits
+         * The `use_standard_params` flag allows you to restrict to standardized parameters, or to use larger
+         * rings. The standard parameters are designed to achieve 128-bits of security, while setting
+         * `use_standard_params` to false allows you to set parameters which may not achieve 128-bits
          * of security.
          */
-        HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params = true,
+        HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_standard_params = true,
                         const std::vector<int> &galois_steps = std::vector<int>());
 
         /* An evaluation instance */
@@ -63,10 +61,10 @@ namespace hit {
          * inefficient. However you may want to suppress the warning for testing either by
          * setting suppress_warnings=true or by setting the log level to 0.
          */
-        std::vector<double> decrypt(const CKKSCiphertext &encrypted) const override;
-        std::vector<double> decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const override;
+        std::vector<double> decrypt(const CKKSCiphertext &encrypted) override;
+        std::vector<double> decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) override;
 
-        std::shared_ptr<seal::SEALContext> context;
+        std::shared_ptr<HEContext> context;
 
         int num_slots() const override;
 
@@ -105,22 +103,19 @@ namespace hit {
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
        private:
-        seal::CKKSEncoder *encoder = nullptr;       // no default constructor
-        seal::Evaluator *seal_evaluator = nullptr;  // no default constructor
-        seal::Encryptor *seal_encryptor = nullptr;  // no default constructor
-        seal::Decryptor *seal_decryptor = nullptr;  // no default constructor
+        seal::CKKSEncoder *backend_encoder = nullptr;  // no default constructor
+        seal::Evaluator *backend_evaluator = nullptr;  // no default constructor
+        seal::Encryptor *backend_encryptor = nullptr;  // no default constructor
+        seal::Decryptor *backend_decryptor = nullptr;  // no default constructor
         seal::PublicKey pk;
         seal::SecretKey sk;
         seal::GaloisKeys galois_keys;
         seal::RelinKeys relin_keys;
         bool standard_params_;
 
-        int log_scale_;
-
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 
         void deserialize_common(std::istream &params_stream);
-        void makeSealCtxt(const seal::EncryptionParameters &params, const hit::timepoint &start);
 
         friend class DebugEval;
         friend class ScaleEstimator;

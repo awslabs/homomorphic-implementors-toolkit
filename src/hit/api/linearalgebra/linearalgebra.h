@@ -32,7 +32,7 @@
 
 /* Intended usage is:
  *
- *      parallel_for(x.size(), i) {
+ *      parallel_for(x.size(), [&](int i) {
  *          foo1;
  *          foo2;
  *          ...
@@ -45,17 +45,17 @@
 #define COMBINE(X, Y) COMBINE1(X, Y)
 
 #ifdef DISABLE_PARALLELISM
-#define UNIQUE_ID() COMBINE(i,__LINE__)
-#define parallel_for(max_idx, body)                                                     \
-    for(int UNIQUE_ID() = 0; UNIQUE_ID() < (max_idx); UNIQUE_ID()++) {                  \
-        body(UNIQUE_ID());                                                              \
+#define UNIQUE_ID() COMBINE(i, __LINE__)
+#define parallel_for(max_idx, body)                                     \
+    for (int UNIQUE_ID() = 0; UNIQUE_ID() < (max_idx); UNIQUE_ID()++) { \
+        body(UNIQUE_ID());                                              \
     }
 #else /* !DISABLE_PARALLELISM */
 // https://stackoverflow.com/a/17694752/925978
 #define parallel_for(max_idx, body)                                                     \
     std::vector<int> COMBINE(iterIdxs, __LINE__)(max_idx);                              \
     std::iota(begin(COMBINE(iterIdxs, __LINE__)), end(COMBINE(iterIdxs, __LINE__)), 0); \
-    for_each(__pstl::execution::par, begin(COMBINE(iterIdxs, __LINE__)), end(COMBINE(iterIdxs, __LINE__)), body)
+    std::for_each(__pstl::execution::par, begin(COMBINE(iterIdxs, __LINE__)), end(COMBINE(iterIdxs, __LINE__)), body)
 #endif /* DISABLE_PARALLELISM */
 
 namespace hit {

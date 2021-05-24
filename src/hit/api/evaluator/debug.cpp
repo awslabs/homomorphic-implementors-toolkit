@@ -8,8 +8,8 @@
 #include <iomanip>
 
 #include "../../common.h"
-#include "../../sealutils.h"
 #include "../evaluator.h"
+#include "hit/api/context.h"
 
 using namespace std;
 using namespace seal;
@@ -18,51 +18,67 @@ namespace hit {
     void DebugEval::constructor_common(int num_slots) {
         // use the _private_ ScaleEstimator constructor to avoid creating two sets of CKKS params
         scale_estimator = new ScaleEstimator(num_slots, *homomorphic_eval);
-        log_scale_ = homomorphic_eval->log_scale_;
+        print_parameters();
+    }
 
-        print_parameters(homomorphic_eval->context);
+    /* Based on the SEAL version of this function */
+    void DebugEval::print_parameters() {
+        VLOG(VLOG_VERBOSE) << "/";
+        VLOG(VLOG_VERBOSE) << "| Encryption parameters :";
+        VLOG(VLOG_VERBOSE) << "|   scheme: CKKS";
+        VLOG(VLOG_VERBOSE) << "|   poly_modulus_degree: " << (2 * num_slots());
 
-        // There are convenience method for accessing the SEALContext::ContextData for
-        // some of the most important levels:
+        /*
+        Print the size of the true (product) coefficient modulus.
+        */
+        int total_bits = homomorphic_eval->context->total_modulus_bits();
+        stringstream coeff_modulus_size_info;
+        coeff_modulus_size_info << "|   coeff_modulus size: " << total_bits << " (";
+        for (int i = 0; i < homomorphic_eval->context->num_qi(); i++) {
+            double bits = log2(static_cast<double>(homomorphic_eval->context->get_qi(i)));
+            coeff_modulus_size_info << ceil(bits) << " + ";
+        }
+        for (int i = 0; i < homomorphic_eval->context->num_pi(); i++) {
+            double bits = log2(static_cast<double>(homomorphic_eval->context->get_pi(i)));
+            coeff_modulus_size_info << ceil(bits) << " + ";
+        }
+        coeff_modulus_size_info << ") bits";
+        VLOG(VLOG_VERBOSE) << coeff_modulus_size_info.str();
 
-        //     SEALContext::key_context_data(): access to key level ContextData
-        //     SEALContext::first_context_data(): access to highest data level ContextData
-        //     SEALContext::last_context_data(): access to lowest level ContextData
+        VLOG(VLOG_VERBOSE) << "\\";
 
         // We iterate over the chain and print the parms_id for each set of parameters.
         VLOG(VLOG_VERBOSE) << "Print the modulus switching chain.";
 
         // First print the key level parameter information.
-        auto context_data = homomorphic_eval->context->key_context_data();
-        VLOG(VLOG_VERBOSE) << "----> Level (chain index): " << context_data->chain_index()
+        VLOG(VLOG_VERBOSE) << "----> Level (chain index): " << homomorphic_eval->context->num_qi()
                            << " ...... key_context_data()";
-        VLOG(VLOG_VERBOSE) << "      parms_id: " << context_data->parms_id();
+        VLOG(VLOG_VERBOSE) << "      parms_id: lvl<" << homomorphic_eval->context->num_qi() << ">";
         stringstream key_level_primes;
-        for (const auto &prime : context_data->parms().coeff_modulus()) {
-            key_level_primes << prime.value() << " ";
+        for (int i = 0; i < homomorphic_eval->context->num_qi(); i++) {
+            key_level_primes << homomorphic_eval->context->get_qi(i) << " ";
+        }
+        for (int i = 0; i < homomorphic_eval->context->num_pi(); i++) {
+            key_level_primes << homomorphic_eval->context->get_pi(i) << " ";
         }
         VLOG(VLOG_VERBOSE) << "      coeff_modulus primes: " << hex << key_level_primes.str() << dec;
         VLOG(VLOG_VERBOSE) << "\\";
 
         // Next iterate over the remaining (data) levels.
-        context_data = homomorphic_eval->context->first_context_data();
-        while (context_data) {
-            VLOG(VLOG_VERBOSE) << " \\--> Level (chain index): " << context_data->chain_index();
-            if (context_data->parms_id() == homomorphic_eval->context->first_parms_id()) {
+        for (int i = homomorphic_eval->context->max_ciphertext_level(); i >= 0; i--) {
+            VLOG(VLOG_VERBOSE) << " \\--> Level (chain index): " << i;
+            if (i == homomorphic_eval->context->max_ciphertext_level()) {
                 VLOG(VLOG_VERBOSE) << " ...... first_context_data()";
-            } else if (context_data->parms_id() == homomorphic_eval->context->last_parms_id()) {
+            } else if (i == 0) {
                 VLOG(VLOG_VERBOSE) << " ...... last_context_data()";
             }
-            VLOG(VLOG_VERBOSE) << "      parms_id: " << context_data->parms_id();
+            VLOG(VLOG_VERBOSE) << "      parms_id: lvl<" << i << ">";
             stringstream data_level_primes;
-            for (const auto &prime : context_data->parms().coeff_modulus()) {
-                data_level_primes << prime.value() << " ";
+            for (int j = 0; j <= i; j++) {
+                data_level_primes << homomorphic_eval->context->get_qi(j) << " ";
             }
             VLOG(VLOG_VERBOSE) << "      coeff_modulus primes: " << hex << data_level_primes.str() << dec;
             VLOG(VLOG_VERBOSE) << "\\";
-
-            // Step forward in the chain.
-            context_data = context_data->next_context_data();
         }
         VLOG(VLOG_VERBOSE) << " End of chain reached";
     }
@@ -101,11 +117,11 @@ namespace hit {
         return destination;
     }
 
-    vector<double> DebugEval::decrypt(const CKKSCiphertext &encrypted) const {
+    vector<double> DebugEval::decrypt(const CKKSCiphertext &encrypted) {
         return decrypt(encrypted, false);
     }
 
-    vector<double> DebugEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) const {
+    vector<double> DebugEval::decrypt(const CKKSCiphertext &encrypted, bool suppress_warnings) {
         return homomorphic_eval->decrypt(encrypted, suppress_warnings);
     }
 
@@ -118,7 +134,7 @@ namespace hit {
     }
 
     // print some debug info
-    void DebugEval::print_stats(const CKKSCiphertext &ct) const {
+    void DebugEval::print_stats(const CKKSCiphertext &ct) {
         homomorphic_eval->print_stats(ct);
         scale_estimator->print_stats(ct);
 
@@ -129,9 +145,9 @@ namespace hit {
         vector<double> exact_plaintext = ct.raw_pt;
 
         norm = relative_error(exact_plaintext, homom_plaintext);
-        if (abs(log2(ct.scale()) - log2(ct.seal_ct.scale())) > 0.1) {
+        if (abs(log2(ct.scale()) - log2(ct.backend_scale())) > 0.1) {
             LOG_AND_THROW_STREAM("Internal error: HIT scale does not match SEAL scale: " << log2(ct.scale()) << " != "
-                                                                                         << ct.seal_ct.scale());
+                                                                                         << ct.backend_scale());
         }
 
         VLOG(VLOG_EVAL) << setprecision(8) << "    + Approximation norm: " << norm;
@@ -179,10 +195,9 @@ namespace hit {
             LOG(ERROR) << actual_debug_result.str();
 
             Plaintext encoded_plain;
-            homomorphic_eval->encoder->encode(ct.raw_pt, pow(2, log_scale_), encoded_plain);
-
+            homomorphic_eval->backend_encoder->encode(ct.raw_pt, ct.backend_ct.parms_id(), ct.scale(), encoded_plain);
             vector<double> decoded_plain;
-            homomorphic_eval->encoder->decode(encoded_plain, decoded_plain);
+            homomorphic_eval->backend_encoder->decode(encoded_plain, decoded_plain);
 
             // the exact_plaintext and homom_plaintext should have the same length.
             // decoded_plain is full-dimensional, however. This may not match
@@ -197,7 +212,7 @@ namespace hit {
             LOG(ERROR) << "Encryption norm: " << norm3;
 
             LOG_AND_THROW_STREAM("Plaintext and ciphertext divergence: " << norm << " > " << MAX_NORM << ". Scale is "
-                                                                         << log_scale_
+                                                                         << homomorphic_eval->context->log_scale()
                                                                          << " bits. See error log for more details.");
         }
     }
@@ -273,7 +288,7 @@ namespace hit {
     }
 
     void DebugEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        uint64_t p = get_last_prime(homomorphic_eval->context, ct.he_level());
+        uint64_t p = homomorphic_eval->context->get_qi(ct.he_level());
         double prime_bit_len = log2(p);
 
         homomorphic_eval->rescale_to_next_inplace_internal(ct);

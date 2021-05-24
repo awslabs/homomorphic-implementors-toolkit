@@ -10,7 +10,6 @@
 #include "hit/api/ciphertext.h"
 #include "hit/api/evaluator/homomorphic.h"
 #include "hit/common.h"
-#include "hit/sealutils.h"
 
 using namespace std;
 using namespace hit;
@@ -1984,7 +1983,7 @@ TEST(LinearAlgebraTest, RescaleToNextMatrix) {
     EncryptedMatrix ct_mat2 = linear_algebra.multiply_plain(ct_mat1, 3.14);
 
     ASSERT_EQ(pow(2, LOG_SCALE * 2), ct_mat2.scale());
-    uint64_t prime = get_last_prime(ckks_instance.context, ct_mat1.he_level());
+    uint64_t prime = ckks_instance.context->get_qi(ct_mat1.he_level());
     linear_algebra.rescale_to_next_inplace(ct_mat2);
     ASSERT_EQ(pow(2, LOG_SCALE * 2) / prime, ct_mat2.scale());
 }
@@ -2002,7 +2001,7 @@ TEST(LinearAlgebraTest, RescaleToNextRow) {
     EncryptedRowVector ct_vec2 = linear_algebra.multiply_plain(ct_vec1, 3.14);
 
     ASSERT_EQ(pow(2, LOG_SCALE * 2), ct_vec2.scale());
-    uint64_t prime = get_last_prime(ckks_instance.context, ct_vec1.he_level());
+    uint64_t prime = ckks_instance.context->get_qi(ct_vec1.he_level());
     linear_algebra.rescale_to_next_inplace(ct_vec2);
     ASSERT_EQ(pow(2, LOG_SCALE * 2) / prime, ct_vec2.scale());
 }
@@ -2020,7 +2019,7 @@ TEST(LinearAlgebraTest, RescaleToNextCol) {
     EncryptedColVector ct_vec2 = linear_algebra.multiply_plain(ct_vec1, 3.14);
 
     ASSERT_EQ(pow(2, LOG_SCALE * 2), ct_vec2.scale());
-    uint64_t prime = get_last_prime(ckks_instance.context, ct_vec1.he_level());
+    uint64_t prime = ckks_instance.context->get_qi(ct_vec1.he_level());
     linear_algebra.rescale_to_next_inplace(ct_vec2);
     ASSERT_EQ(pow(2, LOG_SCALE * 2) / prime, ct_vec2.scale());
 }
@@ -2511,7 +2510,7 @@ TEST(LinearAlgebraTest, RescaleToNext_Matrix) {
     ASSERT_EQ(ct_mat1.he_level(), 1);
     linear_algebra.rescale_to_next_inplace(ct_mat1);
     ASSERT_EQ(ct_mat1.he_level(), 0);
-    uint64_t prime = get_last_prime(ckks_instance.context, 1);
+    uint64_t prime = ckks_instance.context->get_qi(1);
     ASSERT_EQ(ct_mat1.scale(), pow(2, 2 * LOG_SCALE) / prime);
     ASSERT_FALSE(ct_mat1.needs_relin());
     ASSERT_FALSE(ct_mat1.needs_rescale());
@@ -2534,7 +2533,7 @@ TEST(LinearAlgebraTest, RescaleToNext_ColVec) {
     ASSERT_EQ(ct_vec1.he_level(), 1);
     linear_algebra.rescale_to_next_inplace(ct_vec1);
     ASSERT_EQ(ct_vec1.he_level(), 0);
-    uint64_t prime = get_last_prime(ckks_instance.context, 1);
+    uint64_t prime = ckks_instance.context->get_qi(1);
     ASSERT_EQ(ct_vec1.scale(), pow(2, 2 * LOG_SCALE) / prime);
     ASSERT_FALSE(ct_vec1.needs_relin());
     ASSERT_FALSE(ct_vec1.needs_rescale());
@@ -2557,7 +2556,7 @@ TEST(LinearAlgebraTest, RescaleToNext_RowVec) {
     ASSERT_EQ(ct_vec1.he_level(), 1);
     linear_algebra.rescale_to_next_inplace(ct_vec1);
     ASSERT_EQ(ct_vec1.he_level(), 0);
-    uint64_t prime = get_last_prime(ckks_instance.context, 1);
+    uint64_t prime = ckks_instance.context->get_qi(1);
     ASSERT_EQ(ct_vec1.scale(), pow(2, 2 * LOG_SCALE) / prime);
     ASSERT_FALSE(ct_vec1.needs_relin());
     ASSERT_FALSE(ct_vec1.needs_rescale());

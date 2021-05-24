@@ -5,8 +5,6 @@
 
 #include "../ciphertext.h"
 #include "../evaluator.h"
-#include "seal/context.h"
-#include "seal/seal.h"
 
 namespace hit {
 
@@ -61,7 +59,7 @@ namespace hit {
         // to work correctly.
         int top_he_level_ = 0;
 
-        void print_stats(const CKKSCiphertext &ct) const override;
+        void print_stats(const CKKSCiphertext &ct) override;
 
         friend class ScaleEstimator;
         friend class OpCount;

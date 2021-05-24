@@ -3,12 +3,12 @@
 
 #pragma once
 
+#include "hit/api/context.h"
 #include "hit/protobuf/ciphertext.pb.h"
 #include "metadata.h"
-#include "seal/context.h"
-#include "seal/seal.h"
 
 namespace hit {
+
     /* This is a wrapper around the SEAL `Ciphertext` type.
      */
     struct CKKSCiphertext : public CiphertextMetadata<std::vector<double>> {
@@ -16,10 +16,10 @@ namespace hit {
         CKKSCiphertext() = default;
 
         // Deserialize a ciphertext from a protobuf object
-        CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context, const protobuf::Ciphertext &proto_ct);
+        CKKSCiphertext(const std::shared_ptr<HEContext> &context, const protobuf::Ciphertext &proto_ct);
 
         // Deserialize a ciphertext from a stream containing a protobuf object
-        CKKSCiphertext(const std::shared_ptr<seal::SEALContext> &context, std::istream &stream);
+        CKKSCiphertext(const std::shared_ptr<HEContext> &context, std::istream &stream);
 
         // Serialize a ciphertext to a protobuf object
         // This function is typically used in protobuf serialization code for objects which
@@ -53,15 +53,16 @@ namespace hit {
         friend class CKKSEvaluator;
 
        private:
-        void read_from_proto(const std::shared_ptr<seal::SEALContext> &context, const protobuf::Ciphertext &proto_ct);
+        void read_from_proto(const std::shared_ptr<HEContext> &context, const protobuf::Ciphertext &proto_ct);
+
+        double backend_scale() const;
 
         // The raw plaintxt. This is used with some of the evaluators tha track ciphertext
         // metadata (e.g., DebugEval and PlaintextEval), but not by the Homomorphic evaluator.
         // This plaintext is not CKKS-encoded; in particular it is not scaled by the scale factor.
         std::vector<double> raw_pt;
 
-        // SEAL ciphertext
-        seal::Ciphertext seal_ct;
+        seal::Ciphertext backend_ct;
 
         // `scale` is used by the ScaleEstimator evaluator
         double scale_ = pow(2, 30);

@@ -5,9 +5,8 @@ syntax = "proto2";
 package hit.protobuf;
 
 message CKKSParams {
-	required int32 numSlots = 1;
-	required int32 logScale = 2;
-	repeated int64 modulusVec = 3;
-	required bytes pubkey = 4;
-	required bool standardParams = 5;
+    required bytes ctx = 1;
+    required bytes pubkey = 2;
+    required bool standardParams = 3;
+    required int32 logScale = 4;
 }
