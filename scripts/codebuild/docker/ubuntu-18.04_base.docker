@@ -16,11 +16,14 @@ RUN set -ex && \
     build-essential \
     software-properties-common \
     curl \
-    golang \
+    golang-go \
     libboost-math-dev \
     protobuf-compiler \
     libprotobuf-dev \
     ca-certificates && \
+    add-apt-repository ppa:longsleep/golang-backports && \
+    apt-get update && \
+    apt-get -y --no-install-recommends install golang-go && \
     cd /tmp && \
     curl -LO https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz && \
     tar xzf cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz -C /usr --strip-components 1 && \
