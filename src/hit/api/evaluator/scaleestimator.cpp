@@ -22,12 +22,6 @@ namespace hit {
         plaintext_eval = new PlaintextEval(num_slots);
 
         context = make_shared<HEContext>(HEContext(num_slots, multiplicative_depth, default_scale_bits));
-
-        // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
-        estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
-        for (int i = 0; i < context->num_qi(); i++) {
-            estimated_max_log_scale_ += log2(context->get_qi(i));
-        }
     }
 
     ScaleEstimator::ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval) {
@@ -35,12 +29,6 @@ namespace hit {
 
         // instead of creating a new instance, use the instance provided
         context = homom_eval.context;
-
-        // if scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
-        estimated_max_log_scale_ = PLAINTEXT_LOG_MAX - 60;
-        for (int i = 0; i < context->num_qi(); i++) {
-            estimated_max_log_scale_ += log2(context->get_qi(i));
-        }
     }
 
     ScaleEstimator::~ScaleEstimator() {
@@ -83,15 +71,13 @@ namespace hit {
     }
 
     void ScaleEstimator::update_plaintext_max_val(const vector<double> &coeffs) {
-        double x = l_inf_norm(coeffs);
         // account for a freshly-encrypted ciphertext
         // if this is a depth-0 computation *AND* the parameters are such that it is a no-op,
         // this is the only way we can account for the values in the input. We have to encrypt them,
         // and if the scale is ~2^60, encoding will (rightly) fail
-        int top_he_level = context->max_ciphertext_level();
-        if (top_he_level == 0) {
+        if (context->max_ciphertext_level() == 0) {
             scoped_lock lock(mutex_);
-            estimated_max_log_scale_ = min(estimated_max_log_scale_, PLAINTEXT_LOG_MAX - log2(x));
+            estimated_max_log_scale_ = min(estimated_max_log_scale_, PLAINTEXT_LOG_MAX - log2(l_inf_norm(coeffs)));
         }
     }
 
@@ -259,19 +245,26 @@ namespace hit {
          * maximum size of the modulus (in bits) based on the poly_modulus_degree.
          * We take that constraint into account when reporting the maximum log(scale).
          *
-         * Specifically, a SEAL modulus is the product of k primes p_i, where
-         * log2(p_1)=log2(p_k)=60 and log2(p_i)=s=log(scale). Thus s must be less
-         * than (maxModBits-120)/(k-2)
+         * Specifically, a ciphertext modulus is Q*P, where P is the "special" key-switch
+         * modulus. Q and P are both the products of primes, where log2(q_0) = 60, log2(q_i) = s = log2(scale),
+         * and log2(p_i) = 60. The total modulus Q*P counts for security, thus we require
+         * s <= (maxModBits-log2(P)-60)/(k-2), where k is the maximum ciphertext level (and therefore k-2 is the number of s-bit q_i).
          */
         auto estimated_log_scale = static_cast<double>(PLAINTEXT_LOG_MAX);
         {
             shared_lock lock(mutex_);
             estimated_log_scale = min(estimated_log_scale, estimated_max_log_scale_);
         }
+
+        double logP = 0;
+        for (int i = 0; i < context->num_pi(); i++) {
+            logP += log2(context->get_pi(i));
+        }
+
         int top_he_level = context->max_ciphertext_level();
         if (top_he_level > 0) {
             int max_mod_bits = poly_degree_to_max_mod_bits(2 * context->num_slots());
-            return min(estimated_log_scale, (max_mod_bits - 120) / static_cast<double>(top_he_level));
+            return min(estimated_log_scale, (max_mod_bits - logP - 60) / static_cast<double>(top_he_level));
         }
         return estimated_log_scale;
     }
