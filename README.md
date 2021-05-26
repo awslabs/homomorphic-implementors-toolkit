@@ -3,8 +3,8 @@
 HIT provides tools to simplify the process of designing homomorphic circuits for the CKKS homomorphic encryption scheme. This library is intended to further research in homomorphic encryption. Users must be aware of the security issues surrounding the deployment of CKKS homomorphic encryption; see SECURITY.md for details.
 
 #### Build Status:
-* Ubuntu 18.04 GCC 9 ![Build Status](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiS0plc1RnWDFBLzBuSm1DV0J3S2RxenF5ek9XUkYwNWxodkVqSkMrbEdwUnpXQlpOME5BakN6djRnblJlWm92K3NORXZZV1dPOGdVRVIzNVB1UUVLWmtVPSIsIml2UGFyYW1ldGVyU3BlYyI6IkM2a0VPc0xsRmRHQ0hBVDIiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)
-* Ubuntu 18.04 Clang 10 ![Build Status](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiTzVreHl2cjN4WENKcmNkMlh1UVpzK1VzYmQwYWJ4OFVXMlZaWHMvYWtHazkrTlA5VzlPZGljSTRPR1JNOS9McERCU1NxY2twVDlBUXEyWWdEWmM4WmRBPSIsIml2UGFyYW1ldGVyU3BlYyI6ImIrTG1JdFF5RytlOVh0MkkiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)
+* Ubuntu 18.04 GCC 9 ![Build Status](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiQ3Npc1hJQi9iQ0x0aHVlVW1EdERJZ1g0ZENhazl2b2ptMUkwTkgyS1pSRkVQNytDYUdPam9MS0VBeDc0ODlUNXRmaEVLaVZyaERna243d293aXRGRFVvPSIsIml2UGFyYW1ldGVyU3BlYyI6IkRqcnk0N08yQjRaTk8vS3IiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=main)
+* Ubuntu 18.04 Clang 10 ![Build Status](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiKzFoQXZYbmppZW84SUFYWUhVYkVVSVZEaEtFYkVXL1J2MWtKUlBFTTJKY0d1d2MxSjBRNWtjRS91NE1PYjJ4QmIvck53aUQrZmMza2NBOTlTNW1ubTBBPSIsIml2UGFyYW1ldGVyU3BlYyI6IllTYS9GOGFqTS9FdmRmV3QiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=main)
 
 Table of Contents
 =================
