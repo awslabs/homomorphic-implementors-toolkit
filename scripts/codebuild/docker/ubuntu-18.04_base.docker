@@ -18,6 +18,7 @@ RUN set -ex && \
     curl \
     golang-go \
     libboost-math-dev \
+    libboost-thread-dev \
     protobuf-compiler \
     libprotobuf-dev \
     ca-certificates && \

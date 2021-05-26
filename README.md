@@ -1,6 +1,6 @@
 # Homomorphic Implementor's Toolkit
 
-HIT provides tools to simplify the process of designing homomorphic circuits for the CKKS homomorphic encryption scheme. This library is intended to further research in homomorphic encryption. Users must be aware of the security issues surrounding the deployment of CKKS homomorphic encryption; see SECURITY.md for details.
+HIT provides tools to simplify the process of designing homomorphic circuits for the CKKS homomorphic encryption scheme. This library is intended to further research in homomorphic encryption. Users must be aware of the security issues surrounding the deployment of CKKS homomorphic encryption; see SECURITY.md for details. This branch of the HIT repository uses the [Lattigo](https://github.com/ldsec/lattigo) homomorphic encryption library as a backend.
 
 #### Build Status:
 * Ubuntu 18.04 GCC 9 ![Build Status](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiQ3Npc1hJQi9iQ0x0aHVlVW1EdERJZ1g0ZENhazl2b2ptMUkwTkgyS1pSRkVQNytDYUdPam9MS0VBeDc0ODlUNXRmaEVLaVZyaERna243d293aXRGRFVvPSIsIml2UGFyYW1ldGVyU3BlYyI6IkRqcnk0N08yQjRaTk8vS3IiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=main)
@@ -32,7 +32,7 @@ Homomorphic encryption is a special type of encryption scheme which enables comp
 
 ### Evaluators
 HIT simplifies this process by providing an abstract homomorphic evaluation API that allows a circuit to be written once, but evaluated in many different ways, including:
-- Homomorphic evalaution: This is the basic evaluation strategy provided by a generic homomorphic encryption library. HIT uses the [Microsoft SEAL](https://github.com/microsoft/SEAL) homomorphic encryption library to evaluate circuits on encrypted inputs.
+- Homomorphic evalaution: This is the basic evaluation strategy provided by a generic homomorphic encryption library. This branch of HIT uses the [Lattigo](https://github.com/ldsec/lattigo) homomorphic encryption library (via a [C++ wrapper](https://github.com/awslabs/aws-cppwrapper-lattigo)) to evaluate circuits on encrypted inputs.
 - Count the number of operations in the circuit. Homomorphic operations are expensive to compute, and it is useful to know how changes to the circuit affect the number of operations being performed.
 - Compute the multiplicative depth of a circuit. The multiplicative depth of a homomorphic circuit is the maximum number of multiplications along any path through the circuit. This circuit property is _the_ most important factor in the efficiency of circuit evaluation. Computing the depth of a circuit by hand requires tedious tracking of ciphertext metadata; HIT provides a programmatic way to compute circuit depth. Knowing the depth of a circuit is also important when selecting cryptosystem paramters for homomorphic evaluation.
 - Estimate the CKKS scale parameter. CKKS homomorphic encryption has a _scale parameter_, which controls the precision of the homomorphic computation. It can be difficult to know what value to use for the scale parameter. By running the circuit on representative input, HIT helps developers choose an appropriate value for this parameter.
@@ -47,7 +47,7 @@ HIT simplifies this process by providing an abstract homomorphic evaluation API 
 Developing a homomorphic circuit requires a scheme to _encode_ function inputs as CKKS ciphertexts. Depending on the complexity of the encoding scheme, a developer may end up writing many "assembly" instructions: higher level instructions composed of native instructions that operate on encoded plaintexts. HIT provides this type of API for linear algebra operations based on the framework described in [this paper](https://eprint.iacr.org/2020/1483). Using this API, it is easy for a developer to create a circuit for a function based on linear algebra. It handles encoding of linear algebra objects, and provides high-level "assembly" instructions for linear algebra operations.
 
 ### CKKS Parameters
-Homomorphic encryption schemes require many parameters which interact in complex ways to affect security. HIT helps developers by exposing APIs that are oriented towards the computation. First, HIT helps developers get some basic parameter requirements based on the circuit, such as the circuit depth and estimated scale. Based on these circuit parameters, HIT selects HE parameters which meet the desired computation requirements and also provide adequate security by default. When using the homomorphic evaluator, HIT targets 128-bit security by default. However, this limits parameters to those standardized in http://homomorphicencryption.org/white_papers/security_homomorphic_encryption_white_paper.pdf. Since some applications will require larger parameters, users can use non-standard parameters at their own risk with the `use_seal_params=false` flag when creating CKKS parameters.
+Homomorphic encryption schemes require many parameters which interact in complex ways to affect security. HIT helps developers by exposing APIs that are oriented towards the computation. First, HIT helps developers get some basic parameter requirements based on the circuit, such as the circuit depth and estimated scale. Based on these circuit parameters, HIT selects HE parameters which meet the desired computation requirements and also provide adequate security by default. When using the homomorphic evaluator, HIT targets 128-bit security by default. However, this limits parameters to those standardized in http://homomorphicencryption.org/white_papers/security_homomorphic_encryption_white_paper.pdf. Since some applications will require larger parameters, users can use non-standard parameters at their own risk with the `use_standard_params=false` flag when creating CKKS parameters.
 
 ### Deploying a Homomorphic Function
 A homomorphic function is typcially deployed in a client/server model:
@@ -84,9 +84,11 @@ An additional consideration is that a client who wishes for a server to evaluate
 ### Prerequisites
 
 #### Tools
-HIT requires CMake 3.12 or later and either GCC-9 or Clang-10. We recommend using Clang, as SEAL is optimized for Clang. We recommend the `ninja` build system.
+HIT requires CMake 3.12 or later and either GCC-9 or Clang-10. We recommend the `ninja` build system.
 
 #### Libraries
+HIT with Lattigo requires [Boost](https://github.com/boostorg/boost)'s thread library (Ubuntu: libboost-thread-dev) to be installed on your system.
+
 We recommend installing the [Google Protocol Buffers library](https://github.com/protocolbuffers/protobuf) and `protoc` compiler (Ubuntu: libprotobuf-dev and protobuf-compiler) and [Boost](https://github.com/boostorg/boost)'s math library (Ubuntu: libboost-math-dev). If these dependencies are not found on the system, HIT's build system will download and build its own versions, which takes additional time.
 
 #### Ubuntu 18.04
@@ -126,7 +128,7 @@ ninja run_hit_example
 ```
 
 ### Examples
-We recommend reading through the detailed [examples](/examples) which demonstrate how to use the features described above. For those unfamiliar with homomorphic encryption topics, we also recommend reading through the [SEAL examples](https://github.com/microsoft/SEAL/tree/master/native/examples).
+We recommend reading through the detailed [examples](/examples) which demonstrate how to use the features described above. For those unfamiliar with homomorphic encryption topics, we also recommend reading through the [Microsoft SEAL examples](https://github.com/microsoft/SEAL/tree/master/native/examples).
 
 ## Citing HIT
 Please use the following BibTeX entry to cite HIT:
