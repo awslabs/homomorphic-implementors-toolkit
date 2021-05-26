@@ -86,7 +86,9 @@ namespace hit {
 
         PlaintextEval *plaintext_eval;
 
-        double estimated_max_log_scale_;
+        // If scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
+        // We set the estimated_max_log_scale to 59 to prevent this error.
+        double estimated_max_log_scale_ = 59;
 
         // This helper function squares the scale of the input and then updates
         // the max_log_scale.
