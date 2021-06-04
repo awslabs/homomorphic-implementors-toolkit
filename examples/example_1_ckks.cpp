@@ -160,7 +160,7 @@ void example_1_driver() {
 
 	// Create a CKKS instance corresponding to the parameters chosen above.
 	// Set up the cryptosystem and generate keys.
-	HomomorphicEval inst = HomomorphicEval(num_slots, max_depth, log_scale);
+	HomomorphicEval inst(num_slots, max_depth, log_scale);
 
 	// Generate a plaintext with `num_slots` random coefficients, each with absolute value < `plaintext_inf_norm`
 	int plaintext_inf_norm = 10;

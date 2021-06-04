@@ -22,9 +22,9 @@ void example_4_driver() {
 	int log_scale = 40;
 
 	// Start by creating one of the basic HIT instances.
-	DebugEval dbg_inst = DebugEval(num_slots, max_depth, log_scale);
+	DebugEval dbg_inst(num_slots, max_depth, log_scale);
 	// We then create a LinearAlgebra wrapper around this instance
-	LinearAlgebra la_inst = LinearAlgebra(dbg_inst); // NOLINT(modernize-use-auto)
+	LinearAlgebra la_inst(dbg_inst);
 
 /* ******** Encoding Units ********
  * A fundamental concept for the the linear algebra toolkit proposed in [Crockett20] is
@@ -89,7 +89,7 @@ void example_4_driver() {
 	int mat_height = 150;
 	int mat_width = 300;
 	vector<double> mat_data = random_vector(mat_height*mat_width, plaintext_inf_norm);
-	Matrix mat = Matrix(mat_height, mat_width, mat_data);
+	Matrix mat(mat_height, mat_width, mat_data);
 
 	// We can now encrypt this matrix with respect to both units
 	EncryptedMatrix enc_mat1 = la_inst.encrypt(mat, unit_64x128);
@@ -166,7 +166,7 @@ void example_4_driver() {
 	// Let's create a 150-dimensional vector
 	int rvec_size = 150;
 	vector<double> rvec_data = random_vector(rvec_size, plaintext_inf_norm);
-	Vector rvec = Vector(rvec_data);
+	Vector rvec(rvec_data);
 
 	// We can now encrypt this row vector with respect to one of the units
 	EncryptedRowVector enc_rvec = la_inst.encrypt<EncryptedRowVector>(rvec, unit_64x128); // NOLINT(modernize-use-auto)
@@ -220,7 +220,7 @@ void example_4_driver() {
 	// Let's create a 300-dimensional vector
 	int cvec_size = 300;
 	vector<double> cvec_data = random_vector(cvec_size, plaintext_inf_norm);
-	Vector cvec = Vector(cvec_data);
+	Vector cvec(cvec_data);
 
 	// We can now encrypt a column vector with respect to one of the units
 	EncryptedColVector enc_cvec = la_inst.encrypt<EncryptedColVector>(cvec, unit_64x128); // NOLINT(modernize-use-auto)
@@ -383,7 +383,7 @@ void example_4_driver() {
 	// Call this matrix B. Now let's make a 20x150 matrix A, and homomorphically
 	// compute 2*A*B.
     vector<double> mat_data_a = random_vector(20*150, plaintext_inf_norm);
-	Matrix mat_a = Matrix(20, 150, mat_data_a);
+	Matrix mat_a(20, 150, mat_data_a);
 
 	// First, we will use the matrix/matrix variant that takes A^T and B,
 	// so we need to encrypt A^T

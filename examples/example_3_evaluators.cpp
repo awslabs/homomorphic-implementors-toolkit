@@ -57,7 +57,7 @@ void example_3_driver() {
 	int num_slots = 8192;
 
 	// Create a CKKS instance to compute circuit depth. This instance type needs _no_ parameters.
-	DepthFinder df_inst = DepthFinder();
+	DepthFinder df_inst;
 
 	// Generate a plaintext with `num_slots` random coefficients, each with absolute value < `plaintext_inf_norm`
 	int plaintext_inf_norm = 10;
@@ -90,7 +90,7 @@ void example_3_driver() {
 	// Assume that the plaintext generated above is representative.
 	// The ScaleEstimator instance type requires the maximum depth of the circuits which
 	// will be evaluated, so we pass in the value computed with the DepthFinder instance.
-	ScaleEstimator se_inst = ScaleEstimator(num_slots, max_depth);
+	ScaleEstimator se_inst(num_slots, max_depth);
 
 	// Don't reuse ciphertexts between instance types!
 	CKKSCiphertext se_ciphertext = se_inst.encrypt(plaintext);
@@ -110,7 +110,7 @@ void example_3_driver() {
  * we can use, we can now set up an instance which actually does homomorphic
  * computation.
  */
-	HomomorphicEval he_inst = HomomorphicEval(num_slots, max_depth, static_cast<int>(floor(log_scale)));
+	HomomorphicEval he_inst(num_slots, max_depth, static_cast<int>(floor(log_scale)));
 
 	// Don't reuse ciphertexts between instance types!
 	CKKSCiphertext he_ciphertext = he_inst.encrypt(plaintext);
@@ -147,7 +147,7 @@ void example_3_driver() {
  * to pinpoint exactly where the homomorphic computation went off the rails. You use the DebugEval
  * instance just like the HomomorphicEval instance.
  */
-	DebugEval dbg_inst = DebugEval(num_slots, max_depth, static_cast<int>(floor(log_scale)));
+	DebugEval dbg_inst(num_slots, max_depth, static_cast<int>(floor(log_scale)));
 
 	// Don't reuse ciphertexts between instance types!
 	CKKSCiphertext dbg_ciphertext = dbg_inst.encrypt(plaintext);
@@ -168,7 +168,7 @@ void example_3_driver() {
 	// The OpCount instance type takes the number of plaintext slots, since most of the high-level
 	// operations in the linear algebra API perform a different number of low-level operations depending
 	// on how inputs are encoded, which depends on the number of plaintext slots.
-	OpCount oc_inst = OpCount(num_slots);
+	OpCount oc_inst(num_slots);
 
 	// Don't reuse ciphertexts between instance types!
 	CKKSCiphertext oc_ciphertext = oc_inst.encrypt(plaintext);

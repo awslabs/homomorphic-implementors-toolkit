@@ -56,10 +56,10 @@ namespace hit {
         VLOG(VLOG_VERBOSE) << "      parms_id: lvl<" << homomorphic_eval->context->num_qi() << ">";
         stringstream key_level_primes;
         for (int i = 0; i < homomorphic_eval->context->num_qi(); i++) {
-            key_level_primes << homomorphic_eval->context->get_qi(i) << " ";
+            key_level_primes << hex << homomorphic_eval->context->get_qi(i) << dec << " ";
         }
         for (int i = 0; i < homomorphic_eval->context->num_pi(); i++) {
-            key_level_primes << homomorphic_eval->context->get_pi(i) << " ";
+            key_level_primes << hex << homomorphic_eval->context->get_pi(i) << dec << " ";
         }
         VLOG(VLOG_VERBOSE) << "      coeff_modulus primes: " << hex << key_level_primes.str() << dec;
         VLOG(VLOG_VERBOSE) << "\\";
@@ -75,9 +75,9 @@ namespace hit {
             VLOG(VLOG_VERBOSE) << "      parms_id: lvl<" << i << ">";
             stringstream data_level_primes;
             for (int j = 0; j <= i; j++) {
-                data_level_primes << homomorphic_eval->context->get_qi(j) << " ";
+                data_level_primes << hex << homomorphic_eval->context->get_qi(j) << dec << " ";
             }
-            VLOG(VLOG_VERBOSE) << "      coeff_modulus primes: " << hex << data_level_primes.str() << dec;
+            VLOG(VLOG_VERBOSE) << "      coeff_modulus primes: " << data_level_primes.str();
             VLOG(VLOG_VERBOSE) << "\\";
         }
         VLOG(VLOG_VERBOSE) << " End of chain reached";
