@@ -140,7 +140,7 @@ void example_2_driver() {
 	// if we were doing encryption, you must specify the number of slots your plaintexts
 	// will have.
 	int num_slots = 4096;
-	PlaintextEval inst = PlaintextEval(num_slots);
+	PlaintextEval inst(num_slots);
 
 	// Generate a plaintext with `num_slots` random coefficients, each with absolute value < `plaintext_inf_norm`
 	int plaintext_inf_norm = 10;

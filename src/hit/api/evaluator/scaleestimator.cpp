@@ -248,7 +248,8 @@ namespace hit {
          * Specifically, a ciphertext modulus is Q*P, where P is the "special" key-switch
          * modulus. Q and P are both the products of primes, where log2(q_0) = 60, log2(q_i) = s = log2(scale),
          * and log2(p_i) = 60. The total modulus Q*P counts for security, thus we require
-         * s <= (maxModBits-log2(P)-60)/(k-2), where k is the maximum ciphertext level (and therefore k-2 is the number of s-bit q_i).
+         * s <= (maxModBits-log2(P)-60)/(k-2), where k is the maximum ciphertext level (and therefore k-2 is the number
+         * of s-bit q_i).
          */
         auto estimated_log_scale = static_cast<double>(PLAINTEXT_LOG_MAX);
         {

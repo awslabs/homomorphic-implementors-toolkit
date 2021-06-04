@@ -35,7 +35,7 @@ void example_5_client() {
 
 	// In a production application, only the Homomorphic instance type
 	// should be used!
-	HomomorphicEval he_inst = HomomorphicEval(num_slots, max_depth, log_scale);
+	HomomorphicEval he_inst(num_slots, max_depth, log_scale);
 
 	LOG(INFO) << "Encrypting client data...";
 	// The next step in the client/server model is for the client to encrypt some data
@@ -87,7 +87,7 @@ void example_5_client() {
 
 	// The server will send back a response, which we can then read
 	ifstream input_data_stream("/tmp/datain", ios::in | ios::binary);
-	CKKSCiphertext homom_result = CKKSCiphertext(he_inst.context, input_data_stream);
+	CKKSCiphertext homom_result(he_inst.context, input_data_stream);
 
 	// Don't forget to close the stream!
 	input_data_stream.close();
@@ -116,7 +116,7 @@ void example_5_server() {
 	// because it does not know the secret key.
 	// It is an error to call `he_inst.decrypt` with a HomomorphicEval constructed
 	// this way.
-	HomomorphicEval he_inst = HomomorphicEval(params_stream, galois_key_stream, relin_key_stream);
+	HomomorphicEval he_inst(params_stream, galois_key_stream, relin_key_stream);
 
 	// Don't forget to close the streams!
 	params_stream.close();
