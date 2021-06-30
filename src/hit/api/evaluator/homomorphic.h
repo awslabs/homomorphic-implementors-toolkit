@@ -103,6 +103,8 @@ namespace hit {
 
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
+        CKKSCiphertext bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) override;
+
        private:
         template <typename T>
         struct ParameterizedLattigoType {
@@ -117,6 +119,7 @@ namespace hit {
         boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Evaluator>> backend_evaluator;
         boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Encryptor>> backend_encryptor;
         latticpp::Decryptor backend_decryptor;
+        latticpp::Bootstrapper btp;
         latticpp::PublicKey pk;
         latticpp::SecretKey sk;
         latticpp::RotationKeys galois_keys;

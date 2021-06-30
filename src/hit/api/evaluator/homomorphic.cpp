@@ -310,4 +310,18 @@ namespace hit {
     void HomomorphicEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
         relinearize(get_evaluator(), ct.backend_ct, ct.backend_ct);
     }
+
+    CKKSCiphertext HomomorphicEval::bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
+        if (rescale_for_bootstrapping && ct.he_level() == 0) {
+            LOG_AND_THROW_STREAM("Unable to bootstrap ciphertext at level 0 when rescale_for_bootstrapping is true.");
+        }
+
+        CKKSCiphertext bootstrapped_ct = ct;
+        bootstrapped_ct.backend_ct = latticpp::bootstrap(btp, ct.backend_ct);
+        // bootstrapped_ct.scale_ = ??
+        // bootstrapped_ct.he_level_ = post_bootstrap_lvl;
+        // bootstrapped_ct.needs_relin_ = ??
+        // bootstrapped_ct.needs_rescale_ = ??
+        return bootstrapped_ct;
+    }
 }  // namespace hit
