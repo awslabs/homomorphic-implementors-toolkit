@@ -161,6 +161,7 @@ namespace hit {
         ObjectPool<latticpp::Encryptor> backend_encryptor;
         ObjectPool<latticpp::Bootstrapper> backend_bootstrapper;
         latticpp::Decryptor backend_decryptor;
+        latticpp::Bootstrapper btp;
         latticpp::PublicKey pk;
         latticpp::SecretKey sk;
         latticpp::RotationKeys galois_keys;
