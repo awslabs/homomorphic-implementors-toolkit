@@ -11,7 +11,7 @@ using namespace std;
 
 namespace hit {
 
-    CKKSCiphertext ImplicitDepthFinder::encrypt(const vector<double>&) {
+    CKKSCiphertext ImplicitDepthFinder::encrypt(const vector<double> &) {
         CKKSCiphertext destination;
         destination.he_level_ = 0;  // a default level
         // Using a default num_slots_ is potentially problematic if the depth of
@@ -22,7 +22,7 @@ namespace hit {
         return destination;
     }
 
-    CKKSCiphertext ImplicitDepthFinder::encrypt(const std::vector<double>&, int) {
+    CKKSCiphertext ImplicitDepthFinder::encrypt(const std::vector<double> &, int) {
         LOG_AND_THROW_STREAM("ImplicitDepthFinder does not define encrypt() with an explicit level");
     }
 
@@ -95,7 +95,8 @@ namespace hit {
         if (ct.bootstrapped()) {
             // this ciphertext has already been bootstrapped
             scoped_lock lock(mutex_);
-            post_bootstrap_depth_ = max(post_bootstrap_depth_, static_cast<int>(rescale_for_bootstrapping) - ct.he_level());
+            post_bootstrap_depth_ =
+                max(post_bootstrap_depth_, static_cast<int>(rescale_for_bootstrapping) - ct.he_level());
         } else {
             // this ciphertext has already been bootstrapped
             scoped_lock lock(mutex_);
