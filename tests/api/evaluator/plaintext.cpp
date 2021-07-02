@@ -262,3 +262,13 @@ TEST(PlaintextTest, Square) {
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
+
+TEST(PlaintextTest, Bootstrap) {
+    PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
+    CKKSCiphertext ciphertext1, ciphertext2;
+    vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
+    ciphertext1 = ckks_instance.encrypt(vector1);
+    ciphertext2 = ckks_instance.bootstrap(ciphertext1);
+    // should be identical
+    ASSERT_EQ(ciphertext1.plaintext(), ciphertext2.plaintext());
+}
