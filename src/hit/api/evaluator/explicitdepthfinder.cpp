@@ -11,11 +11,11 @@ using namespace std;
 
 namespace hit {
 
-    CKKSCiphertext ExplicitDepthFinder::encrypt(const vector<double>&) {
+    CKKSCiphertext ExplicitDepthFinder::encrypt(const vector<double> &) {
         LOG_AND_THROW_STREAM("ExplicitDepthFinder does not define encrypt() with an implicit level");
     }
 
-    CKKSCiphertext ExplicitDepthFinder::encrypt(const vector<double>&, int level) {
+    CKKSCiphertext ExplicitDepthFinder::encrypt(const vector<double> &, int level) {
         if (level < 0) {
             LOG_AND_THROW_STREAM("Explicit encryption level must be non-negative, got " << level);
         }
@@ -99,8 +99,6 @@ namespace hit {
     }
 
     CKKSCiphertext ExplicitDepthFinder::bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
-        
-
         // if rescale_for_bootstrapping, bootstrapping will implicitly consume one additional level to rescale the
         // ciphertext first, ensure that if explict levels are set, we aren't already at level 0
         if (rescale_for_bootstrapping && ct.he_level() == 0) {
