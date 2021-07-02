@@ -111,6 +111,10 @@ namespace hit {
         return decode_col_vector(plaintext_pieces, height_);
     }
 
+    bool EncryptedColVector::bootstrapped() const {
+        return cts[0].bootstrapped();
+    }
+
     void EncryptedColVector::validate() const {
         // validate the unit
         unit.validate();

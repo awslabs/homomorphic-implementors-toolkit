@@ -101,6 +101,10 @@ namespace hit {
         return needs_relin_;
     }
 
+    bool CKKSCiphertext::bootstrapped() const {
+        return bootstrapped_;
+    }
+
     vector<double> CKKSCiphertext::plaintext() const {
         if (raw_pt.empty()) {
             LOG_AND_THROW_STREAM("Ciphertext does not contain a plaintext.");
