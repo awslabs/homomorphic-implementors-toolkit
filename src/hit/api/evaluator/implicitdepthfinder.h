@@ -3,11 +3,11 @@
 
 #pragma once
 
+#include "../../common.h"
 #include "../ciphertext.h"
 #include "../evaluator.h"
 
 namespace hit {
-
     /* This evaluator's sole purpose is to compute the
      * multiplicative depth of a computation.
      *
@@ -18,48 +18,54 @@ namespace hit {
      * an encryption level. Having some calls which specify a level
      * and some which do not is not permitted.
      */
-    class DepthFinder : public CKKSEvaluator {
+    class ImplicitDepthFinder : public CKKSEvaluator {
        public:
-        DepthFinder() = default;
+        ImplicitDepthFinder() = default;
 
         /* For documentation on the API, see ../evaluator.h */
-        ~DepthFinder() override = default;
+        ~ImplicitDepthFinder() override = default;
 
-        DepthFinder(const DepthFinder &) = delete;
-        DepthFinder &operator=(const DepthFinder &) = delete;
-        DepthFinder(DepthFinder &&) = delete;
-        DepthFinder &operator=(DepthFinder &&) = delete;
+        ImplicitDepthFinder(const ImplicitDepthFinder &) = delete;
+        ImplicitDepthFinder &operator=(const ImplicitDepthFinder &) = delete;
+        ImplicitDepthFinder(ImplicitDepthFinder &&) = delete;
+        ImplicitDepthFinder &operator=(ImplicitDepthFinder &&) = delete;
 
         CKKSCiphertext encrypt(const std::vector<double> &coeffs) override;
-        CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level) override;
+        CKKSCiphertext encrypt(const std::vector<double> &coeffs, int level) override;  // throws an error
 
         /* Return the multiplicative depth of this computation.
          * Must be called after performing the target computation.
          * Not available for all concrete evaluators.
          */
-        int get_multiplicative_depth() const;
+        CircuitDepthResults get_multiplicative_depth() const;
 
         int num_slots() const override;
 
        protected:
+        void add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
+
+        void sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
+
+        void multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
+
         void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
 
+        CKKSCiphertext bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) override;
+
        private:
-        // encryption_mode_ starts as FIRST_ENCRYPT.
-        // The first call to `encrypt` sets the mode for future calls to
-        // `encrypt`, which only allows implicit levels or explicit levels.
-        enum EncryptionMode { FIRST_ENCRYPT, IMPLICIT_LEVEL, EXPLICIT_LEVEL };
-        EncryptionMode encryption_mode_ = FIRST_ENCRYPT;
         const int num_slots_ = 4096;
-        int multiplicative_depth_ = 0;
-        // We can't make this value `const` even though DepthFinder
-        // doesn't update it. The reason is that DepthFinder works when
+        // We can't make this value `const` even though ImplicitDepthFinder
+        // doesn't update it. The reason is that ImplicitDepthFinder works when
         // top_he_level_ is 0, but other evaluators which depend on
-        // DepthFinder (like ScaleEstimator) have to update this value
+        // ImplicitDepthFinder (like ScaleEstimator) have to update this value
         // to work correctly.
-        int top_he_level_ = 0;
+        int bootstrap_depth_ = -1;
+        int post_bootstrap_depth_ = 0;
+        int total_param_levels = 0;
+        bool uses_bootstrapping = false;
 
         void print_stats(const CKKSCiphertext &ct) override;
+        void set_bootstrap_depth(CKKSCiphertext &ct1, const CKKSCiphertext &ct2);
 
         friend class ScaleEstimator;
         friend class OpCount;
