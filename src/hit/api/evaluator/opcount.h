@@ -5,7 +5,6 @@
 
 #include "../ciphertext.h"
 #include "../evaluator.h"
-#include "depthfinder.h"
 
 namespace hit {
 
@@ -61,6 +60,8 @@ namespace hit {
 
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
+        CKKSCiphertext bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) override;
+
         int num_slots() const override;
 
        private:
@@ -75,6 +76,7 @@ namespace hit {
         int rescales_ = 0;
         int relins_ = 0;
         int num_slots_ = 0;
+        int bootstraps_ = 0;
 
         inline void count_multiple_ops() {
             std::scoped_lock lock(mutex_);
