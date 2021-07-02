@@ -46,6 +46,7 @@ namespace hit {
         VLOG(VLOG_EVAL) << "Encryption Levels: " << encryption_levels_ << endl;
         VLOG(VLOG_EVAL) << "Rescales: " << rescales_;
         VLOG(VLOG_EVAL) << "Relinearizations: " << relins_;
+        VLOG(VLOG_EVAL) << "Bootstraps: " << bootstraps_;
     }
 
     int OpCount::num_slots() const {
@@ -121,5 +122,11 @@ namespace hit {
     void OpCount::relinearize_inplace_internal(CKKSCiphertext &) {
         scoped_lock lock(mutex_);
         relins_++;
+    }
+
+    CKKSCiphertext OpCount::bootstrap_internal(const CKKSCiphertext &ct, bool) {
+        scoped_lock lock(mutex_);
+        bootstraps_++;
+        return ct;
     }
 }  // namespace hit
