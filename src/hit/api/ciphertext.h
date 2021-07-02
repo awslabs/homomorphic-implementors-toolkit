@@ -123,7 +123,8 @@ namespace hit {
 
         // all evaluators need access for encryption and decryption
         friend class DebugEval;
-        friend class DepthFinder;
+        friend class ExplicitDepthFinder;
+        friend class ImplicitDepthFinder;
         friend class HomomorphicEval;
         friend class PlaintextEval;
         friend class OpCount;
