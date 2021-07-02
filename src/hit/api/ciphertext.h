@@ -36,6 +36,7 @@ namespace hit {
             num_slots_ = other.num_slots_;
             needs_relin_ = other.needs_relin_;
             needs_rescale_ = other.needs_rescale_;
+            bootstrapped_ = other.bootstrapped_;
         }
 
         // copy assignment operator
@@ -50,6 +51,7 @@ namespace hit {
                 num_slots_ = other.num_slots_;
                 needs_relin_ = other.needs_relin_;
                 needs_rescale_ = other.needs_rescale_;
+                bootstrapped_ = other.bootstrapped_;
             }
             return *this;
         }
@@ -69,6 +71,7 @@ namespace hit {
             num_slots_ = other.num_slots_;
             needs_relin_ = other.needs_relin_;
             needs_rescale_ = other.needs_rescale_;
+            bootstrapped_ = other.bootstrapped_;
         }
 
         // move assignment operator
@@ -83,6 +86,7 @@ namespace hit {
                 num_slots_ = other.num_slots_;
                 needs_relin_ = other.needs_relin_;
                 needs_rescale_ = other.needs_rescale_;
+                bootstrapped_ = other.bootstrapped_;
             }
             return *this;
         }
@@ -113,6 +117,8 @@ namespace hit {
         // Output true if the ciphertext is quadratic and is
         // therefore in need of relinearization, false otherwise.
         bool needs_relin() const override;
+        // Output true if bootstrapping was used in the computation of this ciphertext
+        bool bootstrapped() const override;
         std::vector<double> plaintext() const override;
 
         // all evaluators need access for encryption and decryption
@@ -129,7 +135,7 @@ namespace hit {
 
         double backend_scale() const;
 
-        // The raw plaintxt. This is used with some of the evaluators tha track ciphertext
+        // The raw plaintext. This is used with some of the evaluators tha track ciphertext
         // metadata (e.g., DebugEval and PlaintextEval), but not by the Homomorphic evaluator.
         // This plaintext is not CKKS-encoded; in particular it is not scaled by the scale factor.
         std::vector<double> raw_pt;
@@ -151,5 +157,6 @@ namespace hit {
 
         bool needs_relin_ = false;
         bool needs_rescale_ = false;
+        bool bootstrapped_ = false;
     };
 }  // namespace hit

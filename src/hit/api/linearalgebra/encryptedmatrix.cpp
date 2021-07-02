@@ -136,6 +136,10 @@ namespace hit {
         return decode_matrix(plaintext_pieces, height_, width_);
     }
 
+    bool EncryptedMatrix::bootstrapped() const {
+        return cts[0][0].bootstrapped();
+    }
+
     void EncryptedMatrix::validate() const {
         // validate the unit
         unit.validate();
