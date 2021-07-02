@@ -345,6 +345,10 @@ namespace hit {
          */
         void relinearize_inplace(CKKSCiphertext &ct);
 
+        /* TODO
+         */
+        CKKSCiphertext bootstrap(const CKKSCiphertext &ct, bool rescale_for_bootstrapping = true);
+
        protected:
         virtual void rotate_right_inplace_internal(CKKSCiphertext &ct, int steps);
         virtual void rotate_left_inplace_internal(CKKSCiphertext &ct, int steps);
@@ -364,6 +368,7 @@ namespace hit {
         virtual void relinearize_inplace_internal(CKKSCiphertext &ct);
         virtual void print_stats(const CKKSCiphertext &ct);
         virtual uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const;
+        virtual CKKSCiphertext bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping);
 
         void reduce_metadata_to_level(CKKSCiphertext &ct, int level);
         void rescale_metata_to_next(CKKSCiphertext &ct);

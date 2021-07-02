@@ -90,6 +90,8 @@ namespace hit {
         bool needs_relin() const override;
         // Underlying plaintext vector. This is only available with the Plaintext, Debug, and ScaleEstimator evaluators
         Vector plaintext() const override;
+        // Output true if the ciphertext has been bootstrapped
+        bool bootstrapped() const override;
 
        private:
         void read_from_proto(const std::shared_ptr<HEContext> &context,
