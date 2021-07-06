@@ -25,8 +25,8 @@ TEST(ImplicitDepthFinderTest, RotateLeft) {
     ciphertext2 = ckks_instance.rotate_left(ciphertext1, STEPS);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level(), ciphertext1.he_level());
-    CircuitDepthResults res{0, 0, false};
-    ASSERT_EQ(res, ckks_instance.get_multiplicative_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }
 
 TEST(ImplicitDepthFinderTest, RotateRight) {
@@ -36,8 +36,8 @@ TEST(ImplicitDepthFinderTest, RotateRight) {
     ciphertext2 = ckks_instance.rotate_right(ciphertext1, STEPS);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level(), ciphertext1.he_level());
-    CircuitDepthResults res{0, 0, false};
-    ASSERT_EQ(res, ckks_instance.get_multiplicative_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }
 
 TEST(ImplicitDepthFinderTest, Negate) {
@@ -47,8 +47,8 @@ TEST(ImplicitDepthFinderTest, Negate) {
     ciphertext2 = ckks_instance.negate(ciphertext1);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level(), ciphertext1.he_level());
-    CircuitDepthResults res{0, 0, false};
-    ASSERT_EQ(res, ckks_instance.get_multiplicative_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }
 
 TEST(ImplicitDepthFinderTest, AddPlainScalar) {
@@ -58,8 +58,8 @@ TEST(ImplicitDepthFinderTest, AddPlainScalar) {
     ciphertext2 = ckks_instance.add_plain(ciphertext1, PLAIN_TEXT);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level(), ciphertext1.he_level());
-    CircuitDepthResults res{0, 0, false};
-    ASSERT_EQ(res, ckks_instance.get_multiplicative_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }
 
 TEST(ImplicitDepthFinderTest, AddPlaintext) {
@@ -69,8 +69,8 @@ TEST(ImplicitDepthFinderTest, AddPlaintext) {
     ciphertext2 = ckks_instance.add_plain(ciphertext1, VECTOR_1);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level(), ciphertext1.he_level());
-    CircuitDepthResults res{0, 0, false};
-    ASSERT_EQ(res, ckks_instance.get_multiplicative_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }
 
 TEST(ImplicitDepthFinderTest, Add) {
@@ -81,8 +81,8 @@ TEST(ImplicitDepthFinderTest, Add) {
     ciphertext3 = ckks_instance.add(ciphertext1, ciphertext2);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext3.he_level(), ciphertext1.he_level());
-    CircuitDepthResults res{0, 0, false};
-    ASSERT_EQ(res, ckks_instance.get_multiplicative_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }
 
 TEST(ImplicitDepthFinderTest, SubPlainScalar) {
@@ -92,8 +92,8 @@ TEST(ImplicitDepthFinderTest, SubPlainScalar) {
     ciphertext2 = ckks_instance.sub_plain(ciphertext1, PLAIN_TEXT);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level(), ciphertext1.he_level());
-    CircuitDepthResults res{0, 0, false};
-    ASSERT_EQ(res, ckks_instance.get_multiplicative_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }
 
 TEST(ImplicitDepthFinderTest, SubPlaintext) {
@@ -103,8 +103,8 @@ TEST(ImplicitDepthFinderTest, SubPlaintext) {
     ciphertext2 = ckks_instance.sub_plain(ciphertext1, VECTOR_1);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level(), ciphertext1.he_level());
-    CircuitDepthResults res{0, 0, false};
-    ASSERT_EQ(res, ckks_instance.get_multiplicative_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }
 
 TEST(ImplicitDepthFinderTest, Sub) {
@@ -115,8 +115,8 @@ TEST(ImplicitDepthFinderTest, Sub) {
     ciphertext3 = ckks_instance.sub(ciphertext1, ciphertext2);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext3.he_level(), ciphertext1.he_level());
-    CircuitDepthResults res{0, 0, false};
-    ASSERT_EQ(res, ckks_instance.get_multiplicative_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }
 
 TEST(ImplicitDepthFinderTest, AddCiphertextWithDiffHeLevel) {
@@ -138,8 +138,8 @@ TEST(ImplicitDepthFinderTest, MultiplyPlainScalar) {
     ciphertext2 = ckks_instance.multiply_plain(ciphertext1, PLAIN_TEXT);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level(), ciphertext1.he_level());
-    CircuitDepthResults res{0, 0, false};
-    ASSERT_EQ(res, ckks_instance.get_multiplicative_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }
 
 TEST(ImplicitDepthFinderTest, Multiply) {
@@ -150,8 +150,8 @@ TEST(ImplicitDepthFinderTest, Multiply) {
     ciphertext3 = ckks_instance.multiply(ciphertext1, ciphertext2);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext3.he_level(), ciphertext1.he_level());
-    CircuitDepthResults res{0, 0, false};
-    ASSERT_EQ(res, ckks_instance.get_multiplicative_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }
 
 TEST(ImplicitDepthFinderTest, Multiply_InvalidCase) {
@@ -173,8 +173,8 @@ TEST(ImplicitDepthFinderTest, Square) {
     ciphertext2 = ckks_instance.square(ciphertext1);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level(), ciphertext1.he_level());
-    CircuitDepthResults res{0, 0, false};
-    ASSERT_EQ(res, ckks_instance.get_multiplicative_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }
 
 TEST(ImplicitDepthFinderTest, ReduceLevelToMin) {
@@ -189,8 +189,8 @@ TEST(ImplicitDepthFinderTest, ReduceLevelToMin) {
     // Expect he_level is changed.
     ASSERT_EQ(ciphertext3.he_level(), ciphertext2.he_level());
     ASSERT_EQ(ciphertext3.he_level(), ciphertext1.he_level());
-    CircuitDepthResults res{0, 0, false};
-    ASSERT_EQ(res, ckks_instance.get_multiplicative_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }
 
 TEST(ImplicitDepthFinderTest, ReduceLevelTo) {
@@ -201,8 +201,8 @@ TEST(ImplicitDepthFinderTest, ReduceLevelTo) {
     ciphertext2 = ckks_instance.reduce_level_to(ciphertext1, he_level - 1);
     // Expect he_level is changed.
     ASSERT_EQ(he_level - 1, ciphertext2.he_level());
-    CircuitDepthResults res{0, 0, false};
-    ASSERT_EQ(res, ckks_instance.get_multiplicative_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }
 
 TEST(ImplicitDepthFinderTest, ReduceLevelTo_InvalidCase) {
@@ -224,6 +224,6 @@ TEST(ImplicitDepthFinderTest, RescaleToNextInPlace) {
     int he_level = ciphertext1.he_level();
     ckks_instance.rescale_to_next_inplace(ciphertext1);
     ASSERT_EQ(he_level - 1, ciphertext1.he_level());
-    CircuitDepthResults res{0, 1, false};
-    ASSERT_EQ(res, ckks_instance.get_multiplicative_depth());
+    ASSERT_EQ(1, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }

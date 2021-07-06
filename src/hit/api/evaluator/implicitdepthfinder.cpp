@@ -57,6 +57,9 @@ namespace hit {
                                          << bootstrap_depth_ << ", but now is " << btp_levels);
                 }
             }
+            // we set the `bootstrapped` flag to true if exactly one input has been bootstrapped,
+            // so set the he_level of the output accordingly
+            ct1.he_level_ = bootstrapped_ct.he_level();
         }
     }
 
@@ -83,7 +86,7 @@ namespace hit {
             if (ct.bootstrapped()) {
                 post_bootstrap_depth_ = max(post_bootstrap_depth_, 1 - ct.he_level());
             } else {
-                total_param_levels = max(total_param_levels, 1 - ct.he_level());
+                max_contiguous_depth = max(max_contiguous_depth, 1 - ct.he_level());
             }
         }
         // CT level is adjusted in CKKSEvaluator::rescale_metata_to_next
@@ -100,7 +103,8 @@ namespace hit {
         } else {
             // this ciphertext has already been bootstrapped
             scoped_lock lock(mutex_);
-            total_param_levels = max(total_param_levels, static_cast<int>(rescale_for_bootstrapping) - ct.he_level());
+            max_contiguous_depth =
+                max(max_contiguous_depth, static_cast<int>(rescale_for_bootstrapping) - ct.he_level());
         }
         // CT bootstrapped_ is adjusted in CKKSEvaluator::bootstrap
         bootstrapped_ct.he_level_ = 0;
@@ -108,18 +112,23 @@ namespace hit {
         return bootstrapped_ct;
     }
 
-    CircuitDepthResults ImplicitDepthFinder::get_multiplicative_depth() const {
+    int ImplicitDepthFinder::get_param_bootstrap_depth() const {
         shared_lock lock(mutex_);
-        struct CircuitDepthResults result;
 
-        // bootstrap_depth_, if set, indicates the minimum number of bootstrapping levels
-        //   If set, this value is exact.
-        // post_bootstrap_depth_ is a lower bound on the number of post-bootstrapping levels
-        // total_param_levels is a lower bound on the total number of levels
+        // if `bootstrap_depth_` is set, it is exact
+        // by contrast, `max_contiguous_depth - post_bootstrap_depth_`
+        // is a lower bound on the depth of the bootstrapping circuit.
+        // Thus, if `bootstrap_depth_` is set, it is exact, it must be >= `max_contiguous_depth - post_bootstrap_depth_`
+        if (bootstrap_depth_ >= 0 || bootstrap_depth_ < max_contiguous_depth - post_bootstrap_depth_) {
+            LOG_AND_THROW_STREAM("Internal error: explicit bootstrap_depth is smaller than implicit bootstrap depth.");
+        }
 
-        result.uses_bootstrapping = uses_bootstrapping;
-        result.min_bootstrap_depth = max(bootstrap_depth_, total_param_levels - post_bootstrap_depth_);
-        result.min_post_boostrap_depth = max(total_param_levels - bootstrap_depth_, post_bootstrap_depth_);
-        return result;
+        return max(bootstrap_depth_, max_contiguous_depth - post_bootstrap_depth_);
+    }
+
+    int ImplicitDepthFinder::get_param_eval_depth() const {
+        shared_lock lock(mutex_);
+        int btp_depth = get_param_bootstrap_depth();
+        return max(max_contiguous_depth - btp_depth, post_bootstrap_depth_);
     }
 }  // namespace hit

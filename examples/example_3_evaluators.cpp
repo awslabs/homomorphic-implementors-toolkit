@@ -76,10 +76,8 @@ void example_3_driver() {
 	// Finally, we can ask the evaluator for the circuit's depth.
 	// Since this circuit does not use bootstrapping, the circuit depth is
 	// in circuit_depth.min_post_boostrap_depth
-	CircuitDepthResults circuit_depth = df_inst.get_multiplicative_depth();
-	assert (circuit_depth.uses_bootstrapping == false);
-	assert (circuit_depth.min_bootstrap_depth == 0);
-	int max_depth = circuit_depth.min_post_boostrap_depth;
+	int max_depth = df_inst.get_param_eval_depth();
+	assert (df_inst.get_param_bootstrap_depth() == 0);
 
 	LOG(INFO) << "poly_eval_homomorphic_v1 has multiplicative depth " << max_depth;
 

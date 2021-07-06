@@ -23,8 +23,8 @@ TEST(ExplicitDepthFinderTest, MultiplyPlainMatrix) {
     ciphertext2 = ckks_instance.multiply_plain(ciphertext1, VECTOR_1);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level(), ciphertext1.he_level());
-    CircuitDepthResults res{0, 0, false};
-    ASSERT_EQ(res, ckks_instance.get_multiplicative_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }
 
 TEST(ExplicitDepthFinderTest, RescaleToNextInPlace_ExplicitLevel) {
@@ -35,6 +35,6 @@ TEST(ExplicitDepthFinderTest, RescaleToNextInPlace_ExplicitLevel) {
     int he_level = ciphertext1.he_level();
     ckks_instance.rescale_to_next_inplace(ciphertext1);
     ASSERT_EQ(he_level - 1, ciphertext1.he_level());
-    CircuitDepthResults res{0, 1, false};
-    ASSERT_EQ(res, ckks_instance.get_multiplicative_depth());
+    ASSERT_EQ(1, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }
