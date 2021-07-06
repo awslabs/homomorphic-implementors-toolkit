@@ -80,6 +80,8 @@ namespace hit {
 
         void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
 
+        CKKSCiphertext bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) override;
+
        private:
         ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval);
 
