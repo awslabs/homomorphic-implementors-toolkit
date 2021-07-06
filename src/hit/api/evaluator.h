@@ -345,7 +345,17 @@ namespace hit {
          */
         void relinearize_inplace(CKKSCiphertext &ct);
 
-        /* TODO
+        /* Refresh a ciphertext at a low level (e.g., 0) to a ciphertext at a higher level. This
+         * enables the cryptosystem to continue to do work on a ciphertext. The exact level of the
+         * output is determined by the cryptosystem parameters. Lattigo has a restriction on the
+         * scale of the input ciphertext, namely, that if `ct.he_level() = 0`, then `ct.scale()`
+         * must be an exact power of two smaller or equal to round(Q0/2^{10}). If you know this
+         * condition is satisfied in your circuit, you can bootstrap directly, thereby allowing
+         * you to use the last ciphertext level for computation. If you are not sure,
+         * or if the ciphertext scale does not meet this requirement, the bootstrapping process can
+         * implicitly consume one extra level to rescale your ciphertext appropriately. If you know
+         * that rescaling is unnecessary, set `rescale_for_bootstrapping` to `false`, otherwise use
+         * the default value of `true`.
          */
         CKKSCiphertext bootstrap(const CKKSCiphertext &ct, bool rescale_for_bootstrapping = true);
 
