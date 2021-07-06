@@ -36,7 +36,7 @@ namespace hit {
     }
 
     CKKSCiphertext ScaleEstimator::encrypt(const vector<double> &coeffs) {
-        return encrypt(coeffs, -1);
+        return encrypt(coeffs, context->max_ciphertext_level());
     }
 
     CKKSCiphertext ScaleEstimator::encrypt(const vector<double> &coeffs, int level) {
@@ -50,8 +50,8 @@ namespace hit {
                                  << " coefficients, but " << coeffs.size() << " were provided");
         }
 
-        if (level == -1) {
-            level = context->max_ciphertext_level();
+        if (level < 0) {
+            LOG_AND_THROW_STREAM("Encryption level must be non-negative; got " << level);
         }
 
         double scale = pow(2, context->log_scale());
@@ -236,6 +236,12 @@ namespace hit {
         // internal functions should not update the ciphertext metadata
         ct.he_level_ = input_level;
         ct.scale_ = input_scale;
+    }
+
+    CKKSCiphertext ScaleEstimator::bootstrap_internal(const CKKSCiphertext &ct, bool) {
+        CKKSCiphertext ctout = ct;
+        ctout.scale_ = pow(2, context->log_scale());
+        return ctout;
     }
 
     double ScaleEstimator::get_estimated_max_log_scale() const {
