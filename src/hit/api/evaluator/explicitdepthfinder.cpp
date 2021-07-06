@@ -20,7 +20,7 @@ namespace hit {
             LOG_AND_THROW_STREAM("Explicit encryption level must be non-negative, got " << level);
         }
 
-        total_param_levels = max(total_param_levels, level);
+        max_contiguous_depth = max(max_contiguous_depth, level);
 
         CKKSCiphertext destination;
         destination.he_level_ = level;
@@ -65,6 +65,9 @@ namespace hit {
                                          << explicit_bootstrap_lvl);
                 }
             }
+            // we set the `bootstrapped` flag to true if exactly one input has been bootstrapped,
+            // so set the he_level of the output accordingly
+            ct1.he_level_ = bootstrapped_ct.he_level();
         }
     }
 
@@ -85,7 +88,7 @@ namespace hit {
             LOG_AND_THROW_STREAM("Cannot rescale a level 0 ciphertext.");
         }
 
-        /* The ExplicitDepthFinder sets total_param_levels on encryption. Here, we just need to track
+        /* The ExplicitDepthFinder sets max_contiguous_depth on encryption. Here, we just need to track
          * the number of post-bootstrapping levels. Bootstrapped ciphertexts have an implicit level,
          * meaning it starts at 0 and goes down. Thus, if the input ciphertext has he_level -1, we have
          * already rescaled once after bootstrapping, and we are about to do so again. That means that
@@ -119,25 +122,26 @@ namespace hit {
         return bootstrapped_ct;
     }
 
-    CircuitDepthResults ExplicitDepthFinder::get_multiplicative_depth() const {
+    int ExplicitDepthFinder::get_param_bootstrap_depth() const {
         shared_lock lock(mutex_);
-        struct CircuitDepthResults result;
 
-        // total_param_levels is set based on the maximum encryption level. Actual number of levels in the HE params may
-        // be more than this, i.e., this is a lower bound. explicit_post_bootstrap_depth_, if set, defines exactly
+        return max_contiguous_depth - get_param_eval_depth();
+    }
+
+    int ExplicitDepthFinder::get_param_eval_depth() const {
+        shared_lock lock(mutex_);
+
+        // max_contiguous_depth is set based on the maximum encryption level. Actual number of levels in the HE params
+        // may be more than this, i.e., this is a lower bound. explicit_post_bootstrap_depth_, if set, defines exactly
         // how many post-boostrapping levels the parameters need.
-        //   The implicit_post_bootstrap_depth_, which is based on the number of rescales post-bootstrapping and/or
-        //   the level at which a bootstrapped ciphertext is re-bootstrapped, must be <=
-        //   explicit_post_bootstrap_depth_
-
-        result.uses_bootstrapping = uses_bootstrapping;
-        if (explicit_post_bootstrap_depth_ < 0 || implicit_post_bootstrap_depth_ <= explicit_post_bootstrap_depth_) {
-            result.min_post_boostrap_depth = max(implicit_post_bootstrap_depth_, explicit_post_bootstrap_depth_);
-        } else {
+        // The implicit_post_bootstrap_depth_, which is based on the number of rescales post-bootstrapping and/or
+        // the level at which a bootstrapped ciphertext is re-bootstrapped, must be <=
+        // explicit_post_bootstrap_depth_
+    
+        if (explicit_post_bootstrap_depth_ >= 0 && implicit_post_bootstrap_depth_ > explicit_post_bootstrap_depth_) {
             LOG_AND_THROW_STREAM("explicit_post_bootstrap_depth_ < implicit_post_bootstrap_depth_: "
                                  << explicit_post_bootstrap_depth_ << " < " << implicit_post_bootstrap_depth_);
         }
-        result.min_bootstrap_depth = total_param_levels - result.min_post_boostrap_depth;
-        return result;
+        return max(implicit_post_bootstrap_depth_, explicit_post_bootstrap_depth_);
     }
 }  // namespace hit

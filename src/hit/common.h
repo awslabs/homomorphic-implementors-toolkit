@@ -42,30 +42,6 @@
     }
 
 namespace hit {
-    struct CircuitDepthResults {
-        /* When bootstrapping is used, CKKS parameters must include a few "normal" levels which is where work will
-         * actually be done in evaluation, in addition to some levels designated for bootstrapping itself. These
-         * additional levels can't be used for the actual computation (except immediately after encryption). This struct
-         * indicates if bootstrapping is used, and if so, how many parameter levels must be reserved for bootstrapping
-         * itself (based on number of levels used prior to the first application of bootstrapping) and how many levels
-         * must be available after bootstrapping (based on the maximum number of levels used after any invocation of
-         * bootstrapping).
-         */
-        int min_bootstrap_depth;
-        int min_post_boostrap_depth;
-        // Whether or not this circuit ever uses bootstrapping
-        bool uses_bootstrapping;
-
-        bool operator==(const CircuitDepthResults &b) const {
-            return min_bootstrap_depth == b.min_bootstrap_depth &&
-                   min_post_boostrap_depth == b.min_post_boostrap_depth && uses_bootstrapping == b.uses_bootstrapping;
-        }
-
-        bool operator!=(const CircuitDepthResults &b) const {
-            return !(*this == b);
-        }
-    };
-
     using Matrix = boost::numeric::ublas::matrix<double, boost::numeric::ublas::row_major, std::vector<double>>;
     using Vector = boost::numeric::ublas::vector<double, std::vector<double>>;
 
