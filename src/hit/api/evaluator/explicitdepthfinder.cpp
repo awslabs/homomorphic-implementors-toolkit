@@ -137,7 +137,7 @@ namespace hit {
         // The implicit_post_bootstrap_depth_, which is based on the number of rescales post-bootstrapping and/or
         // the level at which a bootstrapped ciphertext is re-bootstrapped, must be <=
         // explicit_post_bootstrap_depth_
-    
+
         if (explicit_post_bootstrap_depth_ >= 0 && implicit_post_bootstrap_depth_ > explicit_post_bootstrap_depth_) {
             LOG_AND_THROW_STREAM("explicit_post_bootstrap_depth_ < implicit_post_bootstrap_depth_: "
                                  << explicit_post_bootstrap_depth_ << " < " << implicit_post_bootstrap_depth_);
