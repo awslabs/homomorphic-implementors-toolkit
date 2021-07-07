@@ -2,8 +2,6 @@
 
 HIT provides tools to simplify the process of designing homomorphic circuits for the CKKS homomorphic encryption scheme. This library is intended to further research in homomorphic encryption. Users must be aware of the security issues surrounding the deployment of CKKS homomorphic encryption; see SECURITY.md for details. This branch of the HIT repository uses the [Lattigo](https://github.com/ldsec/lattigo) homomorphic encryption library as a backend.
 
-TODO: Now with CKKS Bootstrapping!
-
 #### Build Status:
 * Ubuntu 18.04 GCC 9 ![Build Status](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiQ3Npc1hJQi9iQ0x0aHVlVW1EdERJZ1g0ZENhazl2b2ptMUkwTkgyS1pSRkVQNytDYUdPam9MS0VBeDc0ODlUNXRmaEVLaVZyaERna243d293aXRGRFVvPSIsIml2UGFyYW1ldGVyU3BlYyI6IkRqcnk0N08yQjRaTk8vS3IiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=main)
 * Ubuntu 18.04 Clang 10 ![Build Status](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiKzFoQXZYbmppZW84SUFYWUhVYkVVSVZEaEtFYkVXL1J2MWtKUlBFTTJKY0d1d2MxSjBRNWtjRS91NE1PYjJ4QmIvck53aUQrZmMza2NBOTlTNW1ubTBBPSIsIml2UGFyYW1ldGVyU3BlYyI6IllTYS9GOGFqTS9FdmRmV3QiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=main)
