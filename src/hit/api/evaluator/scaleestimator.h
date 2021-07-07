@@ -26,7 +26,7 @@ namespace hit {
          * `multiplicative_depth` is the multiplicative depth of the circuit you wish to evaluate.
          * You can use the DepthFinder evaluator to compute this.
          */
-        ScaleEstimator(int num_slots, int multiplicative_depth);
+        ScaleEstimator(int num_slots, int multiplicative_depth, int bootstrapping_depth = 0);
 
         /* For documentation on the API, see ../evaluator.h */
         ~ScaleEstimator() override;
@@ -90,6 +90,7 @@ namespace hit {
         // If scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         // We set the estimated_max_log_scale to 59 to prevent this error.
         double estimated_max_log_scale_ = 59;
+        int btp_depth;
 
         // This helper function squares the scale of the input and then updates
         // the max_log_scale.
