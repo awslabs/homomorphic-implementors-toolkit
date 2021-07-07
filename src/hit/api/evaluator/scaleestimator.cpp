@@ -18,7 +18,8 @@ namespace hit {
     // encoding/decoding, this should be set to as high as possible.
     int default_scale_bits = 30;
 
-    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth) {
+    ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth, int bootstrapping_depth)
+        : btp_depth(bootstrapping_depth) {
         plaintext_eval = new PlaintextEval(num_slots);
 
         context = make_shared<HEContext>(HEContext(num_slots, multiplicative_depth, default_scale_bits));
@@ -29,6 +30,7 @@ namespace hit {
 
         // instead of creating a new instance, use the instance provided
         context = homom_eval.context;
+        btp_depth = homom_eval.btp_depth;
     }
 
     ScaleEstimator::~ScaleEstimator() {
@@ -241,6 +243,7 @@ namespace hit {
     CKKSCiphertext ScaleEstimator::bootstrap_internal(const CKKSCiphertext &ct, bool) {
         CKKSCiphertext ctout = ct;
         ctout.scale_ = pow(2, context->log_scale());
+        ctout.he_level_ = context->max_ciphertext_level() - btp_depth;
         return ctout;
     }
 
