@@ -227,3 +227,24 @@ TEST(ImplicitDepthFinderTest, RescaleToNextInPlace) {
     ASSERT_EQ(1, ckks_instance.get_param_eval_depth());
     ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }
+
+TEST(ImplicitDepthFinderTest, Bootstrapping1) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
+    // our circuit will be depth 3, so the max level is implicitly 3
+    CKKSCiphertext ciphertext1 = ckks_instance.encrypt(VECTOR_1);
+    ckks_instance.multiply_plain_inplace(ciphertext1, 1);
+    // reduce to level 2
+    ckks_instance.rescale_to_next_inplace(ciphertext1);
+    ckks_instance.multiply_plain_inplace(ciphertext1, 1);
+    // reduce to level 1
+    ckks_instance.rescale_to_next_inplace(ciphertext1);
+    // bootstrap. For this test, we make the bootstrapping depth 2, meaning
+    // that post-bootstrapping, the ciphertext should be at level 1.
+    CKKSCiphertext ciphertext2 = ckks_instance.bootstrap(ciphertext1);
+    ckks_instance.multiply_plain_inplace(ciphertext2, 1);
+    // reduce to level 0
+    ckks_instance.rescale_to_next_inplace(ciphertext2);
+
+    ASSERT_EQ(1, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(2, ckks_instance.get_param_bootstrap_depth());
+}
