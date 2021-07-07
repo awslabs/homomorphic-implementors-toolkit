@@ -119,11 +119,11 @@ namespace hit {
         // by contrast, `max_contiguous_depth - post_bootstrap_depth_`
         // is a lower bound on the depth of the bootstrapping circuit.
         // Thus, if `bootstrap_depth_` is set, it is exact, it must be >= `max_contiguous_depth - post_bootstrap_depth_`
-        if (bootstrap_depth_ >= 0 || bootstrap_depth_ < max_contiguous_depth - post_bootstrap_depth_) {
+        if (bootstrap_depth_ >= 0 && bootstrap_depth_ < max_contiguous_depth - post_bootstrap_depth_) {
             LOG_AND_THROW_STREAM("Internal error: explicit bootstrap_depth is smaller than implicit bootstrap depth.");
         }
 
-        return max(bootstrap_depth_, max_contiguous_depth - post_bootstrap_depth_);
+        return uses_bootstrapping ? max(bootstrap_depth_, max_contiguous_depth - post_bootstrap_depth_) : 0;
     }
 
     int ImplicitDepthFinder::get_param_eval_depth() const {

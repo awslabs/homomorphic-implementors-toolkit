@@ -23,18 +23,40 @@ TEST(ExplicitDepthFinderTest, MultiplyPlainMatrix) {
     ciphertext2 = ckks_instance.multiply_plain(ciphertext1, VECTOR_1);
     // Expect he_level does not change.
     ASSERT_EQ(ciphertext2.he_level(), ciphertext1.he_level());
-    ASSERT_EQ(0, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(1, ckks_instance.get_param_eval_depth());
     ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
 }
 
 TEST(ExplicitDepthFinderTest, RescaleToNextInPlace_ExplicitLevel) {
     ExplicitDepthFinder ckks_instance = ExplicitDepthFinder();
-    CKKSCiphertext ciphertext1;
-    ciphertext1 = ckks_instance.encrypt(VECTOR_1, 1);
+    CKKSCiphertext ciphertext1 = ckks_instance.encrypt(VECTOR_1, 1);
     ckks_instance.multiply_plain_inplace(ciphertext1, 1);
     int he_level = ciphertext1.he_level();
     ckks_instance.rescale_to_next_inplace(ciphertext1);
     ASSERT_EQ(he_level - 1, ciphertext1.he_level());
     ASSERT_EQ(1, ckks_instance.get_param_eval_depth());
     ASSERT_EQ(0, ckks_instance.get_param_bootstrap_depth());
+}
+
+TEST(ExplicitDepthFinderTest, Bootstrapping1) {
+    ExplicitDepthFinder ckks_instance = ExplicitDepthFinder();
+    CKKSCiphertext ciphertext1 = ckks_instance.encrypt(VECTOR_1, 3);
+    ckks_instance.multiply_plain_inplace(ciphertext1, 1);
+    // reduce to level 2
+    ckks_instance.rescale_to_next_inplace(ciphertext1);
+    ckks_instance.multiply_plain_inplace(ciphertext1, 1);
+    // reduce to level 1
+    ckks_instance.rescale_to_next_inplace(ciphertext1);
+    // bootstrap. For this test, we make the bootstrapping depth 2, meaning
+    // that post-bootstrapping, the ciphertext should be at level 1.
+    CKKSCiphertext ciphertext2 = ckks_instance.bootstrap(ciphertext1, false);
+    ASSERT_EQ(true, ciphertext2.bootstrapped());
+    ckks_instance.multiply_plain_inplace(ciphertext2, 1);
+    ASSERT_EQ(true, ciphertext2.bootstrapped());
+    // reduce to level 0
+    ckks_instance.rescale_to_next_inplace(ciphertext2);
+    ASSERT_EQ(true, ciphertext2.bootstrapped());
+
+    ASSERT_EQ(1, ckks_instance.get_param_eval_depth());
+    ASSERT_EQ(2, ckks_instance.get_param_bootstrap_depth());
 }

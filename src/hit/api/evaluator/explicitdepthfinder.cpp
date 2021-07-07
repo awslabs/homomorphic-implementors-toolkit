@@ -84,7 +84,7 @@ namespace hit {
     }
 
     void ExplicitDepthFinder::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        if (ct.he_level() == 0) {
+        if (!ct.bootstrapped_ && ct.he_level() == 0) {
             LOG_AND_THROW_STREAM("Cannot rescale a level 0 ciphertext.");
         }
 
@@ -142,6 +142,6 @@ namespace hit {
             LOG_AND_THROW_STREAM("explicit_post_bootstrap_depth_ < implicit_post_bootstrap_depth_: "
                                  << explicit_post_bootstrap_depth_ << " < " << implicit_post_bootstrap_depth_);
         }
-        return max(implicit_post_bootstrap_depth_, explicit_post_bootstrap_depth_);
+        return uses_bootstrapping ? max(implicit_post_bootstrap_depth_, explicit_post_bootstrap_depth_) : max_contiguous_depth;
     }
 }  // namespace hit
