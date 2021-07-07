@@ -104,6 +104,10 @@ namespace hit {
         return decode_row_vector(plaintext_pieces, width_);
     }
 
+    bool EncryptedRowVector::bootstrapped() const {
+        return cts[0].bootstrapped();
+    }
+
     EncodingUnit EncryptedRowVector::encoding_unit() const {
         return unit;
     }

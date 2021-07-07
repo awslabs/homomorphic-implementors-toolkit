@@ -85,11 +85,12 @@ namespace hit {
             LOG_AND_THROW_STREAM("Inputs to add must have the same scale: " << log2(ct1.scale()) << " bits != "
                                                                             << log2(ct2.scale()) << " bits");
         }
-        if (ct1.he_level() != ct2.he_level()) {
+        if (ct1.bootstrapped() == ct2.bootstrapped() && ct1.he_level() != ct2.he_level()) {
             LOG_AND_THROW_STREAM("Inputs to add must be at the same level: " << ct1.he_level()
                                                                              << " != " << ct2.he_level());
         }
         add_inplace_internal(ct1, ct2);
+        ct1.bootstrapped_ |= ct2.bootstrapped();
         print_stats(ct1);
     }
 
@@ -129,17 +130,20 @@ namespace hit {
         VLOG(VLOG_EVAL) << "Add ciphertext vector of size " << cts.size();
 
         CKKSCiphertext dest = cts[0];
+        bool bootstrapped = dest.bootstrapped();
         for (int i = 1; i < cts.size(); i++) {
             if (cts[i].scale() != dest.scale()) {
                 LOG_AND_THROW_STREAM("Inputs to add_many must have the same scale: "
                                      << log2(cts[i].scale()) << " bits != " << log2(dest.scale()) << " bits");
             }
-            if (cts[i].he_level() != dest.he_level()) {
+            if (dest.bootstrapped() == cts[i].bootstrapped() && cts[i].he_level() != dest.he_level()) {
                 LOG_AND_THROW_STREAM("Inputs to add_many must be at the same level: " << cts[i].he_level()
                                                                                       << " != " << dest.he_level());
             }
+            bootstrapped |= cts[i].bootstrapped();
             add_inplace_internal(dest, cts[i]);
         }
+        dest.bootstrapped_ = bootstrapped;
         print_stats(dest);
         return dest;
     }
@@ -156,11 +160,12 @@ namespace hit {
             LOG_AND_THROW_STREAM("Inputs to sub must have the same scale: " << log2(ct1.scale()) << " bits != "
                                                                             << log2(ct2.scale()) << " bits");
         }
-        if (ct1.he_level() != ct2.he_level()) {
+        if (ct1.bootstrapped() == ct2.bootstrapped() && ct1.he_level() != ct2.he_level()) {
             LOG_AND_THROW_STREAM("Inputs to sub must be at the same level: " << ct1.he_level()
                                                                              << " != " << ct2.he_level());
         }
         sub_inplace_internal(ct1, ct2);
+        ct1.bootstrapped_ |= ct2.bootstrapped();
         print_stats(ct1);
     }
 
@@ -204,7 +209,7 @@ namespace hit {
         if (ct1.needs_relin() || ct2.needs_relin()) {
             LOG_AND_THROW_STREAM("Inputs to multiply must be linear ciphertexts");
         }
-        if (ct1.he_level() != ct2.he_level()) {
+        if (ct1.bootstrapped() == ct2.bootstrapped() && ct1.he_level() != ct2.he_level()) {
             LOG_AND_THROW_STREAM("Inputs to multiply must be at the same level: " << ct1.he_level()
                                                                                   << " != " << ct2.he_level());
         }
@@ -219,6 +224,7 @@ namespace hit {
         ct1.needs_rescale_ = true;
         ct1.needs_relin_ = true;
         ct1.scale_ *= ct1.scale_;
+        ct1.bootstrapped_ |= ct2.bootstrapped();
         print_stats(ct1);
     }
 
@@ -371,6 +377,14 @@ namespace hit {
         return ct.scale();
     }
 
+    CKKSCiphertext CKKSEvaluator::bootstrap(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
+        VLOG(VLOG_EVAL) << "Bootstrapping ciphertext";
+        CKKSCiphertext ct_prime = bootstrap_internal(ct, rescale_for_bootstrapping);
+        ct_prime.bootstrapped_ = true;
+        print_stats(ct_prime);
+        return ct_prime;
+    }
+
     void CKKSEvaluator::rotate_right_inplace_internal(CKKSCiphertext &, int){};
     void CKKSEvaluator::rotate_left_inplace_internal(CKKSCiphertext &, int){};
     void CKKSEvaluator::negate_inplace_internal(CKKSCiphertext &){};
@@ -388,4 +402,7 @@ namespace hit {
     void CKKSEvaluator::rescale_to_next_inplace_internal(CKKSCiphertext &){};
     void CKKSEvaluator::relinearize_inplace_internal(CKKSCiphertext &){};
     void CKKSEvaluator::print_stats(const CKKSCiphertext &){};
+    CKKSCiphertext CKKSEvaluator::bootstrap_internal(const CKKSCiphertext &ct, bool) {
+        return ct;
+    };
 }  // namespace hit
