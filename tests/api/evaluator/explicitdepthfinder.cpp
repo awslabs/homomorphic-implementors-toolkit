@@ -50,12 +50,9 @@ TEST(ExplicitDepthFinderTest, Bootstrapping1) {
     // bootstrap. For this test, we make the bootstrapping depth 2, meaning
     // that post-bootstrapping, the ciphertext should be at level 1.
     CKKSCiphertext ciphertext2 = ckks_instance.bootstrap(ciphertext1, false);
-    ASSERT_EQ(true, ciphertext2.bootstrapped());
     ckks_instance.multiply_plain_inplace(ciphertext2, 1);
-    ASSERT_EQ(true, ciphertext2.bootstrapped());
     // reduce to level 0
     ckks_instance.rescale_to_next_inplace(ciphertext2);
-    ASSERT_EQ(true, ciphertext2.bootstrapped());
 
     ASSERT_EQ(1, ckks_instance.get_param_eval_depth());
     ASSERT_EQ(2, ckks_instance.get_param_bootstrap_depth());

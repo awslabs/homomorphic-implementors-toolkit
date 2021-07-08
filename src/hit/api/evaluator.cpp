@@ -85,12 +85,12 @@ namespace hit {
             LOG_AND_THROW_STREAM("Inputs to add must have the same scale: " << log2(ct1.scale()) << " bits != "
                                                                             << log2(ct2.scale()) << " bits");
         }
-        if (ct1.bootstrapped() == ct2.bootstrapped() && ct1.he_level() != ct2.he_level()) {
+        if (ct1.bootstrapped_ == ct2.bootstrapped_ && ct1.he_level() != ct2.he_level()) {
             LOG_AND_THROW_STREAM("Inputs to add must be at the same level: " << ct1.he_level()
                                                                              << " != " << ct2.he_level());
         }
         add_inplace_internal(ct1, ct2);
-        ct1.bootstrapped_ |= ct2.bootstrapped();
+        ct1.bootstrapped_ |= ct2.bootstrapped_;
         print_stats(ct1);
     }
 
@@ -130,20 +130,20 @@ namespace hit {
         VLOG(VLOG_EVAL) << "Add ciphertext vector of size " << cts.size();
 
         CKKSCiphertext dest = cts[0];
-        bool bootstrapped = dest.bootstrapped();
+        bool bootstrapped_ = dest.bootstrapped_;
         for (int i = 1; i < cts.size(); i++) {
             if (cts[i].scale() != dest.scale()) {
                 LOG_AND_THROW_STREAM("Inputs to add_many must have the same scale: "
                                      << log2(cts[i].scale()) << " bits != " << log2(dest.scale()) << " bits");
             }
-            if (dest.bootstrapped() == cts[i].bootstrapped() && cts[i].he_level() != dest.he_level()) {
+            if (dest.bootstrapped_ == cts[i].bootstrapped_ && cts[i].he_level() != dest.he_level()) {
                 LOG_AND_THROW_STREAM("Inputs to add_many must be at the same level: " << cts[i].he_level()
                                                                                       << " != " << dest.he_level());
             }
-            bootstrapped |= cts[i].bootstrapped();
+            bootstrapped_ |= cts[i].bootstrapped_;
             add_inplace_internal(dest, cts[i]);
         }
-        dest.bootstrapped_ = bootstrapped;
+        dest.bootstrapped_ = bootstrapped_;
         print_stats(dest);
         return dest;
     }
@@ -160,12 +160,12 @@ namespace hit {
             LOG_AND_THROW_STREAM("Inputs to sub must have the same scale: " << log2(ct1.scale()) << " bits != "
                                                                             << log2(ct2.scale()) << " bits");
         }
-        if (ct1.bootstrapped() == ct2.bootstrapped() && ct1.he_level() != ct2.he_level()) {
+        if (ct1.bootstrapped_ == ct2.bootstrapped_ && ct1.he_level() != ct2.he_level()) {
             LOG_AND_THROW_STREAM("Inputs to sub must be at the same level: " << ct1.he_level()
                                                                              << " != " << ct2.he_level());
         }
         sub_inplace_internal(ct1, ct2);
-        ct1.bootstrapped_ |= ct2.bootstrapped();
+        ct1.bootstrapped_ |= ct2.bootstrapped_;
         print_stats(ct1);
     }
 
@@ -209,7 +209,7 @@ namespace hit {
         if (ct1.needs_relin() || ct2.needs_relin()) {
             LOG_AND_THROW_STREAM("Inputs to multiply must be linear ciphertexts");
         }
-        if (ct1.bootstrapped() == ct2.bootstrapped() && ct1.he_level() != ct2.he_level()) {
+        if (ct1.bootstrapped_ == ct2.bootstrapped_ && ct1.he_level() != ct2.he_level()) {
             LOG_AND_THROW_STREAM("Inputs to multiply must be at the same level: " << ct1.he_level()
                                                                                   << " != " << ct2.he_level());
         }
@@ -224,7 +224,7 @@ namespace hit {
         ct1.needs_rescale_ = true;
         ct1.needs_relin_ = true;
         ct1.scale_ *= ct1.scale_;
-        ct1.bootstrapped_ |= ct2.bootstrapped();
+        ct1.bootstrapped_ |= ct2.bootstrapped_;
         print_stats(ct1);
     }
 

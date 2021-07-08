@@ -23,10 +23,10 @@ namespace hit {
          * corresponding limit on the scale, and thus the precision, of the computation.
          * There's no good way to know what value to use here without generating some parameters
          * first. Reasonable values include 4096, 8192, or 16384.
-         * `multiplicative_depth` is the multiplicative depth of the circuit you wish to evaluate.
+         * `max_ct_level` is the maximum ciphertext level allowed by the HE parameters.
          * You can use the DepthFinder evaluator to compute this.
          */
-        ScaleEstimator(int num_slots, int multiplicative_depth, int bootstrapping_depth = 0);
+        ScaleEstimator(int num_slots, int max_ct_level, int bootstrapping_depth = 0);
 
         /* For documentation on the API, see ../evaluator.h */
         ~ScaleEstimator() override;
