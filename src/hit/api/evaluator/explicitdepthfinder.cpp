@@ -52,12 +52,12 @@ namespace hit {
     void ExplicitDepthFinder::set_explicit_post_bootstrap_depth(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         // This function only handles the case where the bootstrapped() status is different; the case where
         // they are the same is handled by CKKSEvaluator
-        if (ct1.bootstrapped() != ct2.bootstrapped()) {
+        if (ct1.bootstrapped_ != ct2.bootstrapped_) {
             scoped_lock lock(mutex_);
             // levels will not be aligned.
             // create references to the bootstrapped and non-bootstrapped (fresh) ciphertexts
-            const CKKSCiphertext &bootstrapped_ct = ct1.bootstrapped() ? ct1 : ct2;
-            const CKKSCiphertext &fresh_ct = ct1.bootstrapped() ? ct2 : ct1;
+            const CKKSCiphertext &bootstrapped_ct = ct1.bootstrapped_ ? ct1 : ct2;
+            const CKKSCiphertext &fresh_ct = ct1.bootstrapped_ ? ct2 : ct1;
 
             // An operation that combines a bootstrapped and non-bootstrapped ciphertext gives us
             // explicit information about how many levels are devoted to bootstrapping. A freshly
@@ -113,7 +113,7 @@ namespace hit {
          * already rescaled once after bootstrapping, and we are about to do so again. That means that
          * the post_bootstrap_depth is (at least) 2 = 1 - (-1).
          */
-        if (ct.bootstrapped()) {
+        if (ct.bootstrapped_) {
             scoped_lock lock(mutex_);
             implicit_post_bootstrap_depth_ = max(implicit_post_bootstrap_depth_, 1 - ct.he_level());
         }
@@ -130,7 +130,7 @@ namespace hit {
 
         // see comment in rescale_to_next_inplace_internal for explanation of arithmetic,
         // and note that rescale_for_bootstrapping is either 0 or 1.
-        if (ct.bootstrapped()) {
+        if (ct.bootstrapped_) {
             implicit_post_bootstrap_depth_ =
                 max(implicit_post_bootstrap_depth_, static_cast<int>(rescale_for_bootstrapping) - ct.he_level());
         }
