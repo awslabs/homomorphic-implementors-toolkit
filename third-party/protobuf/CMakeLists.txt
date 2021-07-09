@@ -5,19 +5,14 @@ cmake_minimum_required(VERSION 3.12)
 
 project(PROTOBUF_DOWNLOAD VERSION 3.12.3)
 
-if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/src)
-	set(DOWNLOAD_URL)
-	message(STATUS "Found source code for Protobuf in ${CMAKE_CURRENT_LIST_DIR}.")
-else()
-	message(STATUS "No source code found for Protobuf; downloading in ${CMAKE_CURRENT_LIST_DIR}.")
-	set(PROTOBUF_URL_SUFFIX "v${PROJECT_VERSION}/protobuf-cpp-${PROJECT_VERSION}.zip")
-	set(DOWNLOAD_URL https://github.com/google/protobuf/releases/download/${PROTOBUF_URL_SUFFIX})
-endif()
-
 # https://github.com/protocolbuffers/protobuf/tree/master/src
 include(ExternalProject)
 ExternalProject_Add(EP_PROTOBUF
-    URL                  ${DOWNLOAD_URL}
+    GIT_REPOSITORY       https://github.com/protocolbuffers/protobuf.git
+    GIT_TAG              v${PROJECT_VERSION}
+    GIT_SHALLOW          True
+    GIT_PROGRESS         True
+    GIT_CONFIG           advice.detachedHead=false
     DOWNLOAD_DIR         ${CMAKE_CURRENT_LIST_DIR}
     SOURCE_DIR           ${CMAKE_CURRENT_LIST_DIR}/src
     BUILD_IN_SOURCE      False
