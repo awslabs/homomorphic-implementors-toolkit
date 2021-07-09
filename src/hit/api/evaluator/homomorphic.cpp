@@ -93,6 +93,10 @@ namespace hit {
         : HomomorphicEval(CKKSParams(num_slots, log_scale, max_ct_level), galois_steps) {
     }
 
+    HomomorphicEval::HomomorphicEval(int num_slots, int max_ct_level, int log_scale) :
+      // for now, we always use one key-switch prime
+      HomomorphicEval(CKKSParams(num_slots, log_scale, max_ct_level)) {}
+
     void HomomorphicEval::deserialize_common(istream &params_stream) {
         protobuf::CKKSParams ckks_params;
         ckks_params.ParseFromIstream(&params_stream);
