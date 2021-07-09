@@ -125,7 +125,7 @@ namespace hit {
         latticpp::RotationKeys galois_keys;
         latticpp::RelinearizationKey relin_keys;
         bool standard_params_;
-        int btp_depth;
+        int btp_depth = 0;
 
         latticpp::Evaluator &get_evaluator();
         latticpp::Encoder &get_encoder();

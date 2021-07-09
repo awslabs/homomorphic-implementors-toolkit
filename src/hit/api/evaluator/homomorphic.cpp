@@ -70,7 +70,19 @@ namespace hit {
         log_elapsed_time(start, "Generating keys...");
 
         backend_decryptor = newDecryptor(context->params, sk);
+
+        if (params.btp_params.has_value()) {
+            btp_depth = params.btp_params.value().bootstrapping_depth();
+            if (btp_depth > max_ct_level) {
+                LOG_AND_THROW_STREAM("Bootstrapping depth is larger than the maximum ciphertext level");
+            }
+            btp_keys = genBootstrappingKey(keyGenerator, num_galois_keys, params.btp_params.value().lattigo_btp_params, sk);
+        }
     }
+
+    HomomorphicEval::HomomorphicEval(int num_slots, int max_ct_level, int log_scale) :
+      // for now, we always use one key-switch prime
+      HomomorphicEval(CKKSParams(num_slots, log_scale, max_ct_level)) {}
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {
         protobuf::CKKSParams ckks_params;
@@ -318,10 +330,8 @@ namespace hit {
 
         CKKSCiphertext bootstrapped_ct = ct;
         bootstrapped_ct.backend_ct = latticpp::bootstrap(btp, ct.backend_ct);
-        // bootstrapped_ct.scale_ = ??
-        // bootstrapped_ct.he_level_ = post_bootstrap_lvl;
-        // bootstrapped_ct.needs_relin_ = ??
-        // bootstrapped_ct.needs_rescale_ = ??
+        ctout.scale_ = pow(2, context->log_scale());
+        ctout.he_level_ = context->max_ciphertext_level() - btp_depth;
         return bootstrapped_ct;
     }
 }  // namespace hit
