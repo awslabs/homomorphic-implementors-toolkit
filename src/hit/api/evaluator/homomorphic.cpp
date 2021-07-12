@@ -64,7 +64,12 @@ namespace hit {
         // This call generates a KeyGenerator with fresh randomness
         // The KeyGenerator object contains deterministic keys.
         KeyGenerator keyGenerator = newKeyGenerator(context->params);
-        KeyPairHandle kp = genKeyPair(keyGenerator);
+        KeyPairHandle kp;
+        if (params.btp_params.has_value()) {
+            kp = genKeyPairSparse(keyGenerator, bootstrap_h(params.btp_params.value().lattigo_btp_params));
+        } else {
+            kp = genKeyPair(keyGenerator);
+        }
         sk = kp.sk;
         pk = kp.pk;
         galois_keys = genRotationKeysForRotations(keyGenerator, sk, galois_steps);
@@ -346,7 +351,7 @@ namespace hit {
         }
 
         CKKSCiphertext bootstrapped_ct = ct;
-        bootstrapped_ct.backend_ct = latticpp::bootstrap(btp, ct.backend_ct);
+        bootstrapped_ct.backend_ct = latticpp::bootstrap(get_bootstrapper(), ct.backend_ct);
         bootstrapped_ct.scale_ = pow(2, context->log_scale());
         bootstrapped_ct.he_level_ = context->max_ciphertext_level() - btp_depth;
         return bootstrapped_ct;

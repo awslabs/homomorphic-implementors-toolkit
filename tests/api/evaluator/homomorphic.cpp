@@ -456,3 +456,17 @@ TEST(HomomorphicTest, RescaleToNextInPlace) {
     ASSERT_NE(diff, INVALID_NORM);
     ASSERT_LE(diff, MAX_NORM);
 }
+
+TEST(HomomorphicTest, Bootstrapping) {
+    // full key
+    // CKKSParams params(latticpp::getParams(latticpp::BootstrapParams2), latticpp::getBootstrappingParams(latticpp::BootstrapParams_Set7));
+    // sparse key
+    CKKSParams params(latticpp::getParams(latticpp::BootstrapParams0), latticpp::getBootstrappingParams(latticpp::BootstrapParams_Set2));
+    HomomorphicEval ckks_instance = HomomorphicEval(params);
+    vector<double> vector1 = random_vector(params.num_slots(), 1);
+    CKKSCiphertext ciphertext1 = ckks_instance.encrypt(vector1);
+    CKKSCiphertext bootstrapped_ct = ckks_instance.bootstrap(ciphertext1);
+    vector<double> vector2 = ckks_instance.decrypt(bootstrapped_ct);
+    double diff = relative_error(vector1, vector2);
+    ASSERT_LE(diff, MAX_NORM);
+}
