@@ -8,6 +8,7 @@
 #include "homomorphic.h"
 
 #include <glog/logging.h>
+#include "../params.h"
 
 #include <iomanip>
 #include <thread>
