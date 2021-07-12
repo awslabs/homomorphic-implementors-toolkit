@@ -8,9 +8,11 @@
 #include "homomorphic.h"
 
 #include <glog/logging.h>
+#include "../params.h"
 
 #include <iomanip>
 #include <thread>
+#include <variant>
 
 #include "hit/protobuf/ckksparams.pb.h"
 
@@ -27,19 +29,20 @@ namespace hit {
      * metadata values, it will always be incorrect (no matter which order Debug calls its sub-evaluators).
      */
 
-    HomomorphicEval::HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_standard_params,
-                                     const vector<int> &galois_steps) {
+    HomomorphicEval::HomomorphicEval(const CKKSParams &params) {
         timepoint start = chrono::steady_clock::now();
-        standard_params_ = use_standard_params;
-        context = make_shared<HEContext>(num_slots, multiplicative_depth, log_scale);
+        int max_ct_level = params.max_ct_level();
+        context = make_shared<HEContext>(params.params);
         log_elapsed_time(start, "Creating encryption context...");
 
-        int num_galois_keys = galois_steps.size();
-        VLOG(VLOG_VERBOSE) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth
+        // With the current Lattigo API, it's easiest to just generate all 2-power rotation
+        // keys, up to num_slots/2.
+        int num_galois_keys = log2(params.num_slots());
+        VLOG(VLOG_VERBOSE) << "Generating keys for " << params.num_slots() << " slots and depth " << max_ct_level
                            << ", including " << (num_galois_keys != 0 ? to_string(num_galois_keys) : "all")
                            << " Galois keys.";
 
-        double keys_size_bytes = estimate_key_size(galois_steps.size(), num_slots, multiplicative_depth);
+        double keys_size_bytes = estimate_key_size(num_galois_keys, params.num_slots(), max_ct_level);
         VLOG(VLOG_VERBOSE) << "Estimated size is " << setprecision(3);
         // using base-10 (SI) units, rather than base-2 units.
         double unit_multiplier = 1000;
@@ -70,6 +73,12 @@ namespace hit {
         log_elapsed_time(start, "Generating keys...");
 
         backend_decryptor = newDecryptor(context->params, sk);
+
+
+    }
+
+    HomomorphicEval::HomomorphicEval(int num_slots, int max_ct_level, int log_scale) :
+      HomomorphicEval(CKKSParams(num_slots, log_scale, max_ct_level)) {
     }
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {

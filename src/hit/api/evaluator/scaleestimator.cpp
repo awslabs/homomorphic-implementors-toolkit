@@ -20,14 +20,14 @@ namespace hit {
 
     ScaleEstimator::ScaleEstimator(int num_slots, int max_ct_level, int bootstrapping_depth)
         : btp_depth(bootstrapping_depth) {
-
         if (bootstrapping_depth > 0 && bootstrapping_depth > max_ct_level) {
             LOG_AND_THROW_STREAM("Bootstrapping depth is larger than the maximum ciphertext level");
         }
 
         plaintext_eval = new PlaintextEval(num_slots);
 
-        context = make_shared<HEContext>(HEContext(num_slots, max_ct_level, default_scale_bits));
+        CKKSParams params(num_slots, default_scale_bits, max_ct_level);
+        context = make_shared<HEContext>(HEContext(params.params));
     }
 
     ScaleEstimator::ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval) {
