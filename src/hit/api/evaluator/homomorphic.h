@@ -8,7 +8,6 @@
 #include "../../common.h"
 #include "../ciphertext.h"
 #include "../evaluator.h"
-#include "../params.h"
 
 namespace hit {
 
@@ -34,9 +33,8 @@ namespace hit {
          * `use_standard_params` to false allows you to set parameters which may not achieve 128-bits
          * of security.
          */
-        explicit HomomorphicEval(const CKKSParams &params);
-
-        HomomorphicEval(int num_slots, int max_ct_level, int log_scale);
+        HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_standard_params = true,
+                        const std::vector<int> &galois_steps = std::vector<int>());
 
         /* An evaluation instance */
         HomomorphicEval(std::istream &params_stream, std::istream &galois_key_stream, std::istream &relin_key_stream);
@@ -118,20 +116,17 @@ namespace hit {
         boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Encoder>> backend_encoder;
         boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Evaluator>> backend_evaluator;
         boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Encryptor>> backend_encryptor;
-        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Bootstrapper>> backend_bootstrapper;
         latticpp::Decryptor backend_decryptor;
         latticpp::PublicKey pk;
         latticpp::SecretKey sk;
         latticpp::RotationKeys galois_keys;
         latticpp::EvaluationKey relin_keys;
-        latticpp::BootstrappingKey btp_keys;
         bool standard_params_;
         int btp_depth;
 
         latticpp::Evaluator &get_evaluator();
         latticpp::Encoder &get_encoder();
         latticpp::Encryptor &get_encryptor();
-        latticpp::Bootstrapper &get_bootstrapper();
 
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 
