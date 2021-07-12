@@ -118,7 +118,6 @@ namespace hit {
         boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Encryptor>> backend_encryptor;
         boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Bootstrapper>> backend_bootstrapper;
         latticpp::Decryptor backend_decryptor;
-        latticpp::Bootstrapper btp;
         latticpp::PublicKey pk;
         latticpp::SecretKey sk;
         latticpp::RotationKeys galois_keys;
