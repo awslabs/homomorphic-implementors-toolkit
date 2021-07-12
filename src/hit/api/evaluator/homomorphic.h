@@ -121,7 +121,11 @@ namespace hit {
         latticpp::PublicKey pk;
         latticpp::SecretKey sk;
         latticpp::RotationKeys galois_keys;
+<<<<<<< HEAD
         latticpp::RelinearizationKey relin_keys;
+=======
+        latticpp::EvaluationKey relin_keys;
+>>>>>>> Re-apply changes from rebase
         latticpp::BootstrappingKey btp_keys;
         bool standard_params_;
         int btp_depth = 0;

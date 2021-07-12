@@ -8,6 +8,7 @@
 #include "homomorphic.h"
 
 #include <glog/logging.h>
+#include "../params.h"
 
 #include <iomanip>
 #include <thread>
@@ -95,7 +96,7 @@ namespace hit {
 
     HomomorphicEval::HomomorphicEval(int num_slots, int max_ct_level, int log_scale) :
       // for now, we always use one key-switch prime
-      HomomorphicEval(CKKSParams(num_slots, log_scale, max_ct_level)) {}
+      HomomorphicEval(CKKSParams(num_slots, log_scale, max_ct_level)) {
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {
         protobuf::CKKSParams ckks_params;
