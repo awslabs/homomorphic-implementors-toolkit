@@ -32,7 +32,7 @@ namespace hit {
     HomomorphicEval::HomomorphicEval(const CKKSParams &params) {
         timepoint start = chrono::steady_clock::now();
         int max_ct_level = params.max_ct_level();
-        context = make_shared<HEContext>(params.params);
+        context = make_shared<HEContext>(params);
         log_elapsed_time(start, "Creating encryption context...");
 
         // With the current Lattigo API, it's easiest to just generate all 2-power rotation
@@ -74,10 +74,13 @@ namespace hit {
 
         backend_decryptor = newDecryptor(context->params, sk);
 
-
+        if (params.btp_params.has_value()) {
+            btp_keys = genBootstrappingKey(keyGenerator, num_galois_keys, params.btp_params.value().lattigo_btp_params, sk);
+        }
     }
 
     HomomorphicEval::HomomorphicEval(int num_slots, int max_ct_level, int log_scale) :
+      // for now, we always use one key-switch prime
       HomomorphicEval(CKKSParams(num_slots, log_scale, max_ct_level)) {
     }
 
@@ -87,7 +90,7 @@ namespace hit {
 
         istringstream ctx_stream(ckks_params.ctx());
         Parameters params = unmarshalBinaryParameters(ctx_stream);
-        context = make_shared<HEContext>(params);
+        context = make_shared<HEContext>(CKKSParams(params));
 
         istringstream pk_stream(ckks_params.pubkey());
         pk = unmarshalBinaryPublicKey(pk_stream);
@@ -243,6 +246,20 @@ namespace hit {
             backend_encryptor.reset(tmp);
         }
         return backend_encryptor->object;
+    }
+
+    Bootstrapper &HomomorphicEval::get_bootstrapper() {
+        if (!(context->btp_params.has_value())) {
+            LOG_AND_THROW_STREAM("CKKS parameters do not specify bootstrapping parameters.");
+        }
+
+        if (backend_bootstrapper.get() == nullptr || backend_bootstrapper->params != context->params) {
+            ParameterizedLattigoType<Bootstrapper> *tmp =
+                new ParameterizedLattigoType<Bootstrapper>(
+                    newBootstrapper(context->params, context->btp_params.value(), btp_keys), context->params);
+            backend_bootstrapper.reset(tmp);
+        }
+        return backend_bootstrapper->object;
     }
 
     void HomomorphicEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {

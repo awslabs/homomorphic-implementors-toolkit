@@ -35,7 +35,7 @@ namespace hit {
          * of security.
          */
         explicit HomomorphicEval(const CKKSParams &params);
-    
+
         HomomorphicEval(int num_slots, int max_ct_level, int log_scale);
 
         /* An evaluation instance */
@@ -131,6 +131,7 @@ namespace hit {
         latticpp::Evaluator &get_evaluator();
         latticpp::Encoder &get_encoder();
         latticpp::Encryptor &get_encryptor();
+        latticpp::Bootstrapper &get_bootstrapper();
 
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 

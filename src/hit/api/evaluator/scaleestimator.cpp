@@ -27,7 +27,7 @@ namespace hit {
         plaintext_eval = new PlaintextEval(num_slots);
 
         CKKSParams params(num_slots, default_scale_bits, max_ct_level);
-        context = make_shared<HEContext>(HEContext(params.params));
+        context = make_shared<HEContext>(HEContext(params));
     }
 
     ScaleEstimator::ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval) {

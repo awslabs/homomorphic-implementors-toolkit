@@ -8,6 +8,7 @@
 #include <optional>
 #include <variant>
 #include <vector>
+
 #include "../common.h"
 #include "latticpp/latticpp.h"
 
@@ -99,24 +100,27 @@ namespace hit {
     };
 
     class BootstrappingParams {
-        public:
-        BootstrappingParams(uint64_t secret_hamming_weight, uint64_t approx_range, uint64_t approx_degree,
-                            uint64_t double_angle_applications, std::vector<uint8_t> CtSLevels,
-                            std::vector<uint8_t> StCLevels, double maxN1N2Ratio = 16.0);
+       public:
+        // BootstrappingParams(uint64_t secret_hamming_weight, uint64_t approx_range, uint64_t approx_degree,
+        //                     uint64_t double_angle_applications, std::vector<uint8_t> CtSLevels,
+        //                     std::vector<uint8_t> StCLevels, double maxN1N2Ratio = 16.0);
 
-        BootstrappingApprox trig_approx;
-        uint64_t secret_hamming_weight;
-        uint64_t approx_range;
-        uint64_t approx_degree;
-        uint64_t double_angle_applications;
-        std::vector<uint8_t> CtSLevels;
-        std::vector<uint8_t> StCLevels;
-        double maxN1N2Ratio;
+        explicit BootstrappingParams(latticpp::BootstrappingParameters btp_params);
+
+        // BootstrappingApprox trig_approx;
+        // uint64_t secret_hamming_weight;
+        // uint64_t approx_range;
+        // uint64_t approx_degree;
+        // uint64_t double_angle_applications;
+        // std::vector<uint8_t> CtSLevels;
+        // std::vector<uint8_t> StCLevels;
+        // double maxN1N2Ratio;
+
+        latticpp::BootstrappingParameters lattigo_btp_params;
     };
 
     class CKKSParams {
-        public:
-
+       public:
         explicit CKKSParams(latticpp::Parameters params);
 
         CKKSParams(int num_slots, int log_scale, int max_ct_level, int num_ks_primes = 1,
@@ -126,7 +130,7 @@ namespace hit {
         int log_scale() const;
         int max_ct_level() const;
 
-        latticpp::Parameters params;
+        latticpp::Parameters lattigo_params;
         std::optional<BootstrappingParams> btp_params;
     };
 }  // namespace hit

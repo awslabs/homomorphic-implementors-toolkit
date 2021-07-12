@@ -68,7 +68,10 @@ namespace hit {
         }
     }
 
-    HEContext::HEContext(const Parameters &params) : params(move(params)) {
+    HEContext::HEContext(const CKKSParams &params) : params(move(params.lattigo_params)) {
+        if (params.btp_params.has_value()) {
+            btp_params = params.btp_params.value().lattigo_btp_params;
+        }
         validateContext();
     }
 

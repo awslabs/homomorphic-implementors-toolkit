@@ -6,9 +6,9 @@
 #include <cmath>
 
 #include "hit/api/context.h"
-#include "metadata.h"
 #include "hit/protobuf/ciphertext.pb.h"
 #include "hit/protobuf/ciphertext_vector.pb.h"
+#include "metadata.h"
 
 namespace hit {
 
