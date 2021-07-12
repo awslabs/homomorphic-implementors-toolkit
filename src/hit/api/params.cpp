@@ -32,6 +32,10 @@ namespace hit {
         : lattigo_btp_params(move(btp_params)) {
     }
 
+    int BootstrappingParams::bootstrapping_depth() const {
+        return bootstrap_depth(lattigo_btp_params);
+    }
+
     CKKSParams::CKKSParams(latticpp::Parameters params) : lattigo_params(move(params)) {
     }
 

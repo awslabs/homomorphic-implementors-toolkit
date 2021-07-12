@@ -107,6 +107,8 @@ namespace hit {
 
         explicit BootstrappingParams(latticpp::BootstrappingParameters btp_params);
 
+        int bootstrapping_depth() const;
+
         // BootstrappingApprox trig_approx;
         // uint64_t secret_hamming_weight;
         // uint64_t approx_range;
