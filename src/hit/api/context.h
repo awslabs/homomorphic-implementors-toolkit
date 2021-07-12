@@ -55,7 +55,8 @@ namespace hit {
         int log_scale() const;
 
         latticpp::Parameters params;
-        std::optional<latticpp::BootstrappingParameters> btp_params = std::optional<latticpp::BootstrappingParameters>();
+        std::optional<latticpp::BootstrappingParameters> btp_params =
+            std::optional<latticpp::BootstrappingParameters>();
 
        private:
         void validateContext() const;

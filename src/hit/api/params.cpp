@@ -50,7 +50,7 @@ namespace hit {
         vector<uint8_t> log_pi(num_ks_primes, 61);
 
         lattigo_params = latticpp::newParametersFromLogModuli(log2(num_slots) + 1, log_qi, max_ct_level + 1, log_pi,
-                                                      num_ks_primes, log_scale);
+                                                              num_ks_primes, log_scale);
     }
 
     int CKKSParams::num_slots() const {

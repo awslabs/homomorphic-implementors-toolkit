@@ -20,7 +20,6 @@ namespace hit {
 
     ScaleEstimator::ScaleEstimator(int num_slots, int max_ct_level, int bootstrapping_depth)
         : btp_depth(bootstrapping_depth) {
-
         if (bootstrapping_depth > 0 && bootstrapping_depth > max_ct_level) {
             LOG_AND_THROW_STREAM("Bootstrapping depth is larger than the maximum ciphertext level");
         }
