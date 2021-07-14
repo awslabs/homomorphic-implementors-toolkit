@@ -36,15 +36,29 @@ namespace hit {
         return num_slots_;
     }
 
+    // sets the HE level of the output of a binary operation
+    // When both inputs have been bootstrapped or when both inputs have *not* been bootstrapped,
+    // CKKSEvaluator throws and error if the HE levels of the inputs are not identical. However,
+    // when one input has been bootstrapped and one has not, their levels will necessarily be
+    // unequal. This function handles that case and ensures accurate tracking of the computation
+    // depth in the presence of bootstrapping.
     void ImplicitDepthFinder::set_bootstrap_depth(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         if (ct1.bootstrapped() != ct2.bootstrapped()) {
             // levels will not be aligned.
+            // create references to the bootstrapped and non-bootstrapped (fresh) ciphertexts
             const CKKSCiphertext &bootstrapped_ct = ct1.bootstrapped() ? ct1 : ct2;
             const CKKSCiphertext &fresh_ct = ct1.bootstrapped() ? ct2 : ct1;
 
+            // An operation that combines a bootstrapped and non-bootstrapped ciphertext gives us
+            // explicit information about how many levels are devoted to bootstrapping. A freshly
+            // bootstrapped CT has (relative) level 0, so we can use the level of the non-bootstrapped ciphertext
+            // (relative to a *different* 0) to determine the depth of the bootstrapping circuit. 
+            // The difference between the HE levels of the inputs yields the depth of the bootstrapping
+            // circuit.
             int btp_levels = bootstrapped_ct.he_level() - fresh_ct.he_level();
+            // If we have not yet observed this relationship before, set it now.
             if (bootstrap_depth_ < 0) {
-                // we have not yet set the bootstrap_depth_
+                // we have not yet set the bootstrap_depth_, which should be >= 0.
                 if (btp_levels >= 0) {
                     bootstrap_depth_ = btp_levels;
                 } else {
@@ -52,6 +66,7 @@ namespace hit {
                 }
             } else {
                 // we have previously set the bootstrap_depth_; make sure we get the same value.
+                // There is only one "right" relationship
                 if (bootstrap_depth_ != btp_levels) {
                     LOG_AND_THROW_STREAM("Circuit error: bootstrap_depth_ is was previously set to "
                                          << bootstrap_depth_ << ", but now is " << btp_levels);
