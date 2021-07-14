@@ -13,27 +13,11 @@
 namespace hit {
 
     /* This evaluator is a thin wrapper around
-     * SEAL's evaluator API. It actually does
-     * computation on SEAL ciphertexts.
+     * Lattigo's evaluator API. It actually does
+     * computation on Lattigo ciphertexts.
      */
     class HomomorphicEval : public CKKSEvaluator {
        public:
-        /* This provides the 'production' evaluator, which just offers an improved
-         * API without debug information.
-         *
-         * All of these parameters contain only public information. The GaloisKeys
-         * and RelinKeys are part of the CKKS scheme's "evaluation keys".
-         *
-         * update_metadata indicates whether this evaluator should update ciphertext metadata or not
-         * When HomomorphicEval is used alone, update_metadata should be true.
-         * When HomomorphicEval is used as a sub-evaluator (e.g., as a component of the Debug evaluator) where
-         * other sub-evaluators compute the metadata, then update_metadata should be false.
-         *
-         * The `use_standard_params` flag allows you to restrict to standardized parameters, or to use larger
-         * rings. The standard parameters are designed to achieve 128-bits of security, while setting
-         * `use_standard_params` to false allows you to set parameters which may not achieve 128-bits
-         * of security.
-         */
         explicit HomomorphicEval(const CKKSParams &params);
 
         HomomorphicEval(int num_slots, int max_ct_level, int log_scale);
