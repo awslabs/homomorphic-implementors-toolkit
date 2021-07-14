@@ -1094,6 +1094,21 @@ namespace hit {
             parallel_for(arg.num_cts(), [&](int i) { eval.relinearize_inplace(arg[i]); });
         }
 
+        /* Bootstrap each ciphertext corresponding to the encrypted linear algebra
+         * object.
+         * Input: A quadratic EncryptedMatrix, EncryptedRowVector, or EncryptedColVector
+         *        with nominal or squared scale.
+         * Output (Inplace): A linear ciphertext with the same scale and level as the input.
+         * NOTE: Inputs which are linear ciphertexts to begin with are unchanged by this function.
+         */
+        template <typename T>
+        void bootstrap(T &arg) {
+            TRY_AND_THROW_STREAM(arg.validate(),
+                                 "Argument to bootstrap is invalid; has it been initialized?");
+
+            parallel_for(arg.num_cts(), [&](int i) { eval.bootstrap(arg[i]); });
+        }
+
         CKKSEvaluator &eval;
 
        private:
