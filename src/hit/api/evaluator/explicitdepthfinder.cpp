@@ -53,6 +53,7 @@ namespace hit {
         // This function only handles the case where the bootstrapped() status is different; the case where
         // they are the same is handled by CKKSEvaluator
         if (ct1.bootstrapped() != ct2.bootstrapped()) {
+            scoped_lock lock(mutex_);
             // levels will not be aligned.
             // create references to the bootstrapped and non-bootstrapped (fresh) ciphertexts
             const CKKSCiphertext &bootstrapped_ct = ct1.bootstrapped() ? ct1 : ct2;
@@ -120,6 +121,7 @@ namespace hit {
     }
 
     CKKSCiphertext ExplicitDepthFinder::bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
+        scoped_lock lock(mutex_);
         // if rescale_for_bootstrapping, bootstrapping will implicitly consume one additional level to rescale the
         // ciphertext first, ensure that if explict levels are set, we aren't already at level 0
         if (rescale_for_bootstrapping && ct.he_level() == 0) {
@@ -129,7 +131,6 @@ namespace hit {
         // see comment in rescale_to_next_inplace_internal for explanation of arithmetic,
         // and note that rescale_for_bootstrapping is either 0 or 1.
         if (ct.bootstrapped()) {
-            scoped_lock lock(mutex_);
             implicit_post_bootstrap_depth_ =
                 max(implicit_post_bootstrap_depth_, static_cast<int>(rescale_for_bootstrapping) - ct.he_level());
         }
@@ -142,7 +143,6 @@ namespace hit {
 
     int ExplicitDepthFinder::get_param_bootstrap_depth() const {
         shared_lock lock(mutex_);
-
         return max_contiguous_depth - get_param_eval_depth();
     }
 

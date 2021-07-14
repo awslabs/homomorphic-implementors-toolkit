@@ -43,7 +43,8 @@ namespace hit {
     // unequal. This function handles that case and ensures accurate tracking of the computation
     // depth in the presence of bootstrapping.
     void ImplicitDepthFinder::set_bootstrap_depth(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        if (ct1.bootstrapped() != ct2.bootstrapped()) {
+        if (ct1.bootstrapped() != ct2.bootstrapped()) { 
+            scoped_lock lock(mutex_);
             // levels will not be aligned.
             // create references to the bootstrapped and non-bootstrapped (fresh) ciphertexts
             const CKKSCiphertext &bootstrapped_ct = ct1.bootstrapped() ? ct1 : ct2;
@@ -96,28 +97,24 @@ namespace hit {
          * All CTs start with he_level = 0, so reducing the level results in a negative he_level.
          * Then zero minus a negative number is positive, which accurately tracks the computation depth.
          */
-        {
-            scoped_lock lock(mutex_);
-            if (ct.bootstrapped()) {
-                post_bootstrap_depth_ = max(post_bootstrap_depth_, 1 - ct.he_level());
-            } else {
-                max_contiguous_depth = max(max_contiguous_depth, 1 - ct.he_level());
-            }
+        scoped_lock lock(mutex_);
+        if (ct.bootstrapped()) {
+            post_bootstrap_depth_ = max(post_bootstrap_depth_, 1 - ct.he_level());
+        } else {
+            max_contiguous_depth = max(max_contiguous_depth, 1 - ct.he_level());
         }
         // CT level is adjusted in CKKSEvaluator::rescale_metata_to_next
     }
 
     CKKSCiphertext ImplicitDepthFinder::bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
         CKKSCiphertext bootstrapped_ct = ct;
-
+        scoped_lock lock(mutex_);
         if (ct.bootstrapped()) {
             // this ciphertext has already been bootstrapped
-            scoped_lock lock(mutex_);
             post_bootstrap_depth_ =
                 max(post_bootstrap_depth_, static_cast<int>(rescale_for_bootstrapping) - ct.he_level());
         } else {
             // this ciphertext has already been bootstrapped
-            scoped_lock lock(mutex_);
             max_contiguous_depth =
                 max(max_contiguous_depth, static_cast<int>(rescale_for_bootstrapping) - ct.he_level());
         }
