@@ -43,15 +43,32 @@ namespace hit {
         return num_slots_;
     }
 
+    // sets the HE level of the output of a binary operation
+    // When both inputs have been bootstrapped or when both inputs have *not* been bootstrapped,
+    // CKKSEvaluator throws and error if the HE levels of the inputs are not identical. However,
+    // when one input has been bootstrapped and one has not, their levels will necessarily be
+    // unequal. This function handles that case and ensures accurate tracking of the computation
+    // depth in the presence of bootstrapping.
     void ExplicitDepthFinder::set_explicit_post_bootstrap_depth(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
+        // This function only handles the case where the bootstrapped() status is different; the case where
+        // they are the same is handled by CKKSEvaluator
         if (ct1.bootstrapped() != ct2.bootstrapped()) {
             // levels will not be aligned.
+            // create references to the bootstrapped and non-bootstrapped (fresh) ciphertexts
             const CKKSCiphertext &bootstrapped_ct = ct1.bootstrapped() ? ct1 : ct2;
             const CKKSCiphertext &fresh_ct = ct1.bootstrapped() ? ct2 : ct1;
 
+            // An operation that combines a bootstrapped and non-bootstrapped ciphertext gives us
+            // explicit information about how many levels are devoted to bootstrapping. A freshly
+            // bootstrapped CT has (relative) level 0, so we can use the level of the non-bootstrapped ciphertext
+            // to determine the absolute level of a freshly-bootstrapped ciphertext. Note that the
+            // fresh ciphertext has a non-negative level that decreases from the explicit encryption
+            // level, while the bootstrapped ciphertext has a non-positive level that starts at 0 and
+            // decreases. Thus their difference yields the absolute level of a bootstrapped ciphertext.
             int explicit_bootstrap_lvl = fresh_ct.he_level() - bootstrapped_ct.he_level();
+            // If we have not yet observed this relationship before, set it now.
             if (explicit_post_bootstrap_depth_ < 0) {
-                // we have not yet set the explicit_post_bootstrap_depth_
+                // we have not yet set the explicit_post_bootstrap_depth_, which should be >= 0.
                 if (explicit_bootstrap_lvl >= 0) {
                     explicit_post_bootstrap_depth_ = explicit_bootstrap_lvl;
                 } else {
