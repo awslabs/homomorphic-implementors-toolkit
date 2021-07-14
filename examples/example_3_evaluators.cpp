@@ -3,6 +3,7 @@
 
 #include "hit/hit.h"
 #include <glog/logging.h>
+#include <cassert>
 
 using namespace std;
 using namespace hit;
@@ -57,7 +58,7 @@ void example_3_driver() {
 	int num_slots = 8192;
 
 	// Create a CKKS instance to compute circuit depth. This instance type needs _no_ parameters.
-	DepthFinder df_inst;
+	ImplicitDepthFinder df_inst;
 
 	// Generate a plaintext with `num_slots` random coefficients, each with absolute value < `plaintext_inf_norm`
 	int plaintext_inf_norm = 10;
@@ -73,7 +74,11 @@ void example_3_driver() {
 	poly_eval_homomorphic_v1(df_inst, df_ciphertext);
 
 	// Finally, we can ask the evaluator for the circuit's depth.
-	int max_depth = df_inst.get_multiplicative_depth();
+	// Since this circuit does not use bootstrapping, the circuit depth is
+	// in circuit_depth.min_post_boostrap_depth
+	int max_depth = df_inst.get_param_eval_depth();
+	assert (df_inst.get_param_bootstrap_depth() == 0);
+
 	LOG(INFO) << "poly_eval_homomorphic_v1 has multiplicative depth " << max_depth;
 
 /* ******** CKKS Scale ********
