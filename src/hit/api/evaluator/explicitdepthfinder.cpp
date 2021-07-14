@@ -75,7 +75,8 @@ namespace hit {
                     LOG_AND_THROW_STREAM("Internal error: explicit_bootstrap_lvl is < 0: " << explicit_bootstrap_lvl);
                 }
             } else {
-                // we have previously set the explicit_post_bootstrap_depth_; make sure we get the same value.
+                // we have previously set the explicit_post_bootstrap_depth_; make sure we get the same value this time.
+                // There is only one "right" relationship
                 if (explicit_post_bootstrap_depth_ != explicit_bootstrap_lvl) {
                     LOG_AND_THROW_STREAM("Circuit error: explicit_post_bootstrap_depth_ is was previously set to "
                                          << explicit_post_bootstrap_depth_ << ", but now is "
