@@ -23,10 +23,10 @@ namespace hit {
          * corresponding limit on the scale, and thus the precision, of the computation.
          * There's no good way to know what value to use here without generating some parameters
          * first. Reasonable values include 4096, 8192, or 16384.
-         * `multiplicative_depth` is the multiplicative depth of the circuit you wish to evaluate.
+         * `max_ct_level` is the maximum ciphertext level allowed by the HE parameters.
          * You can use the DepthFinder evaluator to compute this.
          */
-        ScaleEstimator(int num_slots, int multiplicative_depth);
+        ScaleEstimator(int num_slots, int max_ct_level, int bootstrapping_depth = 0);
 
         /* For documentation on the API, see ../evaluator.h */
         ~ScaleEstimator() override;
@@ -80,6 +80,8 @@ namespace hit {
 
         void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
 
+        CKKSCiphertext bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) override;
+
        private:
         ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval);
 
@@ -88,6 +90,7 @@ namespace hit {
         // If scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         // We set the estimated_max_log_scale to 59 to prevent this error.
         double estimated_max_log_scale_ = 59;
+        int btp_depth;
 
         // This helper function squares the scale of the input and then updates
         // the max_log_scale.

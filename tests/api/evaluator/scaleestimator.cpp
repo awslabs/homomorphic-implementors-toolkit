@@ -252,7 +252,7 @@ TEST(ScaleEstimatorTest, ReduceLevelToMin) {
 
 TEST(ScaleEstimatorTest, RescaleToNextInPlace) {
     ScaleEstimator ckks_instance = ScaleEstimator(NUM_OF_SLOTS, ONE_MULTI_DEPTH);
-    CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
+    CKKSCiphertext ciphertext1, ciphertext2;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ciphertext2 = ckks_instance.square(ciphertext1);
     uint64_t prime = ckks_instance.context->get_qi(ciphertext2.he_level());
@@ -263,4 +263,24 @@ TEST(ScaleEstimatorTest, RescaleToNextInPlace) {
     // Expect estimatedMaxLogScale is changed.
     double estimatedMaxLogScale = PLAINTEXT_LOG_MAX - log2(VALUE * VALUE);
     ASSERT_EQ(estimatedMaxLogScale, ckks_instance.get_estimated_max_log_scale());
+}
+
+TEST(ScaleEstimatorTest, Bootstrap1) {
+    ScaleEstimator ckks_instance = ScaleEstimator(NUM_OF_SLOTS, TWO_MULTI_DEPTH, 1);
+    CKKSCiphertext ciphertext1, ciphertext2;
+    ciphertext1 = ckks_instance.encrypt(VECTOR_1);
+    ciphertext2 = ckks_instance.bootstrap(ciphertext1);
+    // Check scale.
+    ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE), ciphertext2.scale());
+}
+
+TEST(ScaleEstimatorTest, Bootstrap2) {
+    ScaleEstimator ckks_instance = ScaleEstimator(NUM_OF_SLOTS, TWO_MULTI_DEPTH, 1);
+    CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
+    ciphertext1 = ckks_instance.encrypt(VECTOR_1);
+    ciphertext2 = ckks_instance.square(ciphertext1);
+    ckks_instance.rescale_to_next_inplace(ciphertext2);
+    ciphertext3 = ckks_instance.bootstrap(ciphertext2);
+    // Check scale.
+    ASSERT_EQ(pow(2, DEFAULT_LOG_SCALE), ciphertext3.scale());
 }

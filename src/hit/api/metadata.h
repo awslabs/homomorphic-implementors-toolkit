@@ -30,9 +30,6 @@ namespace hit {
         // therefore in need of relinearization, false otherwise.
         virtual bool needs_relin() const = 0;
 
-        // Output true if the ciphertext has been bootstrapped
-        virtual bool bootstrapped() const = 0;
-
         virtual ~CiphertextMetadata<PlaintextType>() = default;
     };
 }  // namespace hit

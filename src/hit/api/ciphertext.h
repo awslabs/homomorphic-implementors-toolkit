@@ -117,8 +117,9 @@ namespace hit {
         // Output true if the ciphertext is quadratic and is
         // therefore in need of relinearization, false otherwise.
         bool needs_relin() const override;
-        // Output true if bootstrapping was used in the computation of this ciphertext
-        bool bootstrapped() const override;
+        // Output the plaintext included in this ciphertext, if it was encrypted with
+        // the Debug evaluator. The output is not a decrypted ciphertext, rather it is
+        // computed in-the-clear in parallel with the encrypted computation.
         std::vector<double> plaintext() const override;
 
         // all evaluators need access for encryption and decryption
