@@ -44,7 +44,6 @@ namespace hit {
     // depth in the presence of bootstrapping.
     void ImplicitDepthFinder::set_bootstrap_depth(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         if (ct1.bootstrapped_ != ct2.bootstrapped_) {
-<<<<<<< HEAD
             scoped_lock lock(mutex_);
             // levels will not be aligned.
             // create references to the bootstrapped and non-bootstrapped (fresh) ciphertexts
@@ -57,12 +56,6 @@ namespace hit {
             // (relative to a *different* 0) to determine the depth of the bootstrapping circuit.
             // The difference between the HE levels of the inputs yields the depth of the bootstrapping
             // circuit.
-=======
-            // levels will not be aligned.
-            const CKKSCiphertext &bootstrapped_ct = ct1.bootstrapped_ ? ct1 : ct2;
-            const CKKSCiphertext &fresh_ct = ct1.bootstrapped_ ? ct2 : ct1;
-
->>>>>>> 846a932 (Finished ScaleEstimator implementation of bootstrapping. Added tests. Removed bootstrapped() API from metadata, since this should not be public.)
             int btp_levels = bootstrapped_ct.he_level() - fresh_ct.he_level();
             // If we have not yet observed this relationship before, set it now.
             if (bootstrap_depth_ < 0) {
