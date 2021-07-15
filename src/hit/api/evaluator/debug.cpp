@@ -315,10 +315,10 @@ namespace hit {
     }
 
     CKKSCiphertext DebugEval::bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
-        CKKSCiphertext ctout = homomorphic_eval->relinearize_inplace_internal(ct);
+        CKKSCiphertext ctout = homomorphic_eval->bootstrap_internal(ct, rescale_for_bootstrapping);
         // homomorphic evaluator updates all necessary metadata; we can ignore the scale_estimator output.
         // but we still need to *call* the scale_estimator (on the orignal input) so that it updates the internal state
-        scale_estimator->relinearize_inplace_internal(ct);
+        scale_estimator->bootstrap_internal(ct, rescale_for_bootstrapping);
         return ctout;
     }
 }  // namespace hit
