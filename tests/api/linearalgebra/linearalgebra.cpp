@@ -2678,3 +2678,30 @@ TEST(LinearAlgebraTest, RescaleToNext_RowVec) {
     ASSERT_FALSE(ct_vec1.needs_relin());
     ASSERT_FALSE(ct_vec1.needs_rescale());
 }
+
+TEST(LinearAlgebraTest, Bootstrap_RowVec) {
+    // sparse key parameters, much faster for testing. 
+    // Note that I had to reduce the PT norm to 0.1 for these parameters, otherwise the test fails. 
+    CKKSParams params(latticpp::getParams(latticpp::BootstrapParams3), latticpp::getBootstrappingParams(latticpp::BootstrapParams_Set4));
+    HomomorphicEval ckks_instance = HomomorphicEval(params);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit = linear_algebra.make_unit(unit1_height);
+
+    vector<double> vec1 = random_vector(params.num_slots(), .1);
+
+    EncryptedRowVector ct_vec1 = linear_algebra.encrypt_row_vector(vec1, unit);
+    ASSERT_EQ(ct_vec1.scale(), pow(2, LOG_SCALE));
+    linear_algebra.multiply_plain_inplace(ct_vec1, 2);
+    ASSERT_EQ(ct_vec1.scale(), pow(2, 2 * LOG_SCALE));
+    ASSERT_EQ(ct_vec1.he_level(), 1);
+    linear_algebra.rescale_to_next_inplace(ct_vec1);
+    ASSERT_EQ(ct_vec1.he_level(), 0);
+    uint64_t prime = ckks_instance.context->get_qi(1);
+    ASSERT_EQ(ct_vec1.scale(), pow(2, 2 * LOG_SCALE) / prime);
+    ASSERT_FALSE(ct_vec1.needs_relin());
+    ASSERT_FALSE(ct_vec1.needs_rescale());
+}
+

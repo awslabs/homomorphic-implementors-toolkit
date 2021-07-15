@@ -1102,11 +1102,13 @@ namespace hit {
          * NOTE: Inputs which are linear ciphertexts to begin with are unchanged by this function.
          */
         template <typename T>
-        void bootstrap(T &arg) {
+        T bootstrap(T &arg, bool rescale_for_bootstrapping) {
             TRY_AND_THROW_STREAM(arg.validate(),
                                  "Argument to bootstrap is invalid; has it been initialized?");
 
-            parallel_for(arg.num_cts(), [&](int i) { eval.bootstrap(arg[i]); });
+            T bootstrapped_t = arg;
+            parallel_for(arg.num_cts(), [&](int i) { bootstrapped_t[i] = eval.bootstrap(arg[i], rescale_for_bootstrapping); });
+            return bootstrapped_t;
         }
 
         CKKSEvaluator &eval;
