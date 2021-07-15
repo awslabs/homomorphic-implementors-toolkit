@@ -2693,15 +2693,15 @@ TEST(LinearAlgebraTest, Bootstrap_RowVec) {
     vector<double> vec1 = random_vector(params.num_slots(), .1);
 
     EncryptedRowVector ct_vec1 = linear_algebra.encrypt_row_vector(vec1, unit);
-    ASSERT_EQ(ct_vec1.scale(), pow(2, LOG_SCALE));
-    linear_algebra.multiply_plain_inplace(ct_vec1, 2);
-    ASSERT_EQ(ct_vec1.scale(), pow(2, 2 * LOG_SCALE));
-    ASSERT_EQ(ct_vec1.he_level(), 1);
-    linear_algebra.rescale_to_next_inplace(ct_vec1);
-    ASSERT_EQ(ct_vec1.he_level(), 0);
-    uint64_t prime = ckks_instance.context->get_qi(1);
-    ASSERT_EQ(ct_vec1.scale(), pow(2, 2 * LOG_SCALE) / prime);
-    ASSERT_FALSE(ct_vec1.needs_relin());
-    ASSERT_FALSE(ct_vec1.needs_rescale());
+    
+    EncryptedRowVector bootstrapped_vec = linear_algebra.bootstrap(ct_vec1);
+
+    ASSERT_EQ(bootstrapped_vec.he_level(), params.max_ct_level() - params.btp_params.value().bootstrapping_depth());
+    ASSERT_FALSE(bootstrapped_vec.needs_relin());
+    ASSERT_FALSE(bootstrapped_vec.needs_rescale());
+
+    Vector decrypted_bootstrapped_ct = linear_algebra.decrypt(bootstrapped_vec);
+    double diff = relative_error(vec1, decrypted_bootstrapped_ct);
+    ASSERT_LE(diff, MAX_NORM);
 }
 

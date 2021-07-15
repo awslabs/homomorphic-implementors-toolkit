@@ -1102,12 +1102,15 @@ namespace hit {
          * NOTE: Inputs which are linear ciphertexts to begin with are unchanged by this function.
          */
         template <typename T>
-        T bootstrap(T &arg, bool rescale_for_bootstrapping) {
+        T bootstrap(T &arg, bool rescale_for_bootstrapping = true) {
             TRY_AND_THROW_STREAM(arg.validate(),
                                  "Argument to bootstrap is invalid; has it been initialized?");
 
             T bootstrapped_t = arg;
-            parallel_for(arg.num_cts(), [&](int i) { bootstrapped_t[i] = eval.bootstrap(arg[i], rescale_for_bootstrapping); });
+            // Bootstrapping seems too memory-intensive to do in parallel
+            for (int i = 0; i < arg.num_cts(); i++) {
+                bootstrapped_t[i] = eval.bootstrap(arg[i], rescale_for_bootstrapping);
+            }
             return bootstrapped_t;
         }
 
