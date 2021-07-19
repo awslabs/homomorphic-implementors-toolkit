@@ -93,30 +93,12 @@
  */
 
 namespace hit {
-    enum BootstrappingApprox {
-        Sin,   // Standard Chebyshev approximation of (1/2pi) * sin(2pix)
-        Cos1,  // Special approximation (Han and Ki) of pow((1/2pi), 1/2^r) * cos(2pi(x-0.25)/2^r)
-        Cos2   // Standard Chebyshev approximation   of pow((1/2pi), 1/2^r) * cos(2pi(x-0.25)/2^r)
-    };
-
     class BootstrappingParams {
        public:
-        // BootstrappingParams(uint64_t secret_hamming_weight, uint64_t approx_range, uint64_t approx_degree,
-        //                     uint64_t double_angle_applications, std::vector<uint8_t> CtSLevels,
-        //                     std::vector<uint8_t> StCLevels, double maxN1N2Ratio = 16.0);
 
         explicit BootstrappingParams(latticpp::BootstrappingParameters btp_params);
 
         int bootstrapping_depth() const;
-
-        // BootstrappingApprox trig_approx;
-        // uint64_t secret_hamming_weight;
-        // uint64_t approx_range;
-        // uint64_t approx_degree;
-        // uint64_t double_angle_applications;
-        // std::vector<uint8_t> CtSLevels;
-        // std::vector<uint8_t> StCLevels;
-        // double maxN1N2Ratio;
 
         latticpp::BootstrappingParameters lattigo_btp_params;
     };
