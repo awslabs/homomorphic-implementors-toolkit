@@ -1283,10 +1283,9 @@ void test_multiply_matrix_matrix_row_major_mixed_unit_inputs(LinearAlgebra &line
     int unit1_width = 8192 / unit1_height;
 
     // both matrices are exactly the size of the encoding unit
-    test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width, unit1_height, unit1_width, 1.0, unit1,
-                                                     test);
-    test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width, unit1_height, unit1_width, PI, unit1,
-                                                     test);
+    test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width, unit1_height, unit1_width, 1.0,
+                                                     unit1, test);
+    test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width, unit1_height, unit1_width, PI, unit1, test);
 
     // one or more matrices are smaller than the encoding unit
     test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width - 9, unit1_height, unit1_width, PI,
