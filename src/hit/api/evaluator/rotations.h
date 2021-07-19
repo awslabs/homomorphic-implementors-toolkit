@@ -11,7 +11,11 @@
 
 namespace hit {
 
-    /* This evaluator tracks the plaintext computation */
+    /* This evaluator tracks the plaintext computation to determine the set of explicit
+     * rotations performed by the circuit. The output of `needed_rotations` is a vector
+     * suitable for the `galois_steps` argument of the HomomorphicEvaluator or DebugEvaluator
+     * constructors
+     */
     class RotationSet : public CKKSEvaluator {
        public:
         explicit RotationSet(int num_slots);
@@ -24,7 +28,7 @@ namespace hit {
         RotationSet(RotationSet &&) = delete;
         RotationSet &operator=(RotationSet &&) = delete;
 
-        /* Print the total number of operations performed in this computation. */
+        /* Return the total number of operations performed in this computation. */
         std::vector<int> needed_rotations() const;
 
         CKKSCiphertext encrypt(const std::vector<double> &coeffs) override;
