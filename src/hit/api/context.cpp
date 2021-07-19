@@ -13,21 +13,6 @@ using namespace std;
 using namespace latticpp;
 
 namespace hit {
-    /*
-    Helper function: Generate a list of bit-lengths for the modulus primes.
-    */
-    vector<uint8_t> gen_ciphertext_modulus_vec(int num_primes, uint8_t log_scale) {
-        if (num_primes < 1) {
-            LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-Lattigo instance: "
-                                 << "there must be at least one ciphertext modulus.");
-        }
-
-        vector<uint8_t> modulusVector(num_primes, log_scale);
-        // the SEAL examples recommend the last modulus be 60 bits; it's unclear why,
-        // and also unclear how closely that choice is related to log_scale (they use 40 in their examples)
-        modulusVector[0] = 60;
-        return modulusVector;
-    }
 
     uint64_t estimate_key_size(int num_galois_shift, int plaintext_slots, int depth) {
         // number of bytes in each coefficient (a 64-bit value)
@@ -83,15 +68,10 @@ namespace hit {
         }
     }
 
-    HEContext::HEContext(Parameters &params) : params(move(params)) {
-        validateContext();
-    }
-
-    HEContext::HEContext(int num_slots, int mult_depth, int precisionBits) {
-        vector<uint8_t> logQi = gen_ciphertext_modulus_vec(mult_depth + 1, precisionBits);
-        vector<uint8_t> logPi(1);
-        logPi[0] = 60;  // special modulus. For now, we just use a single modulus like SEAL.
-        params = newParametersFromLogModuli(log2(num_slots) + 1, logQi, mult_depth + 1, logPi, 1, precisionBits);
+    HEContext::HEContext(const CKKSParams &params) : params(params.lattigo_params) {
+        if (params.btp_params.has_value()) {
+            btp_params = params.btp_params.value().lattigo_btp_params;
+        }
         validateContext();
     }
 

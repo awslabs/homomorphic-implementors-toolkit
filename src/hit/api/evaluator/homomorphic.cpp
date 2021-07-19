@@ -31,7 +31,7 @@ namespace hit {
                                      const vector<int> &galois_steps) {
         timepoint start = chrono::steady_clock::now();
         standard_params_ = use_standard_params;
-        context = make_shared<HEContext>(num_slots, multiplicative_depth, log_scale);
+        context = make_shared<HEContext>(CKKSParams(num_slots, log_scale, multiplicative_depth));
         log_elapsed_time(start, "Creating encryption context...");
 
         int num_galois_keys = galois_steps.size();
@@ -78,7 +78,7 @@ namespace hit {
 
         istringstream ctx_stream(ckks_params.ctx());
         Parameters params = unmarshalBinaryParameters(ctx_stream);
-        context = make_shared<HEContext>(params);
+        context = make_shared<HEContext>(CKKSParams(params));
 
         istringstream pk_stream(ckks_params.pubkey());
         pk = unmarshalBinaryPublicKey(pk_stream);

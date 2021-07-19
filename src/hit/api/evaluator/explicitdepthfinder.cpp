@@ -160,6 +160,7 @@ namespace hit {
             LOG_AND_THROW_STREAM("explicit_post_bootstrap_depth_ < implicit_post_bootstrap_depth_: "
                                  << explicit_post_bootstrap_depth_ << " < " << implicit_post_bootstrap_depth_);
         }
-        return uses_bootstrapping ? max(implicit_post_bootstrap_depth_, explicit_post_bootstrap_depth_) : max_contiguous_depth;
+        return uses_bootstrapping ? max(implicit_post_bootstrap_depth_, explicit_post_bootstrap_depth_)
+                                  : max_contiguous_depth;
     }
 }  // namespace hit
