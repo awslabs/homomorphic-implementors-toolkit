@@ -8,12 +8,12 @@
 #include "homomorphic.h"
 
 #include <glog/logging.h>
-#include "../params.h"
 
 #include <iomanip>
 #include <thread>
 #include <variant>
 
+#include "../params.h"
 #include "hit/protobuf/ckksparams.pb.h"
 
 using namespace std;
@@ -84,12 +84,14 @@ namespace hit {
             if (btp_depth > max_ct_level) {
                 LOG_AND_THROW_STREAM("Bootstrapping depth is larger than the maximum ciphertext level");
             }
-            btp_keys = genBootstrappingKey(keyGenerator, num_galois_keys, params.btp_params.value().lattigo_btp_params, sk);
+            btp_keys =
+                genBootstrappingKey(keyGenerator, num_galois_keys, params.btp_params.value().lattigo_btp_params, sk);
         }
     }
 
-    HomomorphicEval::HomomorphicEval(int num_slots, int max_ct_level, int log_scale) :
-      HomomorphicEval(CKKSParams(num_slots, log_scale, max_ct_level)) { }
+    HomomorphicEval::HomomorphicEval(int num_slots, int max_ct_level, int log_scale)
+        : HomomorphicEval(CKKSParams(num_slots, log_scale, max_ct_level)) {
+    }
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {
         protobuf::CKKSParams ckks_params;
@@ -263,9 +265,8 @@ namespace hit {
         }
 
         if (backend_bootstrapper.get() == nullptr || backend_bootstrapper->params != context->params) {
-            ParameterizedLattigoType<Bootstrapper> *tmp =
-                new ParameterizedLattigoType<Bootstrapper>(
-                    newBootstrapper(context->params, context->btp_params.value(), btp_keys), context->params);
+            ParameterizedLattigoType<Bootstrapper> *tmp = new ParameterizedLattigoType<Bootstrapper>(
+                newBootstrapper(context->params, context->btp_params.value(), btp_keys), context->params);
             backend_bootstrapper.reset(tmp);
         }
         return backend_bootstrapper->object;

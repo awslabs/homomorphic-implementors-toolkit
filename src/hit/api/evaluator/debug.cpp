@@ -84,8 +84,7 @@ namespace hit {
     }
 
     DebugEval::DebugEval(int num_slots, int multiplicative_depth, int log_scale) {
-        homomorphic_eval =
-            new HomomorphicEval(num_slots, multiplicative_depth, log_scale);
+        homomorphic_eval = new HomomorphicEval(num_slots, multiplicative_depth, log_scale);
         constructor_common(num_slots);
     }
 
