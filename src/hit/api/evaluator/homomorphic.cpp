@@ -66,7 +66,7 @@ namespace hit {
         KeyGenerator keyGenerator = newKeyGenerator(context->params);
         KeyPairHandle kp;
         if (params.btp_params.has_value()) {
-            kp = genKeyPairSparse(keyGenerator, bootstrap_h(params.btp_params.value().lattigo_btp_params));
+            kp = genKeyPairSparse(keyGenerator, secretHammingWeight(params.btp_params.value().lattigo_btp_params));
         } else {
             kp = genKeyPair(keyGenerator);
         }
@@ -85,7 +85,7 @@ namespace hit {
                 LOG_AND_THROW_STREAM("Bootstrapping depth is larger than the maximum ciphertext level");
             }
             btp_keys =
-                genBootstrappingKey(keyGenerator, num_galois_keys, params.btp_params.value().lattigo_btp_params, sk);
+                genBootstrappingKey(keyGenerator, params.lattigo_params, params.btp_params.value().lattigo_btp_params, sk, relin_keys, galois_keys);
         }
     }
 

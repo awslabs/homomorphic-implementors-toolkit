@@ -460,8 +460,7 @@ TEST(HomomorphicTest, RescaleToNextInPlace) {
 TEST(HomomorphicTest, Bootstrapping) {
     // sparse key parameters, much faster for testing.
     // Note that I had to reduce the PT norm to 0.1 for these parameters, otherwise the test fails.
-    CKKSParams params(latticpp::getParams(latticpp::BootstrapParams3),
-                      latticpp::getBootstrappingParams(latticpp::BootstrapParams_Set4));
+    CKKSParams params(latticpp::getBootstrappingParams(latticpp::BootstrapParams_Set4));
     HomomorphicEval ckks_instance = HomomorphicEval(params);
     vector<double> vector1 = random_vector(params.num_slots(), .1);
     CKKSCiphertext ciphertext1 = ckks_instance.encrypt(vector1);
