@@ -83,8 +83,10 @@ namespace hit {
         VLOG(VLOG_VERBOSE) << " End of chain reached";
     }
 
-    DebugEval::DebugEval(int num_slots, int multiplicative_depth, int log_scale) {
-        homomorphic_eval = new HomomorphicEval(num_slots, multiplicative_depth, log_scale);
+    DebugEval::DebugEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,
+                         const vector<int> &galois_steps) {
+        homomorphic_eval =
+            new HomomorphicEval(num_slots, multiplicative_depth, log_scale, use_seal_params, galois_steps);
         constructor_common(num_slots);
     }
 

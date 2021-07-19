@@ -84,8 +84,8 @@ namespace hit {
             if (btp_depth > max_ct_level) {
                 LOG_AND_THROW_STREAM("Bootstrapping depth is larger than the maximum ciphertext level");
             }
-            btp_keys =
-                genBootstrappingKey(keyGenerator, params.lattigo_params, params.btp_params.value().lattigo_btp_params, sk, relin_keys, galois_keys);
+            btp_keys = genBootstrappingKey(keyGenerator, params.lattigo_params,
+                                           params.btp_params.value().lattigo_btp_params, sk, relin_keys, galois_keys);
         }
     }
 
