@@ -18,9 +18,9 @@ namespace hit {
      */
     class HomomorphicEval : public CKKSEvaluator {
        public:
-        explicit HomomorphicEval(const CKKSParams &params);
+        explicit HomomorphicEval(const CKKSParams &params, const std::vector<int> &galois_steps = std::vector<int>());
 
-        HomomorphicEval(int num_slots, int max_ct_level, int log_scale);
+        HomomorphicEval(int num_slots, int max_ct_level, int log_scale, const std::vector<int> &galois_steps = std::vector<int>());
 
         /* An evaluation instance */
         HomomorphicEval(std::istream &params_stream, std::istream &galois_key_stream, std::istream &relin_key_stream);

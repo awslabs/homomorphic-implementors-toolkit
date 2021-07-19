@@ -29,7 +29,7 @@ namespace hit {
      * metadata values, it will always be incorrect (no matter which order Debug calls its sub-evaluators).
      */
 
-    HomomorphicEval::HomomorphicEval(const CKKSParams &params) {
+    HomomorphicEval::HomomorphicEval(const CKKSParams &params, const vector<int> &galois_steps) {
         timepoint start = chrono::steady_clock::now();
         int max_ct_level = params.max_ct_level();
         context = make_shared<HEContext>(params);
@@ -89,8 +89,8 @@ namespace hit {
         }
     }
 
-    HomomorphicEval::HomomorphicEval(int num_slots, int max_ct_level, int log_scale)
-        : HomomorphicEval(CKKSParams(num_slots, log_scale, max_ct_level)) {
+    HomomorphicEval::HomomorphicEval(int num_slots, int max_ct_level, int log_scale, const vector<int> &galois_steps)
+        : HomomorphicEval(CKKSParams(num_slots, log_scale, max_ct_level), galois_steps) {
     }
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {

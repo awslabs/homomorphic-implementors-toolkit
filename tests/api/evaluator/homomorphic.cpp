@@ -47,7 +47,7 @@ TEST(HomomorphicTest, Serialization_NoSecret) {
     vector<int> rotations(2);
     rotations[0] = 1;
     rotations[0] = -1;
-    HomomorphicEval ckks_instance1 = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, true, rotations);
+    HomomorphicEval ckks_instance1 = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, rotations);
 
     // serialize instance to files
     stringstream paramsStream(ios::in | ios::out | ios::binary);
@@ -91,7 +91,7 @@ TEST(HomomorphicTest, Serialization_WithSecret) {
 TEST(HomomorphicTest, RotateLeft) {
     vector<int> rotations(1);
     rotations[0] = STEPS;
-    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, true, rotations);
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, rotations);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2;
@@ -124,7 +124,7 @@ TEST(HomomorphicTest, RotateLeft_InvalidCase) {
 TEST(HomomorphicTest, RotateRight) {
     vector<int> rotations(1);
     rotations[0] = -STEPS;
-    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, true, rotations);
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, rotations);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2;

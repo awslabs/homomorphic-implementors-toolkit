@@ -106,6 +106,8 @@ namespace hit {
        public:
         explicit CKKSParams(latticpp::Parameters params);
 
+        explicit CKKSParams(latticpp::BootstrappingParameters btp_params)
+
         CKKSParams(latticpp::Parameters lattigo_params, latticpp::BootstrappingParameters lattigo_btp_params);
 
         CKKSParams(int num_slots, int log_scale, int max_ct_level, int num_ks_primes = 1,
