@@ -18,8 +18,19 @@ namespace hit {
      */
     class HomomorphicEval : public CKKSEvaluator {
        public:
+        /* Construct a homomorphic evaluator instance for the provided scheme parameters.
+         * This will generate keys for encryption, and relinearization in all cases. If the provided
+         * params include bootstrapping parameters, keys required for bootstrapping are also generated.
+         * Additionally, generates rotation (Galois) keys for the shifts provided in the galois_steps
+         * vector. For example, if your circuit calls `rotate_left(ct, 2)` and `rotate_right(ct, 3)`,
+         * you should ensure that `galois_steps` includes [2, -3] (right shifts are negative). Including
+         * unnecessary shifts results in longer key generation time and larger keys, while not including
+         * all explicit rotations will result in a runtime error. You can use the RotationSet evaluator
+         * to compute the necessary and sufficient `galois_steps` vector for your circuit.
+         */
         explicit HomomorphicEval(const CKKSParams &params, const std::vector<int> &galois_steps = std::vector<int>());
 
+        // See comment above.
         HomomorphicEval(int num_slots, int max_ct_level, int log_scale,
                         const std::vector<int> &galois_steps = std::vector<int>());
 
