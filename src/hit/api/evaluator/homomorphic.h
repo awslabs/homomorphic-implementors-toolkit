@@ -19,7 +19,7 @@ namespace hit {
     class HomomorphicEval : public CKKSEvaluator {
        public:
         /* Construct a homomorphic evaluator instance for the provided scheme parameters.
-         * This will generate keys for encryption, and relinearization in all cases. If the provided
+         * This will generate keys for encryption, decryption, and relinearization in all cases. If the provided
          * params include bootstrapping parameters, keys required for bootstrapping are also generated.
          * Additionally, generates rotation (Galois) keys for the shifts provided in the galois_steps
          * vector. For example, if your circuit calls `rotate_left(ct, 2)` and `rotate_right(ct, 3)`,
@@ -30,14 +30,14 @@ namespace hit {
          */
         explicit HomomorphicEval(const CKKSParams &params, const std::vector<int> &galois_steps = std::vector<int>());
 
-        // See comment above.
+        /* See comment above. */
         HomomorphicEval(int num_slots, int max_ct_level, int log_scale,
                         const std::vector<int> &galois_steps = std::vector<int>());
 
-        /* An evaluation instance */
+        /* An evaluation-only instance (decryption not available). */
         HomomorphicEval(std::istream &params_stream, std::istream &galois_key_stream, std::istream &relin_key_stream);
 
-        /* A full instance */
+        /* A full instance capable of encryption, decryption, and evaluation. */
         HomomorphicEval(std::istream &params_stream, std::istream &galois_key_stream, std::istream &relin_key_stream,
                         std::istream &secret_key_stream);
 
