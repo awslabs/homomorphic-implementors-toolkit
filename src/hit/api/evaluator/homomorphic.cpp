@@ -93,10 +93,6 @@ namespace hit {
         : HomomorphicEval(CKKSParams(num_slots, log_scale, max_ct_level), galois_steps) {
     }
 
-    HomomorphicEval::HomomorphicEval(int num_slots, int max_ct_level, int log_scale) :
-      // for now, we always use one key-switch prime
-      HomomorphicEval(CKKSParams(num_slots, log_scale, max_ct_level)) {}
-
     void HomomorphicEval::deserialize_common(istream &params_stream) {
         protobuf::CKKSParams ckks_params;
         ckks_params.ParseFromIstream(&params_stream);
@@ -360,18 +356,6 @@ namespace hit {
         bootstrapped_ct.backend_ct = latticpp::bootstrap(get_bootstrapper().ref(), ct.backend_ct);
         bootstrapped_ct.scale_ = pow(2, context->log_scale());
         bootstrapped_ct.he_level_ = context->max_ciphertext_level() - btp_depth;
-        return bootstrapped_ct;
-    }
-
-    CKKSCiphertext HomomorphicEval::bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
-        if (rescale_for_bootstrapping && ct.he_level() == 0) {
-            LOG_AND_THROW_STREAM("Unable to bootstrap ciphertext at level 0 when rescale_for_bootstrapping is true.");
-        }
-
-        CKKSCiphertext bootstrapped_ct = ct;
-        bootstrapped_ct.backend_ct = latticpp::bootstrap(btp, ct.backend_ct);
-        ctout.scale_ = pow(2, context->log_scale());
-        ctout.he_level_ = context->max_ciphertext_level() - btp_depth;
         return bootstrapped_ct;
     }
 }  // namespace hit
