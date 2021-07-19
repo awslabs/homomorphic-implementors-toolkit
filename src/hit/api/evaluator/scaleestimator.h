@@ -7,6 +7,7 @@
 #include "../evaluator.h"
 #include "hit/api/context.h"
 #include "homomorphic.h"
+#include "plaintext.h"
 
 namespace hit {
 
