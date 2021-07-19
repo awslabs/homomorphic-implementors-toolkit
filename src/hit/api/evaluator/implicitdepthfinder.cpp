@@ -53,7 +53,7 @@ namespace hit {
             // An operation that combines a bootstrapped and non-bootstrapped ciphertext gives us
             // explicit information about how many levels are devoted to bootstrapping. A freshly
             // bootstrapped CT has (relative) level 0, so we can use the level of the non-bootstrapped ciphertext
-            // (relative to a *different* 0) to determine the depth of the bootstrapping circuit. 
+            // (relative to a *different* 0) to determine the depth of the bootstrapping circuit.
             // The difference between the HE levels of the inputs yields the depth of the bootstrapping
             // circuit.
             int btp_levels = bootstrapped_ct.he_level() - fresh_ct.he_level();

@@ -11,15 +11,15 @@ namespace hit {
     }
 
     int BootstrappingParams::bootstrapping_depth() const {
-        return bootstrap_depth(lattigo_btp_params);
+        return bootstrapDepth(lattigo_btp_params);
     }
 
     CKKSParams::CKKSParams(latticpp::Parameters params) : lattigo_params(move(params)) {
     }
 
-    CKKSParams::CKKSParams(latticpp::Parameters lattigo_params, latticpp::BootstrappingParameters lattigo_btp_params) : 
-      lattigo_params(move(lattigo_params)), 
-      btp_params(optional<BootstrappingParams>(BootstrappingParams(move(lattigo_btp_params)))) {
+    CKKSParams::CKKSParams(latticpp::Parameters lattigo_params, latticpp::BootstrappingParameters lattigo_btp_params)
+        : lattigo_params(move(lattigo_params)),
+          btp_params(optional<BootstrappingParams>(BootstrappingParams(move(lattigo_btp_params)))) {
     }
 
     CKKSParams::CKKSParams(int num_slots, int log_scale, int max_ct_level, int num_ks_primes,
