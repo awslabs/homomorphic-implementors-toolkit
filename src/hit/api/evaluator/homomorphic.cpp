@@ -8,7 +8,6 @@
 #include "homomorphic.h"
 
 #include <glog/logging.h>
-#include "../params.h"
 
 #include <iomanip>
 #include <thread>
@@ -355,18 +354,6 @@ namespace hit {
         bootstrapped_ct.backend_ct = latticpp::bootstrap(get_bootstrapper(), ct.backend_ct);
         bootstrapped_ct.scale_ = pow(2, context->log_scale());
         bootstrapped_ct.he_level_ = context->max_ciphertext_level() - btp_depth;
-        return bootstrapped_ct;
-    }
-
-    CKKSCiphertext HomomorphicEval::bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
-        if (rescale_for_bootstrapping && ct.he_level() == 0) {
-            LOG_AND_THROW_STREAM("Unable to bootstrap ciphertext at level 0 when rescale_for_bootstrapping is true.");
-        }
-
-        CKKSCiphertext bootstrapped_ct = ct;
-        bootstrapped_ct.backend_ct = latticpp::bootstrap(btp, ct.backend_ct);
-        ctout.scale_ = pow(2, context->log_scale());
-        ctout.he_level_ = context->max_ciphertext_level() - btp_depth;
         return bootstrapped_ct;
     }
 }  // namespace hit
