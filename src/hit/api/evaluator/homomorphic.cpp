@@ -99,12 +99,19 @@ namespace hit {
 
         istringstream ctx_stream(ckks_params.ctx());
         Parameters params = unmarshalBinaryParameters(ctx_stream);
-        context = make_shared<HEContext>(CKKSParams(params));
 
+        if (ckks_params.has_btp_params()) {
+            // make a context with support for bootstrapping
+            istringstream btp_params_stream(ckks_params.btp_params());
+            BootstrappingParameters btp_params = unmarshalBinaryBootstrapParameters(btp_params_stream);
+            context = make_shared<HEContext>(CKKSParams(params, btp_params));
+        } else {
+            // make a context without support for bootstrapping
+            context = make_shared<HEContext>(CKKSParams(params));
+        }
+        
         istringstream pk_stream(ckks_params.pubkey());
         pk = unmarshalBinaryPublicKey(pk_stream);
-
-        standard_params_ = ckks_params.standardparams();
     }
 
     /* An evaluation instance */
@@ -137,14 +144,21 @@ namespace hit {
         }
 
         protobuf::CKKSParams ckks_params;
-        ckks_params.set_standardparams(standard_params_);
-        ostringstream ctx_stream;
 
+        ostringstream ctx_stream;
         marshalBinaryParameters(context->params, ctx_stream);
         ckks_params.set_ctx(ctx_stream.str());
+
+        if (context->btp_params.has_value()) {
+            ostringstream btp_params_stream;
+            marshalBinaryBootstrapParameters(context->btp_params.value(), btp_params_stream);
+            ckks_params.set_btp_params(btp_params_stream.str());
+        }
+
         ostringstream pk_stream;
         marshalBinaryPublicKey(pk, pk_stream);
         ckks_params.set_pubkey(pk_stream.str());
+
         ckks_params.SerializeToOstream(&params_stream);
 
         marshalBinaryRotationKeys(galois_keys, galois_key_stream);
