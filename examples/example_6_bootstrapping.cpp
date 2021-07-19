@@ -12,6 +12,7 @@ using namespace hit;
 extern vector<double> random_vector(int dim, double maxNorm);
 
 // defined in example_2_plaintext.cpp
+extern vector<double> poly_eval_plaintext(const vector<double> &xs);
 extern CKKSCiphertext poly_eval_homomorphic_v1(CKKSEvaluator &eval, CKKSCiphertext &ct);
 
 /* This example demonstrates the use of CKKS bootstrapping, which enables fixed-size
@@ -20,7 +21,7 @@ extern CKKSCiphertext poly_eval_homomorphic_v1(CKKSEvaluator &eval, CKKSCipherte
  * additional noise in the computation, so it is best used in convergent computations
  * that are robust to small perturbations, e.g., minimization problems.
  */
-void example_4_driver() {
+void example_6_driver() {
     // Bootstrapping parameters are complex, and explaining each parameter is beyond the scope
     // of this tutorial, so for this example we use default parameters provided by Lattigo.
     CKKSParams params(latticpp::getBootstrappingParams(latticpp::BootstrapParams_Set4));
@@ -32,6 +33,8 @@ void example_4_driver() {
     HomomorphicEval he_inst = HomomorphicEval(params);
 
     // Encrypt a plaintext
+    int plaintext_inf_norm = 1;
+    vector<double> plaintext = random_vector(params.num_slots(), plaintext_inf_norm);
     CKKSCiphertext he_ciphertext = he_inst.encrypt(plaintext);
 
     // Now we can evaluate our homomorphic circuit on this input

@@ -11,6 +11,7 @@ extern void example_2_driver();
 extern void example_3_driver();
 extern void example_4_driver();
 extern void example_5_driver();
+extern void example_6_driver();
 
 int main(int, char **argv) {
 	google::InitGoogleLogging(argv[0]);
@@ -28,5 +29,8 @@ int main(int, char **argv) {
 	LOG(INFO) << endl << endl;
 	LOG(INFO) << "Running example 5: " << endl;
 	example_5_driver();
+	LOG(INFO) << endl << endl;
+	LOG(INFO) << "Running example 6: " << endl;
+	example_6_driver();
 	LOG(INFO) << "Done with all examples!" << endl;
 }
