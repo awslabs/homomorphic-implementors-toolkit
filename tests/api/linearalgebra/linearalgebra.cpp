@@ -2680,9 +2680,9 @@ TEST(LinearAlgebraTest, RescaleToNext_RowVec) {
 }
 
 TEST(LinearAlgebraTest, Bootstrap_RowVec) {
-    // sparse key parameters, much faster for testing. 
-    // Note that I had to reduce the PT norm to 0.1 for these parameters, otherwise the test fails. 
-    CKKSParams params(latticpp::getParams(latticpp::BootstrapParams3), latticpp::getBootstrappingParams(latticpp::BootstrapParams_Set4));
+    // sparse key parameters, much faster for testing.
+    // Note that I had to reduce the PT norm to 0.1 for these parameters, otherwise the test fails.
+    CKKSParams params(latticpp::getBootstrappingParams(latticpp::BootstrapParams_Set4));
     HomomorphicEval ckks_instance = HomomorphicEval(params);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
 
@@ -2693,7 +2693,7 @@ TEST(LinearAlgebraTest, Bootstrap_RowVec) {
     vector<double> vec1 = random_vector(params.num_slots(), .1);
 
     EncryptedRowVector ct_vec1 = linear_algebra.encrypt_row_vector(vec1, unit);
-    
+
     EncryptedRowVector bootstrapped_vec = linear_algebra.bootstrap(ct_vec1);
 
     ASSERT_EQ(bootstrapped_vec.he_level(), params.max_ct_level() - params.btp_params.value().bootstrapping_depth());
@@ -2704,4 +2704,3 @@ TEST(LinearAlgebraTest, Bootstrap_RowVec) {
     double diff = relative_error(vec1, decrypted_bootstrapped_ct);
     ASSERT_LE(diff, MAX_NORM);
 }
-

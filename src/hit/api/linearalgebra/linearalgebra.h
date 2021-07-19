@@ -1103,8 +1103,7 @@ namespace hit {
          */
         template <typename T>
         T bootstrap(T &arg, bool rescale_for_bootstrapping = true) {
-            TRY_AND_THROW_STREAM(arg.validate(),
-                                 "Argument to bootstrap is invalid; has it been initialized?");
+            TRY_AND_THROW_STREAM(arg.validate(), "Argument to bootstrap is invalid; has it been initialized?");
 
             T bootstrapped_t = arg;
             // Bootstrapping seems too memory-intensive to do in parallel
