@@ -64,7 +64,7 @@ namespace hit {
         KeyPairHandle kp = genKeyPair(keyGenerator);
         sk = kp.sk;
         pk = kp.pk;
-        galois_keys = genRotationKeysPow2(keyGenerator, sk);
+        galois_keys = genRotationKeysForRotations(keyGenerator, sk, galois_steps);
         relin_keys = genRelinKey(keyGenerator, sk);
 
         log_elapsed_time(start, "Generating keys...");
@@ -92,7 +92,7 @@ namespace hit {
 
         timepoint start = chrono::steady_clock::now();
         galois_keys = unmarshalBinaryRotationKeys(galois_key_stream);
-        relin_keys = unmarshalBinaryEvaluationKey(relin_key_stream);
+        relin_keys = unmarshalBinaryRelinearizationKey(relin_key_stream);
         log_elapsed_time(start, "Reading keys...");
     }
 
@@ -104,7 +104,7 @@ namespace hit {
         timepoint start = chrono::steady_clock::now();
         sk = unmarshalBinarySecretKey(secret_key_stream);
         galois_keys = unmarshalBinaryRotationKeys(galois_key_stream);
-        relin_keys = unmarshalBinaryEvaluationKey(relin_key_stream);
+        relin_keys = unmarshalBinaryRelinearizationKey(relin_key_stream);
         log_elapsed_time(start, "Reading keys...");
         backend_decryptor = newDecryptor(context->params, sk);
     }
@@ -118,6 +118,7 @@ namespace hit {
         protobuf::CKKSParams ckks_params;
         ckks_params.set_standardparams(standard_params_);
         ostringstream ctx_stream;
+
         marshalBinaryParameters(context->params, ctx_stream);
         ckks_params.set_ctx(ctx_stream.str());
         ostringstream pk_stream;
@@ -126,7 +127,7 @@ namespace hit {
         ckks_params.SerializeToOstream(&params_stream);
 
         marshalBinaryRotationKeys(galois_keys, galois_key_stream);
-        marshalBinaryEvaluationKey(relin_keys, relin_key_stream);
+        marshalBinaryRelinearizationKey(relin_keys, relin_key_stream);
     }
 
     CKKSCiphertext HomomorphicEval::encrypt(const vector<double> &coeffs) {
@@ -211,8 +212,9 @@ namespace hit {
      */
     Evaluator &HomomorphicEval::get_evaluator() {
         if (backend_evaluator.get() == nullptr || !(backend_evaluator->params == context->params)) {
+            EvaluationKey evalKey = makeEvaluationKey(relin_keys, galois_keys);
             ParameterizedLattigoType<Evaluator> *tmp =
-                new ParameterizedLattigoType<Evaluator>(newEvaluator(context->params), context->params);
+                new ParameterizedLattigoType<Evaluator>(newEvaluator(context->params, evalKey), context->params);
             backend_evaluator.reset(tmp);
         }
         return backend_evaluator->object;
@@ -237,11 +239,11 @@ namespace hit {
     }
 
     void HomomorphicEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
-        rotate(get_evaluator(), ct.backend_ct, -steps, galois_keys, ct.backend_ct);
+        rotate(get_evaluator(), ct.backend_ct, -steps, ct.backend_ct);
     }
 
     void HomomorphicEval::rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) {
-        rotate(get_evaluator(), ct.backend_ct, steps, galois_keys, ct.backend_ct);
+        rotate(get_evaluator(), ct.backend_ct, steps, ct.backend_ct);
     }
 
     void HomomorphicEval::negate_inplace_internal(CKKSCiphertext &ct) {
@@ -302,10 +304,10 @@ namespace hit {
     }
 
     void HomomorphicEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        rescaleMany(get_evaluator(), ct.backend_ct, 1, ct.backend_ct);
+        rescaleMany(get_evaluator(), context->params, ct.backend_ct, 1, ct.backend_ct);
     }
 
     void HomomorphicEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
-        relinearize(get_evaluator(), ct.backend_ct, relin_keys, ct.backend_ct);
+        relinearize(get_evaluator(), ct.backend_ct, ct.backend_ct);
     }
 }  // namespace hit

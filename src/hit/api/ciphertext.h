@@ -131,6 +131,7 @@ namespace hit {
         friend class PlaintextEval;
         friend class OpCount;
         friend class ScaleEstimator;
+        friend class RotationSet;
         friend class CKKSEvaluator;
 
        private:
