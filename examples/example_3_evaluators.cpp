@@ -139,7 +139,7 @@ void example_3_driver() {
  * we can use, we can now set up an instance which actually does homomorphic
  * computation.
  */
-	HomomorphicEval he_inst(num_slots, max_depth, static_cast<int>(floor(log_scale)), rotation_set);
+	HomomorphicEval he_inst(num_slots, max_depth, static_cast<int>(floor(log_scale)), true, rotation_set);
 
 	// Don't reuse ciphertexts between instance types!
 	CKKSCiphertext he_ciphertext = he_inst.encrypt(plaintext);
