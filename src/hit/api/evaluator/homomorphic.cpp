@@ -37,10 +37,9 @@ namespace hit {
 
         // With the current Lattigo API, it's easiest to just generate all 2-power rotation
         // keys, up to num_slots/2.
-        int num_galois_keys = log2(params.num_slots());
+        int num_galois_keys = galois_steps.size();
         VLOG(VLOG_VERBOSE) << "Generating keys for " << params.num_slots() << " slots and depth " << max_ct_level
-                           << ", including " << (num_galois_keys != 0 ? to_string(num_galois_keys) : "all")
-                           << " Galois keys.";
+                           << ", including " << num_galois_keys << " explicit Galois keys.";
 
         double keys_size_bytes = estimate_key_size(num_galois_keys, params.num_slots(), max_ct_level);
         VLOG(VLOG_VERBOSE) << "Estimated size is " << setprecision(3);
@@ -84,6 +83,7 @@ namespace hit {
             if (btp_depth > max_ct_level) {
                 LOG_AND_THROW_STREAM("Bootstrapping depth is larger than the maximum ciphertext level");
             }
+            VLOG(VLOG_VERBOSE) << "Generating bootstrapping keys";
             btp_keys = genBootstrappingKey(keyGenerator, params.lattigo_params,
                                            params.btp_params.value().lattigo_btp_params, sk, relin_keys, galois_keys);
         }
@@ -346,11 +346,22 @@ namespace hit {
     }
 
     CKKSCiphertext HomomorphicEval::bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
+        // if rescale_for_bootstrapping is set, the circuit designer expects that one level will be consumed
+        // _prior_ to bootstrapping in order to rescale the ciphertext for bootstrapping (which has specific
+        // requirements on the scale). Note that this rescale is implicit: it's part of Lattigo's `bootstrap`
+        // API, but it technically happens _prior_ to bootstrapping. This implicit rescale requires that the
+        // level of the input ciphertext is > 0, otherwise we can't rescale.
         if (rescale_for_bootstrapping && ct.he_level() == 0) {
             LOG_AND_THROW_STREAM("Unable to bootstrap ciphertext at level 0 when rescale_for_bootstrapping is true.");
         }
 
         CKKSCiphertext bootstrapped_ct = ct;
+
+        // Note that we don't actually *use* `rescale_for_bootstrapping`: it is a "HIT-ism" which
+        // is required by other evaluators (notably the DepthFinder evaluators, since this parameter
+        // affects circuit depth). However, we don't pass it to the Lattigo bootstrap API because
+        // Lattigo implicitly does the rescale if it's able to. For more information, see the
+        // API comment in evaluator.h.
         bootstrapped_ct.backend_ct = latticpp::bootstrap(get_bootstrapper(), ct.backend_ct);
         bootstrapped_ct.scale_ = pow(2, context->log_scale());
         bootstrapped_ct.he_level_ = context->max_ciphertext_level() - btp_depth;
