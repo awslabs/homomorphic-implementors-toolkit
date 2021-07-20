@@ -11,7 +11,9 @@
 
 #include <iomanip>
 #include <thread>
+#include <variant>
 
+#include "../params.h"
 #include "hit/protobuf/ckksparams.pb.h"
 
 using namespace std;
@@ -27,19 +29,20 @@ namespace hit {
      * metadata values, it will always be incorrect (no matter which order Debug calls its sub-evaluators).
      */
 
-    HomomorphicEval::HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_standard_params,
-                                     const vector<int> &galois_steps) {
+    HomomorphicEval::HomomorphicEval(const CKKSParams &params, const vector<int> &galois_steps) {
         timepoint start = chrono::steady_clock::now();
-        standard_params_ = use_standard_params;
-        context = make_shared<HEContext>(CKKSParams(num_slots, log_scale, multiplicative_depth));
+        int max_ct_level = params.max_ct_level();
+        context = make_shared<HEContext>(params);
         log_elapsed_time(start, "Creating encryption context...");
 
-        int num_galois_keys = galois_steps.size();
-        VLOG(VLOG_VERBOSE) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth
+        // With the current Lattigo API, it's easiest to just generate all 2-power rotation
+        // keys, up to num_slots/2.
+        int num_galois_keys = log2(params.num_slots());
+        VLOG(VLOG_VERBOSE) << "Generating keys for " << params.num_slots() << " slots and depth " << max_ct_level
                            << ", including " << (num_galois_keys != 0 ? to_string(num_galois_keys) : "all")
                            << " Galois keys.";
 
-        double keys_size_bytes = estimate_key_size(galois_steps.size(), num_slots, multiplicative_depth);
+        double keys_size_bytes = estimate_key_size(num_galois_keys, params.num_slots(), max_ct_level);
         VLOG(VLOG_VERBOSE) << "Estimated size is " << setprecision(3);
         // using base-10 (SI) units, rather than base-2 units.
         double unit_multiplier = 1000;
@@ -61,7 +64,12 @@ namespace hit {
         // This call generates a KeyGenerator with fresh randomness
         // The KeyGenerator object contains deterministic keys.
         KeyGenerator keyGenerator = newKeyGenerator(context->params);
-        KeyPairHandle kp = genKeyPair(keyGenerator);
+        KeyPairHandle kp;
+        if (params.btp_params.has_value()) {
+            kp = genKeyPairSparse(keyGenerator, secretHammingWeight(params.btp_params.value().lattigo_btp_params));
+        } else {
+            kp = genKeyPair(keyGenerator);
+        }
         sk = kp.sk;
         pk = kp.pk;
         galois_keys = genRotationKeysForRotations(keyGenerator, sk, galois_steps);
@@ -70,6 +78,19 @@ namespace hit {
         log_elapsed_time(start, "Generating keys...");
 
         backend_decryptor = newDecryptor(context->params, sk);
+
+        if (params.btp_params.has_value()) {
+            btp_depth = params.btp_params.value().bootstrapping_depth();
+            if (btp_depth > max_ct_level) {
+                LOG_AND_THROW_STREAM("Bootstrapping depth is larger than the maximum ciphertext level");
+            }
+            btp_keys = genBootstrappingKey(keyGenerator, params.lattigo_params,
+                                           params.btp_params.value().lattigo_btp_params, sk, relin_keys, galois_keys);
+        }
+    }
+
+    HomomorphicEval::HomomorphicEval(int num_slots, int max_ct_level, int log_scale, const vector<int> &galois_steps)
+        : HomomorphicEval(CKKSParams(num_slots, log_scale, max_ct_level), galois_steps) {
     }
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {
@@ -238,6 +259,19 @@ namespace hit {
         return backend_encryptor->object;
     }
 
+    Bootstrapper &HomomorphicEval::get_bootstrapper() {
+        if (!(context->btp_params.has_value())) {
+            LOG_AND_THROW_STREAM("CKKS parameters do not specify bootstrapping parameters.");
+        }
+
+        if (backend_bootstrapper.get() == nullptr || backend_bootstrapper->params != context->params) {
+            ParameterizedLattigoType<Bootstrapper> *tmp = new ParameterizedLattigoType<Bootstrapper>(
+                newBootstrapper(context->params, context->btp_params.value(), btp_keys), context->params);
+            backend_bootstrapper.reset(tmp);
+        }
+        return backend_bootstrapper->object;
+    }
+
     void HomomorphicEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
         rotate(get_evaluator(), ct.backend_ct, -steps, ct.backend_ct);
     }
@@ -309,5 +343,17 @@ namespace hit {
 
     void HomomorphicEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
         relinearize(get_evaluator(), ct.backend_ct, ct.backend_ct);
+    }
+
+    CKKSCiphertext HomomorphicEval::bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
+        if (rescale_for_bootstrapping && ct.he_level() == 0) {
+            LOG_AND_THROW_STREAM("Unable to bootstrap ciphertext at level 0 when rescale_for_bootstrapping is true.");
+        }
+
+        CKKSCiphertext bootstrapped_ct = ct;
+        bootstrapped_ct.backend_ct = latticpp::bootstrap(get_bootstrapper(), ct.backend_ct);
+        bootstrapped_ct.scale_ = pow(2, context->log_scale());
+        bootstrapped_ct.he_level_ = context->max_ciphertext_level() - btp_depth;
+        return bootstrapped_ct;
     }
 }  // namespace hit

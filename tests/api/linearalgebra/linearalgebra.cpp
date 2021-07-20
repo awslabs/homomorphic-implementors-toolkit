@@ -1190,7 +1190,7 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Row_Major) {
     test_multiply_matrix_matrix_row_major_inputs(linear_algebra_rot, false);
     vector<int> rotations = rot_instance.needed_rotations();
 
-    HomomorphicEval ckks_instance = HomomorphicEval(8192, THREE_MULTI_DEPTH, LOG_SCALE, true, rotations);
+    HomomorphicEval ckks_instance = HomomorphicEval(8192, THREE_MULTI_DEPTH, LOG_SCALE, rotations);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
     test_multiply_matrix_matrix_row_major_inputs(linear_algebra, true);
 }
@@ -1311,7 +1311,7 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Row_Major_Mixed_Unit) {
     test_multiply_matrix_matrix_row_major_mixed_unit_inputs(linear_algebra_rot, false);
     vector<int> rotations = rot_instance.needed_rotations();
 
-    HomomorphicEval ckks_instance = HomomorphicEval(8192, THREE_MULTI_DEPTH, LOG_SCALE, true, rotations);
+    HomomorphicEval ckks_instance = HomomorphicEval(8192, THREE_MULTI_DEPTH, LOG_SCALE, rotations);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
     test_multiply_matrix_matrix_row_major_mixed_unit_inputs(linear_algebra, true);
 }
@@ -1424,7 +1424,7 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Col_Major) {
     test_multiply_matrix_matrix_col_major_inputs(linear_algebra_rot, false);
     vector<int> rotations = rot_instance.needed_rotations();
 
-    HomomorphicEval ckks_instance = HomomorphicEval(8192, THREE_MULTI_DEPTH, LOG_SCALE, true, rotations);
+    HomomorphicEval ckks_instance = HomomorphicEval(8192, THREE_MULTI_DEPTH, LOG_SCALE, rotations);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
     test_multiply_matrix_matrix_col_major_inputs(linear_algebra, true);
 }
@@ -1534,7 +1534,7 @@ TEST(LinearAlgebraTest, MultiplyRowMatrix) {
     test_multiply_row_matrix_inputs(linear_algebra_rot, false);
     vector<int> rotations = rot_instance.needed_rotations();
 
-    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, true, rotations);
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, rotations);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
     test_multiply_row_matrix_inputs(linear_algebra, true);
 }
@@ -1626,7 +1626,7 @@ TEST(LinearAlgebraTest, MultiplyRowMatrix_Mixed_Unit) {
     test_multiply_row_matrix_mixed_unit_inputs(linear_algebra_rot, false);
     vector<int> rotations = rot_instance.needed_rotations();
 
-    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, true, rotations);
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, rotations);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
     test_multiply_row_matrix_mixed_unit_inputs(linear_algebra, true);
 }
@@ -1741,7 +1741,7 @@ TEST(LinearAlgebraTest, MultiplyMatrixCol) {
     test_multiply_matrix_col_inputs(linear_algebra_rot, false);
     vector<int> rotations = rot_instance.needed_rotations();
 
-    HomomorphicEval ckks_instance = HomomorphicEval(8192, TWO_MULTI_DEPTH, LOG_SCALE, true, rotations);
+    HomomorphicEval ckks_instance = HomomorphicEval(8192, TWO_MULTI_DEPTH, LOG_SCALE, rotations);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
     test_multiply_matrix_col_inputs(linear_algebra, true);
 }
@@ -1834,7 +1834,7 @@ TEST(LinearAlgebraTest, MultiplyMatrixCol_Mixed_Unit) {
     test_multiply_matrix_col_mixed_unit_inputs(linear_algebra_rot, false);
     vector<int> rotations = rot_instance.needed_rotations();
 
-    HomomorphicEval ckks_instance = HomomorphicEval(8192, TWO_MULTI_DEPTH, LOG_SCALE, true, rotations);
+    HomomorphicEval ckks_instance = HomomorphicEval(8192, TWO_MULTI_DEPTH, LOG_SCALE, rotations);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
     test_multiply_matrix_col_mixed_unit_inputs(linear_algebra, true);
 }
@@ -1928,7 +1928,7 @@ TEST(LinearAlgebraTest, TransposeUnit) {
     transpose_unit_test(linear_algebra_rot, false);
     vector<int> rotations = rot_instance.needed_rotations();
 
-    HomomorphicEval ckks_instance = HomomorphicEval(8192, TWO_MULTI_DEPTH, LOG_SCALE, true, rotations);
+    HomomorphicEval ckks_instance = HomomorphicEval(8192, TWO_MULTI_DEPTH, LOG_SCALE, rotations);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
     transpose_unit_test(linear_algebra, true);
 }
@@ -2150,7 +2150,7 @@ TEST(LinearAlgebraTest, SumRows) {
     test_sum_rows_inputs(linear_algebra_rot, false);
     vector<int> rotations = rot_instance.needed_rotations();
 
-    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, true, rotations);
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, rotations);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
     test_sum_rows_inputs(linear_algebra, true);
 }
@@ -2194,7 +2194,7 @@ TEST(LinearAlgebraTest, SumRowsMany) {
     test_sum_rows_many_inputs(linear_algebra_rot, false);
     vector<int> rotations = rot_instance.needed_rotations();
 
-    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, true, rotations);
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, rotations);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
     test_sum_rows_many_inputs(linear_algebra, true);
 }
@@ -2248,7 +2248,7 @@ TEST(LinearAlgebraTest, SumCols) {
     test_sum_cols_inputs(linear_algebra_rot, false);
     vector<int> rotations = rot_instance.needed_rotations();
 
-    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, true, rotations);
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, rotations);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
     test_sum_cols_inputs(linear_algebra, true);
 }
@@ -2292,7 +2292,7 @@ TEST(LinearAlgebraTest, SumColsMany) {
     test_sum_cols_many_inputs(linear_algebra_rot, false);
     vector<int> rotations = rot_instance.needed_rotations();
 
-    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, true, rotations);
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, rotations);
     LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
     test_sum_cols_many_inputs(linear_algebra, true);
 }

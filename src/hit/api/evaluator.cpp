@@ -381,6 +381,8 @@ namespace hit {
         VLOG(VLOG_EVAL) << "Bootstrapping ciphertext";
         CKKSCiphertext ct_prime = bootstrap_internal(ct, rescale_for_bootstrapping);
         ct_prime.bootstrapped_ = true;
+        ct_prime.needs_relin_ = false;
+        ct_prime.needs_rescale_ = false;
         print_stats(ct_prime);
         return ct_prime;
     }

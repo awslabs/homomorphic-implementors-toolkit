@@ -47,7 +47,7 @@ TEST(HomomorphicTest, Serialization_NoSecret) {
     vector<int> rotations(2);
     rotations[0] = 1;
     rotations[0] = -1;
-    HomomorphicEval ckks_instance1 = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, true, rotations);
+    HomomorphicEval ckks_instance1 = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, rotations);
 
     // serialize instance to files
     stringstream paramsStream(ios::in | ios::out | ios::binary);
@@ -91,7 +91,7 @@ TEST(HomomorphicTest, Serialization_WithSecret) {
 TEST(HomomorphicTest, RotateLeft) {
     vector<int> rotations(1);
     rotations[0] = STEPS;
-    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, true, rotations);
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, rotations);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2;
@@ -124,7 +124,7 @@ TEST(HomomorphicTest, RotateLeft_InvalidCase) {
 TEST(HomomorphicTest, RotateRight) {
     vector<int> rotations(1);
     rotations[0] = -STEPS;
-    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, true, rotations);
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, rotations);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     vector<double> vector2;
@@ -454,5 +454,23 @@ TEST(HomomorphicTest, RescaleToNextInPlace) {
     vector<double> vector3 = ckks_instance.decrypt(ciphertext2);
     double diff = relative_error(vector2, vector3);
     ASSERT_NE(diff, INVALID_NORM);
+    ASSERT_LE(diff, MAX_NORM);
+}
+
+TEST(HomomorphicTest, Bootstrapping) {
+    // sparse key parameters, much faster for testing.
+    // Note that I had to reduce the PT norm to 0.1 for these parameters, otherwise the test fails.
+    CKKSParams params(latticpp::getBootstrappingParams(latticpp::BootstrapParams_Set4));
+    HomomorphicEval ckks_instance = HomomorphicEval(params);
+    vector<double> vector1 = random_vector(params.num_slots(), .1);
+    CKKSCiphertext ciphertext1 = ckks_instance.encrypt(vector1);
+    CKKSCiphertext bootstrapped_ct = ckks_instance.bootstrap(ciphertext1);
+
+    ASSERT_EQ(bootstrapped_ct.he_level(), params.max_ct_level() - params.btp_params.value().bootstrapping_depth());
+    ASSERT_FALSE(bootstrapped_ct.needs_relin());
+    ASSERT_FALSE(bootstrapped_ct.needs_rescale());
+
+    vector<double> vector2 = ckks_instance.decrypt(bootstrapped_ct);
+    double diff = relative_error(vector1, vector2);
     ASSERT_LE(diff, MAX_NORM);
 }
