@@ -9,6 +9,7 @@ target_sources(aws_hit_obj
         ${CMAKE_CURRENT_LIST_DIR}/homomorphic.cpp
         ${CMAKE_CURRENT_LIST_DIR}/opcount.cpp
         ${CMAKE_CURRENT_LIST_DIR}/plaintext.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/rotations.cpp
         ${CMAKE_CURRENT_LIST_DIR}/scaleestimator.cpp
 )
 
@@ -20,6 +21,7 @@ install(
         ${CMAKE_CURRENT_LIST_DIR}/homomorphic.h
         ${CMAKE_CURRENT_LIST_DIR}/opcount.h
         ${CMAKE_CURRENT_LIST_DIR}/plaintext.h
+        ${CMAKE_CURRENT_LIST_DIR}/rotations.h
         ${CMAKE_CURRENT_LIST_DIR}/scaleestimator.h
     DESTINATION
         ${HIT_INCLUDES_INSTALL_DIR}/api/evaluator

@@ -100,7 +100,7 @@ void example_3_driver() {
 	// Don't reuse ciphertexts between instance types!
 	CKKSCiphertext se_ciphertext = se_inst.encrypt(plaintext);
 
-	// Now we can evaluate our homomorphic circuit on this input, ignoring the output
+	// Now we can evaluate our homomorphic circuit on this input, ignoring the output.
 	// While evaluating this circuit, the ScaleEstimator instance emits logs for the maximum
 	// plaintext value, number of ciphertext modulus bits, and estimated max log scale at
 	// the output of each gate. This logging is enabled when the logging level is 1 or 2.
@@ -110,12 +110,36 @@ void example_3_driver() {
 	// ScaleEstimator to estimate the maximum log scale we can use with ciphertexts.
 	double log_scale = se_inst.get_estimated_max_log_scale();
 
+/* ******** Rotation Keys ********
+ * The next parameter we will need is the set of explicit rotations in the circuit
+ * i.e., either using rotate_left() or rotate_right(). We need to know the complete
+ * set of rotations so that the HomomorphicEvaluator below will generate the necessary
+ * rotation keys. Although our example circuit doesn't use any rotations, in general
+ * it can be tedious to track this manually. Thus we can use the RotationSet evaluator
+ * to help us compute the complete set of explicit rotations.
+ */
+
+    // Create a RotationSet evaluator
+	RotationSet rs_inst(num_slots);
+
+	// Don't reuse ciphertexts between instance types!
+	CKKSCiphertext rs_ciphertext = rs_inst.encrypt(plaintext);
+
+	// Now we can evaluate our homomorphic circuit on this input, ignoring the output.
+	// While evaluating this circuit, the RotationSet instance tracks explit rotations.
+	poly_eval_homomorphic_v1(rs_inst, rs_ciphertext);
+
+	// After evaluating the circuit, we can ask the
+	// RotationSet for the complete set of explicit rotations in the circuit.
+	// For our example, this list will be empty because there are no explict rotations.
+	vector<int> rotation_set = rs_inst.needed_rotations();
+
 /* ******** Ciphertext Evaluation ********
  * Having used HIT to help determine the circuit depth and the maximum scale
  * we can use, we can now set up an instance which actually does homomorphic
  * computation.
  */
-	HomomorphicEval he_inst(num_slots, max_depth, static_cast<int>(floor(log_scale)));
+	HomomorphicEval he_inst(num_slots, max_depth, static_cast<int>(floor(log_scale)), true, rotation_set);
 
 	// Don't reuse ciphertexts between instance types!
 	CKKSCiphertext he_ciphertext = he_inst.encrypt(plaintext);

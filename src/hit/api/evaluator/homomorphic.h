@@ -120,7 +120,7 @@ namespace hit {
         latticpp::PublicKey pk;
         latticpp::SecretKey sk;
         latticpp::RotationKeys galois_keys;
-        latticpp::EvaluationKey relin_keys;
+        latticpp::RelinearizationKey relin_keys;
         bool standard_params_;
         int btp_depth;
 

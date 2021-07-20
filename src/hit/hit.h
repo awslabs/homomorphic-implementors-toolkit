@@ -13,6 +13,7 @@
 #include "hit/api/evaluator/implicitdepthfinder.h"
 #include "hit/api/evaluator/opcount.h"
 #include "hit/api/evaluator/plaintext.h"
+#include "hit/api/evaluator/rotations.h"
 #include "hit/api/evaluator/scaleestimator.h"
 #include "hit/api/linearalgebra/encodingunit.h"
 #include "hit/api/linearalgebra/encryptedcolvector.h"

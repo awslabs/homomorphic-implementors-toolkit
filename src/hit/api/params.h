@@ -95,7 +95,6 @@
 namespace hit {
     class BootstrappingParams {
        public:
-
         explicit BootstrappingParams(latticpp::BootstrappingParameters btp_params);
 
         int bootstrapping_depth() const;
