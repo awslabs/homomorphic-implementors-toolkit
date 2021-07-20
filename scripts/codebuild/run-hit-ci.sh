@@ -7,10 +7,10 @@ export CUR_DIR=`pwd`
 
 if [ -d build ]; then rm -Rf build; fi
 mkdir -p build && cd build
-cmake --trace -GNinja -DCMAKE_BUILD_TYPE=Release \
+cmake -GNinja -DCMAKE_BUILD_TYPE=Release \
     -DHIT_BUILD_TESTS=ON -DHIT_RUN_CLANG_TIDY=ON \
     -DHIT_BUILD_EXAMPLES=ON ../
-ninja -v -j $(nproc)
+ninja -j $(nproc)
 
 # GLog flags/configuration.
 # Default false. Log messages to stderr instead of logfiles.
