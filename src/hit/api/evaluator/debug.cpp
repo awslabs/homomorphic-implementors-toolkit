@@ -84,8 +84,7 @@ namespace hit {
     }
 
     DebugEval::DebugEval(const CKKSParams &params, const vector<int> &galois_steps) {
-        homomorphic_eval =
-            new HomomorphicEval(params, galois_steps);
+        homomorphic_eval = new HomomorphicEval(params, galois_steps);
         constructor_common(params.num_slots());
     }
 
