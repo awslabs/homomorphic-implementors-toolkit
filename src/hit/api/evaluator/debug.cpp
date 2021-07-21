@@ -83,8 +83,12 @@ namespace hit {
         VLOG(VLOG_VERBOSE) << " End of chain reached";
     }
 
-    DebugEval::DebugEval(int num_slots, int multiplicative_depth, int log_scale, bool,
-                         const vector<int> &galois_steps) {
+    DebugEval::DebugEval(const CKKSParams &params, const vector<int> &galois_steps) {
+        homomorphic_eval = new HomomorphicEval(params, galois_steps);
+        constructor_common(params.num_slots());
+    }
+
+    DebugEval::DebugEval(int num_slots, int multiplicative_depth, int log_scale, const vector<int> &galois_steps) {
         homomorphic_eval = new HomomorphicEval(num_slots, multiplicative_depth, log_scale, galois_steps);
         constructor_common(num_slots);
     }
@@ -307,5 +311,13 @@ namespace hit {
     void DebugEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
         homomorphic_eval->relinearize_inplace_internal(ct);
         scale_estimator->relinearize_inplace_internal(ct);
+    }
+
+    CKKSCiphertext DebugEval::bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
+        CKKSCiphertext ctout = homomorphic_eval->bootstrap_internal(ct, rescale_for_bootstrapping);
+        // homomorphic evaluator updates all necessary metadata; we can ignore the scale_estimator output.
+        // but we still need to *call* the scale_estimator (on the orignal input) so that it updates the internal state
+        scale_estimator->bootstrap_internal(ct, rescale_for_bootstrapping);
+        return ctout;
     }
 }  // namespace hit
