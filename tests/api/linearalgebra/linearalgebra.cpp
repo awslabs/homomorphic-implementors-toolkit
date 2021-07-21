@@ -2679,6 +2679,8 @@ TEST(LinearAlgebraTest, RescaleToNext_RowVec) {
     ASSERT_FALSE(ct_vec1.needs_rescale());
 }
 
+/*
+This test takes an extremely long time to run. Removing it for now.
 TEST(LinearAlgebraTest, Bootstrap_RowVec) {
     // sparse key parameters, much faster for testing.
     // Note that I had to reduce the PT norm to 0.1 for these parameters, otherwise the test fails.
@@ -2704,3 +2706,4 @@ TEST(LinearAlgebraTest, Bootstrap_RowVec) {
     double diff = relative_error(vec1, decrypted_bootstrapped_ct);
     ASSERT_LE(diff, MAX_NORM);
 }
+*/
