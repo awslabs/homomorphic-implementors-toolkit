@@ -179,8 +179,8 @@ namespace hit {
         destination.he_level_ = level;
         destination.scale_ = scale;
 
-        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder(), coeffs, level, scale);
-        destination.backend_ct = encryptNew(get_encryptor(), temp);
+        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder().ref(), coeffs, level, scale);
+        destination.backend_ct = encryptNew(get_encryptor().ref(), temp);
 
         destination.num_slots_ = num_slots_;
         destination.initialized = true;
@@ -203,7 +203,7 @@ namespace hit {
         }
 
         Plaintext temp = decryptNew(backend_decryptor, encrypted.backend_ct);
-        return decode(get_encoder(), temp, log2(num_slots()));
+        return decode(get_encoder().ref(), temp, log2(num_slots()));
     }
 
     int HomomorphicEval::num_slots() const {
@@ -214,91 +214,82 @@ namespace hit {
         return context->get_qi(ct.he_level());
     }
 
-    /* Lattigo classes are not thread-safe, but HIT should expose a thread-safe API. We solve
-     * this problem by using boost::thread_specific_ptr on stateful Lattigo types. This means
-     * that all accesses to the Lattigo objects must be guarded: we first have to ensure that
-     * the object has been allocated for this thread, and allocate it if not.
+    /* Lattigo classes are not thread-safe, but HIT should expose a thread-safe API.
+     * We solve this by maintaining a pool of Lattigo objects and checking them out when needed
+     * and then returning them when done. This way each instance cannot be used by more than one
+     * thread at a time.
      *
-     * However, there is an additional subtlety. C++ creates threads, e.g., when using a parallel
-     * `for_each` loop. However, it need not kill those threads at the end of the loop. In practice,
-     * it seems that C++ tends to keep those idle threads around to reduce the overhead of the next
-     * `for_each` invocation. This can cause a problem for us. Consider the unit tests: two tests
-     * may use different parameters P1 and P2 (possibly with different ring dimensions). If thread 1
-     * creates an Evaluator for P1, but C++ reuses this thread (without killing it) on a test that uses
-     * P2, then our code would use an evaluator for the wrong parameter set. To avoid this, we actually
-     * store a struct inside the thread_specific_ptr that maintains the type we actually care about
-     * along with a copy of (not a reference to!) the parameters it was created with. This way, if
-     * an evaluator is already allocated, we can check that it was allocated _with the correct parameters_.
-     * If it was allocated with different parameters, we throw away the old evaluator and create a new one.
+     * We cannot use boost::thread_specific_ptr as that requires us to either kill all child threads
+     * when done (which we cannot do because we do not control them) or to explicitly NULL the values
+     * in all of the boost::thread_specific_ptr objects when we're done with them
+     * (but the parallel_for logic doesn't give us hooks to do so).
      */
-    Evaluator &HomomorphicEval::get_evaluator() {
-        if (backend_evaluator.get() == nullptr || !(backend_evaluator->params == context->params)) {
-            EvaluationKey evalKey = makeEvaluationKey(relin_keys, galois_keys);
-            ParameterizedLattigoType<Evaluator> *tmp =
-                new ParameterizedLattigoType<Evaluator>(newEvaluator(context->params, evalKey), context->params);
-            backend_evaluator.reset(tmp);
-        }
-        return backend_evaluator->object;
+    HomomorphicEval::PoolObject<Evaluator> HomomorphicEval::get_evaluator() {
+        std::optional<Evaluator> opt = backend_evaluator.poll();
+        Evaluator result =
+            opt.has_value()
+                ? std::move(*opt)
+                : newEvaluator(context->params, makeEvaluationKey(relin_keys, galois_keys));
+        return PoolObject<Evaluator>(std::move(result), backend_evaluator);
     }
 
-    Encoder &HomomorphicEval::get_encoder() {
-        if (backend_encoder.get() == nullptr || !(backend_encoder->params == context->params)) {
-            ParameterizedLattigoType<Encoder> *tmp =
-                new ParameterizedLattigoType<Encoder>(newEncoder(context->params), context->params);
-            backend_encoder.reset(tmp);
-        }
-        return backend_encoder->object;
+    HomomorphicEval::PoolObject<Encoder> HomomorphicEval::get_encoder() {
+        std::optional<Encoder> opt = backend_encoder.poll();
+        Encoder result =
+            opt.has_value()
+                ? std::move(*opt)
+                : newEncoder(context->params);
+        return PoolObject<Encoder>(std::move(result), backend_encoder);
     }
 
-    Encryptor &HomomorphicEval::get_encryptor() {
-        if (backend_encryptor.get() == nullptr || backend_encryptor->params != context->params) {
-            ParameterizedLattigoType<Encryptor> *tmp =
-                new ParameterizedLattigoType<Encryptor>(newEncryptorFromPk(context->params, pk), context->params);
-            backend_encryptor.reset(tmp);
-        }
-        return backend_encryptor->object;
+    HomomorphicEval::PoolObject<Encryptor> HomomorphicEval::get_encryptor() {
+        std::optional<Encryptor> opt = backend_encryptor.poll();
+        Encryptor result =
+            opt.has_value()
+                ? std::move(*opt)
+                : newEncryptorFromPk(context->params, pk);
+        return PoolObject<Encryptor>(std::move(result), backend_encryptor);
     }
 
-    Bootstrapper &HomomorphicEval::get_bootstrapper() {
+    HomomorphicEval::PoolObject<Bootstrapper> HomomorphicEval::get_bootstrapper() {
         if (!(context->btp_params.has_value())) {
             LOG_AND_THROW_STREAM("CKKS parameters do not specify bootstrapping parameters.");
         }
-
-        if (backend_bootstrapper.get() == nullptr || backend_bootstrapper->params != context->params) {
-            ParameterizedLattigoType<Bootstrapper> *tmp = new ParameterizedLattigoType<Bootstrapper>(
-                newBootstrapper(context->params, context->btp_params.value(), btp_keys), context->params);
-            backend_bootstrapper.reset(tmp);
-        }
-        return backend_bootstrapper->object;
+        std::optional<Bootstrapper> opt = backend_bootstrapper.poll();
+        Bootstrapper result =
+            opt.has_value()
+                ? std::move(*opt)
+                : newBootstrapper(context->params, context->btp_params.value(), btp_keys);
+        return PoolObject<Bootstrapper>(std::move(result), backend_bootstrapper);
     }
 
     void HomomorphicEval::rotate_right_inplace_internal(CKKSCiphertext &ct, int steps) {
-        rotate(get_evaluator(), ct.backend_ct, -steps, ct.backend_ct);
+        rotate(get_evaluator().ref(), ct.backend_ct, -steps, ct.backend_ct);
     }
 
     void HomomorphicEval::rotate_left_inplace_internal(CKKSCiphertext &ct, int steps) {
-        rotate(get_evaluator(), ct.backend_ct, steps, ct.backend_ct);
+        rotate(get_evaluator().ref(), ct.backend_ct, steps, ct.backend_ct);
     }
 
     void HomomorphicEval::negate_inplace_internal(CKKSCiphertext &ct) {
-        neg(get_evaluator(), ct.backend_ct, ct.backend_ct);
+        neg(get_evaluator().ref(), ct.backend_ct, ct.backend_ct);
     }
 
     void HomomorphicEval::add_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        ::add(get_evaluator(), ct1.backend_ct, ct2.backend_ct, ct1.backend_ct);
+        ::add(get_evaluator().ref(), ct1.backend_ct, ct2.backend_ct, ct1.backend_ct);
     }
 
     void HomomorphicEval::add_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
-        addConst(get_evaluator(), ct.backend_ct, scalar, ct.backend_ct);
+        addConst(get_evaluator().ref(), ct.backend_ct, scalar, ct.backend_ct);
     }
 
     void HomomorphicEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder(), plain, ct.he_level(), ct.scale());
-        addPlain(get_evaluator(), ct.backend_ct, temp, ct.backend_ct);
+        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder().ref(), plain, ct.he_level(), ct.scale());
+        addPlain(get_evaluator().ref(), ct.backend_ct, temp, ct.backend_ct);
     }
 
     void HomomorphicEval::sub_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        ::sub(get_evaluator(), ct1.backend_ct, ct2.backend_ct, ct1.backend_ct);
+        ::sub(get_evaluator().ref(), ct1.backend_ct, ct2.backend_ct, ct1.backend_ct);
     }
 
     void HomomorphicEval::sub_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
@@ -306,12 +297,12 @@ namespace hit {
     }
 
     void HomomorphicEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder(), plain, ct.he_level(), ct.scale());
-        subPlain(get_evaluator(), ct.backend_ct, temp, ct.backend_ct);
+        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder().ref(), plain, ct.he_level(), ct.scale());
+        subPlain(get_evaluator().ref(), ct.backend_ct, temp, ct.backend_ct);
     }
 
     void HomomorphicEval::multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
-        mul(get_evaluator(), ct1.backend_ct, ct2.backend_ct, ct1.backend_ct);
+        mul(get_evaluator().ref(), ct1.backend_ct, ct2.backend_ct, ct1.backend_ct);
     }
 
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
@@ -322,8 +313,8 @@ namespace hit {
     }
 
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder(), plain, ct.he_level(), ct.scale());
-        mulPlain(get_evaluator(), ct.backend_ct, temp, ct.backend_ct);
+        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder().ref(), plain, ct.he_level(), ct.scale());
+        mulPlain(get_evaluator().ref(), ct.backend_ct, temp, ct.backend_ct);
     }
 
     void HomomorphicEval::square_inplace_internal(CKKSCiphertext &ct) {
@@ -338,11 +329,11 @@ namespace hit {
     }
 
     void HomomorphicEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        rescaleMany(get_evaluator(), context->params, ct.backend_ct, 1, ct.backend_ct);
+        rescaleMany(get_evaluator().ref(), context->params, ct.backend_ct, 1, ct.backend_ct);
     }
 
     void HomomorphicEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
-        relinearize(get_evaluator(), ct.backend_ct, ct.backend_ct);
+        relinearize(get_evaluator().ref(), ct.backend_ct, ct.backend_ct);
     }
 
     CKKSCiphertext HomomorphicEval::bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
@@ -362,7 +353,7 @@ namespace hit {
         // affects circuit depth). However, we don't pass it to the Lattigo bootstrap API because
         // Lattigo implicitly does the rescale if it's able to. For more information, see the
         // API comment in evaluator.h.
-        bootstrapped_ct.backend_ct = latticpp::bootstrap(get_bootstrapper(), ct.backend_ct);
+        bootstrapped_ct.backend_ct = latticpp::bootstrap(get_bootstrapper().ref(), ct.backend_ct);
         bootstrapped_ct.scale_ = pow(2, context->log_scale());
         bootstrapped_ct.he_level_ = context->max_ciphertext_level() - btp_depth;
         return bootstrapped_ct;

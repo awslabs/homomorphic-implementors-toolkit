@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include <boost/thread/tss.hpp>
+#include <deque>
+#include <optional>
 
 #include "../../common.h"
 #include "../ciphertext.h"
@@ -105,18 +106,60 @@ namespace hit {
 
        private:
         template <typename T>
-        struct ParameterizedLattigoType {
-            ParameterizedLattigoType(T object, latticpp::Parameters &params)
-                : object(std::move(object)), params(params) {
-            }
-            T object;
-            const latticpp::Parameters params;
+        class ObjectPool {
+            public:
+                std::optional<T> poll() {
+                    std::lock_guard<std::mutex> lock(pool_mutex);
+                    if (list.empty()) {
+                        return {};
+                    }
+                    T result = list.back();
+                    list.pop_back();
+                    return result;
+                }
+
+                void offer(T &&object) {
+                    std::lock_guard<std::mutex> lock(pool_mutex);
+                    list.push_back(object);
+                }
+            private:
+                std::mutex pool_mutex;
+                std::deque<T> list;
         };
 
-        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Encoder>> backend_encoder;
-        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Evaluator>> backend_evaluator;
-        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Encryptor>> backend_encryptor;
-        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Bootstrapper>> backend_bootstrapper;
+        template <typename T>
+        class PoolObject {
+            public:
+            PoolObject(T &&object, ObjectPool<T> &pool) : pool(pool), object(object) {}
+            ~PoolObject() {
+                pool.offer(std::move(object));
+            }
+
+            T* get() {
+                return &object;
+            }
+
+            T* operator->() {
+                return get();
+            }
+
+            T& ref() {
+                return object;
+            }
+
+            explicit operator T&() {
+                return ref();
+            }
+
+            private:
+            ObjectPool<T> &pool;
+            T object;
+        };
+
+        ObjectPool<latticpp::Encoder> backend_encoder;
+        ObjectPool<latticpp::Evaluator> backend_evaluator;
+        ObjectPool<latticpp::Encryptor> backend_encryptor;
+        ObjectPool<latticpp::Bootstrapper> backend_bootstrapper;
         latticpp::Decryptor backend_decryptor;
         latticpp::PublicKey pk;
         latticpp::SecretKey sk;
@@ -126,10 +169,10 @@ namespace hit {
         bool standard_params_;
         int btp_depth = 0;
 
-        latticpp::Evaluator &get_evaluator();
-        latticpp::Encoder &get_encoder();
-        latticpp::Encryptor &get_encryptor();
-        latticpp::Bootstrapper &get_bootstrapper();
+        PoolObject<latticpp::Evaluator> get_evaluator();
+        PoolObject<latticpp::Encoder> get_encoder();
+        PoolObject<latticpp::Encryptor> get_encryptor();
+        PoolObject<latticpp::Bootstrapper> get_bootstrapper();
 
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 
