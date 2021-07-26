@@ -2678,3 +2678,32 @@ TEST(LinearAlgebraTest, RescaleToNext_RowVec) {
     ASSERT_FALSE(ct_vec1.needs_relin());
     ASSERT_FALSE(ct_vec1.needs_rescale());
 }
+
+/*
+This test takes an extremely long time to run. Removing it for now.
+TEST(LinearAlgebraTest, Bootstrap_RowVec) {
+    // sparse key parameters, much faster for testing.
+    // Note that I had to reduce the PT norm to 0.1 for these parameters, otherwise the test fails.
+    CKKSParams params(latticpp::getBootstrappingParams(latticpp::BootstrapParams_Set4));
+    HomomorphicEval ckks_instance = HomomorphicEval(params);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+
+    // a 64x64 encoding unit
+    int unit1_height = 64;
+    EncodingUnit unit = linear_algebra.make_unit(unit1_height);
+
+    vector<double> vec1 = random_vector(params.num_slots(), .1);
+
+    EncryptedRowVector ct_vec1 = linear_algebra.encrypt_row_vector(vec1, unit);
+
+    EncryptedRowVector bootstrapped_vec = linear_algebra.bootstrap(ct_vec1);
+
+    ASSERT_EQ(bootstrapped_vec.he_level(), params.max_ct_level() - params.btp_params.value().bootstrapping_depth());
+    ASSERT_FALSE(bootstrapped_vec.needs_relin());
+    ASSERT_FALSE(bootstrapped_vec.needs_rescale());
+
+    Vector decrypted_bootstrapped_ct = linear_algebra.decrypt(bootstrapped_vec);
+    double diff = relative_error(vec1, decrypted_bootstrapped_ct);
+    ASSERT_LE(diff, MAX_NORM);
+}
+*/
