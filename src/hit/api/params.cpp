@@ -17,7 +17,8 @@ namespace hit {
     CKKSParams::CKKSParams(latticpp::Parameters lattigo_params) : lattigo_params(move(lattigo_params)) {
     }
 
-    CKKSParams::CKKSParams(const latticpp::BootstrappingParameters &lattigo_btp_params) : lattigo_params(genParams(lattigo_btp_params)) {
+    CKKSParams::CKKSParams(const latticpp::BootstrappingParameters &lattigo_btp_params)
+        : lattigo_params(genParams(lattigo_btp_params)) {
         btp_params = optional<BootstrappingParams>(BootstrappingParams(lattigo_btp_params));
     }
 

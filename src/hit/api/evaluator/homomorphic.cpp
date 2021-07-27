@@ -121,6 +121,9 @@ namespace hit {
         timepoint start = chrono::steady_clock::now();
         galois_keys = unmarshalBinaryRotationKeys(galois_key_stream);
         relin_keys = unmarshalBinaryRelinearizationKey(relin_key_stream);
+        if (context->btp_params.has_value()) {
+            btp_keys = makeBootstrappingKey(relin_keys, galois_keys);
+        }
         log_elapsed_time(start, "Reading keys...");
     }
 
@@ -133,6 +136,9 @@ namespace hit {
         sk = unmarshalBinarySecretKey(secret_key_stream);
         galois_keys = unmarshalBinaryRotationKeys(galois_key_stream);
         relin_keys = unmarshalBinaryRelinearizationKey(relin_key_stream);
+        if (context->btp_params.has_value()) {
+            btp_keys = makeBootstrappingKey(relin_keys, galois_keys);
+        }
         log_elapsed_time(start, "Reading keys...");
         backend_decryptor = newDecryptor(context->params, sk);
     }

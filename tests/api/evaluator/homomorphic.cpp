@@ -88,6 +88,58 @@ TEST(HomomorphicTest, Serialization_WithSecret) {
     ASSERT_LE(relative_error(expected_output, vector_output), MAX_NORM);
 }
 
+TEST(HomomorphicTest, Serialization_NoSecret_Bootstrapping) {
+    vector<int> rotations(2);
+    rotations[0] = 1;
+    rotations[0] = -1;
+
+    CKKSParams params(latticpp::getBootstrappingParams(latticpp::BootstrapParams_Set4));
+    HomomorphicEval ckks_instance1 = HomomorphicEval(params, rotations);
+
+    // serialize instance to files
+    stringstream paramsStream(ios::in | ios::out | ios::binary);
+    stringstream galoisKeyStream(ios::in | ios::out | ios::binary);
+    stringstream relinKeyStream(ios::in | ios::out | ios::binary);
+    ckks_instance1.save(paramsStream, galoisKeyStream, relinKeyStream, nullptr);
+    HomomorphicEval ckks_instance2 = HomomorphicEval(paramsStream, galoisKeyStream, relinKeyStream);
+    vector<double> vector_input = random_vector(params.num_slots(), RANGE);
+    CKKSCiphertext ciphertext = ckks_instance2.encrypt(vector_input);
+    ASSERT_THROW((
+                     // Expect invalid_argument is thrown because there is no secret key
+                     ckks_instance2.decrypt(ciphertext)),
+                 invalid_argument);
+    // should not throw an error.
+    ckks_instance2.square_inplace(ciphertext);
+    // should not throw an error.
+    CKKSCiphertext bootstrapped_ct = ckks_instance2.bootstrap(ciphertext);
+}
+
+TEST(HomomorphicTest, Serialization_WithSecret_Bootstrapping) {
+    vector<int> rotations(2);
+    rotations[0] = 1;
+    rotations[0] = -1;
+
+    CKKSParams params(latticpp::getBootstrappingParams(latticpp::BootstrapParams_Set4));
+    HomomorphicEval ckks_instance1 = HomomorphicEval(params, rotations);
+
+    // serialize instance to files
+    stringstream paramsStream(ios::in | ios::out | ios::binary);
+    stringstream galoisKeyStream(ios::in | ios::out | ios::binary);
+    stringstream relinKeyStream(ios::in | ios::out | ios::binary);
+    stringstream secretKeyStream(ios::in | ios::out | ios::binary);
+    ckks_instance1.save(paramsStream, galoisKeyStream, relinKeyStream, &secretKeyStream);
+
+    HomomorphicEval ckks_instance2 = HomomorphicEval(paramsStream, galoisKeyStream, relinKeyStream, secretKeyStream);
+
+    vector<double> vector_input = random_vector(params.num_slots(), RANGE);
+    CKKSCiphertext ciphertext = ckks_instance2.encrypt(vector_input);
+    ckks_instance2.square_inplace(ciphertext);
+    ckks_instance2.relinearize_inplace(ciphertext);
+    ckks_instance2.rescale_to_next_inplace(ciphertext);
+    CKKSCiphertext bootstrapped_ct = ckks_instance2.bootstrap(ciphertext);
+    vector_output = ckks_instance2.decrypt(bootstrapped_ct);
+}
+
 TEST(HomomorphicTest, RotateLeft) {
     vector<int> rotations(1);
     rotations[0] = STEPS;
