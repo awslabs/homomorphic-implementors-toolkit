@@ -107,51 +107,53 @@ namespace hit {
        private:
         template <typename T>
         class ObjectPool {
-            public:
-                std::optional<T> poll() {
-                    std::lock_guard<std::mutex> lock(pool_mutex);
-                    if (list.empty()) {
-                        return {};
-                    }
-                    T result = list.back();
-                    list.pop_back();
-                    return result;
+           public:
+            std::optional<T> poll() {
+                std::lock_guard<std::mutex> lock(pool_mutex);
+                if (list.empty()) {
+                    return {};
                 }
+                T result = list.back();
+                list.pop_back();
+                return result;
+            }
 
-                void offer(T &&object) {
-                    std::lock_guard<std::mutex> lock(pool_mutex);
-                    list.push_back(object);
-                }
-            private:
-                std::mutex pool_mutex;
-                std::deque<T> list;
+            void offer(T &&object) {
+                std::lock_guard<std::mutex> lock(pool_mutex);
+                list.push_back(object);
+            }
+
+           private:
+            std::mutex pool_mutex;
+            std::deque<T> list;
         };
 
         template <typename T>
         class PoolObject {
-            public:
-            PoolObject(T &&object, ObjectPool<T> &pool) : pool(pool), object(object) {}
+           public:
+            PoolObject(T &&object, ObjectPool<T> &pool) : pool(pool), object(object) {
+            }
             ~PoolObject() {
                 pool.offer(std::move(object));
             }
 
-            T* get() {
+            T *get() {
                 return &object;
             }
 
-            T* operator->() {
+            T *operator->() {
                 return get();
             }
 
-            T& ref() {
+            T &ref() {
                 return object;
             }
 
-            explicit operator T&() {
+            explicit operator T &() {
                 return ref();
             }
 
-            private:
+           private:
             ObjectPool<T> &pool;
             T object;
         };

@@ -109,7 +109,7 @@ namespace hit {
             // make a context without support for bootstrapping
             context = make_shared<HEContext>(CKKSParams(params));
         }
-        
+
         istringstream pk_stream(ckks_params.pubkey());
         pk = unmarshalBinaryPublicKey(pk_stream);
     }
@@ -240,28 +240,20 @@ namespace hit {
      */
     HomomorphicEval::PoolObject<Evaluator> HomomorphicEval::get_evaluator() {
         std::optional<Evaluator> opt = backend_evaluator.poll();
-        Evaluator result =
-            opt.has_value()
-                ? std::move(*opt)
-                : newEvaluator(context->params, makeEvaluationKey(relin_keys, galois_keys));
+        Evaluator result = opt.has_value() ? std::move(*opt)
+                                           : newEvaluator(context->params, makeEvaluationKey(relin_keys, galois_keys));
         return PoolObject<Evaluator>(std::move(result), backend_evaluator);
     }
 
     HomomorphicEval::PoolObject<Encoder> HomomorphicEval::get_encoder() {
         std::optional<Encoder> opt = backend_encoder.poll();
-        Encoder result =
-            opt.has_value()
-                ? std::move(*opt)
-                : newEncoder(context->params);
+        Encoder result = opt.has_value() ? std::move(*opt) : newEncoder(context->params);
         return PoolObject<Encoder>(std::move(result), backend_encoder);
     }
 
     HomomorphicEval::PoolObject<Encryptor> HomomorphicEval::get_encryptor() {
         std::optional<Encryptor> opt = backend_encryptor.poll();
-        Encryptor result =
-            opt.has_value()
-                ? std::move(*opt)
-                : newEncryptorFromPk(context->params, pk);
+        Encryptor result = opt.has_value() ? std::move(*opt) : newEncryptorFromPk(context->params, pk);
         return PoolObject<Encryptor>(std::move(result), backend_encryptor);
     }
 
@@ -271,9 +263,7 @@ namespace hit {
         }
         std::optional<Bootstrapper> opt = backend_bootstrapper.poll();
         Bootstrapper result =
-            opt.has_value()
-                ? std::move(*opt)
-                : newBootstrapper(context->params, context->btp_params.value(), btp_keys);
+            opt.has_value() ? std::move(*opt) : newBootstrapper(context->params, context->btp_params.value(), btp_keys);
         return PoolObject<Bootstrapper>(std::move(result), backend_bootstrapper);
     }
 
