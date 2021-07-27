@@ -144,8 +144,8 @@ namespace hit {
         }
 
         protobuf::CKKSParams ckks_params;
-
         ostringstream ctx_stream;
+
         marshalBinaryParameters(context->params, ctx_stream);
         ckks_params.set_ctx(ctx_stream.str());
 
@@ -158,7 +158,6 @@ namespace hit {
         ostringstream pk_stream;
         marshalBinaryPublicKey(pk, pk_stream);
         ckks_params.set_pubkey(pk_stream.str());
-
         ckks_params.SerializeToOstream(&params_stream);
 
         marshalBinaryRotationKeys(galois_keys, galois_key_stream);
