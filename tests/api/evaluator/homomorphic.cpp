@@ -137,7 +137,7 @@ TEST(HomomorphicTest, Serialization_WithSecret_Bootstrapping) {
     ckks_instance2.relinearize_inplace(ciphertext);
     ckks_instance2.rescale_to_next_inplace(ciphertext);
     CKKSCiphertext bootstrapped_ct = ckks_instance2.bootstrap(ciphertext);
-    vector_output = ckks_instance2.decrypt(bootstrapped_ct);
+    vector<double> vector_output = ckks_instance2.decrypt(bootstrapped_ct);
 }
 
 TEST(HomomorphicTest, RotateLeft) {
