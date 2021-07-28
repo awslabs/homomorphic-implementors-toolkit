@@ -176,6 +176,8 @@ namespace hit {
         PoolObject<latticpp::Bootstrapper> get_bootstrapper();
 
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
+        void deserializeEvalKeys(const timepoint &start, std::istream &galois_key_stream,
+                                 std::istream &relin_key_stream);
 
         void deserialize_common(std::istream &params_stream);
 

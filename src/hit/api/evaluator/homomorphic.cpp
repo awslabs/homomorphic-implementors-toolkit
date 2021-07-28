@@ -114,11 +114,8 @@ namespace hit {
         pk = unmarshalBinaryPublicKey(pk_stream);
     }
 
-    /* An evaluation instance */
-    HomomorphicEval::HomomorphicEval(istream &params_stream, istream &galois_key_stream, istream &relin_key_stream) {
-        deserialize_common(params_stream);
-
-        timepoint start = chrono::steady_clock::now();
+    void HomomorphicEval::deserializeEvalKeys(const timepoint &start, istream &galois_key_stream,
+                                              istream &relin_key_stream) {
         galois_keys = unmarshalBinaryRotationKeys(galois_key_stream);
         relin_keys = unmarshalBinaryRelinearizationKey(relin_key_stream);
         if (context->btp_params.has_value()) {
@@ -127,19 +124,20 @@ namespace hit {
         log_elapsed_time(start, "Reading keys...");
     }
 
+    /* An evaluation instance */
+    HomomorphicEval::HomomorphicEval(istream &params_stream, istream &galois_key_stream, istream &relin_key_stream) {
+        deserialize_common(params_stream);
+        timepoint start = chrono::steady_clock::now();
+        deserializeEvalKeys(start, galois_key_stream, relin_key_stream);
+    }
+
     /* A full instance */
     HomomorphicEval::HomomorphicEval(istream &params_stream, istream &galois_key_stream, istream &relin_key_stream,
                                      istream &secret_key_stream) {
         deserialize_common(params_stream);
-
         timepoint start = chrono::steady_clock::now();
         sk = unmarshalBinarySecretKey(secret_key_stream);
-        galois_keys = unmarshalBinaryRotationKeys(galois_key_stream);
-        relin_keys = unmarshalBinaryRelinearizationKey(relin_key_stream);
-        if (context->btp_params.has_value()) {
-            btp_keys = makeBootstrappingKey(relin_keys, galois_keys);
-        }
-        log_elapsed_time(start, "Reading keys...");
+        deserializeEvalKeys(start, galois_key_stream, relin_key_stream);
         backend_decryptor = newDecryptor(context->params, sk);
     }
 
