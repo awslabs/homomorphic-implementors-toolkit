@@ -104,10 +104,14 @@ namespace hit {
 
     class CKKSParams {
        public:
-        explicit CKKSParams(latticpp::Parameters params);
+        // Provide CKKS parameters without support for bootstrapping
+        explicit CKKSParams(latticpp::Parameters lattigo_params);
 
-        explicit CKKSParams(latticpp::BootstrappingParameters btp_params);
+        // Provide bootstrapping parameters and automatically generate suitable CKKS parameters
+        explicit CKKSParams(latticpp::BootstrappingParameters lattigo_btp_params);
 
+        // Provide CKKS parameters and explicit bootstrapping parameters
+        // This is primarily used for serialization/deserialization
         CKKSParams(latticpp::Parameters lattigo_params, latticpp::BootstrappingParameters lattigo_btp_params);
 
         CKKSParams(int num_slots, int log_scale, int max_ct_level, int num_ks_primes = 1,

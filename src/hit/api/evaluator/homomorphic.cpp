@@ -99,34 +99,45 @@ namespace hit {
 
         istringstream ctx_stream(ckks_params.ctx());
         Parameters params = unmarshalBinaryParameters(ctx_stream);
-        context = make_shared<HEContext>(CKKSParams(params));
+
+        if (ckks_params.has_btp_params()) {
+            // make a context with support for bootstrapping
+            istringstream btp_params_stream(ckks_params.btp_params());
+            BootstrappingParameters btp_params = unmarshalBinaryBootstrapParameters(btp_params_stream);
+            context = make_shared<HEContext>(CKKSParams(params, btp_params));
+        } else {
+            // make a context without support for bootstrapping
+            context = make_shared<HEContext>(CKKSParams(params));
+        }
 
         istringstream pk_stream(ckks_params.pubkey());
         pk = unmarshalBinaryPublicKey(pk_stream);
+    }
 
-        standard_params_ = ckks_params.standardparams();
+    void HomomorphicEval::deserializeEvalKeys(const timepoint &start, istream &galois_key_stream,
+                                              istream &relin_key_stream) {
+        galois_keys = unmarshalBinaryRotationKeys(galois_key_stream);
+        relin_keys = unmarshalBinaryRelinearizationKey(relin_key_stream);
+        if (context->btp_params.has_value()) {
+            btp_keys = makeBootstrappingKey(relin_keys, galois_keys);
+        }
+        log_elapsed_time(start, "Reading keys...");
     }
 
     /* An evaluation instance */
     HomomorphicEval::HomomorphicEval(istream &params_stream, istream &galois_key_stream, istream &relin_key_stream) {
         deserialize_common(params_stream);
-
         timepoint start = chrono::steady_clock::now();
-        galois_keys = unmarshalBinaryRotationKeys(galois_key_stream);
-        relin_keys = unmarshalBinaryRelinearizationKey(relin_key_stream);
-        log_elapsed_time(start, "Reading keys...");
+        deserializeEvalKeys(start, galois_key_stream, relin_key_stream);
     }
 
     /* A full instance */
     HomomorphicEval::HomomorphicEval(istream &params_stream, istream &galois_key_stream, istream &relin_key_stream,
                                      istream &secret_key_stream) {
         deserialize_common(params_stream);
-
         timepoint start = chrono::steady_clock::now();
         sk = unmarshalBinarySecretKey(secret_key_stream);
-        galois_keys = unmarshalBinaryRotationKeys(galois_key_stream);
-        relin_keys = unmarshalBinaryRelinearizationKey(relin_key_stream);
-        log_elapsed_time(start, "Reading keys...");
+        deserializeEvalKeys(start, galois_key_stream, relin_key_stream);
         backend_decryptor = newDecryptor(context->params, sk);
     }
 
@@ -137,11 +148,17 @@ namespace hit {
         }
 
         protobuf::CKKSParams ckks_params;
-        ckks_params.set_standardparams(standard_params_);
         ostringstream ctx_stream;
 
         marshalBinaryParameters(context->params, ctx_stream);
         ckks_params.set_ctx(ctx_stream.str());
+
+        if (context->btp_params.has_value()) {
+            ostringstream btp_params_stream;
+            marshalBinaryBootstrapParameters(context->btp_params.value(), btp_params_stream);
+            ckks_params.set_btp_params(btp_params_stream.str());
+        }
+
         ostringstream pk_stream;
         marshalBinaryPublicKey(pk, pk_stream);
         ckks_params.set_pubkey(pk_stream.str());
@@ -226,28 +243,20 @@ namespace hit {
      */
     HomomorphicEval::PoolObject<Evaluator> HomomorphicEval::get_evaluator() {
         std::optional<Evaluator> opt = backend_evaluator.poll();
-        Evaluator result =
-            opt.has_value()
-                ? std::move(*opt)
-                : newEvaluator(context->params, makeEvaluationKey(relin_keys, galois_keys));
+        Evaluator result = opt.has_value() ? std::move(*opt)
+                                           : newEvaluator(context->params, makeEvaluationKey(relin_keys, galois_keys));
         return PoolObject<Evaluator>(std::move(result), backend_evaluator);
     }
 
     HomomorphicEval::PoolObject<Encoder> HomomorphicEval::get_encoder() {
         std::optional<Encoder> opt = backend_encoder.poll();
-        Encoder result =
-            opt.has_value()
-                ? std::move(*opt)
-                : newEncoder(context->params);
+        Encoder result = opt.has_value() ? std::move(*opt) : newEncoder(context->params);
         return PoolObject<Encoder>(std::move(result), backend_encoder);
     }
 
     HomomorphicEval::PoolObject<Encryptor> HomomorphicEval::get_encryptor() {
         std::optional<Encryptor> opt = backend_encryptor.poll();
-        Encryptor result =
-            opt.has_value()
-                ? std::move(*opt)
-                : newEncryptorFromPk(context->params, pk);
+        Encryptor result = opt.has_value() ? std::move(*opt) : newEncryptorFromPk(context->params, pk);
         return PoolObject<Encryptor>(std::move(result), backend_encryptor);
     }
 
@@ -257,9 +266,7 @@ namespace hit {
         }
         std::optional<Bootstrapper> opt = backend_bootstrapper.poll();
         Bootstrapper result =
-            opt.has_value()
-                ? std::move(*opt)
-                : newBootstrapper(context->params, context->btp_params.value(), btp_keys);
+            opt.has_value() ? std::move(*opt) : newBootstrapper(context->params, context->btp_params.value(), btp_keys);
         return PoolObject<Bootstrapper>(std::move(result), backend_bootstrapper);
     }
 

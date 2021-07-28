@@ -6,20 +6,19 @@
 using namespace std;
 
 namespace hit {
-    BootstrappingParams::BootstrappingParams(latticpp::BootstrappingParameters btp_params)
-        : lattigo_btp_params(move(btp_params)) {
+    BootstrappingParams::BootstrappingParams(latticpp::BootstrappingParameters lattigo_btp_params)
+        : lattigo_btp_params(move(lattigo_btp_params)) {
     }
 
     int BootstrappingParams::bootstrapping_depth() const {
         return bootstrapDepth(lattigo_btp_params);
     }
 
-    CKKSParams::CKKSParams(latticpp::Parameters params) : lattigo_params(move(params)) {
+    CKKSParams::CKKSParams(latticpp::Parameters lattigo_params) : lattigo_params(move(lattigo_params)) {
     }
 
-    CKKSParams::CKKSParams(latticpp::BootstrappingParameters btp_params)
-        : lattigo_params(genParams(btp_params)),
-          btp_params(optional<BootstrappingParams>(BootstrappingParams(move(btp_params)))) {
+    CKKSParams::CKKSParams(latticpp::BootstrappingParameters lattigo_btp_params)
+        : CKKSParams(genParams(move(lattigo_btp_params)), move(lattigo_btp_params)) {
     }
 
     CKKSParams::CKKSParams(latticpp::Parameters lattigo_params, latticpp::BootstrappingParameters lattigo_btp_params)
