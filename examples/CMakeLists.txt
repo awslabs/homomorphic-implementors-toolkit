@@ -8,6 +8,7 @@ add_executable(hit-examples
   example_3_evaluators.cpp
   example_4_linearalgebra.cpp
   example_5_serialization.cpp
+  example_6_bootstrapping.cpp
 )
 set_common_flags(hit-examples)
 target_link_libraries(hit-examples aws-hit glog::glog)

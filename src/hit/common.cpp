@@ -141,10 +141,13 @@ namespace hit {
             case 65536:
                 // extrapolating a best-fit line for the above data points:
                 // mod_bits <= 0.0269*poly_modulus_degree-1.4428
+                // This yields mod_bits < 1761, however, Lattigo uses a 1792-bit modulus for bootstrapping
+                // parameters, which is close enough. They went out of their way to ensure 128-bit security,
+                // so a 1792-bit modulus should be fine. At any rate, 30 bits isn't going to tank security.
 
                 // SEAL will throw an exception when poly degree is 131072 or larger
                 // (which corresponds to the 262144th cyclotomic ring)
-                return 1761;
+                return 1792;
             default:
                 LOG_AND_THROW_STREAM("poly_modulus_degree " << poly_modulus_degree << " not supported");
         }
@@ -181,7 +184,7 @@ namespace hit {
             return 16384;
         } else if (mod_bits <= 881) {
             return 32768;
-        } else if (mod_bits <= 1761) {
+        } else if (mod_bits <= 1782) {
             return 65536;
         }
         // SEAL will throw an exception when poly degree is 131072 or larger

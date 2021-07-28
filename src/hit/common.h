@@ -9,10 +9,6 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <chrono>
 
-#include "api/ciphertext.h"
-#include "hit/protobuf/ciphertext.pb.h"
-#include "hit/protobuf/ciphertext_vector.pb.h"
-
 #define VLOG_EVAL 1
 #define VLOG_VERBOSE 2
 
@@ -76,24 +72,6 @@ namespace hit {
     uintmax_t stream_size(std::iostream &s);
 
     std::string bytes_to_str(uintmax_t size_bytes);
-
-    inline protobuf::CiphertextVector *serialize_vector(const std::vector<CKKSCiphertext> &ciphertext_vector) {
-        auto *proto_ciphertext_vector = new protobuf::CiphertextVector();
-        for (const auto &ciphertext : ciphertext_vector) {
-            // https://developers.google.com/protocol-buffers/docs/reference/cpp-generated#repeatedmessage
-            proto_ciphertext_vector->mutable_cts()->AddAllocated(ciphertext.serialize());
-        }
-        return proto_ciphertext_vector;
-    }
-
-    inline void deserialize_vector(const std::shared_ptr<HEContext> &context,
-                                   const protobuf::CiphertextVector &proto_ciphertext_vector,
-                                   std::vector<CKKSCiphertext> &ciphertext_vector) {
-        for (int i = 0; i < proto_ciphertext_vector.cts_size(); i++) {
-            const protobuf::Ciphertext &ciphertext = proto_ciphertext_vector.cts(i);
-            ciphertext_vector.emplace_back(CKKSCiphertext(context, ciphertext));
-        }
-    }
 
     void decryption_warning(int level);
 

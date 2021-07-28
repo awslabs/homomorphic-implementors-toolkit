@@ -18,12 +18,9 @@ namespace hit {
 
     class DebugEval : public CKKSEvaluator {
        public:
-        /* The `use_seal_params` flag allows you to restrict to SEAL parameters, or to use larger
-         * rings. The SEAL paramters are designed to achieve 128-bits of security, while setting
-         * `use_seal_params` to false allows you to set parameters which may not achieve 128-bits
-         * of security.
-         */
-        DebugEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params = true,
+        explicit DebugEval(const CKKSParams &params, const std::vector<int> &galois_steps);
+
+        DebugEval(int num_slots, int multiplicative_depth, int log_scale,
                   const std::vector<int> &galois_steps = std::vector<int>());
 
         DebugEval(std::istream &params_stream, std::istream &galois_key_stream, std::istream &relin_key_stream,
@@ -85,6 +82,8 @@ namespace hit {
         void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
 
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
+
+        CKKSCiphertext bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) override;
 
        private:
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;

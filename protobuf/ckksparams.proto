@@ -7,5 +7,5 @@ package hit.protobuf;
 message CKKSParams {
     required bytes ctx = 1;
     required bytes pubkey = 2;
-    required bool standardParams = 3;
+    optional bytes btp_params = 3;
 }

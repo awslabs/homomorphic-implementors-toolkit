@@ -3,43 +3,42 @@
 
 #pragma once
 
-#include <boost/thread/tss.hpp>
+#include <deque>
+#include <optional>
 
 #include "../../common.h"
 #include "../ciphertext.h"
 #include "../evaluator.h"
+#include "../params.h"
 
 namespace hit {
 
     /* This evaluator is a thin wrapper around
-     * SEAL's evaluator API. It actually does
-     * computation on SEAL ciphertexts.
+     * Lattigo's evaluator API. It actually does
+     * computation on Lattigo ciphertexts.
      */
     class HomomorphicEval : public CKKSEvaluator {
        public:
-        /* This provides the 'production' evaluator, which just offers an improved
-         * API without debug information.
-         *
-         * All of these parameters contain only public information. The GaloisKeys
-         * and RelinKeys are part of the CKKS scheme's "evaluation keys".
-         *
-         * update_metadata indicates whether this evaluator should update ciphertext metadata or not
-         * When HomomorphicEval is used alone, update_metadata should be true.
-         * When HomomorphicEval is used as a sub-evaluator (e.g., as a component of the Debug evaluator) where
-         * other sub-evaluators compute the metadata, then update_metadata should be false.
-         *
-         * The `use_standard_params` flag allows you to restrict to standardized parameters, or to use larger
-         * rings. The standard parameters are designed to achieve 128-bits of security, while setting
-         * `use_standard_params` to false allows you to set parameters which may not achieve 128-bits
-         * of security.
+        /* Construct a homomorphic evaluator instance for the provided scheme parameters.
+         * This will generate keys for encryption, decryption, and relinearization in all cases. If the provided
+         * params include bootstrapping parameters, keys required for bootstrapping are also generated.
+         * Additionally, generates rotation (Galois) keys for the shifts provided in the galois_steps
+         * vector. For example, if your circuit calls `rotate_left(ct, 2)` and `rotate_right(ct, 3)`,
+         * you should ensure that `galois_steps` includes [2, -3] (right shifts are negative). Including
+         * unnecessary shifts results in longer key generation time and larger keys, while not including
+         * all explicit rotations will result in a runtime error. You can use the RotationSet evaluator
+         * to compute the necessary and sufficient `galois_steps` vector for your circuit.
          */
-        HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_standard_params = true,
+        explicit HomomorphicEval(const CKKSParams &params, const std::vector<int> &galois_steps = std::vector<int>());
+
+        /* See comment above. */
+        HomomorphicEval(int num_slots, int max_ct_level, int log_scale,
                         const std::vector<int> &galois_steps = std::vector<int>());
 
-        /* An evaluation instance */
+        /* An evaluation-only instance (decryption not available). */
         HomomorphicEval(std::istream &params_stream, std::istream &galois_key_stream, std::istream &relin_key_stream);
 
-        /* A full instance */
+        /* A full instance capable of encryption, decryption, and evaluation. */
         HomomorphicEval(std::istream &params_stream, std::istream &galois_key_stream, std::istream &relin_key_stream,
                         std::istream &secret_key_stream);
 
@@ -103,31 +102,82 @@ namespace hit {
 
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
+        CKKSCiphertext bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) override;
+
        private:
         template <typename T>
-        struct ParameterizedLattigoType {
-            ParameterizedLattigoType(T object, latticpp::Parameters &params)
-                : object(std::move(object)), params(params) {
+        class ObjectPool {
+           public:
+            std::optional<T> poll() {
+                std::lock_guard<std::mutex> lock(pool_mutex);
+                if (list.empty()) {
+                    return {};
+                }
+                T result = list.back();
+                list.pop_back();
+                return result;
             }
-            T object;
-            const latticpp::Parameters params;
+
+            void offer(T &&object) {
+                std::lock_guard<std::mutex> lock(pool_mutex);
+                list.push_back(object);
+            }
+
+           private:
+            std::mutex pool_mutex;
+            std::deque<T> list;
         };
 
-        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Encoder>> backend_encoder;
-        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Evaluator>> backend_evaluator;
-        boost::thread_specific_ptr<ParameterizedLattigoType<latticpp::Encryptor>> backend_encryptor;
+        template <typename T>
+        class PoolObject {
+           public:
+            PoolObject(T &&object, ObjectPool<T> &pool) : pool(pool), object(object) {
+            }
+            ~PoolObject() {
+                pool.offer(std::move(object));
+            }
+
+            T *get() {
+                return &object;
+            }
+
+            T *operator->() {
+                return get();
+            }
+
+            T &ref() {
+                return object;
+            }
+
+            explicit operator T &() {
+                return ref();
+            }
+
+           private:
+            ObjectPool<T> &pool;
+            T object;
+        };
+
+        ObjectPool<latticpp::Encoder> backend_encoder;
+        ObjectPool<latticpp::Evaluator> backend_evaluator;
+        ObjectPool<latticpp::Encryptor> backend_encryptor;
+        ObjectPool<latticpp::Bootstrapper> backend_bootstrapper;
         latticpp::Decryptor backend_decryptor;
         latticpp::PublicKey pk;
         latticpp::SecretKey sk;
         latticpp::RotationKeys galois_keys;
-        latticpp::EvaluationKey relin_keys;
-        bool standard_params_;
+        latticpp::RelinearizationKey relin_keys;
+        latticpp::BootstrappingKey btp_keys;
+        int btp_depth = 0;
 
-        latticpp::Evaluator &get_evaluator();
-        latticpp::Encoder &get_encoder();
-        latticpp::Encryptor &get_encryptor();
+        PoolObject<latticpp::Evaluator> get_evaluator();
+        PoolObject<latticpp::Encoder> get_encoder();
+        PoolObject<latticpp::Encryptor> get_encryptor();
+        PoolObject<latticpp::Bootstrapper> get_bootstrapper();
 
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
+        void deserializeEvalKeys(const timepoint &start, std::istream &galois_key_stream,
+                                 std::istream &relin_key_stream);
 
         void deserialize_common(std::istream &params_stream);
 
