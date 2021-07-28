@@ -38,20 +38,20 @@ void example_6_driver() {
     CKKSCiphertext he_ciphertext = he_inst.encrypt(plaintext);
 
     // Now we can evaluate our homomorphic circuit on this input
-	CKKSCiphertext ct_result = poly_eval_homomorphic_v1(he_inst, he_ciphertext);
+    CKKSCiphertext ct_result = poly_eval_homomorphic_v1(he_inst, he_ciphertext);
 
     vector<double> actual_result = he_inst.decrypt(ct_result);
 
-	// Next, we will evaluate the plaintext function on the plaintext input
-	vector<double> expected_result = poly_eval_plaintext(plaintext);
+    // Next, we will evaluate the plaintext function on the plaintext input
+    vector<double> expected_result = poly_eval_plaintext(plaintext);
 
-	// Compute the |expected-actual|/|expected|, where |*| denotes the 2-norm.
-	// If this value is small, then the expected and actual results closely agree,
-	// up to floating point roundoff (note that since the PlaintextEval only operates on
-	// plaintexts, there is no CKKS noise to introduce additional error.)
-	LOG(INFO) << "Relative difference between input and decrypted output: " << relative_error(expected_result, actual_result);
+    // Compute the |expected-actual|/|expected|, where |*| denotes the 2-norm.
+    // If this value is small, then the expected and actual results closely agree,
+    // up to floating point roundoff (note that since the PlaintextEval only operates on
+    // plaintexts, there is no CKKS noise to introduce additional error.)
+    LOG(INFO) << "Relative difference between input and decrypted output: " << relative_error(expected_result, actual_result);
 
-    // Now, we will bootstrap the ciphertext 
+    // Now, we will bootstrap the ciphertext
     CKKSCiphertext bootstrapped_ct = he_inst.bootstrap(ct_result);
 
     // Decrypt again so we can compare the value pre- and post-bootstrapping
