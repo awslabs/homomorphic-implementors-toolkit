@@ -28,8 +28,9 @@ namespace hit {
         return encrypt_col_vector(vec, unit, level);
     }
 
-    EncryptedMatrix LinearAlgebra::encrypt_matrix_internal(const Matrix &mat, const EncodingUnit &unit,
-                                                           function<CKKSCiphertext(CKKSEvaluator &, const vector<double> &) > encrypt) { // NOLINT
+    EncryptedMatrix LinearAlgebra::encrypt_matrix_internal(
+        const Matrix &mat, const EncodingUnit &unit,
+        function<CKKSCiphertext(CKKSEvaluator &, const vector<double> &)> encrypt) {  // NOLINT
         vector<vector<Matrix>> mat_pieces = encode_matrix(mat, unit);
         vector<vector<CKKSCiphertext>> mat_cts(mat_pieces.size());
         for (int i = 0; i < mat_pieces.size(); i++) {
@@ -42,13 +43,15 @@ namespace hit {
         return EncryptedMatrix(mat.size1(), mat.size2(), unit, mat_cts);
     }
 
-    EncryptedMatrix LinearAlgebra::encrypt_matrix(const Matrix &mat, const EncodingUnit &unit) { // NOLINT
-        auto lambda = [](CKKSEvaluator &eval_, const vector<double> &m) ->CKKSCiphertext{ return eval_.encrypt(m); };
+    EncryptedMatrix LinearAlgebra::encrypt_matrix(const Matrix &mat, const EncodingUnit &unit) {
+        auto lambda = [](CKKSEvaluator &eval_, const vector<double> &m) -> CKKSCiphertext { return eval_.encrypt(m); };
         return encrypt_matrix_internal(mat, unit, lambda);
     }
 
-    EncryptedMatrix LinearAlgebra::encrypt_matrix(const Matrix &mat, const EncodingUnit &unit, int level) { // NOLINT
-        auto lambda = [&](CKKSEvaluator &eval_, const vector<double> &m) ->CKKSCiphertext{ return eval_.encrypt(m, level); };
+    EncryptedMatrix LinearAlgebra::encrypt_matrix(const Matrix &mat, const EncodingUnit &unit, int level) {
+        auto lambda = [&](CKKSEvaluator &eval_, const vector<double> &m) -> CKKSCiphertext {
+            return eval_.encrypt(m, level);
+        };
         return encrypt_matrix_internal(mat, unit, lambda);
     }
 
@@ -87,8 +90,9 @@ namespace hit {
         return "row " + to_string(arg.width()) + " (" + dim_string(arg.unit) + ")";
     }
 
-    EncryptedRowVector LinearAlgebra::encrypt_row_vector_internal(const Vector &vec, const EncodingUnit &unit,
-                                                                  function<CKKSCiphertext(CKKSEvaluator &, const vector<double> &) > encrypt) { // NOLINT
+    EncryptedRowVector LinearAlgebra::encrypt_row_vector_internal(
+        const Vector &vec, const EncodingUnit &unit,
+        function<CKKSCiphertext(CKKSEvaluator &, const vector<double> &)> encrypt) {  // NOLINT
         vector<Matrix> vec_pieces = encode_row_vector(vec, unit);
         vector<CKKSCiphertext> vec_cts(vec_pieces.size());
         for (int i = 0; i < vec_pieces.size(); i++) {
@@ -97,13 +101,16 @@ namespace hit {
         return EncryptedRowVector(vec.size(), unit, vec_cts);
     }
 
-    EncryptedRowVector LinearAlgebra::encrypt_row_vector(const Vector &vec, const EncodingUnit &unit) { // NOLINT
-        auto lambda = [](CKKSEvaluator &eval_, const vector<double> &m) ->CKKSCiphertext{ return eval_.encrypt(m); };
+    EncryptedRowVector LinearAlgebra::encrypt_row_vector(const Vector &vec, const EncodingUnit &unit) {
+        auto lambda = [](CKKSEvaluator &eval_, const vector<double> &m) -> CKKSCiphertext { return eval_.encrypt(m); };
         return encrypt_row_vector_internal(vec, unit, lambda);
     }
 
-    EncryptedRowVector LinearAlgebra::encrypt_row_vector(const Vector &vec, const EncodingUnit &unit, int level) { // NOLINT
-        auto lambda = [&](CKKSEvaluator &eval_, const vector<double> &m) ->CKKSCiphertext{ return eval_.encrypt(m, level); };
+    EncryptedRowVector LinearAlgebra::encrypt_row_vector(const Vector &vec, const EncodingUnit &unit,
+                                                         int level) {
+        auto lambda = [&](CKKSEvaluator &eval_, const vector<double> &m) -> CKKSCiphertext {
+            return eval_.encrypt(m, level);
+        };
         return encrypt_row_vector_internal(vec, unit, lambda);
     }
 
@@ -128,8 +135,9 @@ namespace hit {
         return "col " + to_string(arg.height()) + " (" + dim_string(arg.unit) + ")";
     }
 
-    EncryptedColVector LinearAlgebra::encrypt_col_vector_internal(const Vector &vec, const EncodingUnit &unit,
-                                                                  function<CKKSCiphertext(CKKSEvaluator &, const vector<double> &) > encrypt) { // NOLINT
+    EncryptedColVector LinearAlgebra::encrypt_col_vector_internal(
+        const Vector &vec, const EncodingUnit &unit,
+        function<CKKSCiphertext(CKKSEvaluator &, const vector<double> &)> encrypt) {  // NOLINT
         vector<Matrix> vec_pieces = encode_col_vector(vec, unit);
         vector<CKKSCiphertext> vec_cts(vec_pieces.size());
         for (int i = 0; i < vec_pieces.size(); i++) {
@@ -138,13 +146,16 @@ namespace hit {
         return EncryptedColVector(vec.size(), unit, vec_cts);
     }
 
-    EncryptedColVector LinearAlgebra::encrypt_col_vector(const Vector &vec, const EncodingUnit &unit) { // NOLINT
-        auto lambda = [](CKKSEvaluator &eval_, const vector<double> &m) ->CKKSCiphertext{ return eval_.encrypt(m); };
+    EncryptedColVector LinearAlgebra::encrypt_col_vector(const Vector &vec, const EncodingUnit &unit) {
+        auto lambda = [](CKKSEvaluator &eval_, const vector<double> &m) -> CKKSCiphertext { return eval_.encrypt(m); };
         return encrypt_col_vector_internal(vec, unit, lambda);
     }
 
-    EncryptedColVector LinearAlgebra::encrypt_col_vector(const Vector &vec, const EncodingUnit &unit, int level) { // NOLINT
-        auto lambda = [&](CKKSEvaluator &eval_, const vector<double> &m) ->CKKSCiphertext{ return eval_.encrypt(m, level); };
+    EncryptedColVector LinearAlgebra::encrypt_col_vector(const Vector &vec, const EncodingUnit &unit,
+                                                         int level) {
+        auto lambda = [&](CKKSEvaluator &eval_, const vector<double> &m) -> CKKSCiphertext {
+            return eval_.encrypt(m, level);
+        };
         return encrypt_col_vector_internal(vec, unit, lambda);
     }
 

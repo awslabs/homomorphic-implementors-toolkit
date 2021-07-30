@@ -25,7 +25,7 @@ namespace hit {
         return encrypt(coeffs, 0);
     }
 
-    CKKSCiphertext PlaintextEval::encrypt(const vector<double> &coeffs, int) {
+    CKKSCiphertext PlaintextEval::encrypt(const vector<double> &coeffs, int level) {
         if (level < 0) {
             LOG_AND_THROW_STREAM("Explicit encryption level must be non-negative, got " << level);
         }

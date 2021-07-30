@@ -110,7 +110,7 @@ namespace hit {
     }
 
     CKKSCiphertext DebugEval::encrypt(const vector<double> &coeffs) {
-        return encrypt(coeffs, homomorphic_eval->context->max_ciphertext_level(););
+        return encrypt(coeffs, homomorphic_eval->context->max_ciphertext_level());
     }
 
     CKKSCiphertext DebugEval::encrypt(const vector<double> &coeffs, int level) {

@@ -1149,14 +1149,17 @@ namespace hit {
        private:
         template <typename T>
         std::string dim_string(const T &arg);
-        EncryptedMatrix encrypt_matrix_internal(const Matrix &mat, const EncodingUnit &unit,
-                        std::function<CKKSCiphertext(CKKSEvaluator &, const std::vector<double>&)> encrypt);
+        EncryptedMatrix encrypt_matrix_internal(
+            const Matrix &mat, const EncodingUnit &unit,
+            std::function<CKKSCiphertext(CKKSEvaluator &, const std::vector<double> &)> encrypt);
 
-        EncryptedRowVector encrypt_row_vector_internal(const Vector &vec, const EncodingUnit &unit,
-                           std::function<CKKSCiphertext(CKKSEvaluator &, const std::vector<double> &) > encrypt);
+        EncryptedRowVector encrypt_row_vector_internal(
+            const Vector &vec, const EncodingUnit &unit,
+            std::function<CKKSCiphertext(CKKSEvaluator &, const std::vector<double> &)> encrypt);
 
-        EncryptedColVector encrypt_col_vector_internal(const Vector &vec, const EncodingUnit &unit,
-                           std::function<CKKSCiphertext(CKKSEvaluator &, const std::vector<double> &) > encrypt);
+        EncryptedColVector encrypt_col_vector_internal(
+            const Vector &vec, const EncodingUnit &unit,
+            std::function<CKKSCiphertext(CKKSEvaluator &, const std::vector<double> &)> encrypt);
 
         // helper function for validating inputs to matrix-matrix multiplication
         void matrix_multiply_validation(const EncryptedMatrix &enc_mat_a, const EncryptedMatrix &enc_mat_b,
