@@ -21,10 +21,14 @@ namespace hit {
     }
 
     CKKSCiphertext PlaintextEval::encrypt(const vector<double> &coeffs) {
-        return encrypt(coeffs, -1);
+        // ciphertext level doesn't matter for this evaluator
+        return encrypt(coeffs, 0);
     }
 
     CKKSCiphertext PlaintextEval::encrypt(const vector<double> &coeffs, int) {
+        if (level < 0) {
+            LOG_AND_THROW_STREAM("Explicit encryption level must be non-negative, got " << level);
+        }
         if (coeffs.size() != num_slots_) {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded

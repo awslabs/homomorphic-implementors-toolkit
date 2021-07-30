@@ -110,10 +110,14 @@ namespace hit {
     }
 
     CKKSCiphertext DebugEval::encrypt(const vector<double> &coeffs) {
-        return encrypt(coeffs, -1);
+        return encrypt(coeffs, homomorphic_eval->context->max_ciphertext_level(););
     }
 
     CKKSCiphertext DebugEval::encrypt(const vector<double> &coeffs, int level) {
+        if (level < 0) {
+            LOG_AND_THROW_STREAM("Explicit encryption level must be non-negative, got " << level);
+        }
+
         scale_estimator->update_plaintext_max_val(coeffs);
         CKKSCiphertext destination = homomorphic_eval->encrypt(coeffs, level);
         destination.raw_pt = coeffs;

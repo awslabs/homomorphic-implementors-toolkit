@@ -17,10 +17,14 @@ namespace hit {
     }
 
     CKKSCiphertext RotationSet::encrypt(const vector<double> &coeffs) {
-        return encrypt(coeffs, -1);
+        // ciphertext level doesn't matter for this evaluator
+        return encrypt(coeffs, 0);
     }
 
     CKKSCiphertext RotationSet::encrypt(const vector<double> &, int level) {
+        if (level < 0) {
+            LOG_AND_THROW_STREAM("Explicit encryption level must be non-negative, got " << level);
+        }
         CKKSCiphertext destination;
         destination.he_level_ = level;
         destination.num_slots_ = num_slots_;

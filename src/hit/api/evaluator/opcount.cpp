@@ -17,10 +17,15 @@ namespace hit {
     }
 
     CKKSCiphertext OpCount::encrypt(const vector<double> &coeffs) {
-        return encrypt(coeffs, -1);
+        // ciphertext level doesn't matter for this evaluator
+        return encrypt(coeffs, 0);
     }
 
     CKKSCiphertext OpCount::encrypt(const vector<double> &, int level) {
+        if (level < 0) {
+            LOG_AND_THROW_STREAM("Explicit encryption level must be non-negative, got " << level);
+        }
+
         {
             scoped_lock lock(mutex_);
             encryptions_++;

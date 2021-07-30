@@ -169,7 +169,7 @@ namespace hit {
     }
 
     CKKSCiphertext HomomorphicEval::encrypt(const vector<double> &coeffs) {
-        return encrypt(coeffs, -1);
+        return encrypt(coeffs, context->max_ciphertext_level());
     }
 
     CKKSCiphertext HomomorphicEval::encrypt(const vector<double> &coeffs, int level) {
@@ -180,10 +180,6 @@ namespace hit {
             LOG_AND_THROW_STREAM("You can only encrypt vectors which have exactly as many "
                                  << " coefficients as the number of plaintext slots: Expected " << num_slots_
                                  << " coefficients, but " << coeffs.size() << " were provided");
-        }
-
-        if (level == -1) {
-            level = context->max_ciphertext_level();
         }
 
         double scale = pow(2, context->log_scale());
