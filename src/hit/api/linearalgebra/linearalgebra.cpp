@@ -106,8 +106,7 @@ namespace hit {
         return encrypt_row_vector_internal(vec, unit, lambda);
     }
 
-    EncryptedRowVector LinearAlgebra::encrypt_row_vector(const Vector &vec, const EncodingUnit &unit,
-                                                         int level) {
+    EncryptedRowVector LinearAlgebra::encrypt_row_vector(const Vector &vec, const EncodingUnit &unit, int level) {
         auto lambda = [&](CKKSEvaluator &eval_, const vector<double> &m) -> CKKSCiphertext {
             return eval_.encrypt(m, level);
         };
@@ -151,8 +150,7 @@ namespace hit {
         return encrypt_col_vector_internal(vec, unit, lambda);
     }
 
-    EncryptedColVector LinearAlgebra::encrypt_col_vector(const Vector &vec, const EncodingUnit &unit,
-                                                         int level) {
+    EncryptedColVector LinearAlgebra::encrypt_col_vector(const Vector &vec, const EncodingUnit &unit, int level) {
         auto lambda = [&](CKKSEvaluator &eval_, const vector<double> &m) -> CKKSCiphertext {
             return eval_.encrypt(m, level);
         };
