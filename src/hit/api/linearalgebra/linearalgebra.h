@@ -75,11 +75,17 @@ namespace hit {
         EncodingUnit make_unit(int encoding_height) const;
 
         /* Encrypt a matrix after encoding it with the provided encoding unit.
-         * Matrix is encrypted at the specified level, or at the highest level allowed by the
-         * encryption parameters if no level is specified. We encode the matrix
+         * Matrix is encrypted at the highest level allowed by the
+         * encryption parameters. We encode the matrix
          * as described in encryptedmatrix.h.
          */
-        EncryptedMatrix encrypt_matrix(const Matrix &mat, const EncodingUnit &unit, int level = -1);
+        EncryptedMatrix encrypt_matrix(const Matrix &mat, const EncodingUnit &unit);
+
+        /* Encrypt a matrix after encoding it with the provided encoding unit.
+         * Matrix is encrypted at the specified level. We encode the matrix
+         * as described in encryptedmatrix.h.
+         */
+        EncryptedMatrix encrypt_matrix(const Matrix &mat, const EncodingUnit &unit, int level);
 
         /* Decrypt a matrix with any ciphertext degree and any scale.
          * This function will log a message if you try to decrypt a ciphertext which
@@ -88,9 +94,15 @@ namespace hit {
          */
         Matrix decrypt(const EncryptedMatrix &enc_mat, bool suppress_warnings = false) const;
 
-        /* Uniform encryption API, identical to encrypt_matrix
+        /* Uniform encryption API, identical to encrypt_matrix with no level
          */
-        EncryptedMatrix encrypt(const Matrix &mat, const EncodingUnit &unit, int level = -1) {
+        EncryptedMatrix encrypt(const Matrix &mat, const EncodingUnit &unit) {
+            return encrypt_matrix(mat, unit);
+        }
+
+        /* Uniform encryption API, identical to encrypt_matrix with explicit level
+         */
+        EncryptedMatrix encrypt(const Matrix &mat, const EncodingUnit &unit, int level) {
             return encrypt_matrix(mat, unit, level);
         }
 
@@ -99,13 +111,26 @@ namespace hit {
          * Template parameter must be explicitly specified.
          */
         template <typename T>
-        T encrypt(const Vector &, const EncodingUnit &, int level = -1);
+        T encrypt(const Vector &, const EncodingUnit &);
+
+        /* Uniform encryption API, defined for T=EncryptedRowVector and T=EncryptedColVector,
+         * exactly corresponding to `encrypt_row_vector` and `encrypt_col_vector`, respectively.
+         * Template parameter must be explicitly specified.
+         */
+        template <typename T>
+        T encrypt(const Vector &, const EncodingUnit &, int level);
 
         /* Encrypt a vector representing a linear algebra row vector.
          * We first encode the vector as a matrix
          * where each column is `vec`; see encryptedrowvector.h for details.
          */
-        EncryptedRowVector encrypt_row_vector(const Vector &vec, const EncodingUnit &unit, int level = -1);
+        EncryptedRowVector encrypt_row_vector(const Vector &vec, const EncodingUnit &unit);
+
+        /* Encrypt a vector representing a linear algebra row vector.
+         * We first encode the vector as a matrix
+         * where each column is `vec`; see encryptedrowvector.h for details.
+         */
+        EncryptedRowVector encrypt_row_vector(const Vector &vec, const EncodingUnit &unit, int level);
 
         /* Decrypt a row vector with any ciphertext degree and any scale.
          * This function will log a message if you try to decrypt a ciphertext which
@@ -118,7 +143,13 @@ namespace hit {
          * We first encode the vector as a matrix
          * where each row is `vec`; see encryptedcolvector.h for details.
          */
-        EncryptedColVector encrypt_col_vector(const Vector &vec, const EncodingUnit &unit, int level = -1);
+        EncryptedColVector encrypt_col_vector(const Vector &vec, const EncodingUnit &unit);
+
+        /* Encrypt a vector representing a linear algebra column vector.
+         * We first encode the vector as a matrix
+         * where each row is `vec`; see encryptedcolvector.h for details.
+         */
+        EncryptedColVector encrypt_col_vector(const Vector &vec, const EncodingUnit &unit, int level);
 
         /* Decrypt a column vector with any ciphertext degree and any scale.
          * This function will log a message if you try to decrypt a ciphertext which
@@ -1118,6 +1149,14 @@ namespace hit {
        private:
         template <typename T>
         std::string dim_string(const T &arg);
+        EncryptedMatrix encrypt_matrix_internal(const Matrix &mat, const EncodingUnit &unit,
+                        std::function<CKKSCiphertext(CKKSEvaluator &, const std::vector<double>&)> encrypt);
+
+        EncryptedRowVector encrypt_row_vector_internal(const Vector &vec, const EncodingUnit &unit,
+                           std::function<CKKSCiphertext(CKKSEvaluator &, const std::vector<double> &) > encrypt);
+
+        EncryptedColVector encrypt_col_vector_internal(const Vector &vec, const EncodingUnit &unit,
+                           std::function<CKKSCiphertext(CKKSEvaluator &, const std::vector<double> &) > encrypt);
 
         // helper function for validating inputs to matrix-matrix multiplication
         void matrix_multiply_validation(const EncryptedMatrix &enc_mat_a, const EncryptedMatrix &enc_mat_b,
