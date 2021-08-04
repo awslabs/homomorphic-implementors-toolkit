@@ -169,7 +169,7 @@ namespace hit {
     }
 
     CKKSCiphertext HomomorphicEval::encrypt(const vector<double> &coeffs) {
-        return encrypt(coeffs, -1);
+        return encrypt(coeffs, context->max_ciphertext_level());
     }
 
     CKKSCiphertext HomomorphicEval::encrypt(const vector<double> &coeffs, int level) {
@@ -182,13 +182,9 @@ namespace hit {
                                  << " coefficients, but " << coeffs.size() << " were provided");
         }
 
-        if (level == -1) {
-            level = context->max_ciphertext_level();
-        }
-
         double scale = pow(2, context->log_scale());
         // order of operations is very important: floating point arithmetic is not associative
-        for (int i = context->max_ciphertext_level(); i > level; i--) {
+        for (int i = context->max_ciphertext_level() - btp_depth; i > level; i--) {
             scale = (scale * scale) / static_cast<double>(context->get_qi(i));
         }
 

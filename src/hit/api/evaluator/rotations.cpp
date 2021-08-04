@@ -17,7 +17,8 @@ namespace hit {
     }
 
     CKKSCiphertext RotationSet::encrypt(const vector<double> &coeffs) {
-        return encrypt(coeffs, -1);
+        // ciphertext level doesn't matter for this evaluator
+        return encrypt(coeffs, 0);
     }
 
     CKKSCiphertext RotationSet::encrypt(const vector<double> &, int level) {

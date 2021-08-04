@@ -47,6 +47,9 @@ namespace hit {
     }
 
     CKKSCiphertext ScaleEstimator::encrypt(const vector<double> &coeffs, int level) {
+        if (level < 0) {
+            LOG_AND_THROW_STREAM("Explicit encryption level must be non-negative; got " << level);
+        }
         update_plaintext_max_val(coeffs);
 
         if (coeffs.size() != context->num_slots()) {
@@ -55,10 +58,6 @@ namespace hit {
             LOG_AND_THROW_STREAM("You can only encrypt vectors which have exactly as many "
                                  << " coefficients as the number of plaintext slots: Expected " << context->num_slots()
                                  << " coefficients, but " << coeffs.size() << " were provided");
-        }
-
-        if (level < 0) {
-            LOG_AND_THROW_STREAM("Encryption level must be non-negative; got " << level);
         }
 
         double scale = pow(2, context->log_scale());
