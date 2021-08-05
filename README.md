@@ -42,6 +42,7 @@ HIT simplifies this process by providing an abstract homomorphic evaluation API 
   - CKKS is an approximate homomorphic encryption scheme. It's possible that the error incurred during CKKS encryption and homomorphic operations is too great.
 
   By running the plaintext and ciphertext computations in parallel, HIT can compare the results after each step and help the developer understand where the computation is failing.
+- Track explicit rotations required by the circuit. This is useful in order to obtain a minimal set of rotation keys required by the circuit when generating keys for homomorphic evaluation. Note that bootstrapping implicitly uses rotation/Galois keys, but this evaluator only tracks explicit rotations (i.e., calls to `rotateLeft` or `rotateRight`). Bootstrapping keys are automatically generated when parameters support bootstrapping and additional Galois keys are generated as needed for bootstrapping.
 
 ### Linear Algebra API
 Developing a homomorphic circuit requires a scheme to _encode_ function inputs as CKKS ciphertexts. Depending on the complexity of the encoding scheme, a developer may end up writing many "assembly" instructions: higher level instructions composed of native instructions that operate on encoded plaintexts. HIT provides this type of API for linear algebra operations based on the framework described in [this paper](https://eprint.iacr.org/2020/1483). Using this API, it is easy for a developer to create a circuit for a function based on linear algebra. It handles encoding of linear algebra objects, and provides high-level "assembly" instructions for linear algebra operations.
@@ -126,7 +127,7 @@ ninja run_hit_example
 ```
 
 ### Examples
-We recommend reading through the detailed [examples](/examples) which demonstrate how to use the features described above. For those unfamiliar with homomorphic encryption topics, we also recommend reading through the [SEAL examples](https://github.com/microsoft/SEAL/tree/master/native/examples).
+We recommend reading through the detailed [examples](/examples) which demonstrate how to use the features described above. For those unfamiliar with homomorphic encryption topics, we also recommend reading through the [Microsoft SEAL examples](https://github.com/microsoft/SEAL/tree/master/native/examples).
 
 ## Citing HIT
 Please use the following BibTeX entry to cite HIT:

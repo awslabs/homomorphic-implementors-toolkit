@@ -1,15 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hit/api/linearalgebra/linearalgebra.h"
-
 #include <iostream>
 
 #include "../../testutil.h"
 #include "gtest/gtest.h"
-#include "hit/api/ciphertext.h"
-#include "hit/api/evaluator/homomorphic.h"
-#include "hit/common.h"
+#include "hit/hit.h"
 
 using namespace std;
 using namespace hit;
@@ -1113,7 +1109,7 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Row_Major_InvalidCase) {
 }
 
 void test_multiply_matrix_matrix_row_major(LinearAlgebra &linear_algebra, int left_dim, int inner_dim, int right_dim,
-                                           double scalar, EncodingUnit &unit) {
+                                           double scalar, EncodingUnit &unit, bool test) {
     // matrix-matrix mutliplication takes A^T and B as inputs and computes c*A*B for a scalar c and matrices A, B with
     // compatible dimensions Matrix A is left_dim x inner_dim, so A^T is the reverse
     Matrix matrix_a_transpose = random_mat(inner_dim, left_dim);
@@ -1123,22 +1119,21 @@ void test_multiply_matrix_matrix_row_major(LinearAlgebra &linear_algebra, int le
     EncryptedMatrix ct_a_transpose = linear_algebra.encrypt_matrix(matrix_a_transpose, unit);
     EncryptedMatrix ct_b = linear_algebra.encrypt_matrix(matrix_b, unit, ct_a_transpose.he_level() - 1);
     EncryptedMatrix ct_c_times_A_times_B = linear_algebra.multiply_row_major(ct_a_transpose, ct_b, scalar);
-    Matrix actual_output = linear_algebra.decrypt(ct_c_times_A_times_B);
 
-    // Transpose of A^T is A
-    Matrix matrix_a = trans(matrix_a_transpose);
-    Matrix expected_output = scalar * prec_prod(matrix_a, matrix_b);
+    if (test) {
+        Matrix actual_output = linear_algebra.decrypt(ct_c_times_A_times_B);
+        // Transpose of A^T is A
+        Matrix matrix_a = trans(matrix_a_transpose);
+        Matrix expected_output = scalar * prec_prod(matrix_a, matrix_b);
 
-    ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
-    ASSERT_FALSE(ct_c_times_A_times_B.needs_relin());
-    ASSERT_TRUE(ct_c_times_A_times_B.needs_rescale());
-    ASSERT_EQ(ct_c_times_A_times_B.he_level(), ONE_MULTI_DEPTH);
+        ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
+        ASSERT_FALSE(ct_c_times_A_times_B.needs_relin());
+        ASSERT_TRUE(ct_c_times_A_times_B.needs_rescale());
+        ASSERT_EQ(ct_c_times_A_times_B.he_level(), ONE_MULTI_DEPTH);
+    }
 }
 
-TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Row_Major) {
-    HomomorphicEval ckks_instance = HomomorphicEval(8192, THREE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
-
+void test_multiply_matrix_matrix_row_major_inputs(LinearAlgebra &linear_algebra, bool test) {
     // a 64x128 encoding unit
     int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
@@ -1146,47 +1141,58 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Row_Major) {
     int unit1_width = 8192 / unit1_height;
 
     // both matrices are exactly the size of the encoding unit
-    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, unit1_height, unit1_width, 1.0, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, unit1_height, unit1_width, PI, unit1);
+    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, unit1_height, unit1_width, 1.0, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, unit1_height, unit1_width, PI, unit1, test);
 
     // one or more dimensions are are multiple of the encoding unit (no padding)
     int large_width = 2 * unit1_width;
     int large_height = 2 * unit1_height;
-    test_multiply_matrix_matrix_row_major(linear_algebra, large_width, unit1_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, large_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, unit1_height, large_width, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, large_width, unit1_height, large_width, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, large_height, large_width, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, large_width, large_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, large_width, large_height, large_width, PI, unit1);
+    test_multiply_matrix_matrix_row_major(linear_algebra, large_width, unit1_height, unit1_width, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, large_height, unit1_width, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, unit1_height, large_width, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, large_width, unit1_height, large_width, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, large_height, large_width, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, large_width, large_height, unit1_width, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, large_width, large_height, large_width, PI, unit1, test);
 
     // one or more dimensions are larger than the encoding unit (padding required)
     large_width = unit1_width + 17;
     large_height = unit1_height + 11;
-    test_multiply_matrix_matrix_row_major(linear_algebra, large_width, unit1_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, large_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, unit1_height, large_width, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, large_width, unit1_height, large_width, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, large_height, large_width, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, large_width, large_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, large_width, large_height, large_width, PI, unit1);
+    test_multiply_matrix_matrix_row_major(linear_algebra, large_width, unit1_height, unit1_width, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, large_height, unit1_width, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, unit1_height, large_width, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, large_width, unit1_height, large_width, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, large_height, large_width, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, large_width, large_height, unit1_width, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, large_width, large_height, large_width, PI, unit1, test);
 
     // // one or more dimensions are are fraction of the encoding unit (padding required)
     int half_width = unit1_width / 2;
     int half_height = unit1_height / 2;
-    test_multiply_matrix_matrix_row_major(linear_algebra, half_width, unit1_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, half_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, unit1_height, half_width, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, half_width, unit1_height, half_width, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, half_height, half_width, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, half_width, half_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, half_width, half_height, half_width, PI, unit1);
+    test_multiply_matrix_matrix_row_major(linear_algebra, half_width, unit1_height, unit1_width, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, half_height, unit1_width, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, unit1_height, half_width, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, half_width, unit1_height, half_width, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, unit1_width, half_height, half_width, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, half_width, half_height, unit1_width, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, half_width, half_height, half_width, PI, unit1, test);
 
     // // some random dimensions
-    test_multiply_matrix_matrix_row_major(linear_algebra, 13, 78, 141, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, 67, 17, 312, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, 134, 134, 134, PI, unit1);
-    test_multiply_matrix_matrix_row_major(linear_algebra, 300, 27, 29, PI, unit1);
+    test_multiply_matrix_matrix_row_major(linear_algebra, 13, 78, 141, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, 67, 17, 312, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, 134, 134, 134, PI, unit1, test);
+    test_multiply_matrix_matrix_row_major(linear_algebra, 300, 27, 29, PI, unit1, test);
+}
+
+TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Row_Major) {
+    RotationSet rot_instance = RotationSet(8192);
+    LinearAlgebra linear_algebra_rot = LinearAlgebra(rot_instance);
+    test_multiply_matrix_matrix_row_major_inputs(linear_algebra_rot, false);
+    vector<int> rotations = rot_instance.needed_rotations();
+
+    HomomorphicEval ckks_instance = HomomorphicEval(8192, THREE_MULTI_DEPTH, LOG_SCALE, rotations);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+    test_multiply_matrix_matrix_row_major_inputs(linear_algebra, true);
 }
 
 TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Row_Major_Mixed_Unit_InvalidCase) {
@@ -1245,7 +1251,7 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Row_Major_Mixed_Unit_InvalidCase) {
 }
 
 void test_multiply_matrix_matrix_row_major_mixed_unit(LinearAlgebra &linear_algebra, int left_dim, int inner_dim,
-                                                      int right_dim, double scalar, EncodingUnit &unit) {
+                                                      int right_dim, double scalar, EncodingUnit &unit, bool test) {
     // matrix-matrix mutliplication takes A^T and B as inputs and computes c*A*B for a scalar c and matrices A, B with
     // compatible dimensions Matrix A is left_dim x inner_dim, so A^T is the reverse
     Matrix matrix_a_transpose = random_mat(inner_dim, left_dim);
@@ -1255,21 +1261,21 @@ void test_multiply_matrix_matrix_row_major_mixed_unit(LinearAlgebra &linear_alge
     EncryptedMatrix ct_a_transpose = linear_algebra.encrypt_matrix(matrix_a_transpose, unit);
     EncryptedMatrix ct_b = linear_algebra.encrypt_matrix(matrix_b, unit, ct_a_transpose.he_level() - 1);
     EncryptedMatrix ct_c_times_A_times_B = linear_algebra.multiply_row_major_mixed_unit(ct_a_transpose, ct_b, scalar);
-    Matrix actual_output = linear_algebra.decrypt(ct_c_times_A_times_B);
 
-    // Transpose of A^T is A
-    Matrix matrix_a = trans(matrix_a_transpose);
-    Matrix expected_output = scalar * prec_prod(matrix_a, matrix_b);
+    if (test) {
+        Matrix actual_output = linear_algebra.decrypt(ct_c_times_A_times_B);
 
-    ASSERT_LT(relative_error(actual_output.data(), expected_output.data()), MAX_NORM);
-    ASSERT_EQ(unit.encoding_height(), ct_c_times_A_times_B.encoding_unit().encoding_width());
-    ASSERT_EQ(unit.encoding_width(), ct_c_times_A_times_B.encoding_unit().encoding_height());
+        // Transpose of A^T is A
+        Matrix matrix_a = trans(matrix_a_transpose);
+        Matrix expected_output = scalar * prec_prod(matrix_a, matrix_b);
+
+        ASSERT_LT(relative_error(actual_output.data(), expected_output.data()), MAX_NORM);
+        ASSERT_EQ(unit.encoding_height(), ct_c_times_A_times_B.encoding_unit().encoding_width());
+        ASSERT_EQ(unit.encoding_width(), ct_c_times_A_times_B.encoding_unit().encoding_height());
+    }
 }
 
-TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Row_Major_Mixed_Unit) {
-    HomomorphicEval ckks_instance = HomomorphicEval(8192, THREE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
-
+void test_multiply_matrix_matrix_row_major_mixed_unit_inputs(LinearAlgebra &linear_algebra, bool test) {
     // a 128x64 encoding unit
     int unit1_height = 128;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
@@ -1277,25 +1283,37 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Row_Major_Mixed_Unit) {
     int unit1_width = 8192 / unit1_height;
 
     // both matrices are exactly the size of the encoding unit
-    test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width, unit1_height, unit1_width, 1.0,
-                                                     unit1);
-    test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width, unit1_height, unit1_width, PI, unit1);
+    test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width, unit1_height, unit1_width, 1.0, unit1,
+                                                     test);
+    test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width, unit1_height, unit1_width, PI, unit1,
+                                                     test);
 
     // one or more matrices are smaller than the encoding unit
     test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width - 9, unit1_height, unit1_width, PI,
-                                                     unit1);
+                                                     unit1, test);
     test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width, unit1_height - 9, unit1_width, PI,
-                                                     unit1);
+                                                     unit1, test);
     test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width, unit1_height, unit1_width - 9, PI,
-                                                     unit1);
+                                                     unit1, test);
     test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width - 9, unit1_height, unit1_width - 11,
-                                                     PI, unit1);
+                                                     PI, unit1, test);
     test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width - 9, unit1_height - 11, unit1_width,
-                                                     PI, unit1);
+                                                     PI, unit1, test);
     test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width, unit1_height - 9, unit1_width - 11,
-                                                     PI, unit1);
+                                                     PI, unit1, test);
     test_multiply_matrix_matrix_row_major_mixed_unit(linear_algebra, unit1_width - 13, unit1_height - 9,
-                                                     unit1_width - 11, PI, unit1);
+                                                     unit1_width - 11, PI, unit1, test);
+}
+
+TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Row_Major_Mixed_Unit) {
+    RotationSet rot_instance = RotationSet(8192);
+    LinearAlgebra linear_algebra_rot = LinearAlgebra(rot_instance);
+    test_multiply_matrix_matrix_row_major_mixed_unit_inputs(linear_algebra_rot, false);
+    vector<int> rotations = rot_instance.needed_rotations();
+
+    HomomorphicEval ckks_instance = HomomorphicEval(8192, THREE_MULTI_DEPTH, LOG_SCALE, rotations);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+    test_multiply_matrix_matrix_row_major_mixed_unit_inputs(linear_algebra, true);
 }
 
 TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Col_Major_InvalidCase) {
@@ -1324,7 +1342,7 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Col_Major_InvalidCase) {
 }
 
 void test_multiply_matrix_matrix_col_major(LinearAlgebra &linear_algebra, int left_dim, int inner_dim, int right_dim,
-                                           double scalar, EncodingUnit &unit) {
+                                           double scalar, EncodingUnit &unit, bool test) {
     // matrix-matrix mutliplication takes A and B^T as inputs and computes c*A*B for a scalar c and matrices A, B with
     // compatible dimensions Matrix A is left_dim x inner_dim
     Matrix matrix_a = random_mat(left_dim, inner_dim);
@@ -1334,22 +1352,22 @@ void test_multiply_matrix_matrix_col_major(LinearAlgebra &linear_algebra, int le
     EncryptedMatrix ct_b_transpose = linear_algebra.encrypt_matrix(matrix_b_transpose, unit);
     EncryptedMatrix ct_a = linear_algebra.encrypt_matrix(matrix_a, unit, ct_b_transpose.he_level() - 1);
     EncryptedMatrix ct_c_times_A_times_B = linear_algebra.multiply_col_major(ct_a, ct_b_transpose, scalar);
-    Matrix actual_output = linear_algebra.decrypt(ct_c_times_A_times_B);
 
-    // Transpose of B^T is B
-    Matrix matrix_b = trans(matrix_b_transpose);
-    Matrix expected_output = scalar * prec_prod(matrix_a, matrix_b);
+    if (test) {
+        Matrix actual_output = linear_algebra.decrypt(ct_c_times_A_times_B);
 
-    ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
-    ASSERT_FALSE(ct_c_times_A_times_B.needs_relin());
-    ASSERT_TRUE(ct_c_times_A_times_B.needs_rescale());
-    ASSERT_EQ(ct_c_times_A_times_B.he_level(), ONE_MULTI_DEPTH);
+        // Transpose of B^T is B
+        Matrix matrix_b = trans(matrix_b_transpose);
+        Matrix expected_output = scalar * prec_prod(matrix_a, matrix_b);
+
+        ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
+        ASSERT_FALSE(ct_c_times_A_times_B.needs_relin());
+        ASSERT_TRUE(ct_c_times_A_times_B.needs_rescale());
+        ASSERT_EQ(ct_c_times_A_times_B.he_level(), ONE_MULTI_DEPTH);
+    }
 }
 
-TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Col_Major) {
-    HomomorphicEval ckks_instance = HomomorphicEval(8192, THREE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
-
+void test_multiply_matrix_matrix_col_major_inputs(LinearAlgebra &linear_algebra, bool test) {
     // a 64x128 encoding unit
     int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
@@ -1357,47 +1375,58 @@ TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Col_Major) {
     int unit1_width = 8192 / unit1_height;
 
     // both matrices are exactly the size of the encoding unit
-    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, unit1_height, unit1_width, 1.0, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, unit1_height, unit1_width, PI, unit1);
+    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, unit1_height, unit1_width, 1.0, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, unit1_height, unit1_width, PI, unit1, test);
 
     // one or more dimensions are are multiple of the encoding unit (no padding)
     int large_width = 2 * unit1_width;
     int large_height = 2 * unit1_height;
-    test_multiply_matrix_matrix_col_major(linear_algebra, large_width, unit1_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, large_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, unit1_height, large_width, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, large_width, unit1_height, large_width, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, large_height, large_width, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, large_width, large_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, large_width, large_height, large_width, PI, unit1);
+    test_multiply_matrix_matrix_col_major(linear_algebra, large_width, unit1_height, unit1_width, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, large_height, unit1_width, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, unit1_height, large_width, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, large_width, unit1_height, large_width, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, large_height, large_width, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, large_width, large_height, unit1_width, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, large_width, large_height, large_width, PI, unit1, test);
 
     // one or more dimensions are larger than the encoding unit (padding required)
     large_width = unit1_width + 17;
     large_height = unit1_height + 11;
-    test_multiply_matrix_matrix_col_major(linear_algebra, large_width, unit1_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, large_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, unit1_height, large_width, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, large_width, unit1_height, large_width, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, large_height, large_width, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, large_width, large_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, large_width, large_height, large_width, PI, unit1);
+    test_multiply_matrix_matrix_col_major(linear_algebra, large_width, unit1_height, unit1_width, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, large_height, unit1_width, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, unit1_height, large_width, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, large_width, unit1_height, large_width, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, large_height, large_width, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, large_width, large_height, unit1_width, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, large_width, large_height, large_width, PI, unit1, test);
 
     // // one or more dimensions are are fraction of the encoding unit (padding required)
     int half_width = unit1_width / 2;
     int half_height = unit1_height / 2;
-    test_multiply_matrix_matrix_col_major(linear_algebra, half_width, unit1_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, half_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, unit1_height, half_width, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, half_width, unit1_height, half_width, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, half_height, half_width, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, half_width, half_height, unit1_width, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, half_width, half_height, half_width, PI, unit1);
+    test_multiply_matrix_matrix_col_major(linear_algebra, half_width, unit1_height, unit1_width, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, half_height, unit1_width, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, unit1_height, half_width, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, half_width, unit1_height, half_width, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, unit1_width, half_height, half_width, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, half_width, half_height, unit1_width, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, half_width, half_height, half_width, PI, unit1, test);
 
     // // some random dimensions
-    test_multiply_matrix_matrix_col_major(linear_algebra, 13, 78, 141, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, 67, 17, 312, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, 134, 134, 134, PI, unit1);
-    test_multiply_matrix_matrix_col_major(linear_algebra, 300, 27, 29, PI, unit1);
+    test_multiply_matrix_matrix_col_major(linear_algebra, 13, 78, 141, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, 67, 17, 312, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, 134, 134, 134, PI, unit1, test);
+    test_multiply_matrix_matrix_col_major(linear_algebra, 300, 27, 29, PI, unit1, test);
+}
+
+TEST(LinearAlgebraTest, MultiplyMatrixMatrix_Col_Major) {
+    RotationSet rot_instance = RotationSet(8192);
+    LinearAlgebra linear_algebra_rot = LinearAlgebra(rot_instance);
+    test_multiply_matrix_matrix_col_major_inputs(linear_algebra_rot, false);
+    vector<int> rotations = rot_instance.needed_rotations();
+
+    HomomorphicEval ckks_instance = HomomorphicEval(8192, THREE_MULTI_DEPTH, LOG_SCALE, rotations);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+    test_multiply_matrix_matrix_col_major_inputs(linear_algebra, true);
 }
 
 // Covers EncryptedColVector multiply(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat)
@@ -1432,7 +1461,7 @@ TEST(LinearAlgebraTest, MultiplyRowMatrix_InvalidCase) {
 // and
 // EncryptedColVector multiply_mixed_unit(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat)
 void test_multiply_row_matrix(LinearAlgebra &linear_algebra, int left_dim, int right_dim, EncodingUnit &unit,
-                              bool mixed_unit) {
+                              bool mixed_unit, bool test) {
     // Matrix A is left_dim x right_dim
     Vector vec = random_vec(left_dim);
     Matrix mat = random_mat(left_dim, right_dim);
@@ -1445,21 +1474,20 @@ void test_multiply_row_matrix(LinearAlgebra &linear_algebra, int left_dim, int r
     } else {
         result = linear_algebra.multiply(ct_vec, ct_mat);
     }
-    Vector actual_output = linear_algebra.decrypt(result);
 
-    Vector expected_output = prec_prod(vec, mat);
+    if (test) {
+        Vector actual_output = linear_algebra.decrypt(result);
 
-    ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
-    ASSERT_FALSE(result.needs_relin());
-    ASSERT_TRUE(result.needs_rescale());
-    ASSERT_EQ(result.he_level(), ONE_MULTI_DEPTH);
+        Vector expected_output = prec_prod(vec, mat);
+
+        ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
+        ASSERT_FALSE(result.needs_relin());
+        ASSERT_TRUE(result.needs_rescale());
+        ASSERT_EQ(result.he_level(), ONE_MULTI_DEPTH);
+    }
 }
 
-// Covers EncryptedColVector multiply(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat)
-TEST(LinearAlgebraTest, MultiplyRowMatrix) {
-    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
-
+void test_multiply_row_matrix_inputs(LinearAlgebra &linear_algebra, bool test) {
     // a 64x64 encoding unit
     int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
@@ -1469,34 +1497,46 @@ TEST(LinearAlgebraTest, MultiplyRowMatrix) {
     bool mixed_unit = false;
 
     // matrix is are exactly the size of the encoding unit
-    test_multiply_row_matrix(linear_algebra, unit1_width, unit1_height, unit1, mixed_unit);
+    test_multiply_row_matrix(linear_algebra, unit1_width, unit1_height, unit1, mixed_unit, test);
 
     // one or more dimensions are are multiple of the encoding unit (no padding)
     int large_height = 2 * unit1_height;
     int large_width = 2 * unit1_width;
-    test_multiply_row_matrix(linear_algebra, large_height, unit1_width, unit1, mixed_unit);
-    test_multiply_row_matrix(linear_algebra, unit1_height, large_width, unit1, mixed_unit);
-    test_multiply_row_matrix(linear_algebra, large_height, large_width, unit1, mixed_unit);
+    test_multiply_row_matrix(linear_algebra, large_height, unit1_width, unit1, mixed_unit, test);
+    test_multiply_row_matrix(linear_algebra, unit1_height, large_width, unit1, mixed_unit, test);
+    test_multiply_row_matrix(linear_algebra, large_height, large_width, unit1, mixed_unit, test);
 
     // one or more dimensions are larger than the encoding unit (padding required)
     large_height = unit1_height + 11;
     large_width = unit1_width + 17;
-    test_multiply_row_matrix(linear_algebra, large_height, unit1_width, unit1, mixed_unit);
-    test_multiply_row_matrix(linear_algebra, unit1_height, large_width, unit1, mixed_unit);
-    test_multiply_row_matrix(linear_algebra, large_height, large_width, unit1, mixed_unit);
+    test_multiply_row_matrix(linear_algebra, large_height, unit1_width, unit1, mixed_unit, test);
+    test_multiply_row_matrix(linear_algebra, unit1_height, large_width, unit1, mixed_unit, test);
+    test_multiply_row_matrix(linear_algebra, large_height, large_width, unit1, mixed_unit, test);
 
     // one or more dimensions are are fraction of the encoding unit (padding required)
     int half_height = unit1_height / 2;
     int half_width = unit1_width / 2;
-    test_multiply_row_matrix(linear_algebra, half_width, unit1_width, unit1, mixed_unit);
-    test_multiply_row_matrix(linear_algebra, unit1_height, half_height, unit1, mixed_unit);
-    test_multiply_row_matrix(linear_algebra, half_width, half_height, unit1, mixed_unit);
+    test_multiply_row_matrix(linear_algebra, half_width, unit1_width, unit1, mixed_unit, test);
+    test_multiply_row_matrix(linear_algebra, unit1_height, half_height, unit1, mixed_unit, test);
+    test_multiply_row_matrix(linear_algebra, half_width, half_height, unit1, mixed_unit, test);
 
     // some random dimensions
-    test_multiply_row_matrix(linear_algebra, 13, 78, unit1, mixed_unit);
-    test_multiply_row_matrix(linear_algebra, 67, 17, unit1, mixed_unit);
-    test_multiply_row_matrix(linear_algebra, 134, 134, unit1, mixed_unit);
-    test_multiply_row_matrix(linear_algebra, 300, 27, unit1, mixed_unit);
+    test_multiply_row_matrix(linear_algebra, 13, 78, unit1, mixed_unit, test);
+    test_multiply_row_matrix(linear_algebra, 67, 17, unit1, mixed_unit, test);
+    test_multiply_row_matrix(linear_algebra, 134, 134, unit1, mixed_unit, test);
+    test_multiply_row_matrix(linear_algebra, 300, 27, unit1, mixed_unit, test);
+}
+
+// Covers EncryptedColVector multiply(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat)
+TEST(LinearAlgebraTest, MultiplyRowMatrix) {
+    RotationSet rot_instance = RotationSet(NUM_OF_SLOTS);
+    LinearAlgebra linear_algebra_rot = LinearAlgebra(rot_instance);
+    test_multiply_row_matrix_inputs(linear_algebra_rot, false);
+    vector<int> rotations = rot_instance.needed_rotations();
+
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, rotations);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+    test_multiply_row_matrix_inputs(linear_algebra, true);
 }
 
 // Covers EncryptedColVector multiply_mixed_unit(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat)
@@ -1543,11 +1583,7 @@ TEST(LinearAlgebraTest, MultiplyRowMatrix_Mixed_Unit_InvalidCase) {
         (linear_algebra.multiply_mixed_unit(ciphertext6, ciphertext7)), invalid_argument);
 }
 
-// Covers EncryptedColVector multiply_mixed_unit(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat)
-TEST(LinearAlgebraTest, MultiplyRowMatrix_Mixed_Unit) {
-    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
-
+void test_multiply_row_matrix_mixed_unit_inputs(LinearAlgebra &linear_algebra, bool test) {
     // a 64x64 encoding unit
     int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
@@ -1559,28 +1595,40 @@ TEST(LinearAlgebraTest, MultiplyRowMatrix_Mixed_Unit) {
     /// In this test, the matrix width cannot exceed the encoding unit height
 
     // matrix is exactly the size of the encoding unit
-    test_multiply_row_matrix(linear_algebra, unit1_height, unit1_width, unit1, mixed_unit);
+    test_multiply_row_matrix(linear_algebra, unit1_height, unit1_width, unit1, mixed_unit, test);
 
     // one or more dimensions are are multiple of the encoding unit (no padding)
     int large_height = 2 * unit1_height;
-    test_multiply_row_matrix(linear_algebra, large_height, unit1_width, unit1, mixed_unit);
+    test_multiply_row_matrix(linear_algebra, large_height, unit1_width, unit1, mixed_unit, test);
 
     // one or more dimensions are larger than the encoding unit (padding required)
     large_height = unit1_height + 11;
-    test_multiply_row_matrix(linear_algebra, large_height, unit1_width, unit1, mixed_unit);
+    test_multiply_row_matrix(linear_algebra, large_height, unit1_width, unit1, mixed_unit, test);
 
     // one or more dimensions are are fraction of the encoding unit (padding required)
     int half_height = unit1_height / 2;
     int half_width = unit1_width / 2;
-    test_multiply_row_matrix(linear_algebra, half_height, unit1_width, unit1, mixed_unit);
-    test_multiply_row_matrix(linear_algebra, unit1_height, half_width, unit1, mixed_unit);
-    test_multiply_row_matrix(linear_algebra, half_height, half_width, unit1, mixed_unit);
+    test_multiply_row_matrix(linear_algebra, half_height, unit1_width, unit1, mixed_unit, test);
+    test_multiply_row_matrix(linear_algebra, unit1_height, half_width, unit1, mixed_unit, test);
+    test_multiply_row_matrix(linear_algebra, half_height, half_width, unit1, mixed_unit, test);
 
     // some random dimensions
-    test_multiply_row_matrix(linear_algebra, 13, 63, unit1, mixed_unit);
-    test_multiply_row_matrix(linear_algebra, 67, 17, unit1, mixed_unit);
-    test_multiply_row_matrix(linear_algebra, 134, 11, unit1, mixed_unit);
-    test_multiply_row_matrix(linear_algebra, 300, 27, unit1, mixed_unit);
+    test_multiply_row_matrix(linear_algebra, 13, 63, unit1, mixed_unit, test);
+    test_multiply_row_matrix(linear_algebra, 67, 17, unit1, mixed_unit, test);
+    test_multiply_row_matrix(linear_algebra, 134, 11, unit1, mixed_unit, test);
+    test_multiply_row_matrix(linear_algebra, 300, 27, unit1, mixed_unit, test);
+}
+
+// Covers EncryptedColVector multiply_mixed_unit(const EncryptedRowVector &enc_vec, const EncryptedMatrix &enc_mat)
+TEST(LinearAlgebraTest, MultiplyRowMatrix_Mixed_Unit) {
+    RotationSet rot_instance = RotationSet(NUM_OF_SLOTS);
+    LinearAlgebra linear_algebra_rot = LinearAlgebra(rot_instance);
+    test_multiply_row_matrix_mixed_unit_inputs(linear_algebra_rot, false);
+    vector<int> rotations = rot_instance.needed_rotations();
+
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, rotations);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+    test_multiply_row_matrix_mixed_unit_inputs(linear_algebra, true);
 }
 
 // Covers EncryptedRowVector multiply(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec, double scalar =
@@ -1617,7 +1665,7 @@ TEST(LinearAlgebraTest, MultiplyMatrixCol_InvalidCase) {
 // EncryptedRowVector multiply_mixed_unit(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec, double
 // scalar = 1)
 void test_multiply_matrix_col(LinearAlgebra &linear_algebra, int left_dim, int right_dim, double scalar,
-                              EncodingUnit &unit, bool mixed_unit) {
+                              EncodingUnit &unit, bool mixed_unit, bool test) {
     // Matrix A is left_dim x right_dim
     Vector vec = random_vec(right_dim);
     Matrix mat = random_mat(left_dim, right_dim);
@@ -1632,22 +1680,19 @@ void test_multiply_matrix_col(LinearAlgebra &linear_algebra, int left_dim, int r
         result = linear_algebra.multiply(ct_mat, ct_vec, scalar);
     }
 
-    Vector actual_output = linear_algebra.decrypt(result);
+    if (test) {
+        Vector actual_output = linear_algebra.decrypt(result);
 
-    Vector expected_output = scalar * prec_prod(mat, vec);
+        Vector expected_output = scalar * prec_prod(mat, vec);
 
-    ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
-    ASSERT_FALSE(result.needs_relin());
-    ASSERT_TRUE(result.needs_rescale());
-    ASSERT_EQ(result.he_level(), ONE_MULTI_DEPTH);
+        ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
+        ASSERT_FALSE(result.needs_relin());
+        ASSERT_TRUE(result.needs_rescale());
+        ASSERT_EQ(result.he_level(), ONE_MULTI_DEPTH);
+    }
 }
 
-// Covers EncryptedRowVector multiply(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec, double scalar =
-// 1)
-TEST(LinearAlgebraTest, MultiplyMatrixCol) {
-    HomomorphicEval ckks_instance = HomomorphicEval(8192, TWO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
-
+void test_multiply_matrix_col_inputs(LinearAlgebra &linear_algebra, bool test) {
     // a 64x64 encoding unit
     int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
@@ -1657,35 +1702,48 @@ TEST(LinearAlgebraTest, MultiplyMatrixCol) {
     bool mixed_unit = false;
 
     // both matrices are exactly the size of the encoding unit
-    test_multiply_matrix_col(linear_algebra, unit1_width, unit1_height, 1.0, unit1, mixed_unit);
-    test_multiply_matrix_col(linear_algebra, unit1_width, unit1_height, PI, unit1, mixed_unit);
+    test_multiply_matrix_col(linear_algebra, unit1_width, unit1_height, 1.0, unit1, mixed_unit, test);
+    test_multiply_matrix_col(linear_algebra, unit1_width, unit1_height, PI, unit1, mixed_unit, test);
 
     // one or more dimensions are are multiple of the encoding unit (no padding)
     int large_height = 2 * unit1_height;
     int large_width = 2 * unit1_width;
-    test_multiply_matrix_col(linear_algebra, large_height, unit1_width, PI, unit1, mixed_unit);
-    test_multiply_matrix_col(linear_algebra, unit1_height, large_width, PI, unit1, mixed_unit);
-    test_multiply_matrix_col(linear_algebra, large_height, large_width, PI, unit1, mixed_unit);
+    test_multiply_matrix_col(linear_algebra, large_height, unit1_width, PI, unit1, mixed_unit, test);
+    test_multiply_matrix_col(linear_algebra, unit1_height, large_width, PI, unit1, mixed_unit, test);
+    test_multiply_matrix_col(linear_algebra, large_height, large_width, PI, unit1, mixed_unit, test);
 
     // one or more dimensions are larger than the encoding unit (padding required)
     large_width = unit1_width + 17;
     large_height = unit1_height + 11;
-    test_multiply_matrix_col(linear_algebra, large_height, unit1_width, PI, unit1, mixed_unit);
-    test_multiply_matrix_col(linear_algebra, unit1_height, large_width, PI, unit1, mixed_unit);
-    test_multiply_matrix_col(linear_algebra, large_height, large_width, PI, unit1, mixed_unit);
+    test_multiply_matrix_col(linear_algebra, large_height, unit1_width, PI, unit1, mixed_unit, test);
+    test_multiply_matrix_col(linear_algebra, unit1_height, large_width, PI, unit1, mixed_unit, test);
+    test_multiply_matrix_col(linear_algebra, large_height, large_width, PI, unit1, mixed_unit, test);
 
     // one or more dimensions are are fraction of the encoding unit (padding required)
     int half_width = unit1_width / 2;
     int half_height = unit1_height / 2;
-    test_multiply_matrix_col(linear_algebra, half_height, unit1_width, PI, unit1, mixed_unit);
-    test_multiply_matrix_col(linear_algebra, unit1_height, half_width, PI, unit1, mixed_unit);
-    test_multiply_matrix_col(linear_algebra, half_height, half_width, PI, unit1, mixed_unit);
+    test_multiply_matrix_col(linear_algebra, half_height, unit1_width, PI, unit1, mixed_unit, test);
+    test_multiply_matrix_col(linear_algebra, unit1_height, half_width, PI, unit1, mixed_unit, test);
+    test_multiply_matrix_col(linear_algebra, half_height, half_width, PI, unit1, mixed_unit, test);
 
     // some random dimensions
-    test_multiply_matrix_col(linear_algebra, 13, 78, PI, unit1, mixed_unit);
-    test_multiply_matrix_col(linear_algebra, 67, 17, PI, unit1, mixed_unit);
-    test_multiply_matrix_col(linear_algebra, 134, 134, PI, unit1, mixed_unit);
-    test_multiply_matrix_col(linear_algebra, 300, 27, PI, unit1, mixed_unit);
+    test_multiply_matrix_col(linear_algebra, 13, 78, PI, unit1, mixed_unit, test);
+    test_multiply_matrix_col(linear_algebra, 67, 17, PI, unit1, mixed_unit, test);
+    test_multiply_matrix_col(linear_algebra, 134, 134, PI, unit1, mixed_unit, test);
+    test_multiply_matrix_col(linear_algebra, 300, 27, PI, unit1, mixed_unit, test);
+}
+
+// Covers EncryptedRowVector multiply(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec, double scalar =
+// 1)
+TEST(LinearAlgebraTest, MultiplyMatrixCol) {
+    RotationSet rot_instance = RotationSet(8192);
+    LinearAlgebra linear_algebra_rot = LinearAlgebra(rot_instance);
+    test_multiply_matrix_col_inputs(linear_algebra_rot, false);
+    vector<int> rotations = rot_instance.needed_rotations();
+
+    HomomorphicEval ckks_instance = HomomorphicEval(8192, TWO_MULTI_DEPTH, LOG_SCALE, rotations);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+    test_multiply_matrix_col_inputs(linear_algebra, true);
 }
 
 // Covers EncryptedRowVector multiply_mixed_unit(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec,
@@ -1734,12 +1792,7 @@ TEST(LinearAlgebraTest, MultiplyMatrixCol_Mixed_Unit_InvalidCase) {
         (linear_algebra.multiply_mixed_unit(ciphertext6, ciphertext7)), invalid_argument);
 }
 
-// Covers EncryptedRowVector multiply_mixed_unit(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec,
-// double scalar = 1)
-TEST(LinearAlgebraTest, MultiplyMatrixCol_Mixed_Unit) {
-    HomomorphicEval ckks_instance = HomomorphicEval(8192, TWO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
-
+void test_multiply_matrix_col_mixed_unit_inputs(LinearAlgebra &linear_algebra, bool test) {
     // a 64x128 encoding unit
     int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
@@ -1748,29 +1801,42 @@ TEST(LinearAlgebraTest, MultiplyMatrixCol_Mixed_Unit) {
     int max_width = unit1_height;
 
     // matrix is exactly the size of the encoding unit
-    test_multiply_matrix_col(linear_algebra, unit1_height, max_width, 1.0, unit1, mixed_unit);
-    test_multiply_matrix_col(linear_algebra, unit1_height, max_width, PI, unit1, mixed_unit);
+    test_multiply_matrix_col(linear_algebra, unit1_height, max_width, 1.0, unit1, mixed_unit, test);
+    test_multiply_matrix_col(linear_algebra, unit1_height, max_width, PI, unit1, mixed_unit, test);
 
     // one or more dimensions are are multiple of the encoding unit (no padding)
     int large_height = 2 * unit1_height;
-    test_multiply_matrix_col(linear_algebra, large_height, max_width, PI, unit1, mixed_unit);
+    test_multiply_matrix_col(linear_algebra, large_height, max_width, PI, unit1, mixed_unit, test);
 
     // one or more dimensions are larger than the encoding unit (padding required)
     large_height = unit1_height + 11;
-    test_multiply_matrix_col(linear_algebra, large_height, max_width, PI, unit1, mixed_unit);
+    test_multiply_matrix_col(linear_algebra, large_height, max_width, PI, unit1, mixed_unit, test);
 
     // one or more dimensions are are fraction of the encoding unit (padding required)
     int half_width = max_width / 2;
     int half_height = unit1_height / 2;
-    test_multiply_matrix_col(linear_algebra, half_height, max_width, PI, unit1, mixed_unit);
-    test_multiply_matrix_col(linear_algebra, unit1_height, half_width, PI, unit1, mixed_unit);
-    test_multiply_matrix_col(linear_algebra, half_height, half_width, PI, unit1, mixed_unit);
+    test_multiply_matrix_col(linear_algebra, half_height, max_width, PI, unit1, mixed_unit, test);
+    test_multiply_matrix_col(linear_algebra, unit1_height, half_width, PI, unit1, mixed_unit, test);
+    test_multiply_matrix_col(linear_algebra, half_height, half_width, PI, unit1, mixed_unit, test);
 
     // some random dimensions
-    test_multiply_matrix_col(linear_algebra, 13, 63, PI, unit1, mixed_unit);
-    test_multiply_matrix_col(linear_algebra, 67, 17, PI, unit1, mixed_unit);
-    test_multiply_matrix_col(linear_algebra, 134, 11, PI, unit1, mixed_unit);
-    test_multiply_matrix_col(linear_algebra, 300, 27, PI, unit1, mixed_unit);
+    test_multiply_matrix_col(linear_algebra, 13, 63, PI, unit1, mixed_unit, test);
+    test_multiply_matrix_col(linear_algebra, 67, 17, PI, unit1, mixed_unit, test);
+    test_multiply_matrix_col(linear_algebra, 134, 11, PI, unit1, mixed_unit, test);
+    test_multiply_matrix_col(linear_algebra, 300, 27, PI, unit1, mixed_unit, test);
+}
+
+// Covers EncryptedRowVector multiply_mixed_unit(const EncryptedMatrix &enc_mat, const EncryptedColVector &enc_vec,
+// double scalar = 1)
+TEST(LinearAlgebraTest, MultiplyMatrixCol_Mixed_Unit) {
+    RotationSet rot_instance = RotationSet(8192);
+    LinearAlgebra linear_algebra_rot = LinearAlgebra(rot_instance);
+    test_multiply_matrix_col_mixed_unit_inputs(linear_algebra_rot, false);
+    vector<int> rotations = rot_instance.needed_rotations();
+
+    HomomorphicEval ckks_instance = HomomorphicEval(8192, TWO_MULTI_DEPTH, LOG_SCALE, rotations);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+    test_multiply_matrix_col_mixed_unit_inputs(linear_algebra, true);
 }
 
 // Covers
@@ -1823,16 +1889,7 @@ TEST(LinearAlgebraTest, TransposeUnit_InvalidCase) {
         (linear_algebra.transpose_unit(ciphertext5)), invalid_argument);
 }
 
-// Covers
-// void transpose_unit_inplace(EncryptedMatrix &enc_mat)
-// and
-// void transpose_unit_inplace(EncryptedColVector &enc_vec)
-// All dimensions of the input object must be smaller than both dimensions of the
-// encoding unit so that the object fits into a single unit and a single transpose unit.
-TEST(LinearAlgebraTest, TransposeUnit) {
-    HomomorphicEval ckks_instance = HomomorphicEval(8192, TWO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
-
+void transpose_unit_test(LinearAlgebra &linear_algebra, bool test) {
     // a 64x128 encoding unit
     int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
@@ -1846,14 +1903,34 @@ TEST(LinearAlgebraTest, TransposeUnit) {
     EncryptedColVector result1 = linear_algebra.transpose_unit(ciphertext1);
     EncryptedMatrix result2 = linear_algebra.transpose_unit(ciphertext2);
 
-    // test that transpose_unit actually transposes the unit
-    ASSERT_EQ(ciphertext1.encoding_unit(), result1.encoding_unit().transpose());
-    ASSERT_EQ(ciphertext2.encoding_unit(), result2.encoding_unit().transpose());
+    EncryptedColVector sum_ct2 = linear_algebra.sum_rows(ciphertext2);
+    EncryptedColVector sum_res2 = linear_algebra.sum_rows(result2);
 
-    // test that sum_rows(A) = sum_rows(transpose_unit(A))
-    ASSERT_LT(relative_error(linear_algebra.decrypt(linear_algebra.sum_rows(ciphertext2)),
-                             linear_algebra.decrypt(linear_algebra.sum_rows(result2))),
-              MAX_NORM);
+    if (test) {
+        // test that transpose_unit actually transposes the unit
+        ASSERT_EQ(ciphertext1.encoding_unit(), result1.encoding_unit().transpose());
+        ASSERT_EQ(ciphertext2.encoding_unit(), result2.encoding_unit().transpose());
+
+        // test that sum_rows(A) = sum_rows(transpose_unit(A))
+        ASSERT_LT(relative_error(linear_algebra.decrypt(sum_ct2), linear_algebra.decrypt(sum_res2)), MAX_NORM);
+    }
+}
+
+// Covers
+// void transpose_unit_inplace(EncryptedMatrix &enc_mat)
+// and
+// void transpose_unit_inplace(EncryptedColVector &enc_vec)
+// All dimensions of the input object must be smaller than both dimensions of the
+// encoding unit so that the object fits into a single unit and a single transpose unit.
+TEST(LinearAlgebraTest, TransposeUnit) {
+    RotationSet rot_instance = RotationSet(8192);
+    LinearAlgebra linear_algebra_rot = LinearAlgebra(rot_instance);
+    transpose_unit_test(linear_algebra_rot, false);
+    vector<int> rotations = rot_instance.needed_rotations();
+
+    HomomorphicEval ckks_instance = HomomorphicEval(8192, TWO_MULTI_DEPTH, LOG_SCALE, rotations);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+    transpose_unit_test(linear_algebra, true);
 }
 
 TEST(LinearAlgebraTest, ReduceLevelToMinMatrix) {
@@ -2037,69 +2114,89 @@ Vector sum_rows_plaintext(Matrix mat) {
     return Vector(coeffs);
 }
 
-void test_sum_rows(LinearAlgebra &linear_algebra, int height, int width, EncodingUnit &unit) {
+void test_sum_rows(LinearAlgebra &linear_algebra, int height, int width, EncodingUnit &unit, bool test) {
     Matrix mat = random_mat(height, width);
     EncryptedMatrix ct_mat = linear_algebra.encrypt_matrix(mat, unit);
     EncryptedColVector ct_vec = linear_algebra.sum_rows(ct_mat);
-    Vector actual_output = linear_algebra.decrypt(ct_vec);
-
     Vector expected_output = sum_rows_plaintext(mat);
-    ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
-    ASSERT_FALSE(ct_vec.needs_relin());
-    ASSERT_FALSE(ct_vec.needs_rescale());
+
+    if (test) {
+        Vector actual_output = linear_algebra.decrypt(ct_vec);
+        ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
+        ASSERT_FALSE(ct_vec.needs_relin());
+        ASSERT_FALSE(ct_vec.needs_rescale());
+    }
 }
 
-TEST(LinearAlgebraTest, SumRows) {
-    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
-
+void test_sum_rows_inputs(LinearAlgebra &linear_algebra, bool test) {
     // a 64x64 encoding unit
     int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
-    test_sum_rows(linear_algebra, 39, 37, unit1);
-    test_sum_rows(linear_algebra, 35, 64, unit1);
-    test_sum_rows(linear_algebra, 64, 31, unit1);
-    test_sum_rows(linear_algebra, 64, 64, unit1);
-    test_sum_rows(linear_algebra, 64, 67, unit1);
-    test_sum_rows(linear_algebra, 69, 64, unit1);
-    test_sum_rows(linear_algebra, 69, 67, unit1);
-    test_sum_rows(linear_algebra, 128, 64, unit1);
-    test_sum_rows(linear_algebra, 64, 128, unit1);
-    test_sum_rows(linear_algebra, 128, 128, unit1);
+    test_sum_rows(linear_algebra, 39, 37, unit1, test);
+    test_sum_rows(linear_algebra, 35, 64, unit1, test);
+    test_sum_rows(linear_algebra, 64, 31, unit1, test);
+    test_sum_rows(linear_algebra, 64, 64, unit1, test);
+    test_sum_rows(linear_algebra, 64, 67, unit1, test);
+    test_sum_rows(linear_algebra, 69, 64, unit1, test);
+    test_sum_rows(linear_algebra, 69, 67, unit1, test);
+    test_sum_rows(linear_algebra, 128, 64, unit1, test);
+    test_sum_rows(linear_algebra, 64, 128, unit1, test);
+    test_sum_rows(linear_algebra, 128, 128, unit1, test);
+}
+
+TEST(LinearAlgebraTest, SumRows) {
+    RotationSet rot_instance = RotationSet(NUM_OF_SLOTS);
+    LinearAlgebra linear_algebra_rot = LinearAlgebra(rot_instance);
+    test_sum_rows_inputs(linear_algebra_rot, false);
+    vector<int> rotations = rot_instance.needed_rotations();
+
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, rotations);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+    test_sum_rows_inputs(linear_algebra, true);
 }
 
 void test_sum_rows_many(LinearAlgebra &linear_algebra, int height1, int width1, int height2, int width2,
-                        EncodingUnit &unit) {
+                        EncodingUnit &unit, bool test) {
     Matrix mat1 = random_mat(height1, width1);
     Matrix mat2 = random_mat(height2, width2);
 
     EncryptedMatrix ct_mat1 = linear_algebra.encrypt_matrix(mat1, unit);
     EncryptedMatrix ct_mat2 = linear_algebra.encrypt_matrix(mat2, unit);
     EncryptedColVector ct_vec = linear_algebra.sum_rows_many({ct_mat1, ct_mat2});
-    Vector actual_output = linear_algebra.decrypt(ct_vec);
-
     Vector expected_output = sum_rows_plaintext(mat1) + sum_rows_plaintext(mat2);
-    ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
+
+    if (test) {
+        Vector actual_output = linear_algebra.decrypt(ct_vec);
+        ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
+    }
 }
 
-TEST(LinearAlgebraTest, SumRowsMany) {
-    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
-
+void test_sum_rows_many_inputs(LinearAlgebra &linear_algebra, bool test) {
     // a 64x64 encoding unit
     int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
-    test_sum_rows_many(linear_algebra, 64, 64, 64, 64, unit1);
-    test_sum_rows_many(linear_algebra, 64, 64, 65, 64, unit1);
+    test_sum_rows_many(linear_algebra, 64, 64, 64, 64, unit1, test);
+    test_sum_rows_many(linear_algebra, 64, 64, 65, 64, unit1, test);
     ASSERT_THROW(
         // Expect invalid_argument is thrown because widths do not match.
-        test_sum_rows_many(linear_algebra, 64, 64, 64, 65, unit1), invalid_argument);
+        test_sum_rows_many(linear_algebra, 64, 64, 64, 65, unit1, test), invalid_argument);
 
-    test_sum_rows_many(linear_algebra, 64, 64, 128, 64, unit1);
-    test_sum_rows_many(linear_algebra, 32, 64, 128, 64, unit1);
-    test_sum_rows_many(linear_algebra, 128, 64, 128, 64, unit1);
-    test_sum_rows_many(linear_algebra, 128, 128, 129, 128, unit1);
+    test_sum_rows_many(linear_algebra, 64, 64, 128, 64, unit1, test);
+    test_sum_rows_many(linear_algebra, 32, 64, 128, 64, unit1, test);
+    test_sum_rows_many(linear_algebra, 128, 64, 128, 64, unit1, test);
+    test_sum_rows_many(linear_algebra, 128, 128, 129, 128, unit1, test);
+}
+
+TEST(LinearAlgebraTest, SumRowsMany) {
+    RotationSet rot_instance = RotationSet(NUM_OF_SLOTS);
+    LinearAlgebra linear_algebra_rot = LinearAlgebra(rot_instance);
+    test_sum_rows_many_inputs(linear_algebra_rot, false);
+    vector<int> rotations = rot_instance.needed_rotations();
+
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ZERO_MULTI_DEPTH, LOG_SCALE, rotations);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+    test_sum_rows_many_inputs(linear_algebra, true);
 }
 
 Vector sum_cols_plaintext(Matrix mat) {
@@ -2115,69 +2212,89 @@ Vector sum_cols_plaintext(Matrix mat) {
     return Vector(coeffs);
 }
 
-void test_sum_cols(LinearAlgebra &linear_algebra, int height, int width, double scalar, EncodingUnit &unit) {
+void test_sum_cols(LinearAlgebra &linear_algebra, int height, int width, double scalar, EncodingUnit &unit, bool test) {
     Matrix mat = random_mat(height, width);
     EncryptedMatrix ct_mat = linear_algebra.encrypt_matrix(mat, unit);
     EncryptedRowVector ct_vec = linear_algebra.sum_cols(ct_mat, scalar);
-    Vector actual_output = linear_algebra.decrypt(ct_vec);
-
     Vector expected_output = scalar * sum_cols_plaintext(mat);
-    ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
-    ASSERT_FALSE(ct_vec.needs_relin());
-    ASSERT_TRUE(ct_vec.needs_rescale());
+
+    if (test) {
+        Vector actual_output = linear_algebra.decrypt(ct_vec);
+        ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
+        ASSERT_FALSE(ct_vec.needs_relin());
+        ASSERT_TRUE(ct_vec.needs_rescale());
+    }
 }
 
-TEST(LinearAlgebraTest, SumCols) {
-    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
-
+void test_sum_cols_inputs(LinearAlgebra &linear_algebra, bool test) {
     // a 64x64 encoding unit
     int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
-    test_sum_cols(linear_algebra, 39, 37, PI, unit1);
-    test_sum_cols(linear_algebra, 35, 64, PI, unit1);
-    test_sum_cols(linear_algebra, 64, 64, 1, unit1);
-    test_sum_cols(linear_algebra, 64, 64, PI, unit1);
-    test_sum_cols(linear_algebra, 64, 67, PI, unit1);
-    test_sum_cols(linear_algebra, 69, 64, PI, unit1);
-    test_sum_cols(linear_algebra, 69, 67, PI, unit1);
-    test_sum_cols(linear_algebra, 128, 64, PI, unit1);
-    test_sum_cols(linear_algebra, 64, 128, PI, unit1);
-    test_sum_cols(linear_algebra, 128, 128, PI, unit1);
+    test_sum_cols(linear_algebra, 39, 37, PI, unit1, test);
+    test_sum_cols(linear_algebra, 35, 64, PI, unit1, test);
+    test_sum_cols(linear_algebra, 64, 64, 1, unit1, test);
+    test_sum_cols(linear_algebra, 64, 64, PI, unit1, test);
+    test_sum_cols(linear_algebra, 64, 67, PI, unit1, test);
+    test_sum_cols(linear_algebra, 69, 64, PI, unit1, test);
+    test_sum_cols(linear_algebra, 69, 67, PI, unit1, test);
+    test_sum_cols(linear_algebra, 128, 64, PI, unit1, test);
+    test_sum_cols(linear_algebra, 64, 128, PI, unit1, test);
+    test_sum_cols(linear_algebra, 128, 128, PI, unit1, test);
+}
+
+TEST(LinearAlgebraTest, SumCols) {
+    RotationSet rot_instance = RotationSet(NUM_OF_SLOTS);
+    LinearAlgebra linear_algebra_rot = LinearAlgebra(rot_instance);
+    test_sum_cols_inputs(linear_algebra_rot, false);
+    vector<int> rotations = rot_instance.needed_rotations();
+
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, rotations);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+    test_sum_cols_inputs(linear_algebra, true);
 }
 
 void test_sum_cols_many(LinearAlgebra &linear_algebra, int height1, int width1, int height2, int width2,
-                        EncodingUnit &unit) {
+                        EncodingUnit &unit, bool test) {
     Matrix mat1 = random_mat(height1, width1);
     Matrix mat2 = random_mat(height2, width2);
 
     EncryptedMatrix ct_mat1 = linear_algebra.encrypt_matrix(mat1, unit);
     EncryptedMatrix ct_mat2 = linear_algebra.encrypt_matrix(mat2, unit);
     EncryptedRowVector ct_vec = linear_algebra.sum_cols_many({ct_mat1, ct_mat2});
-    Vector actual_output = linear_algebra.decrypt(ct_vec);
 
-    Vector expected_output = sum_cols_plaintext(mat1) + sum_cols_plaintext(mat2);
-    ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
+    if (test) {
+        Vector actual_output = linear_algebra.decrypt(ct_vec);
+        Vector expected_output = sum_cols_plaintext(mat1) + sum_cols_plaintext(mat2);
+        ASSERT_LT(relative_error(actual_output, expected_output), MAX_NORM);
+    }
 }
 
-TEST(LinearAlgebraTest, SumColsMany) {
-    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE);
-    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
-
+void test_sum_cols_many_inputs(LinearAlgebra &linear_algebra, bool test) {
     // a 64x64 encoding unit
     int unit1_height = 64;
     EncodingUnit unit1 = linear_algebra.make_unit(unit1_height);
 
-    test_sum_cols_many(linear_algebra, 64, 64, 64, 64, unit1);
-    test_sum_cols_many(linear_algebra, 64, 64, 64, 65, unit1);
+    test_sum_cols_many(linear_algebra, 64, 64, 64, 64, unit1, test);
+    test_sum_cols_many(linear_algebra, 64, 64, 64, 65, unit1, test);
     ASSERT_THROW(
         // Expect invalid_argument is thrown because heights do not match.
-        test_sum_cols_many(linear_algebra, 64, 64, 65, 64, unit1), invalid_argument);
+        test_sum_cols_many(linear_algebra, 64, 64, 65, 64, unit1, test), invalid_argument);
 
-    test_sum_cols_many(linear_algebra, 64, 64, 64, 128, unit1);
-    test_sum_cols_many(linear_algebra, 64, 32, 64, 128, unit1);
-    test_sum_cols_many(linear_algebra, 64, 128, 64, 128, unit1);
-    test_sum_cols_many(linear_algebra, 128, 128, 128, 129, unit1);
+    test_sum_cols_many(linear_algebra, 64, 64, 64, 128, unit1, test);
+    test_sum_cols_many(linear_algebra, 64, 32, 64, 128, unit1, test);
+    test_sum_cols_many(linear_algebra, 64, 128, 64, 128, unit1, test);
+    test_sum_cols_many(linear_algebra, 128, 128, 128, 129, unit1, test);
+}
+
+TEST(LinearAlgebraTest, SumColsMany) {
+    RotationSet rot_instance = RotationSet(NUM_OF_SLOTS);
+    LinearAlgebra linear_algebra_rot = LinearAlgebra(rot_instance);
+    test_sum_cols_many_inputs(linear_algebra_rot, false);
+    vector<int> rotations = rot_instance.needed_rotations();
+
+    HomomorphicEval ckks_instance = HomomorphicEval(NUM_OF_SLOTS, ONE_MULTI_DEPTH, LOG_SCALE, rotations);
+    LinearAlgebra linear_algebra = LinearAlgebra(ckks_instance);
+    test_sum_cols_many_inputs(linear_algebra, true);
 }
 
 void test_hadamard_mul_matrix_matrix(LinearAlgebra &linear_algebra, int height, int width, EncodingUnit &unit) {
