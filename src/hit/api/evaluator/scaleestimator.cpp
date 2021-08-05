@@ -21,7 +21,8 @@ namespace hit {
     ScaleEstimator::ScaleEstimator(int num_slots, int multiplicative_depth) {
         plaintext_eval = new PlaintextEval(num_slots);
 
-        context = make_shared<HEContext>(HEContext(num_slots, multiplicative_depth, default_scale_bits, false));
+        CKKSParams params(num_slots, multiplicative_depth, default_scale_bits, false);
+        context = make_shared<HEContext>(params);
     }
 
     ScaleEstimator::ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval) {
@@ -36,10 +37,13 @@ namespace hit {
     }
 
     CKKSCiphertext ScaleEstimator::encrypt(const vector<double> &coeffs) {
-        return encrypt(coeffs, -1);
+        return encrypt(coeffs, context->max_ciphertext_level());
     }
 
     CKKSCiphertext ScaleEstimator::encrypt(const vector<double> &coeffs, int level) {
+        if (level < 0) {
+            LOG_AND_THROW_STREAM("Explicit encryption level must be non-negative; got " << level);
+        }
         update_plaintext_max_val(coeffs);
 
         if (coeffs.size() != context->num_slots()) {

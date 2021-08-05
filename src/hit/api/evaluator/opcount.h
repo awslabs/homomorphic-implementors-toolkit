@@ -5,7 +5,6 @@
 
 #include "../ciphertext.h"
 #include "../evaluator.h"
-#include "depthfinder.h"
 
 namespace hit {
 

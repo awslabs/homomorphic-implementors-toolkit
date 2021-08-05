@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hit/api/evaluator/depthfinder.h"
+#include "hit/api/evaluator/implicitdepthfinder.h"
 
 #include <iostream>
 
@@ -18,8 +18,8 @@ const double PLAIN_TEXT = 1;
 const int STEPS = 1;
 const vector<double> VECTOR_1(SIZE, VALUE);
 
-TEST(DepthFinderTest, RotateLeft) {
-    DepthFinder ckks_instance = DepthFinder();
+TEST(ImplicitDepthFinderTest, RotateLeft) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
     CKKSCiphertext ciphertext1, ciphertext2;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ciphertext2 = ckks_instance.rotate_left(ciphertext1, STEPS);
@@ -28,8 +28,8 @@ TEST(DepthFinderTest, RotateLeft) {
     ASSERT_EQ(0, ckks_instance.get_multiplicative_depth());
 }
 
-TEST(DepthFinderTest, RotateRight) {
-    DepthFinder ckks_instance = DepthFinder();
+TEST(ImplicitDepthFinderTest, RotateRight) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
     CKKSCiphertext ciphertext1, ciphertext2;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ciphertext2 = ckks_instance.rotate_right(ciphertext1, STEPS);
@@ -38,8 +38,8 @@ TEST(DepthFinderTest, RotateRight) {
     ASSERT_EQ(0, ckks_instance.get_multiplicative_depth());
 }
 
-TEST(DepthFinderTest, Negate) {
-    DepthFinder ckks_instance = DepthFinder();
+TEST(ImplicitDepthFinderTest, Negate) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
     CKKSCiphertext ciphertext1, ciphertext2;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ciphertext2 = ckks_instance.negate(ciphertext1);
@@ -48,8 +48,8 @@ TEST(DepthFinderTest, Negate) {
     ASSERT_EQ(0, ckks_instance.get_multiplicative_depth());
 }
 
-TEST(DepthFinderTest, AddPlainScalar) {
-    DepthFinder ckks_instance = DepthFinder();
+TEST(ImplicitDepthFinderTest, AddPlainScalar) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
     CKKSCiphertext ciphertext1, ciphertext2;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ciphertext2 = ckks_instance.add_plain(ciphertext1, PLAIN_TEXT);
@@ -58,8 +58,8 @@ TEST(DepthFinderTest, AddPlainScalar) {
     ASSERT_EQ(0, ckks_instance.get_multiplicative_depth());
 }
 
-TEST(DepthFinderTest, AddPlaintext) {
-    DepthFinder ckks_instance = DepthFinder();
+TEST(ImplicitDepthFinderTest, AddPlaintext) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
     CKKSCiphertext ciphertext1, ciphertext2;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ciphertext2 = ckks_instance.add_plain(ciphertext1, VECTOR_1);
@@ -68,8 +68,8 @@ TEST(DepthFinderTest, AddPlaintext) {
     ASSERT_EQ(0, ckks_instance.get_multiplicative_depth());
 }
 
-TEST(DepthFinderTest, Add) {
-    DepthFinder ckks_instance = DepthFinder();
+TEST(ImplicitDepthFinderTest, Add) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ciphertext2 = ckks_instance.encrypt(VECTOR_1);
@@ -79,8 +79,8 @@ TEST(DepthFinderTest, Add) {
     ASSERT_EQ(0, ckks_instance.get_multiplicative_depth());
 }
 
-TEST(DepthFinderTest, SubPlainScalar) {
-    DepthFinder ckks_instance = DepthFinder();
+TEST(ImplicitDepthFinderTest, SubPlainScalar) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
     CKKSCiphertext ciphertext1, ciphertext2;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ciphertext2 = ckks_instance.sub_plain(ciphertext1, PLAIN_TEXT);
@@ -89,8 +89,8 @@ TEST(DepthFinderTest, SubPlainScalar) {
     ASSERT_EQ(0, ckks_instance.get_multiplicative_depth());
 }
 
-TEST(DepthFinderTest, SubPlaintext) {
-    DepthFinder ckks_instance = DepthFinder();
+TEST(ImplicitDepthFinderTest, SubPlaintext) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
     CKKSCiphertext ciphertext1, ciphertext2;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ciphertext2 = ckks_instance.sub_plain(ciphertext1, VECTOR_1);
@@ -99,8 +99,8 @@ TEST(DepthFinderTest, SubPlaintext) {
     ASSERT_EQ(0, ckks_instance.get_multiplicative_depth());
 }
 
-TEST(DepthFinderTest, Sub) {
-    DepthFinder ckks_instance = DepthFinder();
+TEST(ImplicitDepthFinderTest, Sub) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ciphertext2 = ckks_instance.encrypt(VECTOR_1);
@@ -110,8 +110,8 @@ TEST(DepthFinderTest, Sub) {
     ASSERT_EQ(0, ckks_instance.get_multiplicative_depth());
 }
 
-TEST(DepthFinderTest, AddCiphertextWithDiffHeLevel) {
-    DepthFinder ckks_instance = DepthFinder();
+TEST(ImplicitDepthFinderTest, AddCiphertextWithDiffHeLevel) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
     CKKSCiphertext ciphertext1, ciphertext2;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ciphertext2 = ckks_instance.encrypt(VECTOR_1);
@@ -122,8 +122,8 @@ TEST(DepthFinderTest, AddCiphertextWithDiffHeLevel) {
                  invalid_argument);
 }
 
-TEST(DepthFinderTest, MultiplyPlainScalar) {
-    DepthFinder ckks_instance = DepthFinder();
+TEST(ImplicitDepthFinderTest, MultiplyPlainScalar) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
     CKKSCiphertext ciphertext1, ciphertext2;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ciphertext2 = ckks_instance.multiply_plain(ciphertext1, PLAIN_TEXT);
@@ -132,18 +132,8 @@ TEST(DepthFinderTest, MultiplyPlainScalar) {
     ASSERT_EQ(0, ckks_instance.get_multiplicative_depth());
 }
 
-TEST(DepthFinderTest, MultiplyPlainMatrix) {
-    DepthFinder ckks_instance = DepthFinder();
-    CKKSCiphertext ciphertext1, ciphertext2;
-    ciphertext1 = ckks_instance.encrypt(VECTOR_1, 1);
-    ciphertext2 = ckks_instance.multiply_plain(ciphertext1, VECTOR_1);
-    // Expect he_level does not change.
-    ASSERT_EQ(ciphertext2.he_level(), ciphertext1.he_level());
-    ASSERT_EQ(0, ckks_instance.get_multiplicative_depth());
-}
-
-TEST(DepthFinderTest, Multiply) {
-    DepthFinder ckks_instance = DepthFinder();
+TEST(ImplicitDepthFinderTest, Multiply) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ciphertext2 = ckks_instance.encrypt(VECTOR_1);
@@ -153,8 +143,8 @@ TEST(DepthFinderTest, Multiply) {
     ASSERT_EQ(0, ckks_instance.get_multiplicative_depth());
 }
 
-TEST(DepthFinderTest, Multiply_InvalidCase) {
-    DepthFinder ckks_instance = DepthFinder();
+TEST(ImplicitDepthFinderTest, Multiply_InvalidCase) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
     CKKSCiphertext ciphertext1, ciphertext2;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ciphertext2 = ckks_instance.encrypt(VECTOR_1);
@@ -165,8 +155,8 @@ TEST(DepthFinderTest, Multiply_InvalidCase) {
                  invalid_argument);
 }
 
-TEST(DepthFinderTest, Square) {
-    DepthFinder ckks_instance = DepthFinder();
+TEST(ImplicitDepthFinderTest, Square) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
     CKKSCiphertext ciphertext1, ciphertext2;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ciphertext2 = ckks_instance.square(ciphertext1);
@@ -175,8 +165,8 @@ TEST(DepthFinderTest, Square) {
     ASSERT_EQ(0, ckks_instance.get_multiplicative_depth());
 }
 
-TEST(DepthFinderTest, ReduceLevelToMin) {
-    DepthFinder ckks_instance = DepthFinder();
+TEST(ImplicitDepthFinderTest, ReduceLevelToMin) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ciphertext2 = ckks_instance.encrypt(VECTOR_1);
@@ -190,8 +180,8 @@ TEST(DepthFinderTest, ReduceLevelToMin) {
     ASSERT_EQ(0, ckks_instance.get_multiplicative_depth());
 }
 
-TEST(DepthFinderTest, ReduceLevelTo) {
-    DepthFinder ckks_instance = DepthFinder();
+TEST(ImplicitDepthFinderTest, ReduceLevelTo) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
     CKKSCiphertext ciphertext1, ciphertext2;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     int he_level = ciphertext1.he_level();
@@ -201,8 +191,8 @@ TEST(DepthFinderTest, ReduceLevelTo) {
     ASSERT_EQ(0, ckks_instance.get_multiplicative_depth());
 }
 
-TEST(DepthFinderTest, ReduceLevelTo_InvalidCase) {
-    DepthFinder ckks_instance = DepthFinder();
+TEST(ImplicitDepthFinderTest, ReduceLevelTo_InvalidCase) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
     CKKSCiphertext ciphertext1;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     int he_level = ciphertext1.he_level();
@@ -212,21 +202,10 @@ TEST(DepthFinderTest, ReduceLevelTo_InvalidCase) {
                  invalid_argument);
 }
 
-TEST(DepthFinderTest, RescaleToNextInPlace) {
-    DepthFinder ckks_instance = DepthFinder();
+TEST(ImplicitDepthFinderTest, RescaleToNextInPlace) {
+    ImplicitDepthFinder ckks_instance = ImplicitDepthFinder();
     CKKSCiphertext ciphertext1;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
-    ckks_instance.multiply_plain_inplace(ciphertext1, 1);
-    int he_level = ciphertext1.he_level();
-    ckks_instance.rescale_to_next_inplace(ciphertext1);
-    ASSERT_EQ(he_level - 1, ciphertext1.he_level());
-    ASSERT_EQ(1, ckks_instance.get_multiplicative_depth());
-}
-
-TEST(DepthFinderTest, RescaleToNextInPlace_ExplicitLevel) {
-    DepthFinder ckks_instance = DepthFinder();
-    CKKSCiphertext ciphertext1;
-    ciphertext1 = ckks_instance.encrypt(VECTOR_1, 1);
     ckks_instance.multiply_plain_inplace(ciphertext1, 1);
     int he_level = ciphertext1.he_level();
     ckks_instance.rescale_to_next_inplace(ciphertext1);

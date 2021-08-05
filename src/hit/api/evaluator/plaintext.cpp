@@ -21,7 +21,8 @@ namespace hit {
     }
 
     CKKSCiphertext PlaintextEval::encrypt(const vector<double> &coeffs) {
-        return encrypt(coeffs, -1);
+        // ciphertext level doesn't matter for this evaluator
+        return encrypt(coeffs, 0);
     }
 
     CKKSCiphertext PlaintextEval::encrypt(const vector<double> &coeffs, int) {

@@ -26,21 +26,20 @@ namespace hit {
      * metadata values, it will always be incorrect (no matter which order Debug calls its sub-evaluators).
      */
 
-    HomomorphicEval::HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_standard_params,
-                                     const vector<int> &galois_steps) {
+    HomomorphicEval::HomomorphicEval(CKKSParams params, const vector<int> &galois_steps) {
         timepoint start = chrono::steady_clock::now();
-        standard_params_ = use_standard_params;
-        context = make_shared<HEContext>(num_slots, multiplicative_depth, log_scale, use_standard_params);
+        standard_params_ = params.use_std_params();
+        int max_ct_level = params.max_ct_level();
+        context = make_shared<HEContext>(move(params));
         log_elapsed_time(start, "Creating encryption context...");
-        backend_evaluator = new Evaluator(*(context->params));
-        backend_encoder = new CKKSEncoder(*(context->params));
+        backend_evaluator = new Evaluator(*(context->seal_ctx));
+        backend_encoder = new CKKSEncoder(*(context->seal_ctx));
 
         int num_galois_keys = galois_steps.size();
-        VLOG(VLOG_VERBOSE) << "Generating keys for " << num_slots << " slots and depth " << multiplicative_depth
-                           << ", including " << (num_galois_keys != 0 ? to_string(num_galois_keys) : "all")
-                           << " Galois keys.";
+        VLOG(VLOG_VERBOSE) << "Generating keys for " << context->ckks_params.num_slots() << " slots and depth " << max_ct_level
+                           << ", including " << num_galois_keys << " explicit Galois keys.";
 
-        double keys_size_bytes = estimate_key_size(galois_steps.size(), num_slots, multiplicative_depth);
+        double keys_size_bytes = estimate_key_size(num_galois_keys, context->ckks_params.num_slots(), max_ct_level);
         VLOG(VLOG_VERBOSE) << "Estimated size is " << setprecision(3);
         // using base-10 (SI) units, rather than base-2 units.
         double unit_multiplier = 1000;
@@ -61,23 +60,24 @@ namespace hit {
         // generate keys
         // This call generates a KeyGenerator with fresh randomness
         // The KeyGenerator object contains deterministic keys.
-        KeyGenerator keygen(*(context->params));
+        KeyGenerator keygen(*(context->seal_ctx));
         sk = keygen.secret_key();
         keygen.create_public_key(pk);
         if (num_galois_keys > 0) {
             keygen.create_galois_keys(galois_steps, galois_keys);
-        } else {
-            // generate all galois keys
-            keygen.create_galois_keys(galois_keys);
         }
         keygen.create_relin_keys(relin_keys);
 
         log_elapsed_time(start, "Generating keys...");
 
-        backend_encryptor = new Encryptor(*(context->params), pk);
-        backend_decryptor = new Decryptor(*(context->params), sk);
+        backend_encryptor = new Encryptor(*(context->seal_ctx), pk);
+        backend_decryptor = new Decryptor(*(context->seal_ctx), sk);
     }
 
+    HomomorphicEval::HomomorphicEval(int num_slots, int max_ct_level, int log_scale, const vector<int> &galois_steps,
+                                     bool use_standard_params)
+        : HomomorphicEval(CKKSParams(num_slots, max_ct_level, log_scale, use_standard_params), galois_steps) {
+    }
     HomomorphicEval::~HomomorphicEval() {
         delete backend_encoder;
         delete backend_evaluator;
@@ -97,37 +97,38 @@ namespace hit {
 
         standard_params_ = ckks_params.standardparams();
         timepoint start = chrono::steady_clock::now();
-        context = make_shared<HEContext>(params, log_scale, standard_params_);
+        context = make_shared<HEContext>(CKKSParams(params, log_scale, standard_params_));
         log_elapsed_time(start, "Creating encryption context...");
-        backend_evaluator = new Evaluator(*(context->params));
-        backend_encoder = new CKKSEncoder(*(context->params));
+        backend_evaluator = new Evaluator(*(context->seal_ctx));
+        backend_encoder = new CKKSEncoder(*(context->seal_ctx));
 
         istringstream pkstream(ckks_params.pubkey());
-        pk.load(*(context->params), pkstream);
-        backend_encryptor = new Encryptor(*(context->params), pk);
+        pk.load(*(context->seal_ctx), pkstream);
+        backend_encryptor = new Encryptor(*(context->seal_ctx), pk);
+    }
+
+    void HomomorphicEval::deserializeEvalKeys(const timepoint &start, istream &galois_key_stream,
+                                              istream &relin_key_stream) {
+        galois_keys.load(*(context->seal_ctx), galois_key_stream);
+        relin_keys.load(*(context->seal_ctx), relin_key_stream);
+        log_elapsed_time(start, "Reading keys...");
     }
 
     /* An evaluation instance */
     HomomorphicEval::HomomorphicEval(istream &params_stream, istream &galois_key_stream, istream &relin_key_stream) {
         deserialize_common(params_stream);
-
         timepoint start = chrono::steady_clock::now();
-        galois_keys.load(*(context->params), galois_key_stream);
-        relin_keys.load(*(context->params), relin_key_stream);
-        log_elapsed_time(start, "Reading keys...");
+        deserializeEvalKeys(start, galois_key_stream, relin_key_stream);
     }
 
     /* A full instance */
     HomomorphicEval::HomomorphicEval(istream &params_stream, istream &galois_key_stream, istream &relin_key_stream,
                                      istream &secret_key_stream) {
         deserialize_common(params_stream);
-
         timepoint start = chrono::steady_clock::now();
-        sk.load(*(context->params), secret_key_stream);
-        galois_keys.load(*(context->params), galois_key_stream);
-        relin_keys.load(*(context->params), relin_key_stream);
-        log_elapsed_time(start, "Reading keys...");
-        backend_decryptor = new Decryptor(*(context->params), sk);
+        sk.load(*(context->seal_ctx), secret_key_stream);
+        deserializeEvalKeys(start, galois_key_stream, relin_key_stream);
+        backend_decryptor = new Decryptor(*(context->seal_ctx), sk);
     }
 
     void HomomorphicEval::save(ostream &params_stream, ostream &galois_key_stream, ostream &relin_key_stream,
@@ -138,7 +139,7 @@ namespace hit {
 
         protobuf::CKKSParams ckks_params;
         ostringstream sealctxBuf;
-        context->params->key_context_data()->parms().save(sealctxBuf);
+        context->seal_ctx->key_context_data()->parms().save(sealctxBuf);
         ckks_params.set_ctx(sealctxBuf.str());
         ckks_params.set_logscale(context->log_scale());
 
@@ -156,21 +157,18 @@ namespace hit {
     }
 
     CKKSCiphertext HomomorphicEval::encrypt(const vector<double> &coeffs) {
-        return encrypt(coeffs, -1);
+        return encrypt(coeffs, context->max_ciphertext_level());
     }
 
     CKKSCiphertext HomomorphicEval::encrypt(const vector<double> &coeffs, int level) {
         int num_slots_ = num_slots();
         if (coeffs.size() != num_slots_) {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
-            // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
+            // This forces the caller to ensure that the input has the correct size or is at least appropriately
+            // padded
             LOG_AND_THROW_STREAM("You can only encrypt vectors which have exactly as many "
                                  << " coefficients as the number of plaintext slots: Expected " << num_slots_
                                  << " coefficients, but " << coeffs.size() << " were provided");
-        }
-
-        if (level == -1) {
-            level = context->max_ciphertext_level();
         }
 
         double scale = pow(2, context->log_scale());
@@ -270,7 +268,6 @@ namespace hit {
         backend_evaluator->multiply_inplace(ct1.backend_ct, ct2.backend_ct);
     }
 
-    /* WARNING: This function is not constant time in the scalar argument. */
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) {
         if (scalar != double{0}) {
             Plaintext encoded_plain;
@@ -279,8 +276,8 @@ namespace hit {
         } else {
             double previous_scale = ct.scale();
             backend_encryptor->encrypt_zero(ct.backend_ct.parms_id(), ct.backend_ct);
-            // seal sets the scale to be 1, but our the debug evaluator always ensures that the SEAL scale is consistent
-            // with our mirror calculation
+            // seal sets the scale to be 1, but our the debug evaluator always ensures that the SEAL scale is
+            // consistent with our mirror calculation
             ct.backend_ct.scale() = previous_scale * previous_scale;
         }
     }

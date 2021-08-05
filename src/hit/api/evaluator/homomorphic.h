@@ -6,6 +6,7 @@
 #include "../../common.h"
 #include "../ciphertext.h"
 #include "../evaluator.h"
+#include "../params.h"
 
 namespace hit {
 
@@ -15,29 +16,25 @@ namespace hit {
      */
     class HomomorphicEval : public CKKSEvaluator {
        public:
-        /* This provides the 'production' evaluator, which just offers an improved
-         * API without debug information.
-         *
-         * All of these parameters contain only public information. The GaloisKeys
-         * and RelinKeys are part of the CKKS scheme's "evaluation keys".
-         *
-         * update_metadata indicates whether this evaluator should update ciphertext metadata or not
-         * When HomomorphicEval is used alone, update_metadata should be true.
-         * When HomomorphicEval is used as a sub-evaluator (e.g., as a component of the Debug evaluator) where
-         * other sub-evaluators compute the metadata, then update_metadata should be false.
-         *
-         * The `use_standard_params` flag allows you to restrict to standardized parameters, or to use larger
-         * rings. The standard parameters are designed to achieve 128-bits of security, while setting
-         * `use_standard_params` to false allows you to set parameters which may not achieve 128-bits
-         * of security.
+        /* Construct a homomorphic evaluator instance for the provided scheme parameters.
+         * This will generate keys for encryption, decryption, and relinearization in all cases.
+         * Additionally, generates rotation (Galois) keys for the shifts provided in the galois_steps
+         * vector. For example, if your circuit calls `rotate_left(ct, 2)` and `rotate_right(ct, 3)`,
+         * you should ensure that `galois_steps` includes [2, -3] (right shifts are negative). Including
+         * unnecessary shifts results in longer key generation time and larger keys, while not including
+         * all explicit rotations will result in a runtime error. You can use the RotationSet evaluator
+         * to compute the necessary and sufficient `galois_steps` vector for your circuit.
          */
-        HomomorphicEval(int num_slots, int multiplicative_depth, int log_scale, bool use_standard_params = true,
-                        const std::vector<int> &galois_steps = std::vector<int>());
+        explicit HomomorphicEval(CKKSParams params, const std::vector<int> &galois_steps = std::vector<int>());
 
-        /* An evaluation instance */
+        /* See comment above */
+        HomomorphicEval(int num_slots, int max_ct_level, int log_scale,
+                        const std::vector<int> &galois_steps = std::vector<int>(), bool use_standard_params = true);
+
+        /* An evaluation-only instance (decryption not available) */
         HomomorphicEval(std::istream &params_stream, std::istream &galois_key_stream, std::istream &relin_key_stream);
 
-        /* A full instance */
+        /* A full instance capable of encryption, decryption, and evaluation. */
         HomomorphicEval(std::istream &params_stream, std::istream &galois_key_stream, std::istream &relin_key_stream,
                         std::istream &secret_key_stream);
 
@@ -89,7 +86,6 @@ namespace hit {
 
         void multiply_inplace_internal(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) override;
 
-        /* WARNING: This function is not constant time in the scalar argument. */
         void multiply_plain_inplace_internal(CKKSCiphertext &ct, double scalar) override;
 
         void multiply_plain_inplace_internal(CKKSCiphertext &ct, const std::vector<double> &plain) override;
@@ -114,6 +110,8 @@ namespace hit {
         bool standard_params_;
 
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
+        void deserializeEvalKeys(const timepoint &start, std::istream &galois_key_stream,
+                                 std::istream &relin_key_stream);
 
         void deserialize_common(std::istream &params_stream);
 

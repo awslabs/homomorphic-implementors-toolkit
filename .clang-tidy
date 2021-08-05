@@ -16,6 +16,7 @@ Checks: >
   -bugprone-branch-clone,
   -google-readability-braces-around-statements,
   -google-readability-namespace-comments,
+  -google-readability-todo,
   -google-runtime-references,
   -misc-non-private-member-variables-in-classes,
   -modernize-return-braced-init-list,
@@ -25,7 +26,8 @@ Checks: >
   -readability-braces-around-statements,
   -readability-magic-numbers,
   -readability-named-parameter,
-  -readability-redundant-declaration
+  -readability-redundant-declaration,
+  -modernize-use-auto
 HeaderFilterRegex: "(src/hit/api/|src/hit/CKKSInstance|src/hit/common|src/hit/matrix|src/hit/sealutils).*\\.h$"
 WarningsAsErrors: '*'
 CheckOptions:

@@ -18,13 +18,15 @@ namespace hit {
 
     class DebugEval : public CKKSEvaluator {
        public:
+        explicit DebugEval(const CKKSParams &params, const std::vector<int> &galois_steps);
+
         /* The `use_seal_params` flag allows you to restrict to SEAL parameters, or to use larger
          * rings. The SEAL paramters are designed to achieve 128-bits of security, while setting
          * `use_seal_params` to false allows you to set parameters which may not achieve 128-bits
          * of security.
          */
-        DebugEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params = true,
-                  const std::vector<int> &galois_steps = std::vector<int>());
+        DebugEval(int num_slots, int max_ct_level, int log_scale,
+                  const std::vector<int> &galois_steps = std::vector<int>(), bool use_seal_params = true);
 
         DebugEval(std::istream &params_stream, std::istream &galois_key_stream, std::istream &relin_key_stream,
                   std::istream &secret_key_stream);

@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "params.h"
 #include "seal/context.h"
 #include "seal/seal.h"
 
@@ -17,8 +18,9 @@ namespace hit {
     /* An internal API for the HE backend. */
     class HEContext {
        public:
-        HEContext(int num_slots, int mult_depth, int precision_bits, bool use_standard_params);
-        explicit HEContext(const seal::EncryptionParameters &params, int precision_bits, bool use_standard_params);
+        explicit HEContext(CKKSParams params);
+
+        // HEContext(const seal::EncryptionParameters &params, int precision_bits, bool use_standard_params);
 
         // Maximum level of a ciphertext for these parameters. For a leveled-HE scheme,
         // this is one more than the multiplicative depth of the circuit you want to evaluate.
@@ -54,16 +56,11 @@ namespace hit {
         // Log(scale) for these parameters
         int log_scale() const;
 
-        std::shared_ptr<seal::SEALContext> params;
-
-        /*
-        Helper function: Get the context data for a specific ciphertext level
-        */
+        CKKSParams ckks_params;
+        std::shared_ptr<seal::SEALContext> seal_ctx;
         std::shared_ptr<const seal::SEALContext::ContextData> get_context_data(int level) const;
 
        private:
         void validateContext() const;
-        void params_to_context(const seal::EncryptionParameters &enc_params, bool use_standard_params);
-        int log_scale_;
     };
 }  // namespace hit

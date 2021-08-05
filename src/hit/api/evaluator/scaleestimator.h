@@ -5,7 +5,6 @@
 
 #include "../ciphertext.h"
 #include "../evaluator.h"
-#include "depthfinder.h"
 #include "hit/api/context.h"
 #include "homomorphic.h"
 #include "plaintext.h"
