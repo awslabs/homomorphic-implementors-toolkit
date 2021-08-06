@@ -63,9 +63,7 @@ namespace hit {
         KeyGenerator keygen(*(context->seal_ctx));
         sk = keygen.secret_key();
         keygen.create_public_key(pk);
-        if (num_galois_keys > 0) {
-            keygen.create_galois_keys(galois_steps, galois_keys);
-        }
+        keygen.create_galois_keys(galois_steps, galois_keys);
         keygen.create_relin_keys(relin_keys);
 
         log_elapsed_time(start, "Generating keys...");
