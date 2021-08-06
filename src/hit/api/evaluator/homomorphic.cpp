@@ -34,8 +34,6 @@ namespace hit {
         context = make_shared<HEContext>(params);
         log_elapsed_time(start, "Creating encryption context...");
 
-        // With the current Lattigo API, it's easiest to just generate all 2-power rotation
-        // keys, up to num_slots/2.
         int num_galois_keys = galois_steps.size();
         VLOG(VLOG_VERBOSE) << "Generating keys for " << params.num_slots() << " slots and depth " << max_ct_level
                            << ", including " << num_galois_keys << " explicit Galois keys.";
