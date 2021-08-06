@@ -26,11 +26,11 @@ namespace hit {
      * metadata values, it will always be incorrect (no matter which order Debug calls its sub-evaluators).
      */
 
-    HomomorphicEval::HomomorphicEval(CKKSParams params, const vector<int> &galois_steps) {
+    HomomorphicEval::HomomorphicEval(const CKKSParams &params, const vector<int> &galois_steps) {
         timepoint start = chrono::steady_clock::now();
         standard_params_ = params.use_std_params();
         int max_ct_level = params.max_ct_level();
-        context = make_shared<HEContext>(move(params));
+        context = make_shared<HEContext>(params);
         log_elapsed_time(start, "Creating encryption context...");
         backend_evaluator = new Evaluator(*(context->seal_ctx));
         backend_encoder = new CKKSEncoder(*(context->seal_ctx));

@@ -25,13 +25,13 @@ namespace hit {
          * all explicit rotations will result in a runtime error. You can use the RotationSet evaluator
          * to compute the necessary and sufficient `galois_steps` vector for your circuit.
          */
-        explicit HomomorphicEval(CKKSParams params, const std::vector<int> &galois_steps = std::vector<int>());
+        explicit HomomorphicEval(const CKKSParams &params, const std::vector<int> &galois_steps = std::vector<int>());
 
-        /* See comment above */
+        /* See comment above. */
         HomomorphicEval(int num_slots, int max_ct_level, int log_scale,
                         const std::vector<int> &galois_steps = std::vector<int>(), bool use_standard_params = true);
 
-        /* An evaluation-only instance (decryption not available) */
+        /* An evaluation-only instance (decryption not available). */
         HomomorphicEval(std::istream &params_stream, std::istream &galois_key_stream, std::istream &relin_key_stream);
 
         /* A full instance capable of encryption, decryption, and evaluation. */
