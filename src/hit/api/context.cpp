@@ -68,41 +68,38 @@ namespace hit {
         }
     }
 
-    HEContext::HEContext(const CKKSParams &params) : params(params.lattigo_params) {
-        if (params.btp_params.has_value()) {
-            btp_params = params.btp_params.value().lattigo_btp_params;
-        }
+    HEContext::HEContext(CKKSParams params) : ckks_params(move(params)) {
         validateContext();
     }
 
     int HEContext::max_ciphertext_level() const {
-        return maxLevel(params);
+        return ckks_params.max_ct_level();
     }
 
     int HEContext::num_slots() const {
-        return numSlots(params);
+        return ckks_params.num_slots();
     }
 
     uint64_t HEContext::get_qi(int he_level) const {
         if (he_level >= num_qi()) {
             LOG_AND_THROW_STREAM("Q_i index-out-of-bounds exception");
         }
-        return qi(params, he_level);
+        return qi(ckks_params.lattigo_params, he_level);
     }
 
     uint64_t HEContext::get_pi(int i) const {
         if (i >= num_pi()) {
             LOG_AND_THROW_STREAM("P_i index-out-of-bounds exception");
         }
-        return pi(params, i);
+        return pi(ckks_params.lattigo_params, i);
     }
 
     int HEContext::num_qi() const {
-        return qiCount(params);
+        return qiCount(ckks_params.lattigo_params);
     }
 
     int HEContext::num_pi() const {
-        return piCount(params);
+        return piCount(ckks_params.lattigo_params);
     }
 
     uint64_t HEContext::total_modulus_bits() const {
@@ -124,6 +121,6 @@ namespace hit {
     }
 
     int HEContext::log_scale() const {
-        return ceil(log2(scale(params)));
+        return ckks_params.log_scale();
     }
 }  // namespace hit

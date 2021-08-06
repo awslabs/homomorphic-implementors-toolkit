@@ -49,7 +49,7 @@ namespace hit {
     }
 
     int CKKSParams::log_scale() const {
-        return static_cast<int>(log2(latticpp::scale(lattigo_params)));
+        return ceil(log2(latticpp::scale(lattigo_params)));
     }
 
     int CKKSParams::max_ct_level() const {

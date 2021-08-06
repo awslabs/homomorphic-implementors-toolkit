@@ -59,7 +59,7 @@ namespace hit {
         // generate keys
         // This call generates a KeyGenerator with fresh randomness
         // The KeyGenerator object contains deterministic keys.
-        KeyGenerator keyGenerator = newKeyGenerator(context->params);
+        KeyGenerator keyGenerator = newKeyGenerator(params.lattigo_params);
         KeyPairHandle kp;
         if (params.btp_params.has_value()) {
             kp = genKeyPairSparse(keyGenerator, secretHammingWeight(params.btp_params.value().lattigo_btp_params));
@@ -73,7 +73,7 @@ namespace hit {
 
         log_elapsed_time(start, "Generating keys...");
 
-        backend_decryptor = newDecryptor(context->params, sk);
+        backend_decryptor = newDecryptor(params.lattigo_params, sk);
 
         if (params.btp_params.has_value()) {
             btp_depth = params.btp_params.value().bootstrapping_depth();
@@ -115,7 +115,7 @@ namespace hit {
                                               istream &relin_key_stream) {
         galois_keys = unmarshalBinaryRotationKeys(galois_key_stream);
         relin_keys = unmarshalBinaryRelinearizationKey(relin_key_stream);
-        if (context->btp_params.has_value()) {
+        if (context->ckks_params.btp_params.has_value()) {
             btp_keys = makeBootstrappingKey(relin_keys, galois_keys);
         }
         log_elapsed_time(start, "Reading keys...");
@@ -135,7 +135,7 @@ namespace hit {
         timepoint start = chrono::steady_clock::now();
         sk = unmarshalBinarySecretKey(secret_key_stream);
         deserializeEvalKeys(start, galois_key_stream, relin_key_stream);
-        backend_decryptor = newDecryptor(context->params, sk);
+        backend_decryptor = newDecryptor(context->ckks_params.lattigo_params, sk);
     }
 
     void HomomorphicEval::save(ostream &params_stream, ostream &galois_key_stream, ostream &relin_key_stream,
@@ -147,12 +147,12 @@ namespace hit {
         protobuf::CKKSParams ckks_params;
         ostringstream ctx_stream;
 
-        marshalBinaryParameters(context->params, ctx_stream);
+        marshalBinaryParameters(context->ckks_params.lattigo_params, ctx_stream);
         ckks_params.set_ctx(ctx_stream.str());
 
-        if (context->btp_params.has_value()) {
+        if (context->ckks_params.btp_params.has_value()) {
             ostringstream btp_params_stream;
-            marshalBinaryBootstrapParameters(context->btp_params.value(), btp_params_stream);
+            marshalBinaryBootstrapParameters(context->ckks_params.btp_params.value().lattigo_btp_params, btp_params_stream);
             ckks_params.set_btp_params(btp_params_stream.str());
         }
 
@@ -189,7 +189,7 @@ namespace hit {
         destination.he_level_ = level;
         destination.scale_ = scale;
 
-        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder().ref(), coeffs, level, scale);
+        Plaintext temp = encodeNTTAtLvlNew(context->ckks_params.lattigo_params, get_encoder().ref(), coeffs, level, scale);
         destination.backend_ct = encryptNew(get_encryptor().ref(), temp);
 
         destination.num_slots_ = num_slots_;
@@ -237,29 +237,29 @@ namespace hit {
     HomomorphicEval::PoolObject<Evaluator> HomomorphicEval::get_evaluator() {
         std::optional<Evaluator> opt = backend_evaluator.poll();
         Evaluator result = opt.has_value() ? std::move(*opt)
-                                           : newEvaluator(context->params, makeEvaluationKey(relin_keys, galois_keys));
+                                           : newEvaluator(context->ckks_params.lattigo_params, makeEvaluationKey(relin_keys, galois_keys));
         return PoolObject<Evaluator>(std::move(result), backend_evaluator);
     }
 
     HomomorphicEval::PoolObject<Encoder> HomomorphicEval::get_encoder() {
         std::optional<Encoder> opt = backend_encoder.poll();
-        Encoder result = opt.has_value() ? std::move(*opt) : newEncoder(context->params);
+        Encoder result = opt.has_value() ? std::move(*opt) : newEncoder(context->ckks_params.lattigo_params);
         return PoolObject<Encoder>(std::move(result), backend_encoder);
     }
 
     HomomorphicEval::PoolObject<Encryptor> HomomorphicEval::get_encryptor() {
         std::optional<Encryptor> opt = backend_encryptor.poll();
-        Encryptor result = opt.has_value() ? std::move(*opt) : newEncryptorFromPk(context->params, pk);
+        Encryptor result = opt.has_value() ? std::move(*opt) : newEncryptorFromPk(context->ckks_params.lattigo_params, pk);
         return PoolObject<Encryptor>(std::move(result), backend_encryptor);
     }
 
     HomomorphicEval::PoolObject<Bootstrapper> HomomorphicEval::get_bootstrapper() {
-        if (!(context->btp_params.has_value())) {
+        if (!(context->ckks_params.btp_params.has_value())) {
             LOG_AND_THROW_STREAM("CKKS parameters do not specify bootstrapping parameters.");
         }
         std::optional<Bootstrapper> opt = backend_bootstrapper.poll();
         Bootstrapper result =
-            opt.has_value() ? std::move(*opt) : newBootstrapper(context->params, context->btp_params.value(), btp_keys);
+            opt.has_value() ? std::move(*opt) : newBootstrapper(context->ckks_params.lattigo_params, context->ckks_params.btp_params.value().lattigo_btp_params, btp_keys);
         return PoolObject<Bootstrapper>(std::move(result), backend_bootstrapper);
     }
 
@@ -284,7 +284,7 @@ namespace hit {
     }
 
     void HomomorphicEval::add_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder().ref(), plain, ct.he_level(), ct.scale());
+        Plaintext temp = encodeNTTAtLvlNew(context->ckks_params.lattigo_params, get_encoder().ref(), plain, ct.he_level(), ct.scale());
         addPlain(get_evaluator().ref(), ct.backend_ct, temp, ct.backend_ct);
     }
 
@@ -297,7 +297,7 @@ namespace hit {
     }
 
     void HomomorphicEval::sub_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder().ref(), plain, ct.he_level(), ct.scale());
+        Plaintext temp = encodeNTTAtLvlNew(context->ckks_params.lattigo_params, get_encoder().ref(), plain, ct.he_level(), ct.scale());
         subPlain(get_evaluator().ref(), ct.backend_ct, temp, ct.backend_ct);
     }
 
@@ -313,7 +313,7 @@ namespace hit {
     }
 
     void HomomorphicEval::multiply_plain_inplace_internal(CKKSCiphertext &ct, const vector<double> &plain) {
-        Plaintext temp = encodeNTTAtLvlNew(context->params, get_encoder().ref(), plain, ct.he_level(), ct.scale());
+        Plaintext temp = encodeNTTAtLvlNew(context->ckks_params.lattigo_params, get_encoder().ref(), plain, ct.he_level(), ct.scale());
         mulPlain(get_evaluator().ref(), ct.backend_ct, temp, ct.backend_ct);
     }
 
@@ -329,7 +329,7 @@ namespace hit {
     }
 
     void HomomorphicEval::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
-        rescaleMany(get_evaluator().ref(), context->params, ct.backend_ct, 1, ct.backend_ct);
+        rescaleMany(get_evaluator().ref(), context->ckks_params.lattigo_params, ct.backend_ct, 1, ct.backend_ct);
     }
 
     void HomomorphicEval::relinearize_inplace_internal(CKKSCiphertext &ct) {
