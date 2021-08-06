@@ -114,7 +114,7 @@ namespace hit {
         // This is primarily used for serialization/deserialization
         CKKSParams(latticpp::Parameters lattigo_params, latticpp::BootstrappingParameters lattigo_btp_params);
 
-        CKKSParams(int num_slots, int log_scale, int max_ct_level, int num_ks_primes = 1,
+        CKKSParams(int num_slots, int max_ct_level, int log_scale, int num_ks_primes = 1,
                    std::optional<BootstrappingParams> btp_params = std::optional<BootstrappingParams>());
 
         int num_slots() const;

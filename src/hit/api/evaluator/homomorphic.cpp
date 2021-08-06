@@ -87,7 +87,7 @@ namespace hit {
     }
 
     HomomorphicEval::HomomorphicEval(int num_slots, int max_ct_level, int log_scale, const vector<int> &galois_steps)
-        : HomomorphicEval(CKKSParams(num_slots, log_scale, max_ct_level), galois_steps) {
+        : HomomorphicEval(CKKSParams(num_slots, max_ct_level, log_scale), galois_steps) {
     }
 
     void HomomorphicEval::deserialize_common(istream &params_stream) {
