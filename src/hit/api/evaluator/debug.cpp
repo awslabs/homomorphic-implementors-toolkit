@@ -202,10 +202,6 @@ namespace hit {
             LOG(ERROR) << actual_debug_result.str();
 
             HomomorphicEval::PoolObject<Encoder> e = homomorphic_eval->get_encoder();
-            cout << "PT log_inf norm: " << log2(l_inf_norm(ct.raw_pt)) << endl;
-            cout << "log_scale: " << log2(ct.scale()) << endl;
-            cout << "helevel: " << ct.he_level() << endl;
-
             Plaintext encoded_plain =
                 encodeNTTAtLvlNew(homomorphic_eval->context->params, e.ref(), ct.raw_pt, ct.he_level(), ct.scale());
             vector<double> decoded_plain = ::decode(e.ref(), encoded_plain, log2(num_slots()));
