@@ -36,8 +36,8 @@ namespace hit {
         backend_encoder = new CKKSEncoder(*(context->seal_ctx));
 
         int num_galois_keys = galois_steps.size();
-        VLOG(VLOG_VERBOSE) << "Generating keys for " << context->ckks_params.num_slots() << " slots and depth " << max_ct_level
-                           << ", including " << num_galois_keys << " explicit Galois keys.";
+        VLOG(VLOG_VERBOSE) << "Generating keys for " << context->ckks_params.num_slots() << " slots and depth "
+                           << max_ct_level << ", including " << num_galois_keys << " explicit Galois keys.";
 
         double keys_size_bytes = estimate_key_size(num_galois_keys, context->ckks_params.num_slots(), max_ct_level);
         VLOG(VLOG_VERBOSE) << "Estimated size is " << setprecision(3);

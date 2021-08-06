@@ -90,8 +90,7 @@ namespace hit {
 
     DebugEval::DebugEval(int num_slots, int max_ct_level, int log_scale, const vector<int> &galois_steps,
                          bool use_seal_params) {
-        homomorphic_eval =
-            new HomomorphicEval(num_slots, max_ct_level, log_scale, galois_steps, use_seal_params);
+        homomorphic_eval = new HomomorphicEval(num_slots, max_ct_level, log_scale, galois_steps, use_seal_params);
         constructor_common(num_slots);
     }
 
