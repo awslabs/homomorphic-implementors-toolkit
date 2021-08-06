@@ -13,7 +13,6 @@
 #include <thread>
 #include <variant>
 
-#include "../params.h"
 #include "hit/protobuf/ckksparams.pb.h"
 
 using namespace std;
