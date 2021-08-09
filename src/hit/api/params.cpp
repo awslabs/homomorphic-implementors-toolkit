@@ -26,7 +26,7 @@ namespace hit {
           btp_params(optional<BootstrappingParams>(BootstrappingParams(move(lattigo_btp_params)))) {
     }
 
-    CKKSParams::CKKSParams(int num_slots, int log_scale, int max_ct_level, int num_ks_primes,
+    CKKSParams::CKKSParams(int num_slots, int max_ct_level, int log_scale, int num_ks_primes,
                            optional<BootstrappingParams> btp_params)
         : btp_params(move(btp_params)) {
         if (max_ct_level < 0 || num_ks_primes < 1) {
@@ -49,7 +49,7 @@ namespace hit {
     }
 
     int CKKSParams::log_scale() const {
-        return ceil(log2(latticpp::scale(lattigo_params)));
+        return static_cast<int>(log2(latticpp::scale(lattigo_params)));
     }
 
     int CKKSParams::max_ct_level() const {
