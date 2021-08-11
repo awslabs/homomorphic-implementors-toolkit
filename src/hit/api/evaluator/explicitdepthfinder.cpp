@@ -20,7 +20,10 @@ namespace hit {
             LOG_AND_THROW_STREAM("Explicit encryption level must be non-negative, got " << level);
         }
 
-        max_contiguous_depth = max(max_contiguous_depth, level);
+        {
+            scoped_lock lock(mutex_);
+            max_contiguous_depth = max(max_contiguous_depth, level);
+        }
 
         CKKSCiphertext destination;
         destination.he_level_ = level;

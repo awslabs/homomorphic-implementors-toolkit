@@ -77,11 +77,6 @@ namespace hit {
 
        private:
         const int num_slots_ = 4096;
-        // We can't make this value `const` even though ImplicitDepthFinder
-        // doesn't update it. The reason is that ImplicitDepthFinder works when
-        // top_he_level_ is 0, but other evaluators which depend on
-        // ImplicitDepthFinder (like ScaleEstimator) have to update this value
-        // to work correctly.
         int bootstrap_depth_ = -1;
         int post_bootstrap_depth_ = 0;
         int max_contiguous_depth = 0;
