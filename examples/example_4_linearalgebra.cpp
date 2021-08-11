@@ -20,9 +20,15 @@ void example_4_driver() {
 	int num_slots = 8192;
 	int max_depth = 3;
 	int log_scale = 40;
+	vector<int> rotations;
+	rotations.push_back(num_slots/2);
+	for (int i = 1; i < num_slots / 2; i <<= 1) {
+		rotations.push_back(i);
+		rotations.push_back(-i);
+	}
 
 	// Start by creating one of the basic HIT instances.
-	DebugEval dbg_inst(num_slots, max_depth, log_scale);
+	DebugEval dbg_inst(num_slots, max_depth, log_scale, rotations);
 	// We then create a LinearAlgebra wrapper around this instance
 	LinearAlgebra la_inst(dbg_inst);
 

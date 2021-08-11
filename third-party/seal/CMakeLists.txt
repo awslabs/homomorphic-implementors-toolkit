@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-project(SEAL_DOWNLOAD VERSION 3.6.5)
+project(SEAL_DOWNLOAD VERSION 3.6.6)
 
 include(ExternalProject)
 ExternalProject_Add(EP_SEAL

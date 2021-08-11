@@ -13,24 +13,6 @@ using namespace std;
 using namespace seal;
 
 namespace hit {
-    /*
-    Helper function: Generate a list of bit-lengths for the modulus primes.
-    */
-    vector<int> gen_modulus_vec(int num_primes, int log_scale) {
-        if (num_primes < 2) {
-            LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-SEAL instance: "
-                                 << "there must be at least two primes in the modulus.");
-        }
-
-        vector<int> modulusVector(num_primes, log_scale);
-        // the SEAL examples recommend the last modulus be 60 bits; it's unclear why,
-        // and also unclear how closely that choice is related to log_scale (they use 40 in their examples)
-        modulusVector[0] = 60;
-        // The special modulus has to be as large as the largest prime in the chain.
-        modulusVector[num_primes - 1] = 60;
-
-        return modulusVector;
-    }
 
     uint64_t estimate_key_size(int num_galois_shift, int plaintext_slots, int depth) {
         // number of bytes in each coefficient (a 64-bit value)
@@ -86,43 +68,25 @@ namespace hit {
         }
     }
 
-    HEContext::HEContext(const seal::EncryptionParameters &params, int precision_bits, bool use_standard_params)
-        : log_scale_(precision_bits) {
-        params_to_context(params, use_standard_params);
-        validateContext();
-    }
-
-    void HEContext::params_to_context(
-        const EncryptionParameters &enc_params,
-        bool use_standard_params) {  // NOLINT(readability-convert-member-functions-to-static)
-        if (use_standard_params) {
-            params = make_shared<SEALContext>(enc_params);
+    HEContext::HEContext(CKKSParams params) : ckks_params(move(params)) {
+        if (ckks_params.use_std_params()) {
+            seal_ctx = make_shared<SEALContext>(ckks_params.params);
         } else {
             LOG(WARNING)
                 << "YOU ARE NOT USING STANDARD SEAL PARAMETERS. Encryption parameters may not achieve 128-bit security"
                 << "DO NOT USE IN PRODUCTION";
             // for large parameter sets, see https://github.com/microsoft/SEAL/issues/84
-            params = make_shared<SEALContext>(enc_params, true, sec_level_type::none);
+            seal_ctx = make_shared<SEALContext>(ckks_params.params, true, sec_level_type::none);
         }
-    }
-
-    HEContext::HEContext(int num_slots, int mult_depth, int precision_bits, bool use_standard_params)
-        : log_scale_(precision_bits) {
-        vector<int> modulus_vec = gen_modulus_vec(mult_depth + 2, precision_bits);
-        EncryptionParameters enc_params = EncryptionParameters(scheme_type::ckks);
-        int poly_modulus_degree = num_slots * 2;
-        enc_params.set_poly_modulus_degree(poly_modulus_degree);
-        enc_params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, modulus_vec));
-        params_to_context(enc_params, use_standard_params);
         validateContext();
     }
 
     int HEContext::max_ciphertext_level() const {
-        return params->first_context_data()->chain_index();
+        return ckks_params.max_ct_level();
     }
 
     int HEContext::num_slots() const {
-        return static_cast<int>(params->first_context_data()->parms().poly_modulus_degree() / 2);
+        return ckks_params.num_slots();
     }
 
     uint64_t HEContext::get_qi(int he_level) const {
@@ -136,7 +100,7 @@ namespace hit {
         if (i != 0) {
             LOG_AND_THROW_STREAM("SEAL only supports a single key-switch modulus");
         }
-        return params->key_context_data()->parms().coeff_modulus().back().value();
+        return seal_ctx->key_context_data()->parms().coeff_modulus().back().value();
     }
 
     int HEContext::num_qi() const {
@@ -164,7 +128,7 @@ namespace hit {
     }
 
     int HEContext::log_scale() const {
-        return log_scale_;
+        return ckks_params.log_scale();
     }
 
     /*
@@ -174,7 +138,7 @@ namespace hit {
         // get the context_data for this ciphertext level
         // but do not use the ciphertext itself! Use the he_level,
         // in case we are not doing ciphertext computations
-        auto context_data = params->first_context_data();
+        auto context_data = seal_ctx->first_context_data();
         while (context_data->chain_index() > level) {
             // Step forward in the chain.
             context_data = context_data->next_context_data();

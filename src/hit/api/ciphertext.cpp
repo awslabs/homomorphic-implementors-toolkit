@@ -33,7 +33,7 @@ namespace hit {
 
         if (proto_ct.has_ct()) {
             istringstream ctstream(proto_ct.ct());
-            backend_ct.load(*(context->params), ctstream);
+            backend_ct.load(*(context->seal_ctx), ctstream);
         }
     }
 
@@ -48,7 +48,7 @@ namespace hit {
     }
 
     protobuf::Ciphertext *CKKSCiphertext::serialize() const {
-        auto *proto_ct = new protobuf::Ciphertext();
+        protobuf::Ciphertext *proto_ct = new protobuf::Ciphertext();
 
         if (!raw_pt.empty()) {
             LOG_AND_THROW_STREAM(
@@ -62,9 +62,9 @@ namespace hit {
 
         // if the backend_ct is initialized, serialize it
         if (backend_ct.parms_id() != parms_id_zero) {
-            ostringstream sealctBuf;
-            backend_ct.save(sealctBuf);
-            proto_ct->set_ct(sealctBuf.str());
+            ostringstream ct_stream;
+            backend_ct.save(ct_stream);
+            proto_ct->set_ct(ct_stream.str());
         }
 
         return proto_ct;

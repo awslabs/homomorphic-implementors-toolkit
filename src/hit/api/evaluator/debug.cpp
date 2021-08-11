@@ -83,10 +83,14 @@ namespace hit {
         VLOG(VLOG_VERBOSE) << " End of chain reached";
     }
 
-    DebugEval::DebugEval(int num_slots, int multiplicative_depth, int log_scale, bool use_seal_params,
-                         const vector<int> &galois_steps) {
-        homomorphic_eval =
-            new HomomorphicEval(num_slots, multiplicative_depth, log_scale, use_seal_params, galois_steps);
+    DebugEval::DebugEval(const CKKSParams &params, const vector<int> &galois_steps) {
+        homomorphic_eval = new HomomorphicEval(params, galois_steps);
+        constructor_common(params.num_slots());
+    }
+
+    DebugEval::DebugEval(int num_slots, int max_ct_level, int log_scale, const vector<int> &galois_steps,
+                         bool use_seal_params) {
+        homomorphic_eval = new HomomorphicEval(num_slots, max_ct_level, log_scale, galois_steps, use_seal_params);
         constructor_common(num_slots);
     }
 
@@ -107,10 +111,14 @@ namespace hit {
     }
 
     CKKSCiphertext DebugEval::encrypt(const vector<double> &coeffs) {
-        return encrypt(coeffs, -1);
+        return encrypt(coeffs, homomorphic_eval->context->max_ciphertext_level());
     }
 
     CKKSCiphertext DebugEval::encrypt(const vector<double> &coeffs, int level) {
+        if (level < 0) {
+            LOG_AND_THROW_STREAM("Explicit encryption level must be non-negative, got " << level);
+        }
+
         scale_estimator->update_plaintext_max_val(coeffs);
         CKKSCiphertext destination = homomorphic_eval->encrypt(coeffs, level);
         destination.raw_pt = coeffs;
