@@ -26,7 +26,7 @@ namespace hit {
 
         plaintext_eval = new PlaintextEval(num_slots);
 
-        CKKSParams params(num_slots, default_scale_bits, max_ct_level);
+        CKKSParams params(num_slots, max_ct_level, default_scale_bits);
         context = make_shared<HEContext>(HEContext(params));
     }
 

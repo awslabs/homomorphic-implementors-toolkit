@@ -21,8 +21,17 @@ void example_4_driver() {
 	int max_depth = 3;
 	int log_scale = 40;
 
+	// Usually, we would use the RotationSet evaluator to compute the rotations we need.
+	// In this annotated example, it's easier to explicitly enumerate the rotations.
+	vector<int> rotations;
+	rotations.push_back(num_slots/2);
+	for (int i = 1; i < num_slots / 2; i <<= 1) {
+		rotations.push_back(i);
+		rotations.push_back(-i);
+	}
+
 	// Start by creating one of the basic HIT instances.
-	DebugEval dbg_inst(num_slots, max_depth, log_scale);
+	DebugEval dbg_inst(num_slots, max_depth, log_scale, rotations);
 	// We then create a LinearAlgebra wrapper around this instance
 	LinearAlgebra la_inst(dbg_inst);
 

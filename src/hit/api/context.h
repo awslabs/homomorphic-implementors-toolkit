@@ -18,7 +18,7 @@ namespace hit {
     /* An internal API for the HE backend. */
     class HEContext {
        public:
-        explicit HEContext(const CKKSParams &params);
+        explicit HEContext(CKKSParams params);
 
         // Maximum level of a ciphertext for these parameters. For a leveled-HE scheme,
         // this is one more than the multiplicative depth of the circuit you want to evaluate.
@@ -54,8 +54,7 @@ namespace hit {
         // Log(scale) for these parameters
         int log_scale() const;
 
-        latticpp::Parameters params;
-        std::optional<latticpp::BootstrappingParameters> btp_params;
+        CKKSParams ckks_params;
 
        private:
         void validateContext() const;
