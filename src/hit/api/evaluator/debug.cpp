@@ -202,8 +202,8 @@ namespace hit {
             LOG(ERROR) << actual_debug_result.str();
 
             HomomorphicEval::PoolObject<Encoder> e = homomorphic_eval->get_encoder();
-            Plaintext encoded_plain =
-                encodeNTTAtLvlNew(homomorphic_eval->context->ckks_params.lattigo_params, e.ref(), ct.raw_pt, ct.he_level(), ct.scale());
+            Plaintext encoded_plain = encodeNTTAtLvlNew(homomorphic_eval->context->ckks_params.lattigo_params, e.ref(),
+                                                        ct.raw_pt, ct.he_level(), ct.scale());
             vector<double> decoded_plain = ::decode(e.ref(), encoded_plain, log2(num_slots()));
 
             // the exact_plaintext and homom_plaintext should have the same length.
