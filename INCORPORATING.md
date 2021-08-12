@@ -22,7 +22,7 @@ A more complex way to include HIT in your CMake project is to have CMake downloa
 cmake_minimum_required(VERSION 3.12)
 
 project(AWS_HIT_DOWNLOAD 0.1.2) # Change the version number "0.1.2" to whichever version you want
-set(AWS_HIT_BACKEND "lattigo") # This value must be either "lattigo" or "seal"
+set(AWS_HIT_BACKEND "seal") # This value must be either "lattigo" or "seal"
 
 include(ExternalProject)
 ExternalProject_Add(EP_AWS_HIT

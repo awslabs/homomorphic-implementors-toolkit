@@ -16,7 +16,7 @@ Major version changes are significant and expected to break backwards compatibil
 
 Minor version changes will not break compatibility between the previous minor versions;
 to do so is a bug.
-Encryption SDK changes will also involve addition of optional features, and non-breaking enhancements.
+HIT changes will also involve addition of optional features, and non-breaking enhancements.
 Additionally, any change to the version of a dependency is a minor version change.
 
 ## Patch versions
