@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-project(homomorphic-implementors-toolkit VERSION 0.0.1 LANGUAGES CXX)
+project(homomorphic-implementors-toolkit VERSION 0.0.2 LANGUAGES CXX)
 
 #################
 # CMAKE OPTIONS #
@@ -136,7 +136,7 @@ export(
     NAMESPACE hit::
     FILE ${HIT_TARGETS_FILENAME})
 
-export(TARGETS aws-hit FILE ${HIT_TARGETS_FILENAME})
+export(TARGETS aws-hit APPEND FILE ${HIT_TARGETS_FILENAME})
 
 #########
 # Tests #
