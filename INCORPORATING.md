@@ -20,13 +20,16 @@ A more complex way to include HIT in your CMake project is to have CMake downloa
 ### 1. Under `third-party/hit` directory, create a file `CMakeLists.txt`, which will be used to download HIT GitHub code.
 ```cmake
 cmake_minimum_required(VERSION 3.12)
-project(AWS_HIT_DOWNLOAD)
+
+project(AWS_HIT_DOWNLOAD 0.1.2) # Change the version number "0.1.2" to whichever version you want
+set(AWS_HIT_BACKEND "seal") # This value must be either "lattigo" or "seal"
+
 include(ExternalProject)
 ExternalProject_Add(EP_AWS_HIT
     SOURCE_DIR           ${CMAKE_CURRENT_LIST_DIR}/src
     BINARY_DIR           ${CMAKE_CURRENT_LIST_DIR}/build
     GIT_REPOSITORY       https://github.com/awslabs/homomorphic-implementors-toolkit.git
-    GIT_TAG              master
+    GIT_TAG              v${PROJECT_VERSION}-${AWS_HIT_BACKEND}
     GIT_CONFIG           advice.detachedHead=false
     CONFIGURE_COMMAND    ""
     BUILD_COMMAND        ""
