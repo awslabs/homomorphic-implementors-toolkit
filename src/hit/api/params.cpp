@@ -42,22 +42,34 @@ namespace hit {
         return x - repr(x, n) + 1;
     }
 
-    uint64_t nextPrime(uint64_t last_prime, uint64_t two_n, const vector<Modulus> &mods) {
-        // get the closest prime to `last_prime` that is also congruent to 1 mod 2N
-        uint64_t next_test_val = to1Coset(last_prime);
+    // Find the smallest prime larger than `x` that is not in `mods`.
+    uint64_t nextPrime(uint64_t x, uint64_t n, const vector<Modulus> &mods) {
+        // find a number near x that is congruent to 1 mod n
+        uint64_t next_test_val = to1Coset(x, n);
+
+        // to1Coset can return a value smaller than x
+        if (next_test_val < x) {
+            next_test_val += n;
+        }
 
         while (!miller_rabin_test(next_test_val, 25) || contains(next_test_val, mods)) {
-            next_test_val += two_n;
+            next_test_val += n;
         }
         return next_test_val;
     }
 
-    uint64_t prevPrime(uint64_t last_prime, uint64_t two_n, const vector<Modulus> &mods) {
-        // get the closest prime to `last_prime` that is also congruent to 1 mod 2N
-        uint64_t next_test_val = to1Coset(last_prime);
+    // Find the largest prime smaller than `x` that is not in `mods`.
+    uint64_t prevPrime(uint64_t x, uint64_t n, const vector<Modulus> &mods) {
+        // find a number near x that is congruent to 1 mod n
+        uint64_t next_test_val = to1Coset(x, n);
+
+        // to1Coset can return a value larger than x
+        if (next_test_val > x) {
+            next_test_val -= n;
+        }
 
         while (!miller_rabin_test(next_test_val, 25) || contains(next_test_val, mods)) {
-            next_test_val -= two_n;
+            next_test_val -= n;
         }
         return next_test_val;
     }
@@ -66,25 +78,27 @@ namespace hit {
     vector<Modulus> reducedErrorPrimes(int poly_mod_degree, const vector<int> &modulus_vec) {
         int num_moduli = modulus_vec.size();
         vector<Modulus> primes(num_moduli);
-        uint64_t n = 2 * poly_mod_degree;
+        // m = 2 * poly_mod_degree is the cyclotomic index of the ring
+        // all primes should be congruent to 1 mod m so that the cyclotomic polynomial splits completely mod q
+        uint64_t m = 2 * poly_mod_degree;
 
         // generate a prime for keyswitching
         // this is independent of the ciphertext chain
-        primes[num_moduli - 1] = prevPrime(to1Coset(pow(2, modulus_vec[num_moduli - 1]), n), n, primes);
-        primes[num_moduli - 2] = nextPrime(to1Coset(pow(2, modulus_vec[num_moduli - 2]), n), n, primes);
+        primes[num_moduli - 1] = prevPrime(to1Coset(pow(2, modulus_vec[num_moduli - 1]), m), m, primes);
+        primes[num_moduli - 2] = nextPrime(to1Coset(pow(2, modulus_vec[num_moduli - 2]), m), m, primes);
         double delta = static_cast<double>(primes[num_moduli - 2].value());
         bool flip = false;
         for (int l = num_moduli - 3; l > 0; l--) {
             delta = delta * delta / static_cast<double>(primes[l + 1].value());
             uint64_t round_delta = static_cast<uint64_t>(delta);
             if (flip) {
-                primes[l] = prevPrime(to1Coset(round_delta, n), n, primes);
+                primes[l] = prevPrime(to1Coset(round_delta, m), m, primes);
             } else {
-                primes[l] = nextPrime(to1Coset(round_delta, n), n, primes);
+                primes[l] = nextPrime(to1Coset(round_delta, m), m, primes);
             }
             flip = !flip;
         }
-        primes[0] = prevPrime(to1Coset(pow(2, modulus_vec[0]), n), n, primes);
+        primes[0] = prevPrime(to1Coset(pow(2, modulus_vec[0]), m), m, primes);
         return primes;
     }
 
