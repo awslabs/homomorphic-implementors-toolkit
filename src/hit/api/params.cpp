@@ -7,13 +7,13 @@
 
 using namespace std;
 using namespace seal;
-// using namespace boost::random;
 using namespace boost::multiprecision;
 
 namespace hit {
 
-    // This is _not_ adversarial prime generation. If we accidentally generate a composite,
-    // the math is just wrong.
+    // This is _not_ adversarial prime generation. The primes will be public, and security is based on
+    // the total bit size of the _product_ of each "prime", so there are no security implications if
+    // we accidentally generate a composite.
     int miller_rabin_iters = 25;
 
     // true if x \in mods, false otherwise
@@ -98,7 +98,6 @@ namespace hit {
         int poly_modulus_degree = num_slots * 2;
         params.set_poly_modulus_degree(poly_modulus_degree);
         vector<int> modulus_vec = gen_modulus_vec(max_ct_level + 2, log_scale);
-        // vector<Modulus> mods = CoeffModulus::Create(poly_modulus_degree, modulus_vec);
         vector<Modulus> mods = reducedErrorPrimes(poly_modulus_degree, modulus_vec);
         params.set_coeff_modulus(mods);
     }
