@@ -185,7 +185,6 @@ namespace hit {
         for (int i = context->max_ciphertext_level() - btp_depth; i > level; i--) {
             scale = (scale * scale) / static_cast<double>(context->get_qi(i));
         }
-        cout << "Encrypting at level " << level << " and logScale " << log2(scale) << endl;
 
         CKKSCiphertext destination;
         destination.he_level_ = level;
