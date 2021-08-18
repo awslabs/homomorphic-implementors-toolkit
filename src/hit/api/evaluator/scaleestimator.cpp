@@ -244,17 +244,15 @@ namespace hit {
         ct.scale_ = input_scale;
     }
 
-    CKKSCiphertext ScaleEstimator::bootstrap_internal(const CKKSCiphertext &ct, bool) {
+    void ScaleEstimator::bootstrap_inplace_internal(CKKSCiphertext &ct, bool) {
         if (btp_depth == 0) {
             LOG_AND_THROW_STREAM("Parameters do not support bootstrapping.");
         }
 
-        CKKSCiphertext ctout = ct;
-        ctout.scale_ = pow(2, context->log_scale());
-        ctout.he_level_ = context->max_ciphertext_level() - btp_depth;
+        ct.scale_ = pow(2, context->log_scale());
+        ct.he_level_ = context->max_ciphertext_level() - btp_depth;
 
-        update_max_log_scale(ctout);
-        return ctout;
+        update_max_log_scale(ct);
     }
 
     double ScaleEstimator::get_estimated_max_log_scale() const {

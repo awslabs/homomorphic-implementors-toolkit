@@ -123,7 +123,7 @@ namespace hit {
         // CT level is adjusted in CKKSEvaluator::rescale_metata_to_next
     }
 
-    CKKSCiphertext ExplicitDepthFinder::bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
+    void ExplicitDepthFinder::bootstrap_inplace_internal(CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
         scoped_lock lock(mutex_);
         // if rescale_for_bootstrapping, bootstrapping will implicitly consume one additional level to rescale the
         // ciphertext first, ensure that if explict levels are set, we aren't already at level 0
@@ -139,9 +139,7 @@ namespace hit {
         }
         uses_bootstrapping = true;
         // CT bootstrapped_ is adjusted in CKKSEvaluator::bootstrap
-        CKKSCiphertext bootstrapped_ct = ct;
-        bootstrapped_ct.he_level_ = 0;
-        return bootstrapped_ct;
+        ct.he_level_ = 0;
     }
 
     int ExplicitDepthFinder::get_param_bootstrap_depth() const {

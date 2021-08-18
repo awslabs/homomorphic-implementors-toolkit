@@ -378,13 +378,18 @@ namespace hit {
     }
 
     CKKSCiphertext CKKSEvaluator::bootstrap(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
+        CKKSCiphertext output = ct;
+        bootstrap_inplace(output, rescale_for_bootstrapping);
+        return output;
+    }
+
+    void CKKSEvaluator::bootstrap_inplace(CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
         VLOG(VLOG_EVAL) << "Bootstrapping ciphertext";
-        CKKSCiphertext ct_prime = bootstrap_internal(ct, rescale_for_bootstrapping);
-        ct_prime.bootstrapped_ = true;
-        ct_prime.needs_relin_ = false;
-        ct_prime.needs_rescale_ = false;
-        print_stats(ct_prime);
-        return ct_prime;
+        bootstrap_inplace_internal(ct, rescale_for_bootstrapping);
+        ct.bootstrapped_ = true;
+        ct.needs_relin_ = false;
+        ct.needs_rescale_ = false;
+        print_stats(ct);
     }
 
     void CKKSEvaluator::rotate_right_inplace_internal(CKKSCiphertext &, int){};
@@ -404,7 +409,5 @@ namespace hit {
     void CKKSEvaluator::rescale_to_next_inplace_internal(CKKSCiphertext &){};
     void CKKSEvaluator::relinearize_inplace_internal(CKKSCiphertext &){};
     void CKKSEvaluator::print_stats(const CKKSCiphertext &){};
-    CKKSCiphertext CKKSEvaluator::bootstrap_internal(const CKKSCiphertext &ct, bool) {
-        return ct;
-    };
+    void CKKSEvaluator::bootstrap_inplace_internal(CKKSCiphertext &, bool) {};
 }  // namespace hit
