@@ -1135,7 +1135,7 @@ namespace hit {
         template <typename T>
         T bootstrap(const T &arg, bool rescale_for_bootstrapping = true) {
             T temp = arg;
-            bootstrap(temp, rescale_for_bootstrapping);
+            bootstrap_inplace(temp, rescale_for_bootstrapping);
             return temp;
         }
 
