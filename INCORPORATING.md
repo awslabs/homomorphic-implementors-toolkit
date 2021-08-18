@@ -4,7 +4,7 @@
 The easiest way to consume HIT with your project's build system is to include the HIT source directly in your repository (say in `third-party/aws-hit`). Then in your project's CMakeLists.txt, just include:
 
 ```
-# Add 'third-party/hit/src', which defines 'aws-hit' target.
+# Add 'third-party/aws-hit/src', which defines 'aws-hit' target.
 add_subdirectory(third-party/aws-hit)
 
 # Define your project target.
@@ -17,7 +17,7 @@ target_link_libraries(my_homom_app aws-hit)
 ## Using HIT as a Dependency without Source
 A more complex way to include HIT in your CMake project is to have CMake download the HIT source from Github. This avoids the need to include the HIT source code directly in your project.
 
-### 1. Under `third-party/hit` directory, create a file `CMakeLists.txt`, which will be used to download HIT GitHub code.
+### 1. Under `third-party/aws-hit` directory, create a file `CMakeLists.txt`, which will be used to download HIT GitHub code.
 ```cmake
 cmake_minimum_required(VERSION 3.12)
 
@@ -65,9 +65,9 @@ function(download_external_project project_dir)
 endfunction()
 
 # Download AWS HIT.
-download_external_project(external/hit)
-# Add 'external/hit/src', which defines 'aws-hit' target.
-add_subdirectory(external/hit/src)
+download_external_project(third-party/aws-hit)
+# Add 'third-party/aws-hit/src', which defines 'aws-hit' target.
+add_subdirectory(third-party/aws-hit/src)
 # Define your project target.
 add_executable(my_homom_app main.cpp)
 # Link the project target against aws-hit as needed.
