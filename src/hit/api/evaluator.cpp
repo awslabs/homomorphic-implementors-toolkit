@@ -409,5 +409,5 @@ namespace hit {
     void CKKSEvaluator::rescale_to_next_inplace_internal(CKKSCiphertext &){};
     void CKKSEvaluator::relinearize_inplace_internal(CKKSCiphertext &){};
     void CKKSEvaluator::print_stats(const CKKSCiphertext &){};
-    void CKKSEvaluator::bootstrap_inplace_internal(CKKSCiphertext &, bool) {};
+    void CKKSEvaluator::bootstrap_inplace_internal(CKKSCiphertext &, bool){};
 }  // namespace hit
