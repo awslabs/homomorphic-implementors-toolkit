@@ -83,7 +83,7 @@ namespace hit {
 
         void relinearize_inplace_internal(CKKSCiphertext &ct) override;
 
-        CKKSCiphertext bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) override;
+        void bootstrap_inplace_internal(CKKSCiphertext &ct, bool rescale_for_bootstrapping) override;
 
        private:
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;

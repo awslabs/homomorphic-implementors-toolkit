@@ -73,7 +73,7 @@ namespace hit {
 
         void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
 
-        CKKSCiphertext bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) override;
+        void bootstrap_inplace_internal(CKKSCiphertext &ct, bool rescale_for_bootstrapping) override;
 
        private:
         const int num_slots_ = 4096;

@@ -106,8 +106,7 @@ namespace hit {
         // CT level is adjusted in CKKSEvaluator::rescale_metata_to_next
     }
 
-    CKKSCiphertext ImplicitDepthFinder::bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
-        CKKSCiphertext bootstrapped_ct = ct;
+    void ImplicitDepthFinder::bootstrap_inplace_internal(CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
         scoped_lock lock(mutex_);
         if (ct.bootstrapped_) {
             // this ciphertext has already been bootstrapped
@@ -119,9 +118,8 @@ namespace hit {
                 max(max_contiguous_depth, static_cast<int>(rescale_for_bootstrapping) - ct.he_level());
         }
         // CT bootstrapped_ is adjusted in CKKSEvaluator::bootstrap
-        bootstrapped_ct.he_level_ = 0;
+        ct.he_level_ = 0;
         uses_bootstrapping = true;
-        return bootstrapped_ct;
     }
 
     int ImplicitDepthFinder::get_param_bootstrap_depth() const {

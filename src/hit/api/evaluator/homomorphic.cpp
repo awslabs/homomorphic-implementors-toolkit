@@ -345,7 +345,7 @@ namespace hit {
         relinearize(get_evaluator().ref(), ct.backend_ct, ct.backend_ct);
     }
 
-    CKKSCiphertext HomomorphicEval::bootstrap_internal(const CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
+    void HomomorphicEval::bootstrap_inplace_internal(CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
         // if rescale_for_bootstrapping is set, the circuit designer expects that one level will be consumed
         // _prior_ to bootstrapping in order to rescale the ciphertext for bootstrapping (which has specific
         // requirements on the scale). Note that this rescale is implicit: it's part of Lattigo's `bootstrap`
@@ -355,16 +355,13 @@ namespace hit {
             LOG_AND_THROW_STREAM("Unable to bootstrap ciphertext at level 0 when rescale_for_bootstrapping is true.");
         }
 
-        CKKSCiphertext bootstrapped_ct = ct;
-
         // Note that we don't actually *use* `rescale_for_bootstrapping`: it is a "HIT-ism" which
         // is required by other evaluators (notably the DepthFinder evaluators, since this parameter
         // affects circuit depth). However, we don't pass it to the Lattigo bootstrap API because
         // Lattigo implicitly does the rescale if it's able to. For more information, see the
         // API comment in evaluator.h.
-        bootstrapped_ct.backend_ct = latticpp::bootstrap(get_bootstrapper().ref(), ct.backend_ct);
-        bootstrapped_ct.scale_ = pow(2, context->log_scale());
-        bootstrapped_ct.he_level_ = context->max_ciphertext_level() - btp_depth;
-        return bootstrapped_ct;
+        ct.backend_ct = latticpp::bootstrap(get_bootstrapper().ref(), ct.backend_ct);
+        ct.scale_ = pow(2, context->log_scale());
+        ct.he_level_ = context->max_ciphertext_level() - btp_depth;
     }
 }  // namespace hit

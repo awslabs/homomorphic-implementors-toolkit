@@ -125,9 +125,8 @@ namespace hit {
         relins_++;
     }
 
-    CKKSCiphertext OpCount::bootstrap_internal(const CKKSCiphertext &ct, bool) {
+    void OpCount::bootstrap_inplace_internal(CKKSCiphertext &, bool) {
         scoped_lock lock(mutex_);
         bootstraps_++;
-        return ct;
     }
 }  // namespace hit

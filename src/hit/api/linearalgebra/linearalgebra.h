@@ -1133,15 +1133,27 @@ namespace hit {
          * NOTE: Inputs which are linear ciphertexts to begin with are unchanged by this function.
          */
         template <typename T>
-        T bootstrap(T &arg, bool rescale_for_bootstrapping = true) {
+        T bootstrap(const T &arg, bool rescale_for_bootstrapping = true) {
+            T temp = arg;
+            bootstrap_inplace(temp, rescale_for_bootstrapping);
+            return temp;
+        }
+
+        /* Bootstrap each ciphertext corresponding to the encrypted linear algebra
+         * object.
+         * Input: A quadratic EncryptedMatrix, EncryptedRowVector, or EncryptedColVector
+         *        with nominal or squared scale.
+         * Output (Inplace): A linear ciphertext with the same scale and level as the input.
+         * NOTE: Inputs which are linear ciphertexts to begin with are unchanged by this function.
+         */
+        template <typename T>
+        void bootstrap_inplace(T &arg, bool rescale_for_bootstrapping = true) {
             TRY_AND_THROW_STREAM(arg.validate(), "Argument to bootstrap is invalid; has it been initialized?");
 
-            T bootstrapped_t = arg;
             // Bootstrapping seems too memory-intensive to do in parallel
             for (int i = 0; i < arg.num_cts(); i++) {
-                bootstrapped_t[i] = eval.bootstrap(arg[i], rescale_for_bootstrapping);
+                eval.bootstrap_inplace(arg[i], rescale_for_bootstrapping);
             }
-            return bootstrapped_t;
         }
 
         CKKSEvaluator &eval;
