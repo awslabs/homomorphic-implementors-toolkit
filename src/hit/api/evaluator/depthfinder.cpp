@@ -54,7 +54,7 @@ namespace hit {
 
     void DepthFinder::rescale_to_next_inplace_internal(CKKSCiphertext &ct) {
         scoped_lock lock(mutex_);
-        circuit_depth = max(circuit_depth + 1, ct.implicit_depth + 1);
+        circuit_depth = max(circuit_depth, ct.implicit_depth + 1);
         // CT level is adjusted in CKKSEvaluator::rescale_metata_to_next
     }
 

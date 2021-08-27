@@ -22,10 +22,12 @@ void example_4_driver() {
 	int log_scale = 40;
 
 	// Usually, we would use the RotationSet evaluator to compute the rotations we need.
-	// In this annotated example, it's easier to explicitly enumerate the rotations.
+	// However, we can only do "generic" (as opposed to evaluator-specific, e.g., decrypt)
+	// operations when using the RotationSet evaluator. In this annotated example, it's
+	// easier to just generate keys for all possible rotations rather than getting the
+	// exact subset.
 	vector<int> rotations;
-	rotations.push_back(num_slots/2);
-	for (int i = 1; i < num_slots / 2; i <<= 1) {
+	for (int i = 1; i <= num_slots / 2; i++) {
 		rotations.push_back(i);
 		rotations.push_back(-i);
 	}
