@@ -80,8 +80,6 @@ namespace hit {
 
         void rescale_to_next_inplace_internal(CKKSCiphertext &ct) override;
 
-        void bootstrap_inplace_internal(CKKSCiphertext &ct, bool rescale_for_bootstrapping) override;
-
        private:
         // used by DebugEval to create a ScaleEstimator instance without duplicating a context
         ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval);

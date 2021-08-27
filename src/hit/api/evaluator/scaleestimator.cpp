@@ -235,11 +235,6 @@ namespace hit {
         ct.scale_ = input_scale;
     }
 
-    void ScaleEstimator::bootstrap_inplace_internal(CKKSCiphertext &ct, bool) {
-        ct.scale_ = pow(2, context->log_scale());
-        update_max_log_scale(ct);
-    }
-
     double ScaleEstimator::get_estimated_max_log_scale() const {
         /* During the evaluation, update_max_log_scale computed the maximum scale
          * implied by the "correctness" constraint (to prevent the computation
