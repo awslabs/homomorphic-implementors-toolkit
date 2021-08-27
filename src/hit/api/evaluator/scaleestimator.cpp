@@ -27,6 +27,7 @@ namespace hit {
         // instead of creating a new instance, use the instance provided
         context = homom_eval.context;
         post_boostrapping_level = homom_eval.post_boostrapping_level;
+        post_bootstrapping_scale = pow(2, homom_eval.context->log_scale());
     }
 
     ScaleEstimator::~ScaleEstimator() {
