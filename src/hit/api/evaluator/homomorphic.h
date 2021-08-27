@@ -168,7 +168,6 @@ namespace hit {
         latticpp::RotationKeys galois_keys;
         latticpp::RelinearizationKey relin_keys;
         latticpp::BootstrappingKey btp_keys;
-        // int btp_depth = 0;
 
         PoolObject<latticpp::Evaluator> get_evaluator();
         PoolObject<latticpp::Encoder> get_encoder();
