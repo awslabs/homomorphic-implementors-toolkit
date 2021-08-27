@@ -361,6 +361,5 @@ namespace hit {
         // Lattigo implicitly does the rescale if it's able to. For more information, see the
         // API comment in evaluator.h.
         ct.backend_ct = latticpp::bootstrap(get_bootstrapper().ref(), ct.backend_ct);
-        ct.scale_ = pow(2, context->log_scale());
     }
 }  // namespace hit
