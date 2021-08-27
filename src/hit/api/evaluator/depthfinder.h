@@ -13,23 +13,15 @@ namespace hit {
      * several categories depending on their intended use. At the bottom of
      * the chain are the "evaluation" moduli, which are used to evaluate
      * the target circuit. Above these are moduli dedicated to evaluating
-     * the bootstrapping circuit. Fresh ciphertexts can (with care) repurpose
-     * these moduli for circuit evaluation prior to bootstrapping the first time,
-     * but generally, these moduli are only used for bootstrapping. Finally,
-     * additional moduli are used for key switching. Most circuits require at
-     * least one key switching modulus, but more may be added for efficiency.
+     * the bootstrapping circuit. Finally, additional moduli are used for
+     * key switching. Most circuits require at least one key switching
+     * modulus, but more may be added for efficiency.
      *
-     * This evaluator's purpose is to help determine how many evaluation and
-     * bootstrapping moduli are needed to evaluate a circuit *when inputs are
-     * encrypted at an  ciphertext level*. The implicit-level encryption
-     * API throws a runtime error.
+     * This evaluator's purpose is to determine the total circuit depth,
+     * not counting the depth required for bootstrapping.
      *
      * There is an implicit assumption that the multiplicative depth
-     * does not depend on the homomorphic parameters. When using this
-     * evaluator, either all calls to encrypt must supply an
-     * encryption level, or all calls to encrypt must *not* supply
-     * an encryption level. Having some calls which specify a level
-     * and some which do not is not permitted.
+     * does not depend on the homomorphic parameters.
      */
     class DepthFinder : public CKKSEvaluator {
        public:
