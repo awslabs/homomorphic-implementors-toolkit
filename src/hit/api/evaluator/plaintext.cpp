@@ -19,6 +19,7 @@ namespace hit {
             LOG_AND_THROW_STREAM("Number of plaintext slots must be a power of two; got " << num_slots);
         }
         post_boostrapping_level = post_btp_lvl;
+        post_bootstrapping_scale = pow(2, default_scale_bits);
     }
 
     CKKSCiphertext PlaintextEval::encrypt(const vector<double> &coeffs) {
@@ -45,6 +46,7 @@ namespace hit {
         destination.raw_pt = coeffs;
         destination.num_slots_ = num_slots_;
         destination.initialized = true;
+        destination.scale_ = pow(2, default_scale_bits);
 
         return destination;
     }

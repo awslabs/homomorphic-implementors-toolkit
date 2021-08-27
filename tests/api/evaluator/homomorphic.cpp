@@ -518,7 +518,7 @@ TEST(HomomorphicTest, Bootstrapping) {
     CKKSCiphertext ciphertext1 = ckks_instance.encrypt(vector1);
     CKKSCiphertext bootstrapped_ct = ckks_instance.bootstrap(ciphertext1);
 
-    ASSERT_EQ(bootstrapped_ct.he_level(), params.max_ct_level() - params.btp_params.value().bootstrapping_depth());
+    ASSERT_EQ(bootstrapped_ct.he_level(), params.max_ct_level());
     ASSERT_FALSE(bootstrapped_ct.needs_relin());
     ASSERT_FALSE(bootstrapped_ct.needs_rescale());
 

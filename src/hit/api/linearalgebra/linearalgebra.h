@@ -215,7 +215,7 @@ namespace hit {
             }
             if (arg1.scale() != arg2.scale()) {
                 LOG_AND_THROW_STREAM("Inputs to add_inplace do not have the same scale: "
-                                     << log2(arg1.scale()) << "bits !=" << log2(arg2.scale()) << " bits");
+                                     << log2(arg1.scale()) << " bits !=" << log2(arg2.scale()) << " bits");
             }
             for (size_t i = 0; i < arg1.num_cts(); i++) {
                 eval.add_inplace(arg1[i], arg2[i]);
@@ -358,7 +358,7 @@ namespace hit {
             }
             if (arg1.scale() != arg2.scale()) {
                 LOG_AND_THROW_STREAM("Inputs to sub_inplace do not have the same scale: "
-                                     << log2(arg1.scale()) << "bits !=" << log2(arg2.scale()) << " bits");
+                                     << log2(arg1.scale()) << " bits !=" << log2(arg2.scale()) << " bits");
             }
             for (size_t i = 0; i < arg1.num_cts(); i++) {
                 eval.sub_inplace(arg1[i], arg2[i]);
@@ -771,7 +771,7 @@ namespace hit {
             }
             if (arg1.scale() != arg2.scale()) {
                 LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have the same scale: "
-                                     << log2(arg1.scale()) << "bits != " << log2(arg2.scale()) << " bits");
+                                     << log2(arg1.scale()) << " bits != " << log2(arg2.scale()) << " bits");
             }
             if (arg1.needs_rescale() || arg2.needs_rescale()) {
                 LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have nominal scale: "

@@ -22,6 +22,9 @@ namespace hit {
 
         // Maximum level of a ciphertext for these parameters. For a leveled-HE scheme,
         // this is one more than the multiplicative depth of the circuit you want to evaluate.
+        // Note that this does *not* include evaluation levels reserved for bootstrapping, i.e.,
+        // when parameters support bootstrapping, this is the level of a freshly-bootstrapped
+        // ciphertext.
         int max_ciphertext_level() const;
 
         // Number of plaintext slots support by the current parameters.

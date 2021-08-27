@@ -37,7 +37,7 @@ namespace hit {
             num_slots_ = other.num_slots_;
             needs_relin_ = other.needs_relin_;
             needs_rescale_ = other.needs_rescale_;
-            bootstrapped_ = other.bootstrapped_;
+            implicit_depth = other.implicit_depth;
         }
 
         // copy assignment operator
@@ -52,7 +52,7 @@ namespace hit {
                 num_slots_ = other.num_slots_;
                 needs_relin_ = other.needs_relin_;
                 needs_rescale_ = other.needs_rescale_;
-                bootstrapped_ = other.bootstrapped_;
+                implicit_depth = other.implicit_depth;
             }
             return *this;
         }
@@ -72,7 +72,7 @@ namespace hit {
             num_slots_ = other.num_slots_;
             needs_relin_ = other.needs_relin_;
             needs_rescale_ = other.needs_rescale_;
-            bootstrapped_ = other.bootstrapped_;
+            implicit_depth = other.implicit_depth;
         }
 
         // move assignment operator
@@ -87,7 +87,7 @@ namespace hit {
                 num_slots_ = other.num_slots_;
                 needs_relin_ = other.needs_relin_;
                 needs_rescale_ = other.needs_rescale_;
-                bootstrapped_ = other.bootstrapped_;
+                implicit_depth = other.implicit_depth;
             }
             return *this;
         }
@@ -125,7 +125,7 @@ namespace hit {
 
         // all evaluators need access for encryption and decryption
         friend class DebugEval;
-        friend class ExplicitDepthFinder;
+        friend class DepthFinder;
         friend class ImplicitDepthFinder;
         friend class HomomorphicEval;
         friend class PlaintextEval;
@@ -147,7 +147,7 @@ namespace hit {
         latticpp::Ciphertext backend_ct;
 
         // `scale` is used by the ScaleEstimator evaluator
-        double scale_ = pow(2, 30);
+        double scale_;
 
         // flag indicating whether this CT has been initialized or not
         // CKKSCiphertexts are initialized upon encryption
@@ -161,7 +161,7 @@ namespace hit {
 
         bool needs_relin_ = false;
         bool needs_rescale_ = false;
-        bool bootstrapped_ = false;
+        int implicit_depth = 0;
     };
 
     inline protobuf::CiphertextVector *serialize_vector(const std::vector<CKKSCiphertext> &ciphertext_vector) {

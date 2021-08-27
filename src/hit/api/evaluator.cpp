@@ -85,12 +85,12 @@ namespace hit {
             LOG_AND_THROW_STREAM("Inputs to add must have the same scale: " << log2(ct1.scale()) << " bits != "
                                                                             << log2(ct2.scale()) << " bits");
         }
-        if (ct1.bootstrapped_ == ct2.bootstrapped_ && ct1.he_level() != ct2.he_level()) {
+        if (ct1.he_level() != ct2.he_level()) {
             LOG_AND_THROW_STREAM("Inputs to add must be at the same level: " << ct1.he_level()
                                                                              << " != " << ct2.he_level());
         }
         add_inplace_internal(ct1, ct2);
-        ct1.bootstrapped_ |= ct2.bootstrapped_;
+        ct1.implicit_depth = max(ct1.implicit_depth, ct2.implicit_depth);
         print_stats(ct1);
     }
 
@@ -130,20 +130,17 @@ namespace hit {
         VLOG(VLOG_EVAL) << "Add ciphertext vector of size " << cts.size();
 
         CKKSCiphertext dest = cts[0];
-        bool bootstrapped_ = dest.bootstrapped_;
         for (int i = 1; i < cts.size(); i++) {
             if (cts[i].scale() != dest.scale()) {
                 LOG_AND_THROW_STREAM("Inputs to add_many must have the same scale: "
                                      << log2(cts[i].scale()) << " bits != " << log2(dest.scale()) << " bits");
             }
-            if (dest.bootstrapped_ == cts[i].bootstrapped_ && cts[i].he_level() != dest.he_level()) {
+            if (cts[i].he_level() != dest.he_level()) {
                 LOG_AND_THROW_STREAM("Inputs to add_many must be at the same level: " << cts[i].he_level()
                                                                                       << " != " << dest.he_level());
             }
-            bootstrapped_ |= cts[i].bootstrapped_;
             add_inplace_internal(dest, cts[i]);
         }
-        dest.bootstrapped_ = bootstrapped_;
         print_stats(dest);
         return dest;
     }
@@ -160,12 +157,12 @@ namespace hit {
             LOG_AND_THROW_STREAM("Inputs to sub must have the same scale: " << log2(ct1.scale()) << " bits != "
                                                                             << log2(ct2.scale()) << " bits");
         }
-        if (ct1.bootstrapped_ == ct2.bootstrapped_ && ct1.he_level() != ct2.he_level()) {
+        if (ct1.he_level() != ct2.he_level()) {
             LOG_AND_THROW_STREAM("Inputs to sub must be at the same level: " << ct1.he_level()
                                                                              << " != " << ct2.he_level());
         }
         sub_inplace_internal(ct1, ct2);
-        ct1.bootstrapped_ |= ct2.bootstrapped_;
+        ct1.implicit_depth = max(ct1.implicit_depth, ct2.implicit_depth);
         print_stats(ct1);
     }
 
@@ -209,7 +206,7 @@ namespace hit {
         if (ct1.needs_relin() || ct2.needs_relin()) {
             LOG_AND_THROW_STREAM("Inputs to multiply must be linear ciphertexts");
         }
-        if (ct1.bootstrapped_ == ct2.bootstrapped_ && ct1.he_level() != ct2.he_level()) {
+        if (ct1.he_level() != ct2.he_level()) {
             LOG_AND_THROW_STREAM("Inputs to multiply must be at the same level: " << ct1.he_level()
                                                                                   << " != " << ct2.he_level());
         }
@@ -224,7 +221,7 @@ namespace hit {
         ct1.needs_rescale_ = true;
         ct1.needs_relin_ = true;
         ct1.scale_ *= ct1.scale_;
-        ct1.bootstrapped_ |= ct2.bootstrapped_;
+        ct1.implicit_depth = max(ct1.implicit_depth, ct2.implicit_depth);
         print_stats(ct1);
     }
 
@@ -367,6 +364,7 @@ namespace hit {
         ct.he_level_--;
         ct.scale_ /= prime;
         ct.needs_rescale_ = false;
+        ct.implicit_depth += 1;
     }
 
     // default implementation for evaluators which don't use SEAL
@@ -389,10 +387,10 @@ namespace hit {
             LOG_AND_THROW_STREAM("Parameters do not support bootstrapping.");
         }
         bootstrap_inplace_internal(ct, rescale_for_bootstrapping);
-        ct.bootstrapped_ = true;
         ct.needs_relin_ = false;
         ct.needs_rescale_ = false;
         ct.he_level_ = post_boostrapping_level;
+        ct.scale_ = post_bootstrapping_scale;
         print_stats(ct);
     }
 

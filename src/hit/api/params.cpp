@@ -52,6 +52,16 @@ namespace hit {
     }
 
     int CKKSParams::max_ct_level() const {
+        int maxLvl;
+        if (btp_params.has_value()) {
+            maxLvl = static_cast<int>(latticpp::maxLevel(lattigo_params)) - btp_params.value().bootstrapping_depth();
+        } else {
+            maxLvl = latticpp::maxLevel(lattigo_params);
+        }
+        return maxLvl;
+    }
+
+    int CKKSParams::max_param_level() const {
         return latticpp::maxLevel(lattigo_params);
     }
 

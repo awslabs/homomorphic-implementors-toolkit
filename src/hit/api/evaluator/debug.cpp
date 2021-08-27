@@ -65,9 +65,9 @@ namespace hit {
         VLOG(VLOG_VERBOSE) << "\\";
 
         // Next iterate over the remaining (data) levels.
-        for (int i = homomorphic_eval->context->max_ciphertext_level(); i >= 0; i--) {
+        for (int i = homomorphic_eval->context->ckks_params.max_param_level(); i >= 0; i--) {
             VLOG(VLOG_VERBOSE) << " \\--> Level (chain index): " << i;
-            if (i == homomorphic_eval->context->max_ciphertext_level()) {
+            if (i == homomorphic_eval->context->ckks_params.max_param_level()) {
                 VLOG(VLOG_VERBOSE) << " ...... first_context_data()";
             } else if (i == 0) {
                 VLOG(VLOG_VERBOSE) << " ...... last_context_data()";

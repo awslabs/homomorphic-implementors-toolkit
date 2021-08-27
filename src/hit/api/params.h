@@ -119,7 +119,11 @@ namespace hit {
 
         int num_slots() const;
         int log_scale() const;
+        // The maximum level ciphertext level. Note that this does *not* include evaluation levels reserved for
+        // bootstrapping.
         int max_ct_level() const;
+        // The maximum level supported by the parameters. This includes bootstrapping levels.
+        int max_param_level() const;
 
         latticpp::Parameters lattigo_params;
         std::optional<BootstrappingParams> btp_params;

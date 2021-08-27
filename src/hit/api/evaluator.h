@@ -389,5 +389,7 @@ namespace hit {
         mutable std::shared_mutex mutex_;
         // value of -1 indicates that bootstrapping is not supported
         int post_boostrapping_level = -1;
+        double post_bootstrapping_scale;
+        int default_scale_bits = 30;
     };
 }  // namespace hit

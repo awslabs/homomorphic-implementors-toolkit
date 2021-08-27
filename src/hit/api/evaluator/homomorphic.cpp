@@ -38,7 +38,7 @@ namespace hit {
         VLOG(VLOG_VERBOSE) << "Generating keys for " << params.num_slots() << " slots and depth " << max_ct_level
                            << ", including " << num_galois_keys << " explicit Galois keys.";
 
-        double keys_size_bytes = estimate_key_size(num_galois_keys, params.num_slots(), max_ct_level);
+        double keys_size_bytes = estimate_key_size(num_galois_keys, params.num_slots(), params.max_param_level());
         VLOG(VLOG_VERBOSE) << "Estimated size is " << setprecision(3);
         // using base-10 (SI) units, rather than base-2 units.
         double unit_multiplier = 1000;
@@ -76,14 +76,11 @@ namespace hit {
         backend_decryptor = newDecryptor(params.lattigo_params, sk);
 
         if (params.btp_params.has_value()) {
-            btp_depth = params.btp_params.value().bootstrapping_depth();
-            if (btp_depth > max_ct_level) {
-                LOG_AND_THROW_STREAM("Bootstrapping depth is larger than the maximum ciphertext level");
-            }
             VLOG(VLOG_VERBOSE) << "Generating bootstrapping keys";
             btp_keys = genBootstrappingKey(keyGenerator, params.lattigo_params,
                                            params.btp_params.value().lattigo_btp_params, sk, relin_keys, galois_keys);
-            post_boostrapping_level = max_ct_level - btp_depth;
+            post_boostrapping_level = max_ct_level;
+            post_bootstrapping_scale = pow(2, context->log_scale());
         }
     }
 
@@ -118,9 +115,8 @@ namespace hit {
         relin_keys = unmarshalBinaryRelinearizationKey(relin_key_stream);
         if (context->ckks_params.btp_params.has_value()) {
             btp_keys = makeBootstrappingKey(relin_keys, galois_keys);
-            int max_ct_level = context->ckks_params.max_ct_level();
-            btp_depth = context->ckks_params.btp_params.value().bootstrapping_depth();
-            post_boostrapping_level = max_ct_level - btp_depth;
+            post_boostrapping_level = context->max_ciphertext_level();
+            post_bootstrapping_scale = pow(2, context->log_scale());
         }
         log_elapsed_time(start, "Reading keys...");
     }
@@ -186,7 +182,7 @@ namespace hit {
 
         double scale = pow(2, context->log_scale());
         // order of operations is very important: floating point arithmetic is not associative
-        for (int i = context->max_ciphertext_level() - btp_depth; i > level; i--) {
+        for (int i = context->max_ciphertext_level(); i > level; i--) {
             scale = (scale * scale) / static_cast<double>(context->get_qi(i));
         }
 

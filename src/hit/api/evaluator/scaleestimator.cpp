@@ -13,16 +13,12 @@ using namespace std;
 
 namespace hit {
 
-    // it turns out that the lossiness of encoding/decoding strongly depends on
-    // this value. For evaluators that don't really use SEAL, but do use CKKS
-    // encoding/decoding, this should be set to as high as possible.
-    int default_scale_bits = 30;
-
     ScaleEstimator::ScaleEstimator(int num_slots, int max_ct_level, int post_btp_lvl) {
         plaintext_eval = new PlaintextEval(num_slots);
         CKKSParams params(num_slots, max_ct_level, default_scale_bits);
         context = make_shared<HEContext>(HEContext(params));
         post_boostrapping_level = post_btp_lvl;
+        post_bootstrapping_scale = pow(2, default_scale_bits);
     }
 
     ScaleEstimator::ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval) {
