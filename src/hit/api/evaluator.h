@@ -387,5 +387,7 @@ namespace hit {
         CKKSEvaluator() = default;
 
         mutable std::shared_mutex mutex_;
+        // value of -1 indicates that bootstrapping is not supported
+        int post_boostrapping_level = -1;
     };
 }  // namespace hit

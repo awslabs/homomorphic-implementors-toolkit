@@ -385,10 +385,14 @@ namespace hit {
 
     void CKKSEvaluator::bootstrap_inplace(CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
         VLOG(VLOG_EVAL) << "Bootstrapping ciphertext";
+        if (post_boostrapping_level < 0) {
+            LOG_AND_THROW_STREAM("Parameters do not support bootstrapping.");
+        }
         bootstrap_inplace_internal(ct, rescale_for_bootstrapping);
         ct.bootstrapped_ = true;
         ct.needs_relin_ = false;
         ct.needs_rescale_ = false;
+        ct.he_level_ = post_boostrapping_level;
         print_stats(ct);
     }
 

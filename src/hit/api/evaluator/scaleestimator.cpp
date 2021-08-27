@@ -18,16 +18,11 @@ namespace hit {
     // encoding/decoding, this should be set to as high as possible.
     int default_scale_bits = 30;
 
-    ScaleEstimator::ScaleEstimator(int num_slots, int max_ct_level, int bootstrapping_depth)
-        : btp_depth(bootstrapping_depth) {
-        if (bootstrapping_depth > 0 && bootstrapping_depth > max_ct_level) {
-            LOG_AND_THROW_STREAM("Bootstrapping depth is larger than the maximum ciphertext level");
-        }
-
+    ScaleEstimator::ScaleEstimator(int num_slots, int max_ct_level, int post_btp_lvl) {
         plaintext_eval = new PlaintextEval(num_slots);
-
         CKKSParams params(num_slots, max_ct_level, default_scale_bits);
         context = make_shared<HEContext>(HEContext(params));
+        post_boostrapping_level = post_btp_lvl;
     }
 
     ScaleEstimator::ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval) {
@@ -35,7 +30,7 @@ namespace hit {
 
         // instead of creating a new instance, use the instance provided
         context = homom_eval.context;
-        btp_depth = homom_eval.btp_depth;
+        post_boostrapping_level = homom_eval.post_boostrapping_level;
     }
 
     ScaleEstimator::~ScaleEstimator() {
@@ -245,13 +240,7 @@ namespace hit {
     }
 
     void ScaleEstimator::bootstrap_inplace_internal(CKKSCiphertext &ct, bool) {
-        if (btp_depth == 0) {
-            LOG_AND_THROW_STREAM("Parameters do not support bootstrapping.");
-        }
-
         ct.scale_ = pow(2, context->log_scale());
-        ct.he_level_ = context->max_ciphertext_level() - btp_depth;
-
         update_max_log_scale(ct);
     }
 

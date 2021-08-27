@@ -88,7 +88,9 @@ namespace hit {
        private:
         uint64_t get_last_prime_internal(const CKKSCiphertext &ct) const override;
 
+        // tracks homomorphic computation on ciphertext
         HomomorphicEval *homomorphic_eval;
+        // tracks (via PlaintextEval) the plaintext computation
         ScaleEstimator *scale_estimator;
 
         void print_stats(const CKKSCiphertext &ct) override;

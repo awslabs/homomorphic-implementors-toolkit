@@ -14,10 +14,11 @@ using namespace std;
 
 namespace hit {
 
-    PlaintextEval::PlaintextEval(int num_slots) : num_slots_(num_slots) {
+    PlaintextEval::PlaintextEval(int num_slots, int post_btp_lvl) : num_slots_(num_slots) {
         if (!is_pow2(num_slots)) {
             LOG_AND_THROW_STREAM("Number of plaintext slots must be a power of two; got " << num_slots);
         }
+        post_boostrapping_level = post_btp_lvl;
     }
 
     CKKSCiphertext PlaintextEval::encrypt(const vector<double> &coeffs) {

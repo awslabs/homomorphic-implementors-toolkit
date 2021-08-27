@@ -83,6 +83,7 @@ namespace hit {
             VLOG(VLOG_VERBOSE) << "Generating bootstrapping keys";
             btp_keys = genBootstrappingKey(keyGenerator, params.lattigo_params,
                                            params.btp_params.value().lattigo_btp_params, sk, relin_keys, galois_keys);
+            post_boostrapping_level = max_ct_level - btp_depth;
         }
     }
 
@@ -117,6 +118,9 @@ namespace hit {
         relin_keys = unmarshalBinaryRelinearizationKey(relin_key_stream);
         if (context->ckks_params.btp_params.has_value()) {
             btp_keys = makeBootstrappingKey(relin_keys, galois_keys);
+            int max_ct_level = context->ckks_params.max_ct_level();
+            btp_depth = context->ckks_params.btp_params.value().bootstrapping_depth();
+            post_boostrapping_level = max_ct_level - btp_depth;
         }
         log_elapsed_time(start, "Reading keys...");
     }
@@ -362,6 +366,5 @@ namespace hit {
         // API comment in evaluator.h.
         ct.backend_ct = latticpp::bootstrap(get_bootstrapper().ref(), ct.backend_ct);
         ct.scale_ = pow(2, context->log_scale());
-        ct.he_level_ = context->max_ciphertext_level() - btp_depth;
     }
 }  // namespace hit

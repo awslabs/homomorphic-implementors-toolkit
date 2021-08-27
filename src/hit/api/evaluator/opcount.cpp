@@ -13,7 +13,8 @@ using namespace std;
 
 namespace hit {
 
-    OpCount::OpCount(int num_slots) : num_slots_(num_slots) {
+    OpCount::OpCount(int num_slots, int post_btp_lvl) : num_slots_(num_slots) {
+        post_boostrapping_level = post_btp_lvl;
     }
 
     CKKSCiphertext OpCount::encrypt(const vector<double> &coeffs) {

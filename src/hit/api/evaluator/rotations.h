@@ -18,7 +18,7 @@ namespace hit {
      */
     class RotationSet : public CKKSEvaluator {
        public:
-        explicit RotationSet(int num_slots);
+        explicit RotationSet(int num_slots, int post_btp_lvl = -1);
 
         /* For documentation on the API, see ../evaluator.h */
         ~RotationSet() override = default;

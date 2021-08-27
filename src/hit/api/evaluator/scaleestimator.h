@@ -26,7 +26,7 @@ namespace hit {
          * `max_ct_level` is the maximum ciphertext level allowed by the HE parameters.
          * You can use the DepthFinder evaluator to compute this.
          */
-        ScaleEstimator(int num_slots, int max_ct_level, int bootstrapping_depth = 0);
+        ScaleEstimator(int num_slots, int max_ct_level, int post_btp_lvl = -1);
 
         /* For documentation on the API, see ../evaluator.h */
         ~ScaleEstimator() override;
@@ -83,6 +83,7 @@ namespace hit {
         void bootstrap_inplace_internal(CKKSCiphertext &ct, bool rescale_for_bootstrapping) override;
 
        private:
+        // used by DebugEval to create a ScaleEstimator instance without duplicating a context
         ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval);
 
         PlaintextEval *plaintext_eval;
@@ -90,7 +91,6 @@ namespace hit {
         // If scale is too close to 60, SEAL throws the error "encoded values are too large" during encoding.
         // We set the estimated_max_log_scale to 59 to prevent this error.
         double estimated_max_log_scale_ = 59;
-        int btp_depth;
 
         // This helper function squares the scale of the input and then updates
         // the max_log_scale.
