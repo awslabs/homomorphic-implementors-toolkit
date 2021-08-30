@@ -17,6 +17,12 @@ using namespace std;
 
 namespace hit {
 
+    void CKKSEvaluator::assertInitialized(const CKKSCiphertext &ct) {
+        if (!ct.initialized) {
+            LOG_AND_THROW_STREAM("Ciphertext not initialized.");
+        }
+    }
+
     vector<double> CKKSEvaluator::decrypt(const CKKSCiphertext &ct) {
         return decrypt(ct, false);
     }
@@ -32,13 +38,14 @@ namespace hit {
     }
 
     void CKKSEvaluator::rotate_right_inplace(CKKSCiphertext &ct, int steps) {
+        VLOG(VLOG_EVAL) << "Rotate " << abs(steps) << " steps right.";
+        assertInitialized(ct);
         if (steps < 0) {
             LOG_AND_THROW_STREAM("rotate_right must have a positive number of steps, got " << steps);
         }
         if (ct.needs_relin()) {
             LOG_AND_THROW_STREAM("Input to rotate_right must be a linear ciphertext");
         }
-        VLOG(VLOG_EVAL) << "Rotate " << abs(steps) << " steps right.";
         rotate_right_inplace_internal(ct, steps);
         print_stats(ct);
     }
@@ -50,13 +57,14 @@ namespace hit {
     }
 
     void CKKSEvaluator::rotate_left_inplace(CKKSCiphertext &ct, int steps) {
+        VLOG(VLOG_EVAL) << "Rotate " << abs(steps) << " steps left.";
+        assertInitialized(ct);
         if (steps < 0) {
             LOG_AND_THROW_STREAM("rotate_left must have a positive number of steps, got " << steps);
         }
         if (ct.needs_relin()) {
             LOG_AND_THROW_STREAM("Input to rotate_left must be a linear ciphertext");
         }
-        VLOG(VLOG_EVAL) << "Rotate " << abs(steps) << " steps left.";
         rotate_left_inplace_internal(ct, steps);
         print_stats(ct);
     }
@@ -69,6 +77,7 @@ namespace hit {
 
     void CKKSEvaluator::negate_inplace(CKKSCiphertext &ct) {
         VLOG(VLOG_EVAL) << "Negate";
+        assertInitialized(ct);
         negate_inplace_internal(ct);
         print_stats(ct);
     }
@@ -81,16 +90,18 @@ namespace hit {
 
     void CKKSEvaluator::add_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         VLOG(VLOG_EVAL) << "Add ciphertexts";
+        assertInitialized(ct1);
+        assertInitialized(ct2);
         if (ct1.scale() != ct2.scale()) {
             LOG_AND_THROW_STREAM("Inputs to add must have the same scale: " << log2(ct1.scale()) << " bits != "
                                                                             << log2(ct2.scale()) << " bits");
         }
-        if (ct1.bootstrapped_ == ct2.bootstrapped_ && ct1.he_level() != ct2.he_level()) {
+        if (ct1.he_level() != ct2.he_level()) {
             LOG_AND_THROW_STREAM("Inputs to add must be at the same level: " << ct1.he_level()
                                                                              << " != " << ct2.he_level());
         }
         add_inplace_internal(ct1, ct2);
-        ct1.bootstrapped_ |= ct2.bootstrapped_;
+        ct1.implicit_depth = max(ct1.implicit_depth, ct2.implicit_depth);
         print_stats(ct1);
     }
 
@@ -102,6 +113,7 @@ namespace hit {
 
     void CKKSEvaluator::add_plain_inplace(CKKSCiphertext &ct, double scalar) {
         VLOG(VLOG_EVAL) << "Add scalar " << scalar << " to ciphertext";
+        assertInitialized(ct);
         add_plain_inplace_internal(ct, scalar);
         print_stats(ct);
     }
@@ -114,6 +126,7 @@ namespace hit {
 
     void CKKSEvaluator::add_plain_inplace(CKKSCiphertext &ct, const vector<double> &plain) {
         VLOG(VLOG_EVAL) << "Add plaintext to ciphertext";
+        assertInitialized(ct);
         if (plain.size() != ct.num_slots()) {
             LOG_AND_THROW_STREAM("Public argument to add_plain must have exactly as many "
                                  << " coefficients as the ciphertext has plaintext slots: "
@@ -130,20 +143,17 @@ namespace hit {
         VLOG(VLOG_EVAL) << "Add ciphertext vector of size " << cts.size();
 
         CKKSCiphertext dest = cts[0];
-        bool bootstrapped_ = dest.bootstrapped_;
         for (int i = 1; i < cts.size(); i++) {
             if (cts[i].scale() != dest.scale()) {
                 LOG_AND_THROW_STREAM("Inputs to add_many must have the same scale: "
                                      << log2(cts[i].scale()) << " bits != " << log2(dest.scale()) << " bits");
             }
-            if (dest.bootstrapped_ == cts[i].bootstrapped_ && cts[i].he_level() != dest.he_level()) {
+            if (cts[i].he_level() != dest.he_level()) {
                 LOG_AND_THROW_STREAM("Inputs to add_many must be at the same level: " << cts[i].he_level()
                                                                                       << " != " << dest.he_level());
             }
-            bootstrapped_ |= cts[i].bootstrapped_;
             add_inplace_internal(dest, cts[i]);
         }
-        dest.bootstrapped_ = bootstrapped_;
         print_stats(dest);
         return dest;
     }
@@ -156,16 +166,18 @@ namespace hit {
 
     void CKKSEvaluator::sub_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         VLOG(VLOG_EVAL) << "Subtract ciphertexts";
+        assertInitialized(ct1);
+        assertInitialized(ct2);
         if (ct1.scale() != ct2.scale()) {
             LOG_AND_THROW_STREAM("Inputs to sub must have the same scale: " << log2(ct1.scale()) << " bits != "
                                                                             << log2(ct2.scale()) << " bits");
         }
-        if (ct1.bootstrapped_ == ct2.bootstrapped_ && ct1.he_level() != ct2.he_level()) {
+        if (ct1.he_level() != ct2.he_level()) {
             LOG_AND_THROW_STREAM("Inputs to sub must be at the same level: " << ct1.he_level()
                                                                              << " != " << ct2.he_level());
         }
         sub_inplace_internal(ct1, ct2);
-        ct1.bootstrapped_ |= ct2.bootstrapped_;
+        ct1.implicit_depth = max(ct1.implicit_depth, ct2.implicit_depth);
         print_stats(ct1);
     }
 
@@ -177,6 +189,7 @@ namespace hit {
 
     void CKKSEvaluator::sub_plain_inplace(CKKSCiphertext &ct, double scalar) {
         VLOG(VLOG_EVAL) << "Subtract scalar " << scalar << " from ciphertext";
+        assertInitialized(ct);
         sub_plain_inplace_internal(ct, scalar);
         print_stats(ct);
     }
@@ -189,6 +202,7 @@ namespace hit {
 
     void CKKSEvaluator::sub_plain_inplace(CKKSCiphertext &ct, const vector<double> &plain) {
         VLOG(VLOG_EVAL) << "Subtract plaintext from ciphertext";
+        assertInitialized(ct);
         if (plain.size() != ct.num_slots()) {
             LOG_AND_THROW_STREAM("Public argument to sub_plain must have exactly as many "
                                  << " coefficients as the ciphertext has plaintext slots: "
@@ -206,10 +220,12 @@ namespace hit {
 
     void CKKSEvaluator::multiply_inplace(CKKSCiphertext &ct1, const CKKSCiphertext &ct2) {
         VLOG(VLOG_EVAL) << "Multiply ciphertexts";
+        assertInitialized(ct1);
+        assertInitialized(ct2);
         if (ct1.needs_relin() || ct2.needs_relin()) {
             LOG_AND_THROW_STREAM("Inputs to multiply must be linear ciphertexts");
         }
-        if (ct1.bootstrapped_ == ct2.bootstrapped_ && ct1.he_level() != ct2.he_level()) {
+        if (ct1.he_level() != ct2.he_level()) {
             LOG_AND_THROW_STREAM("Inputs to multiply must be at the same level: " << ct1.he_level()
                                                                                   << " != " << ct2.he_level());
         }
@@ -224,7 +240,7 @@ namespace hit {
         ct1.needs_rescale_ = true;
         ct1.needs_relin_ = true;
         ct1.scale_ *= ct1.scale_;
-        ct1.bootstrapped_ |= ct2.bootstrapped_;
+        ct1.implicit_depth = max(ct1.implicit_depth, ct2.implicit_depth);
         print_stats(ct1);
     }
 
@@ -236,6 +252,7 @@ namespace hit {
 
     void CKKSEvaluator::multiply_plain_inplace(CKKSCiphertext &ct, double scalar) {
         VLOG(VLOG_EVAL) << "Multiply ciphertext by scalar " << scalar;
+        assertInitialized(ct);
         if (ct.needs_rescale()) {
             LOG_AND_THROW_STREAM("Encrypted input to multiply_plain must have nominal scale");
         }
@@ -253,6 +270,7 @@ namespace hit {
 
     void CKKSEvaluator::multiply_plain_inplace(CKKSCiphertext &ct, const vector<double> &plain) {
         VLOG(VLOG_EVAL) << "Multiply by plaintext";
+        assertInitialized(ct);
         if (ct.num_slots() != plain.size()) {
             LOG_AND_THROW_STREAM("Public argument to multiply_plain must have exactly as many "
                                  << " coefficients as the ciphertext has plaintext slots: "
@@ -275,6 +293,7 @@ namespace hit {
 
     void CKKSEvaluator::square_inplace(CKKSCiphertext &ct) {
         VLOG(VLOG_EVAL) << "Square ciphertext";
+        assertInitialized(ct);
         if (ct.needs_relin()) {
             LOG_AND_THROW_STREAM("Input to square must be a linear ciphertext");
         }
@@ -312,6 +331,7 @@ namespace hit {
 
     void CKKSEvaluator::reduce_level_to_inplace(CKKSCiphertext &ct, int level) {
         VLOG(VLOG_EVAL) << "Decreasing HE level to " << level;
+        assertInitialized(ct);
         if (ct.he_level() < level) {
             LOG_AND_THROW_STREAM("Input to reduce_level_to is already below the target level: " << ct.he_level() << "<"
                                                                                                 << level);
@@ -336,6 +356,7 @@ namespace hit {
 
     void CKKSEvaluator::rescale_to_next_inplace(CKKSCiphertext &ct) {
         VLOG(VLOG_EVAL) << "Rescaling ciphertext";
+        assertInitialized(ct);
         if (!ct.needs_rescale()) {
             LOG_AND_THROW_STREAM("Input to rescale_to_next_inplace must have squared scale");
         }
@@ -346,6 +367,7 @@ namespace hit {
 
     void CKKSEvaluator::relinearize_inplace(CKKSCiphertext &ct) {
         VLOG(VLOG_EVAL) << "Relinearizing ciphertext";
+        assertInitialized(ct);
         if (!ct.needs_relin()) {
             LOG_AND_THROW_STREAM("Input to relinearize_inplace must be a linear ciphertext");
         }
@@ -367,6 +389,7 @@ namespace hit {
         ct.he_level_--;
         ct.scale_ /= prime;
         ct.needs_rescale_ = false;
+        ct.implicit_depth += 1;
     }
 
     // default implementation for evaluators which don't use SEAL
@@ -385,10 +408,15 @@ namespace hit {
 
     void CKKSEvaluator::bootstrap_inplace(CKKSCiphertext &ct, bool rescale_for_bootstrapping) {
         VLOG(VLOG_EVAL) << "Bootstrapping ciphertext";
+        assertInitialized(ct);
+        if (post_boostrapping_level < 0) {
+            LOG_AND_THROW_STREAM("Parameters do not support bootstrapping.");
+        }
         bootstrap_inplace_internal(ct, rescale_for_bootstrapping);
-        ct.bootstrapped_ = true;
         ct.needs_relin_ = false;
         ct.needs_rescale_ = false;
+        ct.he_level_ = post_boostrapping_level;
+        ct.scale_ = post_bootstrapping_scale;
         print_stats(ct);
     }
 

@@ -383,9 +383,14 @@ namespace hit {
 
         void reduce_metadata_to_level(CKKSCiphertext &ct, int level);
         void rescale_metata_to_next(CKKSCiphertext &ct);
+        static void assertInitialized(const CKKSCiphertext &ct);
 
         CKKSEvaluator() = default;
 
         mutable std::shared_mutex mutex_;
+        // value of -1 indicates that bootstrapping is not supported
+        int post_boostrapping_level = -1;
+        double post_bootstrapping_scale;
+        int default_scale_bits = 30;
     };
 }  // namespace hit

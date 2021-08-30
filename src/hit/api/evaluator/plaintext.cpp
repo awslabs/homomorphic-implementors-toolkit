@@ -14,10 +14,12 @@ using namespace std;
 
 namespace hit {
 
-    PlaintextEval::PlaintextEval(int num_slots) : num_slots_(num_slots) {
+    PlaintextEval::PlaintextEval(int num_slots, int post_btp_lvl) : num_slots_(num_slots) {
         if (!is_pow2(num_slots)) {
             LOG_AND_THROW_STREAM("Number of plaintext slots must be a power of two; got " << num_slots);
         }
+        post_boostrapping_level = post_btp_lvl;
+        post_bootstrapping_scale = pow(2, default_scale_bits);
     }
 
     CKKSCiphertext PlaintextEval::encrypt(const vector<double> &coeffs) {
@@ -25,7 +27,7 @@ namespace hit {
         return encrypt(coeffs, 0);
     }
 
-    CKKSCiphertext PlaintextEval::encrypt(const vector<double> &coeffs, int) {
+    CKKSCiphertext PlaintextEval::encrypt(const vector<double> &coeffs, int level) {
         if (coeffs.size() != num_slots_) {
             // bad things can happen if you don't plan for your input to be smaller than the ciphertext
             // This forces the caller to ensure that the input has the correct size or is at least appropriately padded
@@ -40,11 +42,8 @@ namespace hit {
             plaintext_max_log_ = max(plaintext_max_log_, log2(l_inf_norm(coeffs)));
         }
 
-        CKKSCiphertext destination;
+        CKKSCiphertext destination = CKKSCiphertext(num_slots_, level, pow(2, default_scale_bits));
         destination.raw_pt = coeffs;
-        destination.num_slots_ = num_slots_;
-        destination.initialized = true;
-
         return destination;
     }
 

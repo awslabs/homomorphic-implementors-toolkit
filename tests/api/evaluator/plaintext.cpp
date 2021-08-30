@@ -264,7 +264,7 @@ TEST(PlaintextTest, Square) {
 }
 
 TEST(PlaintextTest, Bootstrap) {
-    PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS);
+    PlaintextEval ckks_instance = PlaintextEval(NUM_OF_SLOTS, 1);
     CKKSCiphertext ciphertext1, ciphertext2;
     vector<double> vector1 = random_vector(NUM_OF_SLOTS, RANGE);
     ciphertext1 = ckks_instance.encrypt(vector1);

@@ -431,7 +431,7 @@ namespace hit {
         }
         if (enc_mat.scale() != enc_vec.scale()) {
             LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have the same scale: "
-                                 << log2(enc_vec.scale()) << "bits != " << log2(enc_mat.scale()) << " bits");
+                                 << log2(enc_vec.scale()) << " bits != " << log2(enc_mat.scale()) << " bits");
         }
         if (enc_mat.needs_rescale() || enc_vec.needs_rescale()) {
             LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have nominal scale: "
@@ -474,7 +474,7 @@ namespace hit {
         }
         if (enc_mat.scale() != enc_vec.scale()) {
             LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have the same scale: "
-                                 << log2(enc_mat.scale()) << "bits != " << log2(enc_vec.scale()) << " bits");
+                                 << log2(enc_mat.scale()) << " bits != " << log2(enc_vec.scale()) << " bits");
         }
         if (enc_mat.needs_rescale() || enc_vec.needs_rescale()) {
             LOG_AND_THROW_STREAM("Inputs to hadamard_multiply must have nominal scale: "

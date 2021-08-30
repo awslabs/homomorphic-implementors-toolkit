@@ -11,7 +11,7 @@ namespace hit {
     /* This evaluator tracks the plaintext computation */
     class OpCount : public CKKSEvaluator {
        public:
-        explicit OpCount(int num_slots);
+        explicit OpCount(int num_slots, int post_btp_lvl = -1);
 
         /* For documentation on the API, see ../evaluator.h */
         ~OpCount() override = default;

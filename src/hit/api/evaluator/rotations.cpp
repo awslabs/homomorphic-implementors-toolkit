@@ -13,7 +13,9 @@ using namespace std;
 
 namespace hit {
 
-    RotationSet::RotationSet(int num_slots) : num_slots_(num_slots) {
+    RotationSet::RotationSet(int num_slots, int post_btp_lvl) : num_slots_(num_slots) {
+        post_boostrapping_level = post_btp_lvl;
+        post_bootstrapping_scale = pow(2, default_scale_bits);
     }
 
     CKKSCiphertext RotationSet::encrypt(const vector<double> &coeffs) {
@@ -22,12 +24,7 @@ namespace hit {
     }
 
     CKKSCiphertext RotationSet::encrypt(const vector<double> &, int level) {
-        CKKSCiphertext destination;
-        destination.he_level_ = level;
-        destination.num_slots_ = num_slots_;
-        destination.initialized = true;
-
-        return destination;
+        return CKKSCiphertext(num_slots_, level, pow(2, default_scale_bits));
     }
 
     int RotationSet::num_slots() const {

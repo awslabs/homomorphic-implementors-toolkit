@@ -22,5 +22,4 @@ export GLOG_logtostderr=true
 export GLOG_minloglevel=3
 
 ninja run_hit_tests
-# example is failing on lattigo branch right now. Tracked in issue #129.
-# ninja run_hit_examples
+ninja run_hit_examples

@@ -13,21 +13,12 @@ using namespace std;
 
 namespace hit {
 
-    // it turns out that the lossiness of encoding/decoding strongly depends on
-    // this value. For evaluators that don't really use SEAL, but do use CKKS
-    // encoding/decoding, this should be set to as high as possible.
-    int default_scale_bits = 30;
-
-    ScaleEstimator::ScaleEstimator(int num_slots, int max_ct_level, int bootstrapping_depth)
-        : btp_depth(bootstrapping_depth) {
-        if (bootstrapping_depth > 0 && bootstrapping_depth > max_ct_level) {
-            LOG_AND_THROW_STREAM("Bootstrapping depth is larger than the maximum ciphertext level");
-        }
-
+    ScaleEstimator::ScaleEstimator(int num_slots, int max_ct_level, int post_btp_lvl) {
         plaintext_eval = new PlaintextEval(num_slots);
-
         CKKSParams params(num_slots, max_ct_level, default_scale_bits);
         context = make_shared<HEContext>(HEContext(params));
+        post_boostrapping_level = post_btp_lvl;
+        post_bootstrapping_scale = pow(2, default_scale_bits);
     }
 
     ScaleEstimator::ScaleEstimator(int num_slots, const HomomorphicEval &homom_eval) {
@@ -35,7 +26,8 @@ namespace hit {
 
         // instead of creating a new instance, use the instance provided
         context = homom_eval.context;
-        btp_depth = homom_eval.btp_depth;
+        post_boostrapping_level = homom_eval.post_boostrapping_level;
+        post_bootstrapping_scale = pow(2, homom_eval.context->log_scale());
     }
 
     ScaleEstimator::~ScaleEstimator() {
@@ -66,13 +58,8 @@ namespace hit {
             scale = (scale * scale) / static_cast<double>(context->get_qi(i));
         }
 
-        CKKSCiphertext destination;
-        destination.he_level_ = level;
-        destination.scale_ = scale;
+        CKKSCiphertext destination = CKKSCiphertext(context->num_slots(), level, scale);
         destination.raw_pt = coeffs;
-        destination.num_slots_ = context->num_slots();
-        destination.initialized = true;
-
         return destination;
     }
 
@@ -242,17 +229,6 @@ namespace hit {
         // internal functions should not update the ciphertext metadata
         ct.he_level_ = input_level;
         ct.scale_ = input_scale;
-    }
-
-    void ScaleEstimator::bootstrap_inplace_internal(CKKSCiphertext &ct, bool) {
-        if (btp_depth == 0) {
-            LOG_AND_THROW_STREAM("Parameters do not support bootstrapping.");
-        }
-
-        ct.scale_ = pow(2, context->log_scale());
-        ct.he_level_ = context->max_ciphertext_level() - btp_depth;
-
-        update_max_log_scale(ct);
     }
 
     double ScaleEstimator::get_estimated_max_log_scale() const {

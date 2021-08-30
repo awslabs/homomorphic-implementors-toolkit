@@ -2698,7 +2698,7 @@ TEST(LinearAlgebraTest, Bootstrap_RowVec) {
 
     EncryptedRowVector bootstrapped_vec = linear_algebra.bootstrap(ct_vec1);
 
-    ASSERT_EQ(bootstrapped_vec.he_level(), params.max_ct_level() - params.btp_params.value().bootstrapping_depth());
+    ASSERT_EQ(bootstrapped_vec.he_level(), params.max_ct_level());
     ASSERT_FALSE(bootstrapped_vec.needs_relin());
     ASSERT_FALSE(bootstrapped_vec.needs_rescale());
 
