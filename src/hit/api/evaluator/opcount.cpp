@@ -29,13 +29,8 @@ namespace hit {
             encryptions_++;
             encryption_levels_ += level;
         }
-        CKKSCiphertext destination;
-        destination.he_level_ = level;
-        destination.num_slots_ = num_slots_;
-        destination.initialized = true;
-        destination.scale_ = pow(2, default_scale_bits);
 
-        return destination;
+        return CKKSCiphertext(num_slots_, level, pow(2, default_scale_bits));
     }
 
     void OpCount::print_op_count() const {

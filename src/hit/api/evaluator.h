@@ -383,6 +383,7 @@ namespace hit {
 
         void reduce_metadata_to_level(CKKSCiphertext &ct, int level);
         void rescale_metata_to_next(CKKSCiphertext &ct);
+        static void assertInitialized(const CKKSCiphertext &ct);
 
         CKKSEvaluator() = default;
 

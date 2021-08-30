@@ -30,16 +30,7 @@ namespace hit {
                                  << level);
         }
 
-        CKKSCiphertext destination;
-        destination.he_level_ = level;
-        // Using a default num_slots_ is potentially problematic if the depth of
-        // the function depends on the number of slots. This seems like an unusual
-        // situation, so its doesn't seem worth fixing.
-        destination.num_slots_ = num_slots_;
-        destination.initialized = true;
-        destination.scale_ = pow(2, default_scale_bits);
-
-        return destination;
+        return CKKSCiphertext(num_slots_, level, pow(2, default_scale_bits));
     }
 
     // print some debug info

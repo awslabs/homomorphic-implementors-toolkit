@@ -27,7 +27,8 @@ void example_4_driver() {
 	// easier to just generate keys for all possible rotations rather than getting the
 	// exact subset.
 	vector<int> rotations;
-	for (int i = 1; i <= num_slots / 2; i++) {
+	rotations.push_back(num_slots/2);
+	for (int i = 1; i < num_slots / 2; i++) {
 		rotations.push_back(i);
 		rotations.push_back(-i);
 	}

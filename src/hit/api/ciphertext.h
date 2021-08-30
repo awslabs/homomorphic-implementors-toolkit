@@ -18,6 +18,8 @@ namespace hit {
         // A default constructor is useful since we often write, e.g, `Ciphertext a;`
         CKKSCiphertext() = default;
 
+        CKKSCiphertext(size_t num_slots, int he_level, double scale);
+
         // with Latticpp, ciphertext copies are "by reference". We need to explicitly
         // clone the ciphertext when we copy a CKKSCiphertext to mimick the behavior of SEAL.
         // This is an informal part of the CKKSCiphertext API contract which has been assumed

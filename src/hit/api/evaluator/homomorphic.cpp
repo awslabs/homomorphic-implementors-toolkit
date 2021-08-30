@@ -186,17 +186,10 @@ namespace hit {
             scale = (scale * scale) / static_cast<double>(context->get_qi(i));
         }
 
-        CKKSCiphertext destination;
-        destination.he_level_ = level;
-        destination.scale_ = scale;
-
+        CKKSCiphertext destination = CKKSCiphertext(num_slots_, level, scale);
         Plaintext temp =
             encodeNTTAtLvlNew(context->ckks_params.lattigo_params, get_encoder().ref(), coeffs, level, scale);
         destination.backend_ct = encryptNew(get_encryptor().ref(), temp);
-
-        destination.num_slots_ = num_slots_;
-        destination.initialized = true;
-
         return destination;
     }
 

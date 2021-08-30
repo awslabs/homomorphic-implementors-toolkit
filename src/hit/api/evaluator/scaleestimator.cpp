@@ -58,13 +58,8 @@ namespace hit {
             scale = (scale * scale) / static_cast<double>(context->get_qi(i));
         }
 
-        CKKSCiphertext destination;
-        destination.he_level_ = level;
-        destination.scale_ = scale;
+        CKKSCiphertext destination = CKKSCiphertext(context->num_slots(), level, scale);
         destination.raw_pt = coeffs;
-        destination.num_slots_ = context->num_slots();
-        destination.initialized = true;
-
         return destination;
     }
 

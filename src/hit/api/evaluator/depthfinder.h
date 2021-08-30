@@ -52,6 +52,9 @@ namespace hit {
         void bootstrap_inplace_internal(CKKSCiphertext &ct, bool rescale_for_bootstrapping) override;
 
        private:
+        // Using a default num_slots_ is potentially problematic if the depth of
+        // the function depends on the number of slots. This seems like an unusual
+        // situation, so its doesn't seem worth fixing.
         const int num_slots_ = 4096;
         int circuit_depth = 0;
 

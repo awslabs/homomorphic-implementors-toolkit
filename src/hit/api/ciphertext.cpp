@@ -12,6 +12,10 @@ using namespace latticpp;
 
 namespace hit {
 
+    CKKSCiphertext::CKKSCiphertext(size_t num_slots, int he_level, double scale)
+        : scale_(scale), initialized(true), he_level_(he_level), num_slots_(num_slots) {
+    }
+
     void CKKSCiphertext::read_from_proto(const shared_ptr<HEContext> &context, const protobuf::Ciphertext &proto_ct) {
         initialized = proto_ct.initialized();
 
