@@ -266,7 +266,7 @@ TEST(ScaleEstimatorTest, RescaleToNextInPlace) {
 }
 
 TEST(ScaleEstimatorTest, Bootstrap1) {
-    ScaleEstimator ckks_instance = ScaleEstimator(NUM_OF_SLOTS, TWO_MULTI_DEPTH, 1);
+    ScaleEstimator ckks_instance = ScaleEstimator(NUM_OF_SLOTS, TWO_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ciphertext2 = ckks_instance.bootstrap(ciphertext1);
@@ -275,7 +275,7 @@ TEST(ScaleEstimatorTest, Bootstrap1) {
 }
 
 TEST(ScaleEstimatorTest, Bootstrap2) {
-    ScaleEstimator ckks_instance = ScaleEstimator(NUM_OF_SLOTS, TWO_MULTI_DEPTH, 1);
+    ScaleEstimator ckks_instance = ScaleEstimator(NUM_OF_SLOTS, TWO_MULTI_DEPTH);
     CKKSCiphertext ciphertext1, ciphertext2, ciphertext3;
     ciphertext1 = ckks_instance.encrypt(VECTOR_1);
     ciphertext2 = ckks_instance.square(ciphertext1);

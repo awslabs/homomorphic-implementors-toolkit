@@ -13,8 +13,11 @@ using namespace std;
 
 namespace hit {
 
-    RotationSet::RotationSet(int num_slots, int post_btp_lvl) : num_slots_(num_slots) {
-        post_boostrapping_level = post_btp_lvl;
+    RotationSet::RotationSet(int num_slots) : num_slots_(num_slots) {
+        // post_boostrapping_level has no impact on this evaluator.
+        // Set `post_boostrapping_level` to an arbitrary non-negative value
+        // so that we can use this evaluator on circuits which use bootstrapping.
+        post_boostrapping_level = 0;
         post_bootstrapping_scale = pow(2, default_scale_bits);
     }
 

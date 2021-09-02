@@ -26,7 +26,7 @@ namespace hit {
          * `max_ct_level` is the maximum ciphertext level allowed by the HE parameters.
          * You can use the DepthFinder evaluator to compute this.
          */
-        ScaleEstimator(int num_slots, int max_ct_level, int post_btp_lvl = -1);
+        ScaleEstimator(int num_slots, int max_ct_level);
 
         /* For documentation on the API, see ../evaluator.h */
         ~ScaleEstimator() override;

@@ -13,11 +13,14 @@ using namespace std;
 
 namespace hit {
 
-    ScaleEstimator::ScaleEstimator(int num_slots, int max_ct_level, int post_btp_lvl) {
+    ScaleEstimator::ScaleEstimator(int num_slots, int max_ct_level) {
         plaintext_eval = new PlaintextEval(num_slots);
         CKKSParams params(num_slots, max_ct_level, default_scale_bits);
         context = make_shared<HEContext>(HEContext(params));
-        post_boostrapping_level = post_btp_lvl;
+        // post_boostrapping_level has no impact on this evaluator.
+        // Set `post_boostrapping_level` to an arbitrary non-negative value
+        // so that we can use this evaluator on circuits which use bootstrapping.
+        post_boostrapping_level = 0;
         post_bootstrapping_scale = pow(2, default_scale_bits);
     }
 

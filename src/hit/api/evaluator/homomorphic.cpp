@@ -95,7 +95,9 @@ namespace hit {
         istringstream ctx_stream(ckks_params.ctx());
         Parameters params = unmarshalBinaryParameters(ctx_stream);
 
+        cout << "DESERIALIZE_COMMON" << endl;
         if (ckks_params.has_btp_params()) {
+            cout << "DESERIALIZE_COMMON_BTP" << endl;
             // make a context with support for bootstrapping
             istringstream btp_params_stream(ckks_params.btp_params());
             BootstrappingParameters btp_params = unmarshalBinaryBootstrapParameters(btp_params_stream);
@@ -113,7 +115,9 @@ namespace hit {
                                               istream &relin_key_stream) {
         galois_keys = unmarshalBinaryRotationKeys(galois_key_stream);
         relin_keys = unmarshalBinaryRelinearizationKey(relin_key_stream);
+        cout << " HOMOM INSTANCE DESERIALIZE" << endl;
         if (context->ckks_params.btp_params.has_value()) {
+            cout << " HOMOM INSTANCE DESERIALIZE BTP" << endl;
             btp_keys = makeBootstrappingKey(relin_keys, galois_keys);
             post_boostrapping_level = context->max_ciphertext_level();
             post_bootstrapping_scale = pow(2, context->log_scale());
@@ -151,6 +155,7 @@ namespace hit {
         ckks_params.set_ctx(ctx_stream.str());
 
         if (context->ckks_params.btp_params.has_value()) {
+            cout << "Saving CTP params" << endl;
             ostringstream btp_params_stream;
             marshalBinaryBootstrapParameters(context->ckks_params.btp_params.value().lattigo_btp_params,
                                              btp_params_stream);
