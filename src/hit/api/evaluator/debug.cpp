@@ -19,6 +19,9 @@ namespace hit {
         // use the _private_ ScaleEstimator constructor to avoid creating two sets of CKKS params
         scale_estimator = new ScaleEstimator(num_slots, *homomorphic_eval);
         print_parameters();
+
+        post_boostrapping_level = homomorphic_eval->post_boostrapping_level;
+        post_bootstrapping_scale = homomorphic_eval->post_bootstrapping_scale;
     }
 
     /* Based on the SEAL version of this function */
