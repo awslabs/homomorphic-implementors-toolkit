@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-project(PROTOBUF_DOWNLOAD VERSION 3.12.3)
+project(PROTOBUF_DOWNLOAD VERSION 3.21.12)
 
 # https://github.com/protocolbuffers/protobuf/tree/master/src
 include(ExternalProject)

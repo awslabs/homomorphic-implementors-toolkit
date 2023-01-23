@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-project(GTEST_DOWNLOAD VERSION 1.10.0)
+project(GTEST_DOWNLOAD VERSION 1.13.0)
 
 include(ExternalProject)
 ExternalProject_Add(EP_GTEST
