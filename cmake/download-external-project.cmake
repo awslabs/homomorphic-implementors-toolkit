@@ -14,14 +14,14 @@ function(download_external_project project_dir)
             COMMAND find . -maxdepth 1 \( ! -name "CMakeLists.txt" ! -name "." ! -path "./src" \) -exec rm -rf {} \;
             RESULT_VARIABLE result
             WORKING_DIRECTORY ${COMMAND_WORK_DIR}
-            OUTPUT_QUIET)
+            )
     endif()
     message(STATUS "Obtaining ${project_dir}...")
     execute_process(
         COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" . -D3P_INSTALL_DIR=${3P_INSTALL_DIR}
         RESULT_VARIABLE result
         WORKING_DIRECTORY ${COMMAND_WORK_DIR}
-        OUTPUT_QUIET)
+        )
     if(result)
         message(FATAL_ERROR "Failed to download (${result}).")
     endif()
@@ -29,7 +29,7 @@ function(download_external_project project_dir)
     execute_process(COMMAND ${CMAKE_COMMAND} --build .
         RESULT_VARIABLE result
         WORKING_DIRECTORY ${COMMAND_WORK_DIR}
-        OUTPUT_QUIET)
+        )
     if(result)
         message(FATAL_ERROR "Failed to build (${result}).")
     endif()

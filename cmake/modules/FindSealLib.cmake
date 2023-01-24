@@ -3,4 +3,4 @@
 
 # Download and install dependency - Microsoft SEAL.
 download_external_project("seal")
-find_package(SEAL 3.6 REQUIRED)
+find_package(SEAL 4.1 REQUIRED)
