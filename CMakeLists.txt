@@ -76,6 +76,7 @@ find_package(BoostLib REQUIRED)
 find_package(SealLib REQUIRED)
 find_package(ProtobufLib REQUIRED)
 find_package(GlogLib REQUIRED)
+find_package(TbbLib REQUIRED)
 
 #####################
 # Compile Protobufs #
@@ -121,7 +122,7 @@ target_include_directories(aws-hit
 set_common_flags(aws-hit)
 
 # Link dependencies
-target_link_libraries(aws-hit PUBLIC SEAL::seal glog::glog ${Protobuf_LIBRARIES})
+target_link_libraries(aws-hit PUBLIC SEAL::seal glog::glog ${Protobuf_LIBRARIES} ${TBB_IMPORTED_TARGETS})
 
 install(TARGETS aws-hit EXPORT HITTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
