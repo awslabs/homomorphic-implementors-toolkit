@@ -68,7 +68,7 @@ namespace hit {
         }
     }
 
-    HEContext::HEContext(CKKSParams params) : ckks_params(move(params)) {
+    HEContext::HEContext(CKKSParams params) : ckks_params(std::move(params)) {
         if (ckks_params.use_std_params()) {
             seal_ctx = make_shared<SEALContext>(ckks_params.params);
         } else {

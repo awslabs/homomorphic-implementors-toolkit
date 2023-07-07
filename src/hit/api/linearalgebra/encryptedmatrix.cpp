@@ -13,7 +13,7 @@ using namespace std;
 namespace hit {
     EncryptedMatrix::EncryptedMatrix(int height, int width, const EncodingUnit &unit,
                                      const vector<vector<CKKSCiphertext>> &cts)
-        : height_(height), width_(width), unit(unit), cts(move(cts)) {
+        : height_(height), width_(width), unit(unit), cts(std::move(cts)) {
         validate();
     }
 

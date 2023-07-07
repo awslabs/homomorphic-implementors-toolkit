@@ -21,7 +21,7 @@ namespace hit {
     }
 
     CKKSParams::CKKSParams(EncryptionParameters params, int log_scale, bool use_standard_params)
-        : params(move(params)), log_scale_(log_scale), use_std_params_(use_standard_params) {
+        : params(std::move(params)), log_scale_(log_scale), use_std_params_(use_standard_params) {
     }
 
     int CKKSParams::num_slots() const {
