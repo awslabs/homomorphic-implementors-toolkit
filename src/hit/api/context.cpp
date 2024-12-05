@@ -68,7 +68,7 @@ namespace hit {
         }
     }
 
-    HEContext::HEContext(CKKSParams params) : ckks_params(move(params)) {
+    HEContext::HEContext(CKKSParams params) : ckks_params(std::move(params)) {
         validateContext();
     }
 

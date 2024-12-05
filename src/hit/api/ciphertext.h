@@ -63,7 +63,7 @@ namespace hit {
             if (this == &other) {
                 return;
             }
-            raw_pt = move(other.raw_pt);
+            raw_pt = std::move(other.raw_pt);
             // copy the reference to the Go object
             backend_ct = other.backend_ct;
             scale_ = other.scale_;
@@ -78,7 +78,7 @@ namespace hit {
         // move assignment operator
         CKKSCiphertext &operator=(CKKSCiphertext &&other) noexcept {
             if (this != &other) {
-                raw_pt = move(other.raw_pt);
+                raw_pt = std::move(other.raw_pt);
                 // copy the reference to the Go object
                 backend_ct = other.backend_ct;
                 scale_ = other.scale_;

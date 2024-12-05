@@ -7,28 +7,28 @@ using namespace std;
 
 namespace hit {
     BootstrappingParams::BootstrappingParams(latticpp::BootstrappingParameters lattigo_btp_params)
-        : lattigo_btp_params(move(lattigo_btp_params)) {
+        : lattigo_btp_params(std::move(lattigo_btp_params)) {
     }
 
     int BootstrappingParams::bootstrapping_depth() const {
         return bootstrapDepth(lattigo_btp_params);
     }
 
-    CKKSParams::CKKSParams(latticpp::Parameters lattigo_params) : lattigo_params(move(lattigo_params)) {
+    CKKSParams::CKKSParams(latticpp::Parameters lattigo_params) : lattigo_params(std::move(lattigo_params)) {
     }
 
     CKKSParams::CKKSParams(latticpp::BootstrappingParameters lattigo_btp_params)
-        : CKKSParams(genParams(move(lattigo_btp_params)), move(lattigo_btp_params)) {
+        : CKKSParams(genParams(std::move(lattigo_btp_params)), std::move(lattigo_btp_params)) {
     }
 
     CKKSParams::CKKSParams(latticpp::Parameters lattigo_params, latticpp::BootstrappingParameters lattigo_btp_params)
-        : lattigo_params(move(lattigo_params)),
-          btp_params(optional<BootstrappingParams>(BootstrappingParams(move(lattigo_btp_params)))) {
+        : lattigo_params(std::move(lattigo_params)),
+          btp_params(optional<BootstrappingParams>(BootstrappingParams(std::move(lattigo_btp_params)))) {
     }
 
     CKKSParams::CKKSParams(int num_slots, int max_ct_level, int log_scale, int num_ks_primes,
                            optional<BootstrappingParams> btp_params)
-        : btp_params(move(btp_params)) {
+        : btp_params(std::move(btp_params)) {
         if (max_ct_level < 0 || num_ks_primes < 1) {
             LOG_AND_THROW_STREAM("Invalid parameters when creating HIT-Lattigo instance: "
                                  << "there must be at least one ciphertext prime and one ks prime.");
